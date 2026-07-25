@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: f6f60c696eab4ac49824a64b5daefd2c
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - bendRenderer: {fileID: 11400000, guid: 6646d2562bb9379498d38addaba2d66d, type: 2}
+  - followTarget: {instanceID: 0}
+  - vectorRT: {instanceID: 0}
+  - renderCam: {instanceID: 0}
+  - colorMap: {instanceID: 0}
+  executionOrder: 0
+  icon: {fileID: -2718852975875110509, guid: 0000000000000000d000000000000000, type: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/Runtime/WindController.cs
+  uploadId: 912894

@@ -1,0 +1,130 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2c6299d1deb1db49833f87a48b36ea5, type: 3}
+  m_Name: TD_new_terrain_decoration_7_copy_copy
+  m_EditorClassIdentifier: Assembly-CSharp::TerrainDecorationDefinition
+  decorationId: new_terrain_decoration_7_copy_copy
+  displayName: "\u722C\u5899\u690D\u726903"
+  category: 5
+  subCategory: Custom
+  tags: []
+  icon: {fileID: 1258846407226792769, guid: a538269e6f210dd43960de823f4ea496, type: 3}
+  note: 
+  isStandard: 0
+  variants:
+  - variantId: default
+    displayName: "\u9ED8\u8BA4\u7248\u672C"
+    prefab: {fileID: 7990862826176023917, guid: c94932d1e43452244bf5427922e6a933, type: 3}
+    weight: 1
+    previewIcon: {fileID: 0}
+    materialSlots:
+    - slotId: sm_ivy1_lod0_mat_0
+      displayName: SM_Ivy1_LOD0 / MAT 0
+      rendererPath: SM_Ivy1_LOD0
+      materialIndex: 0
+      defaultMaterial: {fileID: 2100000, guid: 2e697361d67b8d340b0e5444e997e64a, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: 2e697361d67b8d340b0e5444e997e64a, type: 2}
+    - slotId: sm_ivy1_lod1_mat_0
+      displayName: SM_Ivy1_LOD1 / MAT 0
+      rendererPath: SM_Ivy1_LOD1
+      materialIndex: 0
+      defaultMaterial: {fileID: 2100000, guid: 2e697361d67b8d340b0e5444e997e64a, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: 2e697361d67b8d340b0e5444e997e64a, type: 2}
+    - slotId: sm_ivy1_lod2_mat_0
+      displayName: SM_Ivy1_LOD2 / MAT 0
+      rendererPath: SM_Ivy1_LOD2
+      materialIndex: 0
+      defaultMaterial: {fileID: 2100000, guid: 2e697361d67b8d340b0e5444e997e64a, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: 2e697361d67b8d340b0e5444e997e64a, type: 2}
+    - slotId: sm_ivy1_lod3_mat_0
+      displayName: SM_Ivy1_LOD3 / MAT 0
+      rendererPath: SM_Ivy1_LOD3
+      materialIndex: 0
+      defaultMaterial: {fileID: 2100000, guid: 2e697361d67b8d340b0e5444e997e64a, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: 2e697361d67b8d340b0e5444e997e64a, type: 2}
+  randomVariantOnPlace: 0
+  randomVariantByWeight: 1
+  randomMaterialOnPlace: 0
+  structureTemplate: 0
+  autoEnsureStandardStructure: 1
+  repairMissingNodesOnly: 1
+  allowMove: 1
+  allowRotate: 1
+  allowScale: 1
+  snapToGrid: 1
+  placementCollisionMode: 1
+  allowVisualOverlap: 1
+  allowCollisionOverlap: 1
+  defaultPlacementRotation: {x: 90, y: 0, z: 0}
+  defaultScale: {x: 1, y: 1, z: 1}
+  footprintSize: {x: 1, y: 1}
+  enableRandomScale: 1
+  uniformRandomScale: 1
+  randomScaleMin: {x: 0.4, y: 0.4, z: 0.4}
+  randomScaleMax: {x: 1, y: 1, z: 1}
+  enableVisualRandomRotation: 0
+  visualRandomRotationMin: {x: 0, y: 0, z: 0}
+  visualRandomRotationMax: {x: 0, y: 0, z: 0}
+  visualRandomRotationAffectsRules: 0
+  collisionMode: 1
+  collisionSize: {x: 1, y: 1, z: 1}
+  collisionOffset: {x: 0, y: 0.5, z: 0}
+  blockPlayer: 1
+  blockEnemy: 1
+  blockVision: 0
+  blockProjectile: 0
+  lockRuleSpaceFromVisualRandomRotation: 1
+  frontBackPlaneMode: 1
+  ruleForwardLocal: {x: 0, y: 0, z: 1}
+  rulePlaneOriginLocal: {x: 0, y: 0, z: 0}
+  planePushOutDistance: 0.05
+  occlusionMode: 3
+  fadeWhenBlockingPlayer: 1
+  fadeAlpha: 0.564
+  fadeDuration: 0.12
+  frontBackOcclusionWidthMultiplier: 1
+  frontBackOcclusionHeightMultiplier: 1
+  frontBackOcclusionDepthMultiplier: 1
+  frontOcclusionDepthRatio: 0.18
+  backOcclusionDepthRatio: 0.82
+  frontBackOcclusionCenterOffset: 0
+  frontBackOcclusionHorizontalOffset: 0
+  frontBackOcclusionHeightOffset: 0
+  frontBackOcclusionDepthOffset: 0
+  frontOccluderProxyMode: 2
+  frontOccluderProxyMaterial: {fileID: 0}
+  frontOccluderAlphaCutoff: 0.35
+  manualFrontOccluderProxyPrefab: {fileID: 0}
+  frontOccluderProxyWidthMultiplier: 1
+  frontOccluderProxyHeightMultiplier: 1
+  frontOccluderProxyDepthMultiplier: 1
+  frontOccluderProxyOffset: {x: 0, y: 0, z: 0}
+  shadowMode: 1
+  castShadow: 1
+  receiveShadow: 1
+  shadowCasterPrefab: {fileID: 0}
+  shadowCasterMaterial: {fileID: 0}
+  fogMode: 0
+  enableEnvironmentAudio: 0
+  environmentAudioPackage: {fileID: 0}
+  environmentAudioMinDistance: 1
+  environmentAudioMaxDistance: 12
+  environmentAudioVolume: 1
+  environmentAudioLoop: 1
+  showBoundsGizmo: 1
+  showCollisionGizmo: 1
+  showFrontBackPlaneGizmo: 1
+  gizmoColor: {r: 0.4862745, g: 0.9882354, b: 0, a: 1}

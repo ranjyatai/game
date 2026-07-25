@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_LootDropHologram
+  m_Shader: {fileID: 4800000, guid: 1fdb97146de2ce64a99161b313116cb4, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _BodyAlpha: 0.03
+    - _BodyBrightness: 0.12
+    - _CharMaskThreshold: 0.02
+    - _FresnelPower: 5
+    - _GridBright: 0.9
+    - _GridDensity: 6
+    - _GridLineWidth: 0.05
+    - _OccludeOutlineWidth: 0.022
+    - _PulseSpeed: 1.8
+    - _RainbowFreq: 0.5
+    - _RainbowSat: 0.22
+    - _RainbowSpeed: 0.08
+    - _RimBrightness: 1.2
+    - _RimPower: 1.5
+    - _RimScale: 0.85
+    - _ScanBright: 0.18
+    - _ScanDensity: 2.5
+    - _ScanSpeed: 0.4
+    - _ScanWidth: 0.04
+    - _UseRainbow: 0
+    - _WaveFreq: 2.5
+    - _WaveMax: 0.45
+    - _WaveMin: 0.05
+    - _WaveSpeed: 1.2
+    m_Colors:
+    - _Color: {r: 0.67295593, g: 0.67295593, b: 0.67295593, a: 1}
+    - _OccludeOutlineColor: {r: 1, g: 1, b: 1, a: 0.9}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

@@ -1,0 +1,132 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cbc6c82406986741bc9f9b30a5f52a0, type: 3}
+  m_Name: ID_scratch_card_Copy
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::ItemDefinition
+  itemId: 30001
+  itemKey: scratch_card_copy
+  nameKey: item_name_scratch_card_copy
+  descKey: item_desc_scratch_card_copy
+  iconKey: icon_scratch_card_copy
+  displayName: "ST\u522E\u522E\u5361II"
+  note: 
+  description: "\u4F59\u7A79\u53D1\u884C\u7684\u62BD\u9009\u5361\u3002\u522E\u5F00\u94F6\u767D\u6D82\u5C42\u540E\uFF0C\u5361\u9762\u4F1A\u663E\u793A\u5BF9\u5E94\u7684\u8865\u7ED9\u8BC6\u522B\u7ED3\u679C\u3002\n\n\u5B83\u66FE\u7ECF\u53EA\u662F\u5730\u94C1\u7AD9\u3001\u8865\u7ED9\u673A\u548C\u5C45\u6C11\u7EC8\u7AEF\u65C1\u5E38\u89C1\u7684\u5C0F\u5A31\u4E50\u3002\n\u5728\u7269\u8D44\u53D8\u5F97\u7A00\u7F3A\u4E4B\u540E\uFF0C\u8FDE\u8FD9\u79CD\u5EC9\u4EF7\u5361\u7247\u4E5F\u88AB\u91CD\u65B0\u7EB3\u5165\u4E86\u56DE\u6536\u7CFB\u7EDF\u3002\n\n\u4F7F\u7528\u540E\u53EF\u83B7\u5F97100\uFF5E999\u4E0D\u7B49\u7684\u4EE3\u91D1\u5238\u3002"
+  icon: {fileID: 21300000, guid: 5730db62301826444b9ae9d4f3bcfad6, type: 3}
+  localizedNames:
+  - languageCode: zh-CN
+    text: "ST\u522E\u522E\u5361II"
+  - languageCode: ja-JP
+    text: "\u30B9\u30AF\u30E9\u30C3\u30C1\u30AB\u30FC\u30C9"
+  - languageCode: en-US
+    text: Scratch Card
+  - languageCode: ja
+    text: "ST\u30B9\u30AF\u30E9\u30C3\u30C1II"
+  - languageCode: en
+    text: ST scratch ticketII
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: "\u4F59\u7A79\u53D1\u884C\u7684\u62BD\u9009\u5361\u3002\u522E\u5F00\u94F6\u767D\u6D82\u5C42\u540E\uFF0C\u5361\u9762\u4F1A\u663E\u793A\u5BF9\u5E94\u7684\u8865\u7ED9\u8BC6\u522B\u7ED3\u679C\u3002\n\n\u5B83\u66FE\u7ECF\u53EA\u662F\u5730\u94C1\u7AD9\u3001\u8865\u7ED9\u673A\u548C\u5C45\u6C11\u7EC8\u7AEF\u65C1\u5E38\u89C1\u7684\u5C0F\u5A31\u4E50\u3002\n\u5728\u7269\u8D44\u53D8\u5F97\u7A00\u7F3A\u4E4B\u540E\uFF0C\u8FDE\u8FD9\u79CD\u5EC9\u4EF7\u5361\u7247\u4E5F\u88AB\u91CD\u65B0\u7EB3\u5165\u4E86\u56DE\u6536\u7CFB\u7EDF\u3002\n\n\u4F7F\u7528\u540E\u53EF\u83B7\u5F97100\uFF5E999\u4E0D\u7B49\u7684\u4EE3\u91D1\u5238\u3002"
+  - languageCode: ja-JP
+    text: "\u6307\u5B9A\u30B7\u30E7\u30C3\u30D7\u3067\u5831\u916C\u3068\u4EA4\u63DB\u3067\u304D\u308B\u5238\u3002"
+  - languageCode: en-US
+    text: A voucher redeemable for rewards at certain shops.
+  - languageCode: ja
+    text: "\u30B9\u30C6\u30A3\u30EB\u30F4\u30A9\u30EB\u30C8\u3067\u767A\u884C\u3055\u308C\u3066\u3044\u305F\u30B9\u30AF\u30E9\u30C3\u30C1\u304F\u3058\u3002\n\u9280\u767D\u8272\u306E\u30B9\u30AF\u30E9\u30C3\u30C1\u5C64\u3092\u524A\u308B\u3053\u3068\u3067\u3001\u8A18\u9332\u3055\u308C\u305F\u88DC\u7D66\u8B58\u5225\u7D50\u679C\u3092\u78BA\u8A8D\u3067\u304D\u308B\u3002\n\n\u304B\u3064\u3066\u306F\u5730\u4E0B\u99C5\u3001\u88DC\u7D66\u7AEF\u672B\u3001\u5C45\u4F4F\u533A\u306E\u30B5\u30FC\u30D3\u30B9\u7AEF\u672B\u306A\u3069\u3067\u898B\u304B\u3051\u308B\u3001\u3042\u308A\u3075\u308C\u305F\u5A2F\u697D\u54C1\u306B\u3059\u304E\u306A\u304B\u3063\u305F\u3002\n\u7269\u8CC7\u304C\u5E0C\u5C11\u3068\u306A\u3063\u305F\u73FE\u5728\u3067\u306F\u3001\u3053\u306E\u3088\u3046\u306A\u5B89\u4FA1\u306A\u30AB\u30FC\u30C9\u3067\u3055\u3048\u56DE\u53CE\u30B7\u30B9\u30C6\u30E0\u306E\u5BFE\u8C61\u306B\u7D44\u307F\u8FBC\u307E\u308C\u3066\u3044\u308B\u3002\n\n\u4F7F\u7528\u3059\u308B\u3068\u3001100\uFF5E999\u30AF\u30EC\u30B8\u30C3\u30C8\u3092\u5165\u624B\u3067\u304D\u308B\u3002"
+  - languageCode: en
+    text: "A scratch lottery card once issued throughout Still Vault.\nScratch off
+      the silver coating to reveal the supply result registered to the card.\n\nIt
+      was once a cheap diversion found near subway stations, supply terminals, and
+      residential service kiosks.\nNow that resources are scarce, even disposable
+      cards like this have been folded back into the recovery system.\n\nUse to obtain
+      100\uFF5E999 credits."
+  usability: 1
+  cooldown: 0
+  statusType: 1
+  majorCategory: 0
+  category: 0
+  materialSubCategory: 3
+  rarity: 0
+  itemLevel: 1
+  general:
+    type: 10
+    useEffectKey: 
+    canPutInQuickSlot: 0
+    consumeOnUse: 1
+    isReviveItem: 0
+    reviveProtectionDuration: 5
+    soundMaterial: 5
+  materialAlchemy:
+    affinityTags: []
+    basePotency: 10
+  equipment:
+    slot: 0
+    moveSpeedMultiplier: 1
+    lpCostMultiplier: 1
+    footstepNoiseMultiplier: 1
+    sneakNoiseMultiplier: 1
+    sprintNoiseMultiplier: 1
+    landingNoiseMultiplier: 1
+    weaponCategory: 0
+    weaponTypeKey: 
+    combatModule: {fileID: 0}
+    weaponModuleKey: 
+    weaponHandSide: 0
+    weaponVisualPrefab: {fileID: 0}
+    weaponVisualScaleMultiplier: 1
+    weaponVisualRotationOffset: 0
+    weaponVisualPositionOffset: {x: 0, y: 0}
+    weaponVisualPrefabOffHand: {fileID: 0}
+    maxDurability: 100
+    durabilityLossPerHit: 1
+    modSlots: []
+    defaultDyeColorSchemes: []
+    statBonuses: []
+    alchemyPreferredTags: []
+  mod:
+    compatibleSlotTypeKeys: []
+    unidentifiedDisplayName: "\u672A\u9274\u5B9A\u7EC4\u4EF6"
+    identificationCost: 100
+    bonusPool: []
+    bonusCount: 2
+  appearance:
+    slot: 0
+    appearanceKey: 
+    spineSkinKey: 
+    overrideEquipmentAppearance: 0
+  maxStackCount: 99
+  value: 50
+  origin: 0
+  weightOrQuartz: 0.01
+  isKeyItem: 0
+  canDiscard: 1
+  effects:
+  - effectType: 4
+    resourceTarget: 0
+    valueMode: 0
+    value: 0
+    currencyId: 
+    dotInterval: 1
+    dotDuration: 5
+    statusToApply: {fileID: 0}
+    statusStacks: 1
+    statusDurationOverride: -1
+    statusToRemove: {fileID: 0}
+    removeAllDebuffs: 0
+    removeAllBuffs: 0
+    triggerPackage: {fileID: 11400000, guid: c78608bd59838b942a01059aa2ef23b0, type: 2}
+    dropRateMultiplier: 2
+    dropRateBoostDuration: 60
+  currencyPrices:
+  - currencyId: token
+    price: 100
+  - currencyId: currency
+    price: 0

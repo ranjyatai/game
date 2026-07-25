@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c93b6ad00d2110f42a75380e4df47ead, type: 3}
+  m_Name: LocalizationProjectSettings
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizationProjectSettings
+  languages:
+  - enabled: 1
+    isDefault: 1
+    languageCode: zh-CN
+    displayName: "\u4E2D\u6587\uFF08\u7B80\u4F53\uFF09"
+    note: 
+    primaryFont: {fileID: 12800000, guid: 572b17f3644bc2744bb45bf6b05dab2b, type: 3}
+    fallbackFonts:
+    - {fileID: 0}
+  - enabled: 1
+    isDefault: 0
+    languageCode: ja
+    displayName: "\u65E5\u672C\u8A9E"
+    note: 
+    primaryFont: {fileID: 0}
+    fallbackFonts:
+    - {fileID: 0}
+  - enabled: 1
+    isDefault: 0
+    languageCode: en
+    displayName: English
+    note: 
+    primaryFont: {fileID: 0}
+    fallbackFonts:
+    - {fileID: 0}

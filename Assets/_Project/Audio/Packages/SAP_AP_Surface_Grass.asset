@@ -1,0 +1,325 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a03883ee59c8a5241acf98a2e13e87dc, type: 3}
+  m_Name: SAP_AP_Surface_Grass
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonAudioPackage
+  packageKey: AP_Surface_Grass
+  displayName: "\u8349\u5730"
+  packageType: 1
+  playMode: 0
+  timelineLengthSeconds: 10
+  masterVolume: 1
+  randomVolumeRange: {x: 0.95, y: 1.05}
+  randomPitchRange: {x: 0.96, y: 1.04}
+  spatial3D: 1
+  minDistance: 1
+  maxDistance: 18
+  noiseRadius: 5
+  noiseStrength: 1
+  tracks:
+  - trackId: fc748b0519914ce69c0b283d60642b6e
+    displayName: footstep_l
+    runtimeLayerKey: surface_grass
+    footSideCondition: 0
+    color: {r: 0.95, g: 0.35, b: 0.8, a: 1}
+    mute: 0
+    solo: 0
+    locked: 0
+    mixerChannelId: fccdd35eb9274e6bbb62aea4c922fcaa
+    segments:
+    - segmentId: c01773a84e1c43f4ba8b7ab81ba95767
+      displayName: GrassSteps01
+      sourceClip: {fileID: 8300000, guid: f12cb3afbc0c76c4e9d217fe23b4d826, type: 3}
+      timelineStart: 0
+      sourceStart: 0
+      sourceEnd: 0.3915625
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 1250b508f3d14140a6cea1b219d7e841
+      displayName: GrassSteps02
+      sourceClip: {fileID: 8300000, guid: 60585fbffc767d04eadf8b56c87c3f67, type: 3}
+      timelineStart: 0.4
+      sourceStart: 0
+      sourceEnd: 0.33397916
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: cae1cedf1469413c8e72c8f12e365a6b
+      displayName: GrassSteps03
+      sourceClip: {fileID: 8300000, guid: c7af170ec6a3cd44586ffadf7329a83f, type: 3}
+      timelineStart: 0.75
+      sourceStart: 0
+      sourceEnd: 0.382875
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 688f6d5bc0ee4944a3548fbd2aa2e48f
+      displayName: GrassSteps04
+      sourceClip: {fileID: 8300000, guid: 8f7ac5b25f7748f44b80d434901af81c, type: 3}
+      timelineStart: 1.15
+      sourceStart: 0
+      sourceEnd: 0.47625
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 73ec7c999b2f4d8ea34cfe4a79823062
+      displayName: GrassSteps06
+      sourceClip: {fileID: 8300000, guid: 3ed4bd9b6be044c499f82ac38893c438, type: 3}
+      timelineStart: 1.65
+      sourceStart: 0
+      sourceEnd: 0.29754168
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 3358e594f2e8483cb0251e9576beafc6
+      displayName: GrassSteps07
+      sourceClip: {fileID: 8300000, guid: ba1c5c674d66215478d5e4fd725f4a8d, type: 3}
+      timelineStart: 1.95
+      sourceStart: 0
+      sourceEnd: 0.51827085
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 871694f5860b492f9c3de2c24846b994
+      displayName: GrassSteps08
+      sourceClip: {fileID: 8300000, guid: 4bf8fc6efebb6cc4e952005bad29393d, type: 3}
+      timelineStart: 2.5
+      sourceStart: 0
+      sourceEnd: 0.29197916
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: dc8713610ca247a3a9b367a89fd1ee47
+      displayName: GrassSteps13
+      sourceClip: {fileID: 8300000, guid: 3250a47c190fa7740a51a28b1c981d15, type: 3}
+      timelineStart: 2.8500001
+      sourceStart: 0
+      sourceEnd: 0.48479167
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 343a2bd552fb4e6c835668a1d6091482
+      displayName: GrassSteps14
+      sourceClip: {fileID: 8300000, guid: 962e9445e5da1cb46a5957b77ef660b2, type: 3}
+      timelineStart: 3.3500001
+      sourceStart: 0
+      sourceEnd: 0.48139584
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 85fc5289f2614f06aebb4bdf72f6bae7
+      displayName: GrassSteps15
+      sourceClip: {fileID: 8300000, guid: 0ed11d3ea1c6d0d4db3fe9013d653f8a, type: 3}
+      timelineStart: 3.8500001
+      sourceStart: 0
+      sourceEnd: 0.53208333
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+  - trackId: 6215398c60a7420eba87a827bb6754cc
+    displayName: footstep_r
+    runtimeLayerKey: surface_grass
+    footSideCondition: 0
+    color: {r: 0.4, g: 0.85, b: 0.55, a: 1}
+    mute: 0
+    solo: 0
+    locked: 0
+    mixerChannelId: 93ba9a5c24d546f7a85758b4b57bb96b
+    segments:
+    - segmentId: 38e34ec70a3a47c89dd6d1dca9548413
+      displayName: GrassSteps01
+      sourceClip: {fileID: 8300000, guid: f12cb3afbc0c76c4e9d217fe23b4d826, type: 3}
+      timelineStart: 0
+      sourceStart: 0
+      sourceEnd: 0.3915625
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 0140852d590c4fd2b387d12e7c0fbbbb
+      displayName: GrassSteps15
+      sourceClip: {fileID: 8300000, guid: 0ed11d3ea1c6d0d4db3fe9013d653f8a, type: 3}
+      timelineStart: 3.8500001
+      sourceStart: 0
+      sourceEnd: 0.53208333
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 59f1ffa29af545c197766c47916ca4b9
+      displayName: GrassSteps02
+      sourceClip: {fileID: 8300000, guid: 60585fbffc767d04eadf8b56c87c3f67, type: 3}
+      timelineStart: 0.4
+      sourceStart: 0
+      sourceEnd: 0.33397916
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 330a6c58a40f49f6a0432ecc675c0106
+      displayName: GrassSteps03
+      sourceClip: {fileID: 8300000, guid: c7af170ec6a3cd44586ffadf7329a83f, type: 3}
+      timelineStart: 0.75
+      sourceStart: 0
+      sourceEnd: 0.382875
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 68fb92cb46894a72915e26471945c45d
+      displayName: GrassSteps04
+      sourceClip: {fileID: 8300000, guid: 8f7ac5b25f7748f44b80d434901af81c, type: 3}
+      timelineStart: 1.15
+      sourceStart: 0
+      sourceEnd: 0.47625
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 80cfff56b61a484a858ebbbc792abbba
+      displayName: GrassSteps06
+      sourceClip: {fileID: 8300000, guid: 3ed4bd9b6be044c499f82ac38893c438, type: 3}
+      timelineStart: 1.65
+      sourceStart: 0
+      sourceEnd: 0.29754168
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 0aec37870e7749b28cf433d4e70d80a0
+      displayName: GrassSteps07
+      sourceClip: {fileID: 8300000, guid: ba1c5c674d66215478d5e4fd725f4a8d, type: 3}
+      timelineStart: 1.95
+      sourceStart: 0
+      sourceEnd: 0.51827085
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 0471c3ed02424c50ad9b460963aadb3b
+      displayName: GrassSteps08
+      sourceClip: {fileID: 8300000, guid: 4bf8fc6efebb6cc4e952005bad29393d, type: 3}
+      timelineStart: 2.5
+      sourceStart: 0
+      sourceEnd: 0.29197916
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 7615aee07ceb45c285bf03de4b4c0eff
+      displayName: GrassSteps13
+      sourceClip: {fileID: 8300000, guid: 3250a47c190fa7740a51a28b1c981d15, type: 3}
+      timelineStart: 2.8500001
+      sourceStart: 0
+      sourceEnd: 0.48479167
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: f118a279268342eb9d54e69fde7dd9e5
+      displayName: GrassSteps14
+      sourceClip: {fileID: 8300000, guid: 962e9445e5da1cb46a5957b77ef660b2, type: 3}
+      timelineStart: 3.3500001
+      sourceStart: 0
+      sourceEnd: 0.48139584
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+  mixerChannels:
+  - channelId: fccdd35eb9274e6bbb62aea4c922fcaa
+    displayName: Track 1
+    volume: 1
+    pan: -0.1
+    mute: 0
+    solo: 0
+    editorMeterPreview: 0
+    effects: []
+  - channelId: 93ba9a5c24d546f7a85758b4b57bb96b
+    displayName: Track 2
+    volume: 1
+    pan: 0.1
+    mute: 0
+    solo: 0
+    editorMeterPreview: 0
+    effects: []

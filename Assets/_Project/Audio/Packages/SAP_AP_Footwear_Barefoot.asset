@@ -1,0 +1,387 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a03883ee59c8a5241acf98a2e13e87dc, type: 3}
+  m_Name: SAP_AP_Footwear_Barefoot
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonAudioPackage
+  packageKey: AP_Footwear_Barefoot
+  displayName: "\u88F8\u8DB3"
+  packageType: 1
+  playMode: 0
+  timelineLengthSeconds: 10
+  masterVolume: 1
+  randomVolumeRange: {x: 0.95, y: 1.05}
+  randomPitchRange: {x: 0.96, y: 1.04}
+  spatial3D: 1
+  minDistance: 1
+  maxDistance: 18
+  noiseRadius: 1
+  noiseStrength: 1
+  tracks:
+  - trackId: 50dcc2912f97434da450a5f2d81527dd
+    displayName: footstep_l
+    runtimeLayerKey: shoe_soft
+    footSideCondition: 1
+    color: {r: 0.95, g: 0.35, b: 0.8, a: 1}
+    mute: 0
+    solo: 0
+    locked: 0
+    mixerChannelId: 28e76ff3f56e4cf988d4e6fb5b2d198b
+    segments:
+    - segmentId: 4cbdada132ac4d3192ea96d44ba6dcfc
+      displayName: Linoleum_Mono_01
+      sourceClip: {fileID: 8300000, guid: c676b5eaf43ca644bb69761aa8463e57, type: 3}
+      timelineStart: 0
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 5f02d1481aa94c5ab1d922987ab89c5f
+      displayName: Linoleum_Mono_10
+      sourceClip: {fileID: 8300000, guid: 7e5a1faed6e181a4eaef85ce4bf921bd, type: 3}
+      timelineStart: 0.5
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 18e8e35bff174361bd6d8bd377d5c776
+      displayName: Linoleum_Mono_11
+      sourceClip: {fileID: 8300000, guid: 78128e6d47e8c85418cb83b4a2af9a14, type: 3}
+      timelineStart: 1
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 9fa89853a21545c383755bf516a47c0c
+      displayName: Linoleum_Mono_13
+      sourceClip: {fileID: 8300000, guid: c3c80581dd38d014082fbbc7d8bebc53, type: 3}
+      timelineStart: 1.5
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 61e35cf21a4c463fa78686c5903f6694
+      displayName: Linoleum_Mono_15
+      sourceClip: {fileID: 8300000, guid: 6a4c45e45eafda742b66bc6724df5111, type: 3}
+      timelineStart: 2
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 086419733e2240c0b7d49bc29aad5512
+      displayName: Linoleum_Mono_18
+      sourceClip: {fileID: 8300000, guid: 44e3f06f4622bd845b8c0ad3068a76fd, type: 3}
+      timelineStart: 2.5
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 4dfd4e7a7dc4464b87d16ed1967f4b65
+      displayName: Linoleum_Mono_20
+      sourceClip: {fileID: 8300000, guid: 40e69098dd5dfcc45aaf269e05ebd949, type: 3}
+      timelineStart: 3
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: acd6c35ba35e4c8081d33a572516e208
+      displayName: Linoleum_Mono_21
+      sourceClip: {fileID: 8300000, guid: 5aa405d884ca4c745a7f55aff5566953, type: 3}
+      timelineStart: 3.5
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 39c88dcfa9074571bc9a9110323f24d9
+      displayName: Linoleum_Mono_21
+      sourceClip: {fileID: 8300000, guid: 5aa405d884ca4c745a7f55aff5566953, type: 3}
+      timelineStart: 4
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: fbf057b2951b4ae99ec59e6424651353
+      displayName: Linoleum_Mono_23
+      sourceClip: {fileID: 8300000, guid: 57df6f8a2534bb74c86f88d3f97d892c, type: 3}
+      timelineStart: 4.5
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+  - trackId: f10b00f6ff334667877eb6a8abd1eb9e
+    displayName: footstep_r
+    runtimeLayerKey: shoe_soft
+    footSideCondition: 2
+    color: {r: 0.4, g: 0.85, b: 0.55, a: 1}
+    mute: 0
+    solo: 0
+    locked: 0
+    mixerChannelId: 891f0ba008234cb388165bc632714361
+    segments:
+    - segmentId: 6d41617dc49a4173ac079a9b762ca612
+      displayName: Linoleum_Mono_01
+      sourceClip: {fileID: 8300000, guid: c676b5eaf43ca644bb69761aa8463e57, type: 3}
+      timelineStart: 0
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 66e7d841ce6749a2b5cc99dba5d8e11c
+      displayName: Linoleum_Mono_10
+      sourceClip: {fileID: 8300000, guid: 7e5a1faed6e181a4eaef85ce4bf921bd, type: 3}
+      timelineStart: 0.5
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: ba20d14c809e440cb0c43ebc9611fd44
+      displayName: Linoleum_Mono_11
+      sourceClip: {fileID: 8300000, guid: 78128e6d47e8c85418cb83b4a2af9a14, type: 3}
+      timelineStart: 1
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 89f3c3ce2cb84180ae1a860cf76f870c
+      displayName: Linoleum_Mono_13
+      sourceClip: {fileID: 8300000, guid: c3c80581dd38d014082fbbc7d8bebc53, type: 3}
+      timelineStart: 1.5
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 49eb110acaad4b33804e95ef3d54cc42
+      displayName: Linoleum_Mono_15
+      sourceClip: {fileID: 8300000, guid: 6a4c45e45eafda742b66bc6724df5111, type: 3}
+      timelineStart: 2
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 44b7b3a293d4456aaff31338c3a5bffc
+      displayName: Linoleum_Mono_18
+      sourceClip: {fileID: 8300000, guid: 44e3f06f4622bd845b8c0ad3068a76fd, type: 3}
+      timelineStart: 2.5
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 7674aedbd8d5437184d66a9ab5915993
+      displayName: Linoleum_Mono_20
+      sourceClip: {fileID: 8300000, guid: 40e69098dd5dfcc45aaf269e05ebd949, type: 3}
+      timelineStart: 3
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: eb0faf811b12478ab54031c2998525e4
+      displayName: Linoleum_Mono_21
+      sourceClip: {fileID: 8300000, guid: 5aa405d884ca4c745a7f55aff5566953, type: 3}
+      timelineStart: 3.5
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 97299360cb474afd9181e9e9725c3ca2
+      displayName: Linoleum_Mono_21
+      sourceClip: {fileID: 8300000, guid: 5aa405d884ca4c745a7f55aff5566953, type: 3}
+      timelineStart: 4
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: fe34a320beb149ec9c45de9a569f3df7
+      displayName: Linoleum_Mono_23
+      sourceClip: {fileID: 8300000, guid: 57df6f8a2534bb74c86f88d3f97d892c, type: 3}
+      timelineStart: 4.5
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+  - trackId: e25805187f78428e968201a3638ed190
+    displayName: jumpstep_up
+    runtimeLayerKey: shoe_soft
+    footSideCondition: 0
+    color: {r: 0.95, g: 0.55, b: 0.2, a: 1}
+    mute: 0
+    solo: 0
+    locked: 0
+    mixerChannelId: 9973577eea0049a9bbd9ea865bc57811
+    segments:
+    - segmentId: a5f34000fd9742bebb5bd6c7c0dd4d26
+      displayName: Linoleum_Stereo_36
+      sourceClip: {fileID: 8300000, guid: 0f2f7dd24c1942442a86b4d29aeaf7de, type: 3}
+      timelineStart: 0
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+  - trackId: de420d2863544af4b1dbdcb772043523
+    displayName: jumpstep_down
+    runtimeLayerKey: shoe_soft
+    footSideCondition: 0
+    color: {r: 0.45, g: 0.6, b: 1, a: 1}
+    mute: 0
+    solo: 0
+    locked: 0
+    mixerChannelId: 71a119528e0a4cf38a1d8a1a5855f3eb
+    segments:
+    - segmentId: 00f25b20438f4f329ce8c8565c35144d
+      displayName: Linoleum_Stereo_03
+      sourceClip: {fileID: 8300000, guid: 6c38284f2eaf73b40b0e941e810392e0, type: 3}
+      timelineStart: 0
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+  mixerChannels:
+  - channelId: 28e76ff3f56e4cf988d4e6fb5b2d198b
+    displayName: Track 1
+    volume: 1
+    pan: -0.1
+    mute: 0
+    solo: 0
+    editorMeterPreview: 0
+    effects: []
+  - channelId: 891f0ba008234cb388165bc632714361
+    displayName: Track 2
+    volume: 1
+    pan: 0.1
+    mute: 0
+    solo: 0
+    editorMeterPreview: 0
+    effects: []
+  - channelId: 9973577eea0049a9bbd9ea865bc57811
+    displayName: Track 3
+    volume: 1
+    pan: 0
+    mute: 0
+    solo: 0
+    editorMeterPreview: 0
+    effects: []
+  - channelId: 71a119528e0a4cf38a1d8a1a5855f3eb
+    displayName: Track 4
+    volume: 1
+    pan: 0
+    mute: 0
+    solo: 0
+    editorMeterPreview: 0
+    effects: []

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 67d879c8ce1642e43af1a07995dd9bae
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/Prefabs/TerrainGrass/GrassTall_Terrain.prefab
+  uploadId: 912894

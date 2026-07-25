@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: aa2b746d35445d5479d51d62c7e9161a
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/Shaders/Libraries/Input.hlsl
+  uploadId: 912894

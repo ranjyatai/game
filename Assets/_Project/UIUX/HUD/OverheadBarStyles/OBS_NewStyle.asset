@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51317e5228abff048a30c60b6a04db84, type: 3}
+  m_Name: OBS_NewStyle
+  m_EditorClassIdentifier: Assembly-CSharp::OverheadBarStyleAsset
+  styleKey: Default
+  displayName: "\u9ED8\u8BA4\u6837\u5F0F"
+  nameFontAsset: {fileID: 0}
+  nameFontSize: 13
+  nameColor: {r: 1, g: 1, b: 1, a: 1}
+  backgroundLayers:
+  - layerName: BG Layer 1
+    texture: {fileID: 2800000, guid: af97fee7a42ae504f9c3634f3f2fcd27, type: 3}
+    useTint: 1
+    tint: {r: 0.32941177, g: 0.29411766, b: 0.20392157, a: 1}
+    offset: {x: 0, y: 0}
+    sizeOverride: {x: 0, y: 0}
+    rotationZ: 0
+  - layerName: BG Layer 2
+    texture: {fileID: 2800000, guid: c9ce67445574b5240ad9d6889b514693, type: 3}
+    useTint: 1
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    offset: {x: 0, y: 0}
+    sizeOverride: {x: 0, y: 0}
+    rotationZ: 0
+  fillTexture: {fileID: 2800000, guid: 7d3f9f383b7cab443bff92b41a2bc089, type: 3}
+  damageReferenceTexture: {fileID: 2800000, guid: c4f6fbb6035907348900c6791c7e2cf2, type: 3}
+  fillColor: {r: 0.7924528, g: 0.34638655, b: 0.34638655, a: 1}
+  damageReferenceColor: {r: 0.42, g: 0.12, b: 0.12, a: 1}
+  barSize: {x: 150, y: 19}
+  hpBarOffset: {x: 0, y: 0}
+  nameOffset: {x: 0, y: 0}
+  rotationZ: 0
+  paddingLeft: 3
+  paddingRight: 2
+  paddingTop: 0
+  paddingBottom: 0
+  hideWhenFull: 1
+  fullHpThreshold: 0.9995
+  fadeSpeed: 6
+  fillLerpSpeed: 5
+  damageReferenceHoldTime: 2.35
+  damageReferenceFadeSpeed: 2.5
+  enableStatusArea: 1
+  statusDisplayKey: default_status_display
+  statusAreaOffset: {x: 0, y: 2}
+  statusAreaSize: {x: 120, y: 28}
+  statusIconSize: {x: 25, y: 25}
+  statusIconSpacing: {x: 2, y: 2}
+  statusAreaAlignment: 3
+  enableDamageNumbers: 1
+  damageNumberFontAsset: {fileID: 11400000, guid: 029dcdbff7c82104fb31e1ac5a8f29ff, type: 2}

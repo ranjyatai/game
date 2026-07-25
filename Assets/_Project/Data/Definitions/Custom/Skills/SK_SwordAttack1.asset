@@ -1,0 +1,96 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e048f20b1c5de8e4da982e6e98ccbef3, type: 3}
+  m_Name: SK_SwordAttack1
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  skillKey: sword_attack_1
+  displayName: "\u5251\u51FB\u4E00\u6BB5"
+  description: 
+  category: 0
+  spineAnimationKey: Attack/Attack_Sword
+  spineEventKey: hit
+  isChargeSkill: 0
+  charge:
+    chargeHoldEventKey: charge_hold
+    releaseTimeScale: 1
+    fullChargeHoldSeconds: 1
+    fullChargeDamageMultiplier: 1.5
+    fullChargeReachedSE: []
+    holdLpCostPerSecond: 3
+    dashOnRelease: 1
+    dashDistance: 10
+    dashDistanceScalesWithChargeRatio: 0
+    dashFallbackDurationSeconds: 0.25
+    dashVfx: {fileID: 0}
+    dashVfxAnchor: 0
+    dashVfxCharacterAnchorOffset: {x: 0, y: 0, z: 0}
+  hitbox:
+    shape: 0
+    offset: {x: 0, y: 0}
+    radius: 1
+    size: {x: 1, y: 1}
+    zDepth: 2
+  isProjectileSkill: 0
+  projectile:
+    speed: 20
+    maxLifetimeSeconds: 2
+    launchAngleDownDegrees: 45
+    hitRadius: 0.4
+    destroyOnHit: 1
+    projectileVfx: {fileID: 0}
+    projectileVfxScale: {x: 1, y: 1, z: 1}
+    impactVfx: {fileID: 0}
+  damageMultiplier: 1
+  damageTypeKey: slash
+  attributeHits: []
+  lpCost: 5
+  knockbackForce: 5
+  stunDuration: 0.2
+  startupTime: 0.12
+  activeTime: 0.18
+  recoveryTime: 0.2
+  nextComboSkillKey: 
+  swingVFX: {fileID: 11400000, guid: acd504fa9e0e3cf4a97d0b2471ffdc53, type: 2}
+  travelVfx: {fileID: 0}
+  travelVfxAnchor: 1
+  travelVfxCharacterAnchorOffset: {x: 0, y: 0, z: 0}
+  swingSE: []
+  swingSEVolume: 1
+  hitSE:
+  - clip: {fileID: 8300000, guid: fa0d3006c83e079488f1e4f01d7c41f4, type: 3}
+    volume: 1
+  - clip: {fileID: 8300000, guid: fd1e32bc510080647b1dbed1b6c162c9, type: 3}
+    volume: 1
+  whiffSE:
+  - clip: {fileID: 8300000, guid: 9eb81dd596a6778499457988f396949b, type: 3}
+    volume: 1
+  - clip: {fileID: 8300000, guid: 33c6b7a17b7763e4f9e02553b001f238, type: 3}
+    volume: 1
+  seVolume: 1
+  localizedNames:
+  - languageCode: 
+    text: 
+  - languageCode: zh-CN
+    text: 
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 
+  localizedDescriptions:
+  - languageCode: 
+    text: 
+  - languageCode: zh-CN
+    text: 
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 

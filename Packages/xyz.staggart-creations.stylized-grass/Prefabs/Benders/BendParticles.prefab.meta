@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 04066e1c8e846a34f933b16d4442e7fe
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/Prefabs/Benders/BendParticles.prefab
+  uploadId: 912894

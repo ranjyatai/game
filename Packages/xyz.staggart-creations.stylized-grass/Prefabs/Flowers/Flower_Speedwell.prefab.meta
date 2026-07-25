@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 6181dc0f93d6ce74c9c49269623cbe4b
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/Prefabs/Flowers/Flower_Speedwell.prefab
+  uploadId: 912894

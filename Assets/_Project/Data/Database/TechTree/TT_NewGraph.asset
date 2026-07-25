@@ -1,0 +1,373 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 156f766bb3d0d374399ebf878f831049, type: 3}
+  m_Name: TT_NewGraph
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::TechTreeGraphAsset
+  graphId: tech_tree_new
+  displayName: "\u5251\u6597\u58EB"
+  note: 
+  layoutMode: 3
+  nodes:
+  - nodeId: node_001
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions: []
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: -1
+    secondaryRequirements: []
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_002
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: -1
+    secondaryRequirements: []
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_003
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions: []
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: -1
+    secondaryRequirements: []
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_004
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: 0
+    secondaryRequirements: []
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_005
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: 1
+    secondaryRequirements: []
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_006
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions: []
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: 2
+    secondaryRequirements: []
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_007
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: 3
+    secondaryRequirements: []
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_008
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions: []
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: 4
+    secondaryRequirements: []
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_009
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions: []
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: 5
+    secondaryRequirements: []
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_010
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: 3
+    secondaryRequirements:
+    - targetNodeId: node_008
+      requirementType: 0
+      requiredLevel: 1
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_011
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: 4
+    secondaryRequirements: []
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_012
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions: []
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: 5
+    secondaryRequirements: []
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_013
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: 6
+    secondaryRequirements: []
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_014
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions: []
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: 7
+    secondaryRequirements:
+    - targetNodeId: 
+      requirementType: 0
+      requiredLevel: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_015
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions: []
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: 8
+    secondaryRequirements: []
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_016
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions: []
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: 9
+    secondaryRequirements: []
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_017
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions: []
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: 10
+    secondaryRequirements: []
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 
+  - nodeId: node_018
+    nodeName: "\u65B0\u8282\u70B9"
+    description: 
+    localizedDescriptions: []
+    designerNote: 
+    enabled: 1
+    primaryParentIndex: 11
+    secondaryRequirements: []
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs: []
+      rewards: []
+      note: 

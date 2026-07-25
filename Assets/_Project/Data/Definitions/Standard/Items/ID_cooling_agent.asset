@@ -1,0 +1,86 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cbc6c82406986741bc9f9b30a5f52a0, type: 3}
+  m_Name: ID_cooling_agent
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::ItemDefinition
+  itemId: 20000
+  itemKey: cooling_agent
+  nameKey: item_name_cooling_agent
+  descKey: item_desc_cooling_agent
+  iconKey: icon_cooling_agent
+  displayName: "\u51B7\u5374\u836F\u5242"
+  note: 
+  description: "\u5E2E\u52A9\u673A\u4F53\u6216\u88C5\u5907\u5FEB\u901F\u51B7\u5374\u7684\u836F\u5242\u3002"
+  icon: {fileID: 0}
+  localizedNames:
+  - languageCode: zh-CN
+    text: "\u51B7\u5374\u836F\u5242"
+  - languageCode: ja-JP
+    text: "\u51B7\u5374\u85AC\u5264"
+  - languageCode: en-US
+    text: Cooling Agent
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: "\u5E2E\u52A9\u673A\u4F53\u6216\u88C5\u5907\u5FEB\u901F\u51B7\u5374\u7684\u836F\u5242\u3002"
+  - languageCode: ja-JP
+    text: "\u6A5F\u4F53\u3084\u88C5\u5099\u3092\u7D20\u65E9\u304F\u51B7\u5374\u3059\u308B\u85AC\u5264\u3002"
+  - languageCode: en-US
+    text: A reagent that rapidly cools the body or equipment.
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 
+  usability: 1
+  cooldown: 0
+  statusType: 1
+  majorCategory: 0
+  category: 0
+  itemLevel: 1
+  general:
+    type: 0
+    useEffectKey: 
+    canPutInQuickSlot: 0
+    consumeOnUse: 1
+  equipment:
+    slot: 0
+    weight: 0
+    moveSpeedMultiplier: 1
+    lpCostMultiplier: 1
+    footstepNoiseMultiplier: 1
+    sneakNoiseMultiplier: 1
+    sprintNoiseMultiplier: 1
+    landingNoiseMultiplier: 1
+    weaponCategory: 0
+    weaponTypeKey: 
+    weaponModuleKey: 
+    attackPowerBonus: 0
+    defenseBonus: 0
+  appearance:
+    slot: 0
+    appearanceKey: 
+    spineSkinKey: 
+    overrideEquipmentAppearance: 0
+  maxStackCount: 20
+  value: 140
+  origin: 0
+  weightOrQuartz: 0.3
+  isKeyItem: 0
+  canDiscard: 1
+  currencyPrices:
+  - currencyId: token
+    price: 0
+  - currencyId: currency
+    price: 0

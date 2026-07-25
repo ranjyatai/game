@@ -1,0 +1,387 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a03883ee59c8a5241acf98a2e13e87dc, type: 3}
+  m_Name: SAP_AP_Footwear_ClothShoes
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonAudioPackage
+  packageKey: AP_Footwear_ClothShoes
+  displayName: "\u5E03\u978B"
+  packageType: 1
+  playMode: 0
+  timelineLengthSeconds: 10
+  masterVolume: 1
+  randomVolumeRange: {x: 0.95, y: 1.05}
+  randomPitchRange: {x: 0.96, y: 1.04}
+  spatial3D: 1
+  minDistance: 1
+  maxDistance: 18
+  noiseRadius: 1
+  noiseStrength: 1
+  tracks:
+  - trackId: 61156ce50c344228a74b67f73a5d366b
+    displayName: footstep_l
+    runtimeLayerKey: 
+    footSideCondition: 1
+    color: {r: 0.95, g: 0.35, b: 0.8, a: 1}
+    mute: 0
+    solo: 0
+    locked: 0
+    mixerChannelId: b6cc4b81f18f4a02b4530b17b701b285
+    segments:
+    - segmentId: 0f1b5c4cdee64a3f9aa450fb90529ace
+      displayName: ConcreteSingelSteps301
+      sourceClip: {fileID: 8300000, guid: 0cbec39ff439d054ea61adb0f4bcb58c, type: 3}
+      timelineStart: 0
+      sourceStart: 0
+      sourceEnd: 0.3653125
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 03b859f48849449c9c3df259b2135492
+      displayName: ConcreteSingelSteps302
+      sourceClip: {fileID: 8300000, guid: 31a21213f6525e24aadc66856b1737a6, type: 3}
+      timelineStart: 0.35
+      sourceStart: 0
+      sourceEnd: 0.35064584
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 2317859376a14643879e360378dd43c4
+      displayName: ConcreteSingelSteps303
+      sourceClip: {fileID: 8300000, guid: 5029fe600ce658b4db3638d59079d323, type: 3}
+      timelineStart: 0.7
+      sourceStart: 0
+      sourceEnd: 0.34691668
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 673f6d2a171f4e05a107dc75e301df23
+      displayName: ConcreteSingelSteps304
+      sourceClip: {fileID: 8300000, guid: 08e9f794c014b2643991410984181529, type: 3}
+      timelineStart: 1.0500001
+      sourceStart: 0
+      sourceEnd: 0.332
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: ae584ae065554989922775b2334f82c9
+      displayName: ConcreteSingelSteps305
+      sourceClip: {fileID: 8300000, guid: 0843026a579f74c4b8e16c1002a24534, type: 3}
+      timelineStart: 1.4
+      sourceStart: 0
+      sourceEnd: 0.37675
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 8d32ad80bfc64387898110cb78d00a05
+      displayName: ConcreteSingelSteps306
+      sourceClip: {fileID: 8300000, guid: ed2a26aec1ddd0643b7a113d981b1c93, type: 3}
+      timelineStart: 1.8000001
+      sourceStart: 0
+      sourceEnd: 0.358125
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 9ff54fb8042448e789cfd3932d31c528
+      displayName: ConcreteSingelSteps307
+      sourceClip: {fileID: 8300000, guid: 4ef9d11ad18a2134783c448215b01b6a, type: 3}
+      timelineStart: 2.15
+      sourceStart: 0
+      sourceEnd: 0.37675
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: a505aabc9dc541cab91a1201042cb5e5
+      displayName: ConcreteSingelSteps308
+      sourceClip: {fileID: 8300000, guid: 0041ee56302bc0445a4ff43b1248aacb, type: 3}
+      timelineStart: 2.55
+      sourceStart: 0
+      sourceEnd: 0.35064584
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: f51b5eee68ef4b2eb020862c7fdf985d
+      displayName: ConcreteSingelSteps310
+      sourceClip: {fileID: 8300000, guid: f92af0174ed547f4db197012999f6699, type: 3}
+      timelineStart: 2.9
+      sourceStart: 0
+      sourceEnd: 0.354375
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 88d8b397242240dab08247f497213065
+      displayName: ConcreteSingelSteps311
+      sourceClip: {fileID: 8300000, guid: 6e39b9395345df24b8ccdbc9be9e329c, type: 3}
+      timelineStart: 3.25
+      sourceStart: 0
+      sourceEnd: 0.33945835
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+  - trackId: 4373d5e1c81744efbd98c12b1b0d7818
+    displayName: footstep_r
+    runtimeLayerKey: 
+    footSideCondition: 2
+    color: {r: 0.4, g: 0.85, b: 0.55, a: 1}
+    mute: 0
+    solo: 0
+    locked: 0
+    mixerChannelId: 67a7cac0b1a24ec4b7b1c827b34d9ce7
+    segments:
+    - segmentId: 64579fc7033547189a658279b2eb3c4a
+      displayName: ConcreteSingelSteps301
+      sourceClip: {fileID: 8300000, guid: 0cbec39ff439d054ea61adb0f4bcb58c, type: 3}
+      timelineStart: 0
+      sourceStart: 0
+      sourceEnd: 0.3653125
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 8237c051308a4d5eb952d6f8610c2673
+      displayName: ConcreteSingelSteps302
+      sourceClip: {fileID: 8300000, guid: 31a21213f6525e24aadc66856b1737a6, type: 3}
+      timelineStart: 0.35
+      sourceStart: 0
+      sourceEnd: 0.35064584
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: e789abbda88f4e74902e2765579f5ffb
+      displayName: ConcreteSingelSteps303
+      sourceClip: {fileID: 8300000, guid: 5029fe600ce658b4db3638d59079d323, type: 3}
+      timelineStart: 0.7
+      sourceStart: 0
+      sourceEnd: 0.34691668
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: af23ef46001040bd8ae9531f4777a76e
+      displayName: ConcreteSingelSteps304
+      sourceClip: {fileID: 8300000, guid: 08e9f794c014b2643991410984181529, type: 3}
+      timelineStart: 1.0500001
+      sourceStart: 0
+      sourceEnd: 0.332
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 651afb131dc8475c8d58da4b0a44fffd
+      displayName: ConcreteSingelSteps305
+      sourceClip: {fileID: 8300000, guid: 0843026a579f74c4b8e16c1002a24534, type: 3}
+      timelineStart: 1.4
+      sourceStart: 0
+      sourceEnd: 0.37675
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: be256794f3d441b190b88257c522ed47
+      displayName: ConcreteSingelSteps306
+      sourceClip: {fileID: 8300000, guid: ed2a26aec1ddd0643b7a113d981b1c93, type: 3}
+      timelineStart: 1.8000001
+      sourceStart: 0
+      sourceEnd: 0.358125
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 8286747bbc204ede886ebd5c4f15b460
+      displayName: ConcreteSingelSteps307
+      sourceClip: {fileID: 8300000, guid: 4ef9d11ad18a2134783c448215b01b6a, type: 3}
+      timelineStart: 2.15
+      sourceStart: 0
+      sourceEnd: 0.37675
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: f00c39360b7b409b96bce5ce76a1ed48
+      displayName: ConcreteSingelSteps308
+      sourceClip: {fileID: 8300000, guid: 0041ee56302bc0445a4ff43b1248aacb, type: 3}
+      timelineStart: 2.55
+      sourceStart: 0
+      sourceEnd: 0.35064584
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 0678fe35836141a6b02756e8170faaef
+      displayName: ConcreteSingelSteps310
+      sourceClip: {fileID: 8300000, guid: f92af0174ed547f4db197012999f6699, type: 3}
+      timelineStart: 2.9
+      sourceStart: 0
+      sourceEnd: 0.354375
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 395acc953d984d7096fd2503a1391cf8
+      displayName: ConcreteSingelSteps311
+      sourceClip: {fileID: 8300000, guid: 6e39b9395345df24b8ccdbc9be9e329c, type: 3}
+      timelineStart: 3.25
+      sourceStart: 0
+      sourceEnd: 0.33945835
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+  - trackId: bbf9bb974dd74f1398958ed975d5eb64
+    displayName: jumpstep_up
+    runtimeLayerKey: shoe_soft
+    footSideCondition: 0
+    color: {r: 0.95, g: 0.55, b: 0.2, a: 1}
+    mute: 0
+    solo: 0
+    locked: 0
+    mixerChannelId: 90ac54cee2824cdf85ad9d2770d1d731
+    segments:
+    - segmentId: ee1a4002ead3448d975a92716eb5f200
+      displayName: ConcreteSingelSteps388
+      sourceClip: {fileID: 8300000, guid: 387cffb958d0f0d4bad474e90f26586c, type: 3}
+      timelineStart: 0
+      sourceStart: 0
+      sourceEnd: 0.37708333
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+  - trackId: 870bb76d34744172a2118992006d67d2
+    displayName: jumpstep_down
+    runtimeLayerKey: shoe_soft
+    footSideCondition: 0
+    color: {r: 0.45, g: 0.6, b: 1, a: 1}
+    mute: 0
+    solo: 0
+    locked: 0
+    mixerChannelId: 2b0b8db5a6c64c83b353563803bc06b4
+    segments:
+    - segmentId: dc38d6abd16d432080b9b59a28e875d9
+      displayName: ConcreteSingelSteps387
+      sourceClip: {fileID: 8300000, guid: d695688b91a5f2141b61442f43c550e7, type: 3}
+      timelineStart: 0
+      sourceStart: 0
+      sourceEnd: 0.32602084
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+  mixerChannels:
+  - channelId: b6cc4b81f18f4a02b4530b17b701b285
+    displayName: Track 1
+    volume: 1
+    pan: -0.1
+    mute: 0
+    solo: 0
+    editorMeterPreview: 0
+    effects: []
+  - channelId: 67a7cac0b1a24ec4b7b1c827b34d9ce7
+    displayName: Track 2
+    volume: 1
+    pan: 0.1
+    mute: 0
+    solo: 0
+    editorMeterPreview: 0
+    effects: []
+  - channelId: 90ac54cee2824cdf85ad9d2770d1d731
+    displayName: Track 3
+    volume: 1
+    pan: 0
+    mute: 0
+    solo: 0
+    editorMeterPreview: 0
+    effects: []
+  - channelId: 2b0b8db5a6c64c83b353563803bc06b4
+    displayName: Track 4
+    volume: 1
+    pan: 0
+    mute: 0
+    solo: 0
+    editorMeterPreview: 0
+    effects: []

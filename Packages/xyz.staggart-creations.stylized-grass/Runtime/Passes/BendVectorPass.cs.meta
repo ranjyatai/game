@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 89dfdf8842c044c18f43f710262a598e
+timeCreated: 1767865586
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/Runtime/Passes/BendVectorPass.cs
+  uploadId: 912894

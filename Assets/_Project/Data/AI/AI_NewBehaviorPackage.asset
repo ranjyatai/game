@@ -1,0 +1,1145 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eebe50ce53db93041927eebd4adf98ae, type: 3}
+  m_Name: AI_NewBehaviorPackage
+  m_EditorClassIdentifier: Assembly-CSharp::AIBehaviorPackage
+  aiId: new_ai_001
+  displayName: "\u5DE1\u903B\u654C\u4EBA"
+  note: 
+  debugLogs: 0
+  enablePerceptionModule: 1
+  enableDecisionModule: 1
+  enableActionModule: 1
+  rules: []
+  ruleTree:
+  - nodeType: 1
+    displayName: "\u65B0\u89C4\u5219 6"
+    expanded: 1
+    enabled: 1
+    note: 
+    ruleData:
+      enabled: 1
+      ruleName: "\u8FD1\u6218\u653B\u51FB"
+      note: 
+      priority: 60
+      cooldownSeconds: 0
+      requireAllConditions: 1
+      conditions: []
+      motive: 2
+      actions: []
+      sentenceRoot:
+        conditionGroup:
+          items:
+          - templateId: cond_ready_to_attack_target
+            enabled: 1
+            slotAssignments: []
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+        motiveGroup:
+          items:
+          - templateId: event_every_seconds
+            enabled: 1
+            slotAssignments:
+            - slotId: seconds
+              value:
+                valueType: 2
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0.1
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+        actionGroup:
+          items:
+          - templateId: act_basic_attack
+            enabled: 1
+            slotAssignments: []
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+    children: []
+  - nodeType: 1
+    displayName: "\u65B0\u89C4\u5219 5"
+    expanded: 1
+    enabled: 1
+    note: 
+    ruleData:
+      enabled: 1
+      ruleName: "\u8FFD\u51FB"
+      note: 
+      priority: 80
+      cooldownSeconds: 0
+      requireAllConditions: 1
+      conditions: []
+      motive: 2
+      actions: []
+      sentenceRoot:
+        conditionGroup:
+          items:
+          - templateId: cond_unit_has_detected_perception_target
+            enabled: 1
+            slotAssignments:
+            - slotId: subject
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: targetKind
+              value:
+                valueType: 7
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: "\u654C\u5BF9\u5355\u4F4D"
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            - slotId: expected
+              value:
+                valueType: 0
+                sourceType: 0
+                boolValue: 1
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+          - templateId: cond_unit_to_unit_distance_compare
+            enabled: 1
+            slotAssignments:
+            - slotId: unitA
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: unitB
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: "\u5F53\u524D\u76EE\u6807"
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            - slotId: op
+              value:
+                valueType: 9
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: Greater
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            - slotId: distance
+              value:
+                valueType: 2
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 1.5
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+        motiveGroup:
+          items:
+          - templateId: event_every_seconds
+            enabled: 1
+            slotAssignments:
+            - slotId: seconds
+              value:
+                valueType: 2
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0.15
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+        actionGroup:
+          items:
+          - templateId: act_move_unit_to_target_with_move_mode
+            enabled: 1
+            slotAssignments:
+            - slotId: subject
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: target
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: "\u5F53\u524D\u76EE\u6807"
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            - slotId: moveMode
+              value:
+                valueType: 7
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: "\u884C\u8D70"
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+    children: []
+  - nodeType: 1
+    displayName: "\u65B0\u89C4\u5219 6"
+    expanded: 1
+    enabled: 1
+    note: 
+    ruleData:
+      enabled: 1
+      ruleName: "\u53D1\u73B0\u654C\u5BF9\u5355\u4F4D"
+      note: 
+      priority: 100
+      cooldownSeconds: 0
+      requireAllConditions: 1
+      conditions: []
+      motive: 2
+      actions: []
+      sentenceRoot:
+        conditionGroup:
+          items:
+          - templateId: cond_unit_has_detected_perception_target
+            enabled: 1
+            slotAssignments:
+            - slotId: subject
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: targetKind
+              value:
+                valueType: 7
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: "\u654C\u5BF9\u5355\u4F4D"
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            - slotId: expected
+              value:
+                valueType: 0
+                sourceType: 0
+                boolValue: 1
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+        motiveGroup:
+          items:
+          - templateId: event_every_seconds
+            enabled: 1
+            slotAssignments:
+            - slotId: seconds
+              value:
+                valueType: 2
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0.2
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+        actionGroup:
+          items:
+          - templateId: act_set_current_target
+            enabled: 1
+            slotAssignments:
+            - slotId: subject
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: targetKind
+              value:
+                valueType: 7
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: LastHostile
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+          - templateId: act_set_unit_action_type
+            enabled: 1
+            slotAssignments:
+            - slotId: unit
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: actionType
+              value:
+                valueType: 8
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: "\u53D1\u73B0"
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+          - templateId: act_move_unit_to_target_with_move_mode
+            enabled: 1
+            slotAssignments:
+            - slotId: subject
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: target
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: "\u5F53\u524D\u76EE\u6807"
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            - slotId: moveMode
+              value:
+                valueType: 7
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: "\u884C\u8D70"
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+    children: []
+  - nodeType: 1
+    displayName: "\u65B0\u89C4\u5219 6"
+    expanded: 1
+    enabled: 1
+    note: 
+    ruleData:
+      enabled: 1
+      ruleName: "\u8B66\u6212"
+      note: 
+      priority: 30
+      cooldownSeconds: 0
+      requireAllConditions: 1
+      conditions: []
+      motive: 2
+      actions: []
+      sentenceRoot:
+        conditionGroup:
+          items:
+          - templateId: cond_unit_is_alert
+            enabled: 1
+            slotAssignments:
+            - slotId: subject
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: expected
+              value:
+                valueType: 0
+                sourceType: 0
+                boolValue: 1
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+          - templateId: cond_unit_has_detected_perception_target
+            enabled: 1
+            slotAssignments:
+            - slotId: subject
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: targetKind
+              value:
+                valueType: 7
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: "\u654C\u5BF9\u5355\u4F4D"
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            - slotId: expected
+              value:
+                valueType: 0
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+        motiveGroup:
+          items:
+          - templateId: event_every_seconds
+            enabled: 1
+            slotAssignments:
+            - slotId: seconds
+              value:
+                valueType: 2
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0.3
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+        actionGroup:
+          items:
+          - templateId: act_move_unit_to_last_known_position
+            enabled: 1
+            slotAssignments:
+            - slotId: subject
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: moveMode
+              value:
+                valueType: 7
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: "\u884C\u8D70"
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+          - templateId: act_set_unit_action_type
+            enabled: 1
+            slotAssignments:
+            - slotId: unit
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: actionType
+              value:
+                valueType: 8
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: "\u8B66\u6212"
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+    children: []
+  - nodeType: 1
+    displayName: "\u65B0\u89C4\u5219 3"
+    expanded: 1
+    enabled: 1
+    note: 
+    ruleData:
+      enabled: 1
+      ruleName: "\u6000\u7591\u72B6\u6001"
+      note: 
+      priority: 20
+      cooldownSeconds: 0
+      requireAllConditions: 1
+      conditions: []
+      motive: 2
+      actions: []
+      sentenceRoot:
+        conditionGroup:
+          items:
+          - templateId: cond_unit_is_suspicious
+            enabled: 1
+            slotAssignments:
+            - slotId: subject
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: expected
+              value:
+                valueType: 0
+                sourceType: 0
+                boolValue: 1
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+          - templateId: cond_unit_is_alert
+            enabled: 1
+            slotAssignments:
+            - slotId: subject
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: expected
+              value:
+                valueType: 0
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+        motiveGroup:
+          items:
+          - templateId: event_every_seconds
+            enabled: 1
+            slotAssignments:
+            - slotId: seconds
+              value:
+                valueType: 2
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0.5
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+        actionGroup:
+          items:
+          - templateId: act_stop_unit_move
+            enabled: 1
+            slotAssignments:
+            - slotId: subject
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+          - templateId: act_set_unit_action_type
+            enabled: 1
+            slotAssignments:
+            - slotId: unit
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: actionType
+              value:
+                valueType: 8
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: "\u6000\u7591"
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+    children: []
+  - nodeType: 1
+    displayName: "\u65B0\u89C4\u5219 4"
+    expanded: 1
+    enabled: 1
+    note: 
+    ruleData:
+      enabled: 1
+      ruleName: "\u65E0\u611F\u77E5\u5F85\u673A"
+      note: 
+      priority: 10
+      cooldownSeconds: 0
+      requireAllConditions: 1
+      conditions: []
+      motive: 2
+      actions: []
+      sentenceRoot:
+        conditionGroup:
+          items:
+          - templateId: cond_unit_is_suspicious
+            enabled: 1
+            slotAssignments:
+            - slotId: subject
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: expected
+              value:
+                valueType: 0
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+        motiveGroup:
+          items:
+          - templateId: event_every_seconds
+            enabled: 1
+            slotAssignments:
+            - slotId: seconds
+              value:
+                valueType: 2
+                sourceType: 5
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 2
+                floatValueMax: 5
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+        actionGroup:
+          items:
+          - templateId: act_set_unit_action_type
+            enabled: 1
+            slotAssignments:
+            - slotId: unit
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: actionType
+              value:
+                valueType: 8
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: "\u5F98\u5F8A"
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+          - templateId: act_move_unit_to_spawn_position
+            enabled: 1
+            slotAssignments:
+            - slotId: moveMode
+              value:
+                valueType: 7
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                floatValueMax: 0
+                stringValue: 
+                enumValue: "\u884C\u8D70"
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+    children: []
+  references:
+    version: 2
+    RefIds: []

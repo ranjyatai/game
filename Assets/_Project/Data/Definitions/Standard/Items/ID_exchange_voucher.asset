@@ -1,0 +1,91 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cbc6c82406986741bc9f9b30a5f52a0, type: 3}
+  m_Name: ID_exchange_voucher
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::ItemDefinition
+  itemId: 40000
+  itemKey: exchange_voucher
+  nameKey: item_name_exchange_voucher
+  descKey: item_desc_exchange_voucher
+  iconKey: icon_exchange_voucher
+  displayName: "\u5151\u6362\u7279\u8BB8\u51ED\u8BC1"
+  note: 
+  description: "\u5E38\u7528\u4E8E\u8D38\u6613\u4E0E\u7ED3\u7B97\u7684\u901A\u7528\u51ED\u8BC1\u3002"
+  icon: {fileID: 0}
+  localizedNames:
+  - languageCode: zh-CN
+    text: "\u5151\u6362\u7279\u8BB8\u51ED\u8BC1"
+  - languageCode: ja-JP
+    text: "\u4EA4\u63DB\u8A3C\u7968"
+  - languageCode: en-US
+    text: Exchange Voucher
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: "\u5E38\u7528\u4E8E\u8D38\u6613\u4E0E\u7ED3\u7B97\u7684\u901A\u7528\u51ED\u8BC1\u3002"
+  - languageCode: ja-JP
+    text: "\u53D6\u5F15\u3084\u7CBE\u7B97\u306B\u3088\u304F\u4F7F\u308F\u308C\u308B\u6C4E\u7528\u8A3C\u7968\u3002"
+  - languageCode: en-US
+    text: A general voucher used in trade and settlement.
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 
+  usability: 0
+  cooldown: 0
+  statusType: 0
+  majorCategory: 0
+  category: 6
+  rarity: 0
+  itemLevel: 1
+  general:
+    type: 0
+    useEffectKey: 
+    canPutInQuickSlot: 0
+    consumeOnUse: 1
+    isReviveItem: 0
+    reviveProtectionDuration: 5
+    soundMaterial: 0
+  equipment:
+    slot: 0
+    weight: 0
+    moveSpeedMultiplier: 1
+    lpCostMultiplier: 1
+    footstepNoiseMultiplier: 1
+    sneakNoiseMultiplier: 1
+    sprintNoiseMultiplier: 1
+    landingNoiseMultiplier: 1
+    weaponCategory: 0
+    weaponTypeKey: 
+    weaponModuleKey: 
+    attackPowerBonus: 0
+    defenseBonus: 0
+  appearance:
+    slot: 0
+    appearanceKey: 
+    spineSkinKey: 
+    overrideEquipmentAppearance: 0
+  maxStackCount: 999
+  value: 1
+  origin: 0
+  weightOrQuartz: 0
+  isKeyItem: 0
+  canDiscard: 1
+  effects: []
+  currencyPrices:
+  - currencyId: token
+    price: 0
+  - currencyId: currency
+    price: 0

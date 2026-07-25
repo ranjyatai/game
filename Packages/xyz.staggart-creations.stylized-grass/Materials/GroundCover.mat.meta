@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ee416c8ba5751b84daa80e2c6b455b91
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/Materials/GroundCover.mat
+  uploadId: 912894

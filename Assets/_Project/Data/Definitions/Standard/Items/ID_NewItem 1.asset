@@ -1,0 +1,206 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cbc6c82406986741bc9f9b30a5f52a0, type: 3}
+  m_Name: ID_NewItem 1
+  m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemId: 100000
+  itemKey: new_item_001
+  nameKey: item_name_new_item_001
+  descKey: item_desc_new_item_001
+  iconKey: icon_new_item_001
+  displayName: "\u519B\u7528\u91CD\u94F2"
+  note: 
+  description: "\u62FE\u8352\u961F\u5E38\u7528\u7684\u91CD\u578B\u5DE5\u5177\u3002\u5B83\u79F0\u4E0D\u4E0A\u6B63\u89C4\u7684\u6B66\u5668\uFF0C\u5374\u8DB3\u4EE5\u5B8C\u6210\u5288\u780D\u3001\u7834\u62C6\u3001\u6398\u571F\u4E0E\u4E34\u65F6\u9632\u8EAB\u7B49\u4EFB\u52A1\u3002\u94F2\u9762\u6CBE\u6EE1\u96BE\u4EE5\u6D17\u51C0\u7684\u6C61\u6E0D\uFF0C\u5203\u7F18\u4E5F\u65E9\u5DF2\u78E8\u949D\uFF0C\u90A3\u4E9B\u4F24\u75D5\u8BC1\u660E\u5B83\u88AB\u53CD\u590D\u5E26\u5165\u5E9F\u589F\uFF0C\u53C8\u4E00\u6B21\u6B21\u88AB\u5E26\u56DE\u4F59\u7A79\u3002\n\u5B83\u4E0D\u8D77\u773C\u7684\u9020\u578B\uFF0C\u6216\u8BB8\u6B63\u662F\u65E0\u6570\u4EBA\u5F97\u4EE5\u5F52\u6765\u7684\u7406\u7531\u3002"
+  icon: {fileID: 21300000, guid: dacc8d267a3869a4a8de3f497566b4b9, type: 3}
+  localizedNames:
+  - languageCode: zh-CN
+    text: "\u519B\u7528\u91CD\u94F2"
+  - languageCode: ja
+    text: "\u8ECD\u7528\u30B7\u30E3\u30D9\u30EB"
+  - languageCode: en
+    text: Heavy spade
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: "\u62FE\u8352\u961F\u5E38\u7528\u7684\u91CD\u578B\u5DE5\u5177\u3002\u5B83\u79F0\u4E0D\u4E0A\u6B63\u89C4\u7684\u6B66\u5668\uFF0C\u5374\u8DB3\u4EE5\u5B8C\u6210\u5288\u780D\u3001\u7834\u62C6\u3001\u6398\u571F\u4E0E\u4E34\u65F6\u9632\u8EAB\u7B49\u4EFB\u52A1\u3002\u94F2\u9762\u6CBE\u6EE1\u96BE\u4EE5\u6D17\u51C0\u7684\u6C61\u6E0D\uFF0C\u5203\u7F18\u4E5F\u65E9\u5DF2\u78E8\u949D\uFF0C\u90A3\u4E9B\u4F24\u75D5\u8BC1\u660E\u5B83\u88AB\u53CD\u590D\u5E26\u5165\u5E9F\u589F\uFF0C\u53C8\u4E00\u6B21\u6B21\u88AB\u5E26\u56DE\u4F59\u7A79\u3002\n\u5B83\u4E0D\u8D77\u773C\u7684\u9020\u578B\uFF0C\u6216\u8BB8\u6B63\u662F\u65E0\u6570\u4EBA\u5F97\u4EE5\u5F52\u6765\u7684\u7406\u7531\u3002"
+  - languageCode: ja
+    text: "\u30D0\u30BF\u5C4B\u305F\u3061\u304C\u3088\u304F\u6301\u3061\u6B69\u3044\u3066\u3044\u308B\u3001\u9811\u4E08\u306A\u8ECD\u7528\u30B7\u30E3\u30D9\u30EB\u3002\u6B66\u5668\u3068\u3057\u3066\u4F5C\u3089\u308C\u305F\u3082\u306E\u3067\u306F\u306A\u3044\u304C\u3001\u65AC\u308B\u3001\u58CA\u3059\u3001\u6398\u308B\u3001\u8EAB\u3092\u5B88\u308B\u3068\u3044\u3063\u305F\u5EC3\u589F\u3067\u306E\u4F5C\u696D\u306B\u306F\u3072\u3068\u901A\u308A\u5F79\u306B\u7ACB\u3064\u3002\u8868\u9762\u306B\u306F\u843D\u3061\u304D\u3089\u306A\u3044\u6C5A\u308C\u304C\u3053\u3073\u308A\u3064\u304D\u3001\u5203\u5148\u3082\u3059\u3063\u304B\u308A\u4E38\u304F\u306A\u3063\u3066\u3044\u308B\u3002\u4F55\u5EA6\u3082\u5EC3\u589F\u3078\u6301\u3061\u8FBC\u307E\u308C\u3001\u305D\u306E\u305F\u3073\u306B\u30B9\u30C6\u30A3\u30EB\u30F4\u30A9\u30EB\u30C8\u3078\u6301\u3061\u5E30\u3089\u308C\u3066\u304D\u305F\u8A3C\u3060\u3002\r\n\u76EE\u7ACB\u305F\u306A\u3044\u9053\u5177\u3060\u304C\u3001\u3053\u308C\u306E\u304A\u304B\u3052\u3067\u5E30\u3063\u3066\u3053\u3089\u308C\u305F\u8005\u306F\u5C11\u306A\u304F\u306A\u3044\u3002"
+  - languageCode: en
+    text: 'A sturdy military shovel commonly carried by Scrappers. It was never made
+      as a proper weapon, yet it serves well enough for cutting, breaking, digging,
+      and defending oneself in the ruins. Its surface is caked with grime that will
+      not fully come off, and its edge has long since worn dull. Those marks are
+      proof that it has been carried into the ruins again and again, and brought
+      back to Stillvault each time.
+
+      It may not look like much, but more than
+      a few people have made it home because of it.'
+  usability: 0
+  cooldown: 0
+  statusType: 0
+  majorCategory: 10
+  category: 0
+  materialSubCategory: 3
+  rarity: 0
+  itemLevel: 1
+  general:
+    type: 0
+    useEffectKey: 
+    canPutInQuickSlot: 0
+    consumeOnUse: 1
+    isReviveItem: 0
+    reviveProtectionDuration: 5
+    soundMaterial: 1
+  materialAlchemy:
+    affinityTags: []
+    basePotency: 10
+  ammo:
+    caliber: 0
+  equipment:
+    slot: 0
+    moveSpeedMultiplier: 1
+    lpCostMultiplier: 1
+    footstepNoiseMultiplier: 1
+    sneakNoiseMultiplier: 1
+    sprintNoiseMultiplier: 1
+    landingNoiseMultiplier: 1
+    weaponCategory: 10
+    weaponTypeKey: sword
+    combatModule: {fileID: 11400000, guid: 4c2a5904a48b411abd9dac85ec1094e7, type: 2}
+    weaponModuleKey: sword
+    weaponSkinName: weapon_sword_heavySpade
+    weaponJudgmentSlotName: 
+    weaponSilhouette: {fileID: 21300000, guid: 2bd5dde475ed6e44ea749f57130d08b3, type: 3}
+    weaponSlashEffectTipOffset: {x: -1, y: 0, z: 0}
+    armorSkinName: 
+    usesAmmo: 0
+    ammoCaliber: 0
+    ammoPerShot: 1
+    magazineSize: 12
+    reloadDurationSeconds: 1.2
+    maxDurability: 100
+    durabilityLossPerHit: 1
+    modSlots: []
+    defaultDyeColorSchemes:
+    - colors:
+      - {r: 0.5254902, g: 0.7764706, b: 0.6431373, a: 1}
+      - {r: 0.83137256, g: 0.8117647, b: 0.80784315, a: 1}
+      - {r: 0.26666668, g: 0.25490198, b: 0.25490198, a: 1}
+    statBonuses:
+    - parameterKey: maxHp
+      value: 0
+    - parameterKey: maxLp
+      value: 0
+    - parameterKey: atk
+      value: 50
+    - parameterKey: def
+      value: 0
+    - parameterKey: critRate
+      value: 10
+    - parameterKey: critDamageMultiplier
+      value: 0
+    - parameterKey: hp
+      value: 0
+    - parameterKey: lp
+      value: 0
+    - parameterKey: atkSpeed
+      value: 0
+    - parameterKey: hpRecoveryRate
+      value: 0
+    - parameterKey: lpRecoveryRate
+      value: 0
+    - parameterKey: heatDamage
+      value: 0
+    - parameterKey: shockDamage
+      value: 0
+    - parameterKey: corrosionDamage
+      value: 0
+    - parameterKey: freezeDamage
+      value: 0
+    - parameterKey: dodgeLpCostRate
+      value: 0
+    - parameterKey: sprintLpCostRate
+      value: 0
+    - parameterKey: lightAtkLpCostRate
+      value: 0
+    - parameterKey: heavyAtkLpCostRate
+      value: 0
+    - parameterKey: chargeAtkLpCostRate
+      value: 0
+    - parameterKey: lpRecoveryDelayRate
+      value: 0
+    - parameterKey: dodgeInvulTimeRate
+      value: 0
+    - parameterKey: staggerRecoveryRate
+      value: 0
+    - parameterKey: poise
+      value: 0
+    - parameterKey: hitRecoveryRate
+      value: 0
+    - parameterKey: negativeCritRate
+      value: 30
+    - parameterKey: negativeCritDamageMultiplier
+      value: 80
+    - parameterKey: lpRecoveryBase
+      value: 0
+    - parameterKey: hpRecoveryBase
+      value: 0
+    - parameterKey: lpRecoveryDelayBase
+      value: 0
+    - parameterKey: heatBuildUp
+      value: 0
+    - parameterKey: shockBuildUp
+      value: 0
+    - parameterKey: corrosionBuildUp
+      value: 0
+    - parameterKey: freezeBuildUp
+      value: 0
+    - parameterKey: slashResist
+      value: 0
+    - parameterKey: strikeResist
+      value: 0
+    - parameterKey: impactResist
+      value: 0
+    - parameterKey: heatResist
+      value: 0
+    - parameterKey: shockResist
+      value: 0
+    - parameterKey: corrosionResist
+      value: 0
+    - parameterKey: freezeResist
+      value: 0
+    alchemyPreferredTags: []
+  mod:
+    compatibleSlotTypeKeys: []
+    unidentifiedDisplayName: "\u672A\u9274\u5B9A\u7EC4\u4EF6"
+    identificationCost: 100
+    bonusPool: []
+    bonusCount: 2
+  appearance:
+    slot: 0
+    appearanceKey: 
+    spineSkinKey: 
+    overrideEquipmentAppearance: 0
+  maxStackCount: 1
+  value: 0
+  origin: 0
+  weightOrQuartz: 4
+  isKeyItem: 0
+  canDiscard: 1
+  effects: []
+  useVFX: {fileID: 0}
+  useSE: []
+  useSEVolume: 1
+  currencyPrices:
+  - currencyId: token
+    price: 50
+  - currencyId: currency
+    price: 0

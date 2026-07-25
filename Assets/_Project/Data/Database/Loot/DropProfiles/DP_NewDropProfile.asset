@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03e73457dc0b4d64ea56c2cc671f39ce, type: 3}
+  m_Name: DP_NewDropProfile
+  m_EditorClassIdentifier: Assembly-CSharp::DropProfile
+  profileId: new_drop_profile
+  displayName: Memento
+  note: 
+  pools:
+  - enabled: 1
+    poolName: 
+    poolNote: 
+    poolMode: 0
+    pickCount: 0
+    entries:
+    - enabled: 1
+      itemDefinition: {fileID: 11400000, guid: 322e4bd24b2c0a74098834aae404bfb9, type: 2}
+      dropChance: 100
+      weight: 1
+      minCount: 1
+      maxCount: 2
+      note: 
+  - enabled: 0
+    poolName: 
+    poolNote: 
+    poolMode: 0
+    pickCount: 0
+    entries: []
+  - enabled: 0
+    poolName: 
+    poolNote: 
+    poolMode: 0
+    pickCount: 0
+    entries: []

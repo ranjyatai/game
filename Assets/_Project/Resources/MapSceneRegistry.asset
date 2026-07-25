@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 484d7c8452bee6a48b41033b9e56ffa8, type: 3}
+  m_Name: MapSceneRegistry
+  m_EditorClassIdentifier: Assembly-CSharp::MapSceneRegistry
+  entries:
+  - mapKey: new_map
+    sceneName: new_map 1
+    scenePath: Assets/_Project/Scene/Maps/new_map 1.unity
+  - mapKey: newmap
+    sceneName: MapTemplate_Base
+    scenePath: Assets/_Project/Maps/_Templates/MapTemplate_Base/MapTemplate_Base.unity
+  - mapKey: newmap
+    sceneName: Still Vault
+    scenePath: Assets/_Project/Maps/Hub/StillVault/Still Vault/Still Vault.unity
+  - mapKey: newmap
+    sceneName: NewMap
+    scenePath: Assets/_Project/Maps/Raid/Campus/NewMap/NewMap.unity
+  - mapKey: newmap
+    sceneName: NewMap
+    scenePath: Assets/_Project/Maps/Raid/ElDorado/NewMap/NewMap.unity
+  - mapKey: newmap
+    sceneName: NewMap
+    scenePath: Assets/_Project/Maps/Raid/GoldenKingdom/NewMap/NewMap.unity
+  - mapKey: newmap
+    sceneName: Cooling Tower & Exhaust Zone
+    scenePath: Assets/_Project/Maps/Raid/OldFactory/Cooling Tower & Exhaust Zone/Cooling
+      Tower & Exhaust Zone.unity
+  - mapKey: newmap
+    sceneName: Core Reactor Zone
+    scenePath: Assets/_Project/Maps/Raid/OldFactory/Core Reactor Zone/Core Reactor
+      Zone.unity
+  - mapKey: newmap
+    sceneName: Heavy Machinery Processing Zone
+    scenePath: Assets/_Project/Maps/Raid/OldFactory/Heavy Machinery Processing Zone/Heavy
+      Machinery Processing Zone.unity
+  - mapKey: newmap
+    sceneName: Logistics Conveyor Corridor
+    scenePath: Assets/_Project/Maps/Raid/OldFactory/Logistics Conveyor Corridor/Logistics
+      Conveyor Corridor.unity
+  - mapKey: newmap
+    sceneName: Storage & Maintenance Zone
+    scenePath: Assets/_Project/Maps/Raid/OldFactory/Storage & Maintenance Zone/Storage
+      & Maintenance Zone.unity

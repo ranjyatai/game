@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d7b53877ff7051445b534092c6b5a837
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/_Demo/DemoAssets/Materials/SGS_SpruceBranch.mat
+  uploadId: 912894

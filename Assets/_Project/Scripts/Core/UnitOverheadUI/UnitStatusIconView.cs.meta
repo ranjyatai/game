@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 3ef40ec32c3e4c44d88e3a8c93d38a27
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - root: {instanceID: 0}
+  - baseIcon: {instanceID: 0}
+  - grayscaleMask: {instanceID: 0}
+  - stackText: {instanceID: 0}
+  - grayscaleMaterial: {fileID: 2100000, guid: bbb364119d2715a4db8355fe43309e5c, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

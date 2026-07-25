@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a59a8e3c3a10b8549b3d66632ce92121, type: 3}
+  m_Name: StatusDefinition 1
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::StatusDefinition
+  statusId: status_burn
+  displayName: "\u707C\u70ED"
+  note: 
+  description: "\u72B6\u6001\u4E0B\uFF0C<color=#EEFD61>{param:this.dot.tickInterval}</color><color=#FFFFFF>\u5185</color>\u6301\u7EED\u53D7\u5230<color=#FF6659>\u707C\u70ED\u4F24\u5BB3</color>\u800C\u635F\u5931<color=#80FF99>\u751F\u547D\u503C</color>\u3002"
+  localizedNames:
+  - languageCode: zh-CN
+    text: "\u707C\u70ED"
+  - languageCode: ja
+    text: "\u708E\u4E0A"
+  - languageCode: en
+    text: Burn
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: "\u72B6\u6001\u4E0B\uFF0C<color=#EEFD61>{param:this.dot.tickInterval}</color><color=#FFFFFF>\u5185</color>\u6301\u7EED\u53D7\u5230<color=#FF6659>\u707C\u70ED\u4F24\u5BB3</color>\u800C\u635F\u5931<color=#80FF99>\u751F\u547D\u503C</color>\u3002"
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 
+  isStandard: 0
+  isBuff: 0
+  isHidden: 0
+  showInHud: 1
+  icon: {fileID: 21300000, guid: 9f2bcac0e247cd14b99207da93062020, type: 3}
+  grantMode: 1
+  accumulationSourceKey: accum_status_burn
+  accumulationThreshold: 100
+  durationType: 1
+  baseDuration: 15
+  durationUpdateMode: 0
+  maxDuration: 99
+  canStack: 0
+  baseStack: 1
+  maxStack: 1
+  stackUpdateMode: 2
+  attributeModifiers: []
+  enableDot: 1
+  dotTickInterval: 1
+  dotTargetResource: 0
+  dotValueMode: 0
+  dotBaseValue: 2
+  dotPercentValue: 0
+  dotReferenceAttributeKey: 
+  dotReferenceAttributeDisplayName: 
+  dotReferenceAttributeValueType: 1
+  dotAttributeRatio: 1
+  dotStackMode: 0
+  dotStackAddValue: 0
+  dotAffectedByResistance: 1
+  dotCanKill: 1
+  dotDamageTypeKey: heat
+  dotDamageTypeDisplayName: "\u707C\u70ED"
+  onApplyTriggerKey: 
+  onTickTriggerKey: 
+  tickInterval: 0
+  onRemoveTriggerKey: 
+  onExpireTriggerKey: 
+  onApplyVfxKey: 
+  persistentVfxKey: 
+  tickVfxKey: 
+  tickVfxInterval: 0
+  onRemoveVfxKey: 
+  onExpireVfxKey: 
+  onApplySfxKey: 
+  onRemoveSfxKey: 
+  onExpireSfxKey: 
+  enableRegain: 0
+  regainRatio: 0
+  useStatusOutline: 1
+  statusOutlineColor: {r: 2.6314542, g: 0.13766192, b: 0.049650043, a: 1}
+  statusOutlineWidthPixels: 3.83
+  statusOutlineWidthVariance: 1
+  statusOutlineFlowSpeed: 0.6
+  statusOutlineNoiseScale: 0.35
+  statusOutlineFadeInSeconds: 0.35
+  statusOutlineFadeOutSeconds: 0.6
+  useStatusFlash: 0
+  statusFlashColor: {r: 1, g: 0.45, b: 0.45, a: 1}
+  statusFlashDuration: 0.3
+  statusFlashAlphaDip: 0.35

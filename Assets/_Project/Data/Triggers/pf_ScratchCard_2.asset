@@ -1,0 +1,130 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ff10ab49528d954ba95bdba1c895557, type: 3}
+  m_Name: pf_ScratchCard_2
+  m_EditorClassIdentifier: Assembly-CSharp::TriggerPackage
+  triggerId: scratch ticket
+  displayName: "\u522E\u522E\u53612"
+  note: 
+  debugLogs: 0
+  rules:
+  - enabled: 1
+    ruleName: "\u4F59\u7A79\u522E\u522E\u5361"
+    note: 
+    priority: 100
+    cooldownSeconds: 0
+    requireAllConditions: 1
+    sentenceRoot:
+      conditionGroup:
+        items: []
+      motiveGroup:
+        items: []
+      actionGroup:
+        items:
+        - templateId: act_add_currency
+          enabled: 1
+          slotAssignments:
+          - slotId: currencyId
+            value:
+              valueType: 14
+              sourceType: 3
+              boolValue: 0
+              intValue: 0
+              intValueMax: 0
+              floatValue: 0
+              stringValue: 
+              enumValue: 
+              enumDisplayName: 
+              variableKey: 
+              contextKey: 
+              assetReference: {fileID: 11400000, guid: cf5baf4a9d586aa4ab53c515b5d10886, type: 2}
+              sceneObjectId: 
+              sceneObjectName: 
+          - slotId: amount
+            value:
+              valueType: 1
+              sourceType: 5
+              boolValue: 0
+              intValue: 100
+              intValueMax: 999
+              floatValue: 0
+              stringValue: 
+              enumValue: 
+              enumDisplayName: 
+              variableKey: 
+              contextKey: 
+              assetReference: {fileID: 0}
+              sceneObjectId: 
+              sceneObjectName: 
+          conditionChildren: []
+          thenChildren: []
+          elseChildren: []
+          bodyChildren: []
+        - templateId: act_play_custom_se
+          enabled: 1
+          slotAssignments:
+          - slotId: clip
+            value:
+              valueType: 15
+              sourceType: 3
+              boolValue: 0
+              intValue: 0
+              intValueMax: 0
+              floatValue: 0
+              stringValue: 
+              enumValue: 
+              enumDisplayName: 
+              variableKey: 
+              contextKey: 
+              assetReference: {fileID: 8300000, guid: a897082a966a8754594d60ca2276f948, type: 3}
+              sceneObjectId: 
+              sceneObjectName: 
+          - slotId: volume
+            value:
+              valueType: 2
+              sourceType: 0
+              boolValue: 0
+              intValue: 0
+              intValueMax: 0
+              floatValue: 1
+              stringValue: 
+              enumValue: 
+              enumDisplayName: 
+              variableKey: 
+              contextKey: 
+              assetReference: {fileID: 0}
+              sceneObjectId: 
+              sceneObjectName: 
+          - slotId: pitch
+            value:
+              valueType: 2
+              sourceType: 0
+              boolValue: 0
+              intValue: 0
+              intValueMax: 0
+              floatValue: 1
+              stringValue: 
+              enumValue: 
+              enumDisplayName: 
+              variableKey: 
+              contextKey: 
+              assetReference: {fileID: 0}
+              sceneObjectId: 
+              sceneObjectName: 
+          conditionChildren: []
+          thenChildren: []
+          elseChildren: []
+          bodyChildren: []
+  ruleTree: []
+  references:
+    version: 2
+    RefIds: []

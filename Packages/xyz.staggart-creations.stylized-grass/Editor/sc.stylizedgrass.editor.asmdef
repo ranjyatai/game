@@ -1,0 +1,36 @@
+{
+    "name": "sc.stylizedgrass.editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:ea8005fdf30f9c24dab04181c20b1310",
+        "GUID:df380645f10b7bc4b97d4f5eb6303d95",
+        "GUID:3eae0364be2026648bf74846acb8a731",
+        "GUID:15fc0a57446b3144c949da3e2b9737a9",
+        "GUID:c579267770062bf448e75eb160330b7f",
+        "GUID:4fd6538c1c56b409fb53fdf0183170ec",
+        "GUID:fb58d5396d4f85044a40c7548929c37d",
+        "GUID:0f9e8f73c69964f1e8176f9a0b86f9b2"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.render-pipelines.universal",
+            "expression": "17.0.4",
+            "define": "URP"
+        },
+        {
+            "name": "com.unity.formats.fbx",
+            "expression": "5.1.1",
+            "define": "FBX_EXPORTER"
+        }
+    ],
+    "noEngineReferences": false
+}

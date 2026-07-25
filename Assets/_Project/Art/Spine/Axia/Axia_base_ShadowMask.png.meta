@@ -1,0 +1,1300 @@
+fileFormatVersion: 2
+guid: c34e8e00edc65aa49b9959f63ed8df1c
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 7440955749881225351
+    second: Axia_base_ShadowMask_0
+  - first:
+      213: -5444333155588644488
+    second: Axia_base_ShadowMask_1
+  - first:
+      213: 2972686671693759306
+    second: Axia_base_ShadowMask_2
+  - first:
+      213: 2685486797749094669
+    second: Axia_base_ShadowMask_3
+  - first:
+      213: -2917961221991344302
+    second: Axia_base_ShadowMask_4
+  - first:
+      213: -7982432559047244093
+    second: Axia_base_ShadowMask_5
+  - first:
+      213: 4692195020598634808
+    second: Axia_base_ShadowMask_6
+  - first:
+      213: -2902645352544255389
+    second: Axia_base_ShadowMask_7
+  - first:
+      213: 1946517832550994539
+    second: Axia_base_ShadowMask_8
+  - first:
+      213: -4629924649008215389
+    second: Axia_base_ShadowMask_9
+  - first:
+      213: -3670437776488869614
+    second: Axia_base_ShadowMask_10
+  - first:
+      213: 6052720111939639769
+    second: Axia_base_ShadowMask_11
+  - first:
+      213: 1586276804115539333
+    second: Axia_base_ShadowMask_12
+  - first:
+      213: 2402478337905422032
+    second: Axia_base_ShadowMask_13
+  - first:
+      213: 8171333510439083688
+    second: Axia_base_ShadowMask_14
+  - first:
+      213: -2103381346365698242
+    second: Axia_base_ShadowMask_15
+  - first:
+      213: -7823746383159756913
+    second: Axia_base_ShadowMask_16
+  - first:
+      213: 7206017848150191008
+    second: Axia_base_ShadowMask_17
+  - first:
+      213: -8644218897133525201
+    second: Axia_base_ShadowMask_18
+  - first:
+      213: 7251479651988860683
+    second: Axia_base_ShadowMask_19
+  - first:
+      213: -727166875075283148
+    second: Axia_base_ShadowMask_20
+  - first:
+      213: 7757388202885598860
+    second: Axia_base_ShadowMask_21
+  - first:
+      213: -2135033345687494907
+    second: Axia_base_ShadowMask_22
+  - first:
+      213: -2766639150014565311
+    second: Axia_base_ShadowMask_23
+  - first:
+      213: -1025278316953320170
+    second: Axia_base_ShadowMask_24
+  - first:
+      213: 2904848395164613918
+    second: Axia_base_ShadowMask_25
+  - first:
+      213: -8566460586375030366
+    second: Axia_base_ShadowMask_26
+  - first:
+      213: 6795848697179238665
+    second: Axia_base_ShadowMask_27
+  - first:
+      213: 8288281005140558867
+    second: Axia_base_ShadowMask_28
+  - first:
+      213: 8982383790766112822
+    second: Axia_base_ShadowMask_29
+  - first:
+      213: 3947232042125154100
+    second: Axia_base_ShadowMask_30
+  - first:
+      213: 2860171561723866637
+    second: Axia_base_ShadowMask_31
+  - first:
+      213: 3430778067105111803
+    second: Axia_base_ShadowMask_32
+  - first:
+      213: 4366634896131926032
+    second: Axia_base_ShadowMask_33
+  - first:
+      213: -4496773892349818214
+    second: Axia_base_ShadowMask_34
+  - first:
+      213: 5508750333379931235
+    second: Axia_base_ShadowMask_35
+  - first:
+      213: 4276452557344246109
+    second: Axia_base_ShadowMask_36
+  - first:
+      213: 8554460672941352210
+    second: Axia_base_ShadowMask_37
+  - first:
+      213: 6318529556600246026
+    second: Axia_base_ShadowMask_38
+  - first:
+      213: 2351807159013954644
+    second: Axia_base_ShadowMask_39
+  - first:
+      213: -8554465757616388978
+    second: Axia_base_ShadowMask_40
+  - first:
+      213: 990468203716513648
+    second: Axia_base_ShadowMask_41
+  - first:
+      213: 2850290516593941009
+    second: Axia_base_ShadowMask_42
+  - first:
+      213: 2501734362455612034
+    second: Axia_base_ShadowMask_43
+  - first:
+      213: -8113692508007198010
+    second: Axia_base_ShadowMask_44
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 0
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_0
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 677
+        width: 226
+        height: 79
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7802215a4d5934760800000000000000
+      internalID: 7440955749881225351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_1
+      rect:
+        serializedVersion: 2
+        x: 265
+        y: 676
+        width: 14
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 871e14e17d7d174b0800000000000000
+      internalID: -5444333155588644488
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_2
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 677
+        width: 15
+        height: 74
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a4348d627ca114920800000000000000
+      internalID: 2972686671693759306
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_3
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 578
+        width: 72
+        height: 156
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0906d4a304c44520800000000000000
+      internalID: 2685486797749094669
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_4
+      rect:
+        serializedVersion: 2
+        x: 427
+        y: 661
+        width: 51
+        height: 96
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 25757d68ab15187d0800000000000000
+      internalID: -2917961221991344302
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_5
+      rect:
+        serializedVersion: 2
+        x: 497
+        y: 730
+        width: 96
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c60a7a51e3b83190800000000000000
+      internalID: -7982432559047244093
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_6
+      rect:
+        serializedVersion: 2
+        x: 649
+        y: 708
+        width: 76
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 83963abc2860e1140800000000000000
+      internalID: 4692195020598634808
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_7
+      rect:
+        serializedVersion: 2
+        x: 743
+        y: 708
+        width: 44
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36249a44e6bb7b7d0800000000000000
+      internalID: -2902645352544255389
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_8
+      rect:
+        serializedVersion: 2
+        x: 886
+        y: 689
+        width: 104
+        height: 54
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b625a26d7ab630b10800000000000000
+      internalID: 1946517832550994539
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_9
+      rect:
+        serializedVersion: 2
+        x: 1035
+        y: 587
+        width: 78
+        height: 151
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3aa4a07ef043fbfb0800000000000000
+      internalID: -4629924649008215389
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_10
+      rect:
+        serializedVersion: 2
+        x: 1132
+        y: 684
+        width: 83
+        height: 53
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 211d4320a4cff0dc0800000000000000
+      internalID: -3670437776488869614
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_11
+      rect:
+        serializedVersion: 2
+        x: 1470
+        y: 682
+        width: 107
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9d956058fd49ff350800000000000000
+      internalID: 6052720111939639769
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_12
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 403
+        width: 296
+        height: 254
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 585afb05956930610800000000000000
+      internalID: 1586276804115539333
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_13
+      rect:
+        serializedVersion: 2
+        x: 427
+        y: 584
+        width: 59
+        height: 59
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0de6c67c151575120800000000000000
+      internalID: 2402478337905422032
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_14
+      rect:
+        serializedVersion: 2
+        x: 505
+        y: 587
+        width: 125
+        height: 124
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ae97feb888666170800000000000000
+      internalID: 8171333510439083688
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_15
+      rect:
+        serializedVersion: 2
+        x: 650
+        y: 587
+        width: 216
+        height: 102
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3f80b64fc94fc2e0800000000000000
+      internalID: -2103381346365698242
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_16
+      rect:
+        serializedVersion: 2
+        x: 886
+        y: 587
+        width: 129
+        height: 82
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f87f303dd187c6390800000000000000
+      internalID: -7823746383159756913
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_17
+      rect:
+        serializedVersion: 2
+        x: 1133
+        y: 608
+        width: 244
+        height: 54
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0abed14cd0be00460800000000000000
+      internalID: 7206017848150191008
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_18
+      rect:
+        serializedVersion: 2
+        x: 1396
+        y: 608
+        width: 51
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2723ab46b0990880800000000000000
+      internalID: -8644218897133525201
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_19
+      rect:
+        serializedVersion: 2
+        x: 1442
+        y: 615
+        width: 9
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b0fe4c0d25e62a460800000000000000
+      internalID: 7251479651988860683
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_20
+      rect:
+        serializedVersion: 2
+        x: 1486
+        y: 547
+        width: 106
+        height: 116
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 437f4be649598e5f0800000000000000
+      internalID: -727166875075283148
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_21
+      rect:
+        serializedVersion: 2
+        x: 460
+        y: 577
+        width: 21
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c8e4dc95877c7ab60800000000000000
+      internalID: 7757388202885598860
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_22
+      rect:
+        serializedVersion: 2
+        x: 1415
+        y: 544
+        width: 53
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 50fdea6eb76de52e0800000000000000
+      internalID: -2135033345687494907
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_23
+      rect:
+        serializedVersion: 2
+        x: 336
+        y: 403
+        width: 145
+        height: 153
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 14471b1f95cea99d0800000000000000
+      internalID: -2766639150014565311
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_24
+      rect:
+        serializedVersion: 2
+        x: 1019
+        y: 317
+        width: 110
+        height: 250
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 615461a8dca75c1f0800000000000000
+      internalID: -1025278316953320170
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_25
+      rect:
+        serializedVersion: 2
+        x: 1148
+        y: 408
+        width: 172
+        height: 147
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1d76209938105820800000000000000
+      internalID: 2904848395164613918
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_26
+      rect:
+        serializedVersion: 2
+        x: 1325
+        y: 504
+        width: 94
+        height: 66
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a95bb6db71dd1980800000000000000
+      internalID: -8566460586375030366
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_27
+      rect:
+        serializedVersion: 2
+        x: 1486
+        y: 407
+        width: 77
+        height: 114
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9017ba65264bf4e50800000000000000
+      internalID: 6795848697179238665
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_28
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 429
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 314450639a3e50370800000000000000
+      internalID: 8288281005140558867
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_29
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 20
+        width: 472
+        height: 363
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 63047dc8776d7ac70800000000000000
+      internalID: 8982383790766112822
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_30
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 20
+        width: 297
+        height: 277
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 437d8e401a267c630800000000000000
+      internalID: 3947232042125154100
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_31
+      rect:
+        serializedVersion: 2
+        x: 831
+        y: 215
+        width: 141
+        height: 80
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0ea93da1ee51b720800000000000000
+      internalID: 2860171561723866637
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_32
+      rect:
+        serializedVersion: 2
+        x: 966
+        y: 288
+        width: 6
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bfe500999729c9f20800000000000000
+      internalID: 3430778067105111803
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_33
+      rect:
+        serializedVersion: 2
+        x: 1149
+        y: 20
+        width: 179
+        height: 369
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 018a4c77d47699c30800000000000000
+      internalID: 4366634896131926032
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_34
+      rect:
+        serializedVersion: 2
+        x: 1348
+        y: 294
+        width: 235
+        height: 94
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a9a0d3748ff3891c0800000000000000
+      internalID: -4496773892349818214
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_35
+      rect:
+        serializedVersion: 2
+        x: 991
+        y: 216
+        width: 96
+        height: 74
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36cec69dd33037c40800000000000000
+      internalID: 5508750333379931235
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_36
+      rect:
+        serializedVersion: 2
+        x: 1106
+        y: 215
+        width: 12
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d59805b71f2095b30800000000000000
+      internalID: 4276452557344246109
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_37
+      rect:
+        serializedVersion: 2
+        x: 1347
+        y: 20
+        width: 59
+        height: 254
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 215e7b798ac87b670800000000000000
+      internalID: 8554460672941352210
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_38
+      rect:
+        serializedVersion: 2
+        x: 1426
+        y: 265
+        width: 14
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a0fc6fb972defa750800000000000000
+      internalID: 6318529556600246026
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_39
+      rect:
+        serializedVersion: 2
+        x: 1510
+        y: 183
+        width: 71
+        height: 82
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4545f35962c43a020800000000000000
+      internalID: 2351807159013954644
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_40
+      rect:
+        serializedVersion: 2
+        x: 831
+        y: 19
+        width: 152
+        height: 148
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e84480a87be684980800000000000000
+      internalID: -8554465757616388978
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_41
+      rect:
+        serializedVersion: 2
+        x: 1102
+        y: 161
+        width: 28
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07f87d36599debd00800000000000000
+      internalID: 990468203716513648
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_42
+      rect:
+        serializedVersion: 2
+        x: 1425
+        y: 20
+        width: 65
+        height: 225
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 11a1f349f144e8720800000000000000
+      internalID: 2850290516593941009
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_43
+      rect:
+        serializedVersion: 2
+        x: 1510
+        y: 20
+        width: 87
+        height: 143
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 28a1e8cd522f7b220800000000000000
+      internalID: 2501734362455612034
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Axia_base_ShadowMask_44
+      rect:
+        serializedVersion: 2
+        x: 1510
+        y: 146
+        width: 11
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c29b73f6af566f80800000000000000
+      internalID: -8113692508007198010
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Axia_base_ShadowMask_0: 7440955749881225351
+      Axia_base_ShadowMask_1: -5444333155588644488
+      Axia_base_ShadowMask_10: -3670437776488869614
+      Axia_base_ShadowMask_11: 6052720111939639769
+      Axia_base_ShadowMask_12: 1586276804115539333
+      Axia_base_ShadowMask_13: 2402478337905422032
+      Axia_base_ShadowMask_14: 8171333510439083688
+      Axia_base_ShadowMask_15: -2103381346365698242
+      Axia_base_ShadowMask_16: -7823746383159756913
+      Axia_base_ShadowMask_17: 7206017848150191008
+      Axia_base_ShadowMask_18: -8644218897133525201
+      Axia_base_ShadowMask_19: 7251479651988860683
+      Axia_base_ShadowMask_2: 2972686671693759306
+      Axia_base_ShadowMask_20: -727166875075283148
+      Axia_base_ShadowMask_21: 7757388202885598860
+      Axia_base_ShadowMask_22: -2135033345687494907
+      Axia_base_ShadowMask_23: -2766639150014565311
+      Axia_base_ShadowMask_24: -1025278316953320170
+      Axia_base_ShadowMask_25: 2904848395164613918
+      Axia_base_ShadowMask_26: -8566460586375030366
+      Axia_base_ShadowMask_27: 6795848697179238665
+      Axia_base_ShadowMask_28: 8288281005140558867
+      Axia_base_ShadowMask_29: 8982383790766112822
+      Axia_base_ShadowMask_3: 2685486797749094669
+      Axia_base_ShadowMask_30: 3947232042125154100
+      Axia_base_ShadowMask_31: 2860171561723866637
+      Axia_base_ShadowMask_32: 3430778067105111803
+      Axia_base_ShadowMask_33: 4366634896131926032
+      Axia_base_ShadowMask_34: -4496773892349818214
+      Axia_base_ShadowMask_35: 5508750333379931235
+      Axia_base_ShadowMask_36: 4276452557344246109
+      Axia_base_ShadowMask_37: 8554460672941352210
+      Axia_base_ShadowMask_38: 6318529556600246026
+      Axia_base_ShadowMask_39: 2351807159013954644
+      Axia_base_ShadowMask_4: -2917961221991344302
+      Axia_base_ShadowMask_40: -8554465757616388978
+      Axia_base_ShadowMask_41: 990468203716513648
+      Axia_base_ShadowMask_42: 2850290516593941009
+      Axia_base_ShadowMask_43: 2501734362455612034
+      Axia_base_ShadowMask_44: -8113692508007198010
+      Axia_base_ShadowMask_5: -7982432559047244093
+      Axia_base_ShadowMask_6: 4692195020598634808
+      Axia_base_ShadowMask_7: -2902645352544255389
+      Axia_base_ShadowMask_8: 1946517832550994539
+      Axia_base_ShadowMask_9: -4629924649008215389
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

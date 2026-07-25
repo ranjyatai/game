@@ -1,0 +1,86 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37600d2b343ea0847ac945ea73927454, type: 3}
+  m_Name: MD_Still Vault
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::MapDefinition
+  mapKey: newmap
+  fileName: Still Vault
+  displayName: "\u4F59\u7A79"
+  description: 
+  localizedNames:
+  - languageCode: zh-CN
+    text: "\u4F59\u7A79"
+  - languageCode: ja
+    text: "\u30B9\u30C6\u30A3\u30EB\u30F4\u30A9\u30EB\u30C8"
+  - languageCode: en
+    text: Stillvault
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: 
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 
+  scenePath: Assets/_Project/Maps/Hub/StillVault/Still Vault/Still Vault.unity
+  sceneGuid: 9b7763310e2f7db428d270f4a2e4f346
+  mapBoundsCenter: {x: 0, y: 0, z: 0}
+  mapBoundsSize: {x: 122, y: 6, z: 122}
+  enablePhysicalMapBounds: 1
+  mapBoundsWallThickness: 2
+  mapBoundsWallHeight: 12
+  mapBoundsUseCeiling: 0
+  mapBoundsCeilingThickness: 1
+  enableFogOfWar: 1
+  fogStrength: 0.72
+  fogSoftEdgeWidth: 3.5
+  environmentPreset: 1
+  skyRenderModel: {fileID: 0}
+  skyboxMaterial: {fileID: 2100000, guid: b77ec6dacd80fc840ac92894afab788c, type: 2}
+  ambientColor: {r: 0.8584906, g: 0.83974725, b: 0.827451, a: 0.12156863}
+  environmentAreaLightColor: {r: 0.91194963, g: 0.70296794, b: 0.63529414, a: 1}
+  environmentAreaLightIntensity: 0.35
+  environmentAreaLightSize: 16
+  environmentAreaLightPosition: {x: 0, y: 8, z: 0}
+  environmentAreaLightEuler: {x: 90, y: 0, z: 0}
+  mainLightColor: {r: 0.9748427, g: 0.8689268, b: 0.677485, a: 1}
+  mainLightIntensity: 0.6
+  mainLightEuler: {x: 50, y: -30, z: 0}
+  enableSceneFog: 0
+  sceneFogColor: {r: 0.6693218, g: 0.79278994, b: 0.8396226, a: 1}
+  fogStartDistance: 20
+  fogEndDistance: 80
+  postProcessProfile: {fileID: 0}
+  environmentFxPrefab: {fileID: 0}
+  enableDayNightCycle: 0
+  startTimeOfDay: 12
+  enableWeather: 1
+  weatherType: 1
+  dustWeather:
+    intensity: 1.35
+  rainWeather:
+    intensity: 7.78
+    lensWetnessIntensity: 0.261
+  snowWeather:
+    intensity: 0.5
+  weatherFog:
+    intensity: 0.5
+  enableDepthOfField: 1
+  focusDistance: 2.2
+  blurStrength: 1
+  triggerPackages:
+  - {fileID: 11400000, guid: 3a2c44d3f7ff9944d9151e60a35363c1, type: 2}
+  exploreBgmClips:
+  - {fileID: 8300000, guid: 19dd0d8b648a43c408309ed2ef032cf7, type: 3}
+  combatBgmClips: []
+  bgmPlayMode: 0
+  bgmCrossfadeDuration: 3
+  bgmVolume: 1

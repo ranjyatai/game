@@ -1,0 +1,133 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a17eba936d95e44f845f9696942403b, type: 3}
+  m_Name: SkyPrisonHUDStyleProfile_V1
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrison.Runtime.UI.SkyPrisonHUDStyleProfile_V1
+  basePlateSprite: {fileID: 0}
+  scanLineSprite: {fileID: 0}
+  noiseSprite: {fileID: 0}
+  accentLineSprite: {fileID: 0}
+  quickSlotBackSprite: {fileID: 3737258827287396714, guid: 7d3f9f383b7cab443bff92b41a2bc089, type: 3}
+  quickSlotFrameSprite: {fileID: 0}
+  quickSlotSelectedFrameSprite: {fileID: 0}
+  quickSlotCooldownMaskSprite: {fileID: 0}
+  hpBarBackSprite: {fileID: 2660534951652475335, guid: af97fee7a42ae504f9c3634f3f2fcd27, type: 3}
+  hpBarFrameSprite: {fileID: 0}
+  hpBarFillSprite: {fileID: 2660534951652475335, guid: af97fee7a42ae504f9c3634f3f2fcd27, type: 3}
+  hpDamageLagFillSprite: {fileID: 2660534951652475335, guid: af97fee7a42ae504f9c3634f3f2fcd27, type: 3}
+  hpFillEndCapSprite: {fileID: 0}
+  lpBarBackSprite: {fileID: 2660534951652475335, guid: af97fee7a42ae504f9c3634f3f2fcd27, type: 3}
+  lpBarFrameSprite: {fileID: 0}
+  lpBarFillSprite: {fileID: 2660534951652475335, guid: af97fee7a42ae504f9c3634f3f2fcd27, type: 3}
+  lpGhostFillSprite: {fileID: 2660534951652475335, guid: af97fee7a42ae504f9c3634f3f2fcd27, type: 3}
+  defaultUIMaterial: {fileID: 0}
+  glassPanelMaterial: {fileID: 0}
+  slotFrameMaterial: {fileID: 0}
+  barFrameMaterial: {fileID: 0}
+  hpFillMaterial: {fileID: 0}
+  hpDamageLagMaterial: {fileID: 0}
+  lpFillMaterial: {fileID: 0}
+  scanlineMaterial: {fileID: 0}
+  warningFlashMaterial: {fileID: 0}
+  globalUIBlendMode: 2
+  globalUIMaterial: {fileID: 2100000, guid: 1d932f3d903144e4883a31c261eb4f32, type: 2}
+  playerStatusOverrideGlobalBlend: 1
+  playerStatusBlendMode: 0
+  playerStatusOverrideGlobalMaterial: 0
+  playerStatusModuleMaterial: {fileID: 0}
+  quickSlotsOverrideGlobalBlend: 1
+  quickSlotsBlendMode: 0
+  quickSlotsOverrideGlobalMaterial: 0
+  quickSlotsModuleMaterial: {fileID: 0}
+  applyModuleMaterialToTMPText: 1
+  mainFont: {fileID: 11400000, guid: 54f5d27af22dd8d4caa986ef0611781b, type: 2}
+  numberFont: {fileID: 11400000, guid: 54f5d27af22dd8d4caa986ef0611781b, type: 2}
+  labelFont: {fileID: 0}
+  globalTextColor: {r: 1, g: 1, b: 1, a: 0.94}
+  globalNumberColor: {r: 1, g: 1, b: 1, a: 0.94}
+  globalLabelColor: {r: 0.74, g: 0.92, b: 0.88, a: 0.75}
+  globalTextWidthScale: 1
+  globalTextHeightScale: 1
+  globalNumberWidthScale: 1
+  globalNumberHeightScale: 1
+  globalLabelWidthScale: 1
+  globalLabelHeightScale: 1
+  basePlateColor: {r: 0.02, g: 0.16, b: 0.15, a: 0}
+  baseFadeColor: {r: 0.05, g: 0.3, b: 0.28, a: 0.18}
+  edgeColor: {r: 0.72, g: 1, b: 0.92, a: 0.18}
+  accentColor: {r: 0.53, g: 1, b: 0.72, a: 0.42}
+  slotBackColor: {r: 0.8, g: 1, b: 0.95, a: 0.055}
+  slotFrameColor: {r: 0.86, g: 1, b: 0.95, a: 0.26}
+  slotSelectedColor: {r: 0.53, g: 1, b: 0.72, a: 0.42}
+  slotNumberColor: {r: 0.9, g: 1, b: 0.95, a: 0.32}
+  hpColor: {r: 0.5377357, g: 1, b: 0.7264936, a: 0.92}
+  hpDamageLagColor: {r: 1, g: 0.5817793, b: 0.5691823, a: 0.55}
+  lpColor: {r: 0.9, g: 0.98, b: 1, a: 0.9}
+  lpGhostColor: {r: 0.7, g: 0.95, b: 1, a: 0.3}
+  barBackColor: {r: 0.85, g: 1, b: 0.96, a: 0.16}
+  barFrameColor: {r: 0.82, g: 1, b: 0.94, a: 0.35}
+  textColor: {r: 1, g: 1, b: 1, a: 0.94}
+  dimTextColor: {r: 1, g: 1, b: 1, a: 0.55}
+  warningTextColor: {r: 1, g: 0.7, b: 0.38, a: 0.95}
+  dangerTextColor: {r: 1, g: 0.35, b: 0.33, a: 0.95}
+  tinyHintColor: {r: 0.96, g: 0.98, b: 0.55, a: 0.82}
+  hpLabelText: HP
+  lpLabelText: LP
+  playerHpLabelFont: {fileID: 11400000, guid: ea35a3e4c89493f44bb2e5cbe046505c, type: 2}
+  playerLpLabelFont: {fileID: 11400000, guid: ea35a3e4c89493f44bb2e5cbe046505c, type: 2}
+  playerLoadLabelFont: {fileID: 0}
+  playerLoadNumberFont: {fileID: 0}
+  playerLoadStatusFont: {fileID: 0}
+  playerHpLabelColor: {r: 1, g: 1, b: 1, a: 0.94}
+  playerLpLabelColor: {r: 1, g: 1, b: 1, a: 0.94}
+  playerLoadLabelColor: {r: 1, g: 1, b: 1, a: 0.86}
+  playerLoadNumberColor: {r: 1, g: 1, b: 1, a: 0.94}
+  playerLoadPercentColor: {r: 1, g: 1, b: 1, a: 0.82}
+  playerHpLabelWidthScale: 1.5
+  playerHpLabelHeightScale: 0.65
+  playerLpLabelWidthScale: 1.58
+  playerLpLabelHeightScale: 0.65
+  playerLoadLabelWidthScale: 1.5
+  playerLoadLabelHeightScale: 0
+  playerLoadNumberWidthScale: 1.6
+  playerLoadNumberHeightScale: 0
+  playerLoadStatusWidthScale: 0
+  playerLoadStatusHeightScale: 0
+  loadPrefixText: LD
+  loadPercentSymbolText: '%'
+  loadLightStatusText: "\u8F7B\u4FBF"
+  loadNormalStatusText: "\u8D1F\u91CD"
+  loadOverweightStatusText: "\u8D85\u91CD"
+  loadLightStatusColor: {r: 0.64, g: 1, b: 0.78, a: 0.92}
+  loadNormalStatusColor: {r: 0.98, g: 0.98, b: 0.7, a: 0.92}
+  loadOverweightStatusColor: {r: 1, g: 0.38, b: 0.32, a: 0.95}
+  loadLabelSegmentWidth: 44
+  loadNumberSegmentWidth: 76
+  loadPercentSegmentWidth: 24
+  loadStatusSegmentGap: 18
+  overallAlpha: 1
+  scanLineAlpha: 0.022
+  noiseAlpha: 0.035
+  hpGlowStrength: 1.29
+  lpGlowStrength: 1.23
+  fontScale: 1
+  hpFillChangeDuration: 0.16
+  hpDamageLagHoldDuration: 0.18
+  hpDamageLagCatchupDuration: 0.42
+  enableHpDamageLag: 1
+  lpFillChangeDuration: 0.08
+  enableLpGhostFill: 0
+  useUnscaledTimeForBars: 1
+  basePlateImageType: 1
+  slotImageType: 1
+  barFrameImageType: 1
+  barFillImageType: 0

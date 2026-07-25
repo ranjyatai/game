@@ -1,0 +1,325 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a03883ee59c8a5241acf98a2e13e87dc, type: 3}
+  m_Name: SAP_AP_Surface_Metal
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonAudioPackage
+  packageKey: AP_Surface_Metal
+  displayName: "\u94C1\u677F"
+  packageType: 1
+  playMode: 0
+  timelineLengthSeconds: 10
+  masterVolume: 1
+  randomVolumeRange: {x: 0.95, y: 1.05}
+  randomPitchRange: {x: 0.96, y: 1.04}
+  spatial3D: 1
+  minDistance: 1
+  maxDistance: 12
+  noiseRadius: 5
+  noiseStrength: 1
+  tracks:
+  - trackId: 4fb81ed4f8e64035beb0025cdf8530d0
+    displayName: footstep_l
+    runtimeLayerKey: surface_metal
+    footSideCondition: 1
+    color: {r: 0.95, g: 0.35, b: 0.8, a: 1}
+    mute: 0
+    solo: 0
+    locked: 0
+    mixerChannelId: e9951f19e21c44e18c343b4638b9f0ed
+    segments:
+    - segmentId: af640a453e7441a9bfdae6dda2fbd981
+      displayName: Metal04Jump
+      sourceClip: {fileID: 8300000, guid: ba590dd0307524b4494b0e224a8e80bc, type: 3}
+      timelineStart: 0
+      sourceStart: 0
+      sourceEnd: 1.0127083
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: cd1e599a4b6548728438d8519f8f243e
+      displayName: MetalSteps06
+      sourceClip: {fileID: 8300000, guid: 2455d596255fc1d42a788d1542749c1d, type: 3}
+      timelineStart: 1
+      sourceStart: 0
+      sourceEnd: 0.6563333
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: dc793d94470a41d6a5dd8e4722b8739a
+      displayName: MetalSteps07
+      sourceClip: {fileID: 8300000, guid: 2d1091fda2392754585887a29711fb61, type: 3}
+      timelineStart: 1.65
+      sourceStart: 0
+      sourceEnd: 0.915125
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: a85cc49ddc0f4587ac32c4f68ef76686
+      displayName: MetalSteps09
+      sourceClip: {fileID: 8300000, guid: db2f180b6e15d324e9ed414909e32f3b, type: 3}
+      timelineStart: 2.55
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: e4e0377269414b25b3470cfe6a720a66
+      displayName: MetalSteps10
+      sourceClip: {fileID: 8300000, guid: e749b6ba86f4b904788c2b229cc7c0b5, type: 3}
+      timelineStart: 3.05
+      sourceStart: 0
+      sourceEnd: 0.4833125
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 4db19175a1834d9a923a9876dcb7f273
+      displayName: MetalSteps16
+      sourceClip: {fileID: 8300000, guid: 055c705ce2c3c97489bd61086f8e8387, type: 3}
+      timelineStart: 3.55
+      sourceStart: 0
+      sourceEnd: 0.44325
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: c35094a256cb4c21939bf4bb2f16ac4a
+      displayName: MetalSteps31
+      sourceClip: {fileID: 8300000, guid: 9a0c7f9e3a12bb84c9fe2935464952b1, type: 3}
+      timelineStart: 4
+      sourceStart: 0
+      sourceEnd: 0.74095833
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: f68403753d2048ac9cef24b1e2d8b736
+      displayName: MetalSteps77
+      sourceClip: {fileID: 8300000, guid: 136cf5405cb6b6f4f86694d1a0017576, type: 3}
+      timelineStart: 4.75
+      sourceStart: 0
+      sourceEnd: 0.9489375
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: c328f3f6fe244baba79bc85978f4f7a7
+      displayName: MetalSteps76
+      sourceClip: {fileID: 8300000, guid: f5cedd2860d97434fa5cdfb4670a1408, type: 3}
+      timelineStart: 5.7000003
+      sourceStart: 0
+      sourceEnd: 0.6411875
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: a8d206650d4e4d8b8582ef02d92a9b34
+      displayName: MetalSteps74
+      sourceClip: {fileID: 8300000, guid: a2500e2f7b3d52c4da3abc7c7fb1b774, type: 3}
+      timelineStart: 6.35
+      sourceStart: 0
+      sourceEnd: 0.6088542
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+  - trackId: d3691de6830c426a89af3793f65ab10e
+    displayName: footstep_r
+    runtimeLayerKey: surface_metal
+    footSideCondition: 2
+    color: {r: 0.4, g: 0.85, b: 0.55, a: 1}
+    mute: 0
+    solo: 0
+    locked: 0
+    mixerChannelId: cc8d93ff846f45ff8be28d377270d15c
+    segments:
+    - segmentId: 2ccb3417e6c043d389ae487ef7d4e21f
+      displayName: MetalSteps74
+      sourceClip: {fileID: 8300000, guid: a2500e2f7b3d52c4da3abc7c7fb1b774, type: 3}
+      timelineStart: 6.35
+      sourceStart: 0
+      sourceEnd: 0.6088542
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: b8a96d8f042540a1851b8fa73588ca29
+      displayName: MetalSteps76
+      sourceClip: {fileID: 8300000, guid: f5cedd2860d97434fa5cdfb4670a1408, type: 3}
+      timelineStart: 5.7000003
+      sourceStart: 0
+      sourceEnd: 0.6411875
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 5031b5e30cdb4c4f8a43f4da0c9ea0ce
+      displayName: MetalSteps77
+      sourceClip: {fileID: 8300000, guid: 136cf5405cb6b6f4f86694d1a0017576, type: 3}
+      timelineStart: 4.75
+      sourceStart: 0
+      sourceEnd: 0.9489375
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 1466125123a74b1384d1ddf7caf6e520
+      displayName: MetalSteps31
+      sourceClip: {fileID: 8300000, guid: 9a0c7f9e3a12bb84c9fe2935464952b1, type: 3}
+      timelineStart: 4
+      sourceStart: 0
+      sourceEnd: 0.74095833
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 13e00a9aa8904423b146bccead636a26
+      displayName: MetalSteps16
+      sourceClip: {fileID: 8300000, guid: 055c705ce2c3c97489bd61086f8e8387, type: 3}
+      timelineStart: 3.55
+      sourceStart: 0
+      sourceEnd: 0.44325
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 0c9b7d1f243e4d68a0b13976ca053c90
+      displayName: MetalSteps10
+      sourceClip: {fileID: 8300000, guid: e749b6ba86f4b904788c2b229cc7c0b5, type: 3}
+      timelineStart: 3.05
+      sourceStart: 0
+      sourceEnd: 0.4833125
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 949c43a9447c4e1db3fdea87d9fb3813
+      displayName: MetalSteps09
+      sourceClip: {fileID: 8300000, guid: db2f180b6e15d324e9ed414909e32f3b, type: 3}
+      timelineStart: 2.55
+      sourceStart: 0
+      sourceEnd: 0.5
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 905e62c2600f48b1ad7c3fd34690a143
+      displayName: MetalSteps07
+      sourceClip: {fileID: 8300000, guid: 2d1091fda2392754585887a29711fb61, type: 3}
+      timelineStart: 1.65
+      sourceStart: 0
+      sourceEnd: 0.915125
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 1a3044bb32ef4050904fac0aaf938108
+      displayName: MetalSteps06
+      sourceClip: {fileID: 8300000, guid: 2455d596255fc1d42a788d1542749c1d, type: 3}
+      timelineStart: 1
+      sourceStart: 0
+      sourceEnd: 0.6563333
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 90b83833ac9f4445a4d247a43f7dd9b3
+      displayName: Metal04Jump
+      sourceClip: {fileID: 8300000, guid: ba590dd0307524b4494b0e224a8e80bc, type: 3}
+      timelineStart: 0
+      sourceStart: 0
+      sourceEnd: 1.0127083
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+  mixerChannels:
+  - channelId: e9951f19e21c44e18c343b4638b9f0ed
+    displayName: Track 1
+    volume: 1
+    pan: -0.1
+    mute: 0
+    solo: 0
+    editorMeterPreview: 0
+    effects: []
+  - channelId: cc8d93ff846f45ff8be28d377270d15c
+    displayName: Track 2
+    volume: 1
+    pan: 0.1
+    mute: 0
+    solo: 0
+    editorMeterPreview: 0
+    effects: []

@@ -1,0 +1,520 @@
+fileFormatVersion: 2
+guid: e7021606c429663448372e278adb6b77
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -409603691978434712
+    second: T_RoadMark_ZebraCrossing_Dirty_01_0
+  - first:
+      213: 2924371707920014252
+    second: T_RoadMark_ZebraCrossing_Dirty_01_1
+  - first:
+      213: 4602008761215514957
+    second: T_RoadMark_ZebraCrossing_Dirty_01_2
+  - first:
+      213: 3810886788632140128
+    second: T_RoadMark_ZebraCrossing_Dirty_01_3
+  - first:
+      213: 3320822607294700493
+    second: T_RoadMark_ZebraCrossing_Dirty_01_4
+  - first:
+      213: -5874736416467458237
+    second: T_RoadMark_ZebraCrossing_Dirty_01_5
+  - first:
+      213: 6906655143829777795
+    second: T_RoadMark_ZebraCrossing_Dirty_01_6
+  - first:
+      213: -5180866363943890634
+    second: T_RoadMark_ZebraCrossing_Dirty_01_7
+  - first:
+      213: -2023933648339766185
+    second: T_RoadMark_ZebraCrossing_Dirty_01_8
+  - first:
+      213: -6016530782621833412
+    second: T_RoadMark_ZebraCrossing_Dirty_01_9
+  - first:
+      213: 4683744582883254179
+    second: T_RoadMark_ZebraCrossing_Dirty_01_10
+  - first:
+      213: 2035400741471813915
+    second: T_RoadMark_ZebraCrossing_Dirty_01_11
+  - first:
+      213: 3654194227948807168
+    second: T_RoadMark_ZebraCrossing_Dirty_01_12
+  - first:
+      213: 1419078489049800772
+    second: T_RoadMark_ZebraCrossing_Dirty_01_13
+  - first:
+      213: -8697964653863319946
+    second: T_RoadMark_ZebraCrossing_Dirty_01_14
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: T_RoadMark_ZebraCrossing_Dirty_01_0
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 1751
+        width: 2005
+        height: 246
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 867dfe0cc9bc05af0800000000000000
+      internalID: -409603691978434712
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_RoadMark_ZebraCrossing_Dirty_01_1
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 1192
+        width: 2005
+        height: 246
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cab56c90394759820800000000000000
+      internalID: 2924371707920014252
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_RoadMark_ZebraCrossing_Dirty_01_2
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 632
+        width: 1904
+        height: 246
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d497c79f59e9ddf30800000000000000
+      internalID: 4602008761215514957
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_RoadMark_ZebraCrossing_Dirty_01_3
+      rect:
+        serializedVersion: 2
+        x: 2019
+        y: 855
+        width: 6
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 069d5a3e75df2e430800000000000000
+      internalID: 3810886788632140128
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_RoadMark_ZebraCrossing_Dirty_01_4
+      rect:
+        serializedVersion: 2
+        x: 1925
+        y: 764
+        width: 16
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dcb13ed119ee51e20800000000000000
+      internalID: 3320822607294700493
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_RoadMark_ZebraCrossing_Dirty_01_5
+      rect:
+        serializedVersion: 2
+        x: 1939
+        y: 818
+        width: 7
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 347e76bda5eb87ea0800000000000000
+      internalID: -5874736416467458237
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_RoadMark_ZebraCrossing_Dirty_01_6
+      rect:
+        serializedVersion: 2
+        x: 1947
+        y: 763
+        width: 6
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 38d2912a24e59df50800000000000000
+      internalID: 6906655143829777795
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_RoadMark_ZebraCrossing_Dirty_01_7
+      rect:
+        serializedVersion: 2
+        x: 1955
+        y: 767
+        width: 70
+        height: 79
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 631da5ccd7dd918b0800000000000000
+      internalID: -5180866363943890634
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_RoadMark_ZebraCrossing_Dirty_01_8
+      rect:
+        serializedVersion: 2
+        x: 1911
+        y: 714
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7547fb1f11b89e3e0800000000000000
+      internalID: -2023933648339766185
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_RoadMark_ZebraCrossing_Dirty_01_9
+      rect:
+        serializedVersion: 2
+        x: 1917
+        y: 713
+        width: 44
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c376f91512df08ca0800000000000000
+      internalID: -6016530782621833412
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_RoadMark_ZebraCrossing_Dirty_01_10
+      rect:
+        serializedVersion: 2
+        x: 1974
+        y: 632
+        width: 51
+        height: 98
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3af9a61f1e0000140800000000000000
+      internalID: 4683744582883254179
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_RoadMark_ZebraCrossing_Dirty_01_11
+      rect:
+        serializedVersion: 2
+        x: 1883
+        y: 638
+        width: 44
+        height: 69
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b118efab0323f3c10800000000000000
+      internalID: 2035400741471813915
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_RoadMark_ZebraCrossing_Dirty_01_12
+      rect:
+        serializedVersion: 2
+        x: 1916
+        y: 632
+        width: 90
+        height: 77
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 004eb212a4e46b230800000000000000
+      internalID: 3654194227948807168
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_RoadMark_ZebraCrossing_Dirty_01_13
+      rect:
+        serializedVersion: 2
+        x: 1932
+        y: 702
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 44026300e5491b310800000000000000
+      internalID: 1419078489049800772
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: T_RoadMark_ZebraCrossing_Dirty_01_14
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 73
+        width: 2005
+        height: 246
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 676c2992b3f9a4780800000000000000
+      internalID: -8697964653863319946
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      T_RoadMark_ZebraCrossing_Dirty_01_0: -409603691978434712
+      T_RoadMark_ZebraCrossing_Dirty_01_1: 2924371707920014252
+      T_RoadMark_ZebraCrossing_Dirty_01_10: 4683744582883254179
+      T_RoadMark_ZebraCrossing_Dirty_01_11: 2035400741471813915
+      T_RoadMark_ZebraCrossing_Dirty_01_12: 3654194227948807168
+      T_RoadMark_ZebraCrossing_Dirty_01_13: 1419078489049800772
+      T_RoadMark_ZebraCrossing_Dirty_01_14: -8697964653863319946
+      T_RoadMark_ZebraCrossing_Dirty_01_2: 4602008761215514957
+      T_RoadMark_ZebraCrossing_Dirty_01_3: 3810886788632140128
+      T_RoadMark_ZebraCrossing_Dirty_01_4: 3320822607294700493
+      T_RoadMark_ZebraCrossing_Dirty_01_5: -5874736416467458237
+      T_RoadMark_ZebraCrossing_Dirty_01_6: 6906655143829777795
+      T_RoadMark_ZebraCrossing_Dirty_01_7: -5180866363943890634
+      T_RoadMark_ZebraCrossing_Dirty_01_8: -2023933648339766185
+      T_RoadMark_ZebraCrossing_Dirty_01_9: -6016530782621833412
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

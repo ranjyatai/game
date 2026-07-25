@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 811440a61e79097468ce605af0dfac5b, type: 3}
+  m_Name: SettingsSidebarIconSettings
+  m_EditorClassIdentifier: Assembly-CSharp::SettingsSidebarIconSettings
+  tabIcons:
+  - {fileID: 2800000, guid: 28359958059825c4db6cfdcd86c682d7, type: 3}
+  - {fileID: 2800000, guid: 08866fa88c1c60e46a8543dc16ca32d4, type: 3}
+  - {fileID: 2800000, guid: 7db2f9ca35ef2e949b104fa66f859dd6, type: 3}
+  - {fileID: 2800000, guid: bbef047a1b834f246ace0051819d20a5, type: 3}
+  - {fileID: 2800000, guid: 7d962663be4aea04cb7916099efd5a28, type: 3}
+  - {fileID: 2800000, guid: 91b0a3cf870e416468ab12977eabd861, type: 3}
+  - {fileID: 2800000, guid: 5c1be6a0a8463224eab7f07cafa0cd5d, type: 3}

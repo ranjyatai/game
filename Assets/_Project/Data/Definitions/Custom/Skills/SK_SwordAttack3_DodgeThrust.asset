@@ -1,0 +1,100 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e048f20b1c5de8e4da982e6e98ccbef3, type: 3}
+  m_Name: SK_SwordAttack3_DodgeThrust
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  skillKey: sword_attack_3_dodge_thrust
+  displayName: "\u95EA\u907F\u7A81\u523A"
+  description: 
+  category: 0
+  spineAnimationKey: Attack/Attack_Sword_3
+  spineEventKey: hit
+  isChargeSkill: 0
+  charge:
+    chargeHoldEventKey: charge_hold
+    releaseTimeScale: 1
+    fullChargeHoldSeconds: 1
+    fullChargeDamageMultiplier: 1.5
+    fullChargeReachedSE: []
+    holdLpCostPerSecond: 3
+    dashOnRelease: 0
+    dashDistance: 10
+    dashDistanceScalesWithChargeRatio: 0
+    dashFallbackDurationSeconds: 0.25
+    dashVfx: {fileID: 0}
+    dashVfxAnchor: 0
+    dashVfxCharacterAnchorOffset: {x: 0, y: 0, z: 0}
+  hitbox:
+    shape: 0
+    offset: {x: 0, y: 0}
+    radius: 1.2
+    size: {x: 1, y: 1}
+    zDepth: 2
+  isProjectileSkill: 0
+  projectile:
+    speed: 20
+    maxLifetimeSeconds: 2
+    launchAngleDownDegrees: 45
+    hitRadius: 0.4
+    destroyOnHit: 1
+    projectileVfx: {fileID: 0}
+    projectileVfxScale: {x: 1, y: 1, z: 1}
+    impactVfx: {fileID: 0}
+  damageMultiplier: 1.2
+  damageTypeKey: impact
+  attributeHits: []
+  lpCost: 8
+  knockbackForce: 6
+  stunDuration: 0.25
+  startupTime: 0.08
+  activeTime: 0.2
+  recoveryTime: 0.15
+  nextComboSkillKey: 
+  swingVFX: {fileID: 0}
+  travelVfx: {fileID: 11400000, guid: 16e29564cb7f5214c871e4c5b25e4e22, type: 2}
+  travelVfxAnchor: 1
+  travelVfxCharacterAnchorOffset: {x: -4.3, y: 2.8, z: 0}
+  swingSE:
+  - clip: {fileID: 8300000, guid: 95e7242467aaf1147a292cb51848f48b, type: 3}
+    volume: 1
+  - clip: {fileID: 8300000, guid: 0bab98fc3f4b27949afb619eabe401ff, type: 3}
+    volume: 1
+  - clip: {fileID: 8300000, guid: 0bab98fc3f4b27949afb619eabe401ff, type: 3}
+    volume: 1
+  swingSEVolume: 1
+  hitSE:
+  - clip: {fileID: 8300000, guid: acef623fc04d07540b87b76680973833, type: 3}
+    volume: 1
+  - clip: {fileID: 8300000, guid: 933298fb624e2df4ca3a7728a675173e, type: 3}
+    volume: 1
+  - clip: {fileID: 8300000, guid: 748e2fdaeb4afa54693033c04d807dd9, type: 3}
+    volume: 1
+  whiffSE: []
+  seVolume: 1
+  localizedNames:
+  - languageCode: 
+    text: 
+  - languageCode: zh-CN
+    text: 
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 
+  localizedDescriptions:
+  - languageCode: 
+    text: 
+  - languageCode: zh-CN
+    text: 
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ccd_session__mark_chapter",
+      "PowerShell(Select-String *)",
+      "mcp__computer-use__zoom",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(Get-CimInstance *)",
+      "mcp__computer-use__screenshot",
+      "mcp__visualize__show_widget"
+    ]
+  }
+}

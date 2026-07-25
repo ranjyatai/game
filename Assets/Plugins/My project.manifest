@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <asmv3:application xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">
+    <asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">
+      <!--
+        统一 Editor Play 和 Build 的屏幕尺寸换算基准：不声明 DPI 感知的话，Windows
+        系统缩放不是 100% 时会把打包出来的.exe当成"老旧程序"，用位图拉伸的方式
+        套到物理屏幕上——Unity 内部拿到的 Screen.width/height 会被这层拉伸悄悄改变，
+        跟 Editor 里 Game 窗口手动选固定分辨率（不经过 Windows 缩放）算出来的结果
+        不一致，UI 锚点位置、文字换行宽度这些跟 Screen 尺寸相关的计算全部跟着跑偏。
+        声明 PerMonitorV2 之后，Unity 读到的永远是真实物理像素，不再受系统缩放影响，
+        Editor 和 Build 用的是同一套基准。
+      -->
+      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+      <dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true/pm</dpiAware>
+    </asmv3:windowsSettings>
+  </asmv3:application>
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+    <security>
+      <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+        <requestedExecutionLevel level="asInvoker" uiAccess="false" />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+</assembly>

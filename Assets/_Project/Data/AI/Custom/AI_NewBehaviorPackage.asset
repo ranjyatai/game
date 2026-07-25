@@ -1,0 +1,351 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eebe50ce53db93041927eebd4adf98ae, type: 3}
+  m_Name: AI_NewBehaviorPackage
+  m_EditorClassIdentifier: Assembly-CSharp::AIBehaviorPackage
+  aiId: new_ai
+  displayName: "\u5C0F\u52A8\u7269"
+  note: 
+  debugLogs: 0
+  enablePerceptionModule: 1
+  enableDecisionModule: 1
+  enableActionModule: 1
+  rules:
+  - enabled: 1
+    ruleName: "\u65B0\u89C4\u5219 1"
+    note: 
+    priority: 100
+    cooldownSeconds: 0
+    requireAllConditions: 1
+    conditions: []
+    motive: 2
+    actions: []
+    sentenceRoot:
+      conditionGroup:
+        items: []
+      motiveGroup:
+        items: []
+      actionGroup:
+        items:
+        - templateId: flow_if_then_else
+          enabled: 1
+          slotAssignments: []
+          conditionChildren:
+          - rid: -2
+          thenChildren:
+          - rid: -2
+          elseChildren:
+          - rid: -2
+          - rid: -2
+          bodyChildren: []
+  ruleTree:
+  - nodeType: 1
+    displayName: "\u65B0\u89C4\u5219 2"
+    expanded: 1
+    enabled: 1
+    note: 
+    ruleData:
+      enabled: 1
+      ruleName: "\u5F98\u5F8A"
+      note: 
+      priority: 100
+      cooldownSeconds: 0
+      requireAllConditions: 1
+      conditions: []
+      motive: 2
+      actions: []
+      sentenceRoot:
+        conditionGroup:
+          items:
+          - templateId: cond_unit_can_see_player
+            enabled: 1
+            slotAssignments:
+            - slotId: subject
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: expected
+              value:
+                valueType: 0
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+        motiveGroup:
+          items:
+          - templateId: event_every_seconds
+            enabled: 1
+            slotAssignments:
+            - slotId: seconds
+              value:
+                valueType: 2
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 3
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+        actionGroup:
+          items:
+          - templateId: act_move_unit_random_in_radius
+            enabled: 1
+            slotAssignments:
+            - slotId: subject
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: radius
+              value:
+                valueType: 2
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 5
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            - slotId: moveMode
+              value:
+                valueType: 7
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                stringValue: 
+                enumValue: "\u884C\u8D70"
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+    children: []
+  - nodeType: 1
+    displayName: "\u65B0\u89C4\u5219 2"
+    expanded: 1
+    enabled: 1
+    note: 
+    ruleData:
+      enabled: 1
+      ruleName: "\u9003\u79BB"
+      note: 
+      priority: 100
+      cooldownSeconds: 0
+      requireAllConditions: 1
+      conditions: []
+      motive: 2
+      actions: []
+      sentenceRoot:
+        conditionGroup:
+          items:
+          - templateId: cond_unit_can_see_player
+            enabled: 1
+            slotAssignments:
+            - slotId: subject
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: expected
+              value:
+                valueType: 0
+                sourceType: 0
+                boolValue: 1
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+        motiveGroup:
+          items:
+          - templateId: event_every_seconds
+            enabled: 1
+            slotAssignments:
+            - slotId: seconds
+              value:
+                valueType: 2
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0.2
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+        actionGroup:
+          items:
+          - templateId: act_move_unit_away_from_target
+            enabled: 1
+            slotAssignments:
+            - slotId: subject
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: self
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: "\u8BE5\u5355\u4F4D"
+            - slotId: target
+              value:
+                valueType: 4
+                sourceType: 2
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: "\u5F53\u524D\u76EE\u6807"
+                assetReference: {fileID: 0}
+                sceneObjectId: player_axia_01
+                sceneObjectName: AXIA
+            - slotId: distance
+              value:
+                valueType: 2
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 12
+                stringValue: 
+                enumValue: 
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            - slotId: moveMode
+              value:
+                valueType: 7
+                sourceType: 0
+                boolValue: 0
+                intValue: 0
+                intValueMax: 0
+                floatValue: 0
+                stringValue: 
+                enumValue: "\u5954\u8DD1"
+                enumDisplayName: 
+                variableKey: 
+                contextKey: 
+                assetReference: {fileID: 0}
+                sceneObjectId: 
+                sceneObjectName: 
+            conditionChildren: []
+            thenChildren: []
+            elseChildren: []
+            bodyChildren: []
+    children: []
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }

@@ -1,0 +1,258 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_Memento_HomingOne_OcclusionComposite
+  m_Shader: {fileID: 4800000, guid: 153c363928bce284cbeb4a0a14b501ed, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _INVERTMASK_ON
+  - _PREMULTIPLYALPHA_ON
+  - _SKYPRISON_USEHOLOGRAMFILL_ON
+  - _STRAIGHT_ALPHA_INPUT
+  - _USE8NEIGHBOURHOOD_ON
+  - _USEHARDDISCARD_ON
+  - _USEVERTEXCOLOR_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: _MaskDilatePixels
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _CharacterDepthMask:
+        m_Texture: {fileID: 2800000, guid: 2b59b5fa5b2cf1e49957951f1abb9e03, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: d63c4b7604a1b7c47985e35a67a49811, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OcclusionTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SkyPrisonOccluderDepthTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SkyPrison_CharacterMaskTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SkyPrison_CleanCharacterOutlineTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SkyPrison_DissolveNoiseTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SkyPrison_OutlineClipTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SkyPrison_ShadowMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AdaptiveSoftnessScale: 3
+    - _AlphaClipThreshold: 0.02
+    - _AlphaMultiplier: 1
+    - _BaseContactIgnore: 0.02
+    - _BaseOcclusionBias: 0.012
+    - _BaseOcclusionSoftness: 0.025
+    - _BaseOcclusionStrength: 1
+    - _BehindGateBias: 0.01
+    - _BehindGateSoftness: 0.025
+    - _CandidateBias: 0.006
+    - _CandidateSoftness: 0.02
+    - _CharacterDepthOffsetTowardCamera: 0
+    - _CharacterDeviceDepth: 0.5
+    - _CharacterEyeDepth: 10
+    - _CharacterLinearDepth: 0.5
+    - _CharacterViewDepth: 10
+    - _CompareMode: 0
+    - _ContactIgnoreDepth: 0.04
+    - _CoverageBoost: 0.3
+    - _Cull: 0
+    - _Cutoff: 0
+    - _DebugMaskMode: 0
+    - _DebugMode: 1
+    - _DepthBias: 0
+    - _DepthCompareBias: 0
+    - _DepthCompareSoftness: 0.002
+    - _DepthDeadZone: 0.0062
+    - _DepthMaskChannel: 0
+    - _DepthMaskInfluence: 0.45
+    - _DepthMaskInvert: 0
+    - _DepthSoftness: 0.05
+    - _DiscardMaskThreshold: 0.01
+    - _ExtraDepthBias: 0.006
+    - _ExtraDepthSoftness: 0.012
+    - _Fill: 0
+    - _FlipMaskY: 0
+    - _FullOcclusionIgnoresContact: 1
+    - _FullOcclusionMargin: 0.035
+    - _FullOcclusionStrength: 1
+    - _GateStrength: 1
+    - _InvertDepthMask: 0
+    - _InvertMask: 1
+    - _LocalDepthInfluence: 0.35
+    - _LocalOnlyWhenBaseUncertain: 1
+    - _LogicalDepthMaskUVStrength: 1
+    - _MaskDilatePixels: 2.58
+    - _MaskEdgeGuardPixels: 1
+    - _MaskFlipY: 0
+    - _MaskInsetPixels: 1.5
+    - _MaskSoftness: 0.12
+    - _MaskThreshold: 0.5
+    - _MinDepthSoftness: 0.004
+    - _NoOccluderDepthThreshold: 0.995
+    - _OccProxySurface: -1
+    - _OccludedAlpha: 0
+    - _OccludedBrightness: 2
+    - _OccludedSaturation: 0
+    - _OccludedZTest: 5
+    - _OccluderDepthHoleFillRadius: 2
+    - _OccluderDepthSampleRadius: 0
+    - _OcclusionStrength: 0.731
+    - _OutlineMipLevel: 0
+    - _OutlineOpaqueAlpha: 1
+    - _OutlineReferenceTexWidth: 1024
+    - _OutlineSmoothness: 1
+    - _OutlineWidth: 3
+    - _OutsideAlpha: 0
+    - _PremultiplyAlpha: 1
+    - _RawDepthBias: 0.001
+    - _RawDepthSoftness: 0.002
+    - _RawDiscardThreshold: 0.01
+    - _SP_DepthRevealAlpha: 0.6
+    - _SP_DepthRevealBias: 0.002
+    - _SP_DepthRevealEnable: 0
+    - _SampleBothY: 0
+    - _SkyPrisonBehindOccluderGate: 1
+    - _SkyPrisonCharacterBaseDepth: 0.5
+    - _SkyPrisonCharacterDepth01: 0.5
+    - _SkyPrisonCharacterDeviceDepth: 0.5
+    - _SkyPrisonCharacterLinearDepth: 0.5
+    - _SkyPrisonCharacterStandLinearDepth: 0
+    - _SkyPrisonCompareMode: 0
+    - _SkyPrisonDepthBias: 0.0005
+    - _SkyPrisonDepthSoftness: 0.002
+    - _SkyPrisonUseExternalBehindGate: 0
+    - _SkyPrison_AlphaCleanupCutoff: 0.015
+    - _SkyPrison_AlphaCleanupFeather: 0.04
+    - _SkyPrison_AlphaCleanupPower: 1
+    - _SkyPrison_CharacterStencilReadMask: 255
+    - _SkyPrison_CharacterStencilRef: 41
+    - _SkyPrison_CharacterStencilWriteMask: 255
+    - _SkyPrison_CompositeZTest: 8
+    - _SkyPrison_DebugBodyMaskAlpha: 0.75
+    - _SkyPrison_DebugBodyMaskMode: 0
+    - _SkyPrison_DissolveAmount: 0
+    - _SkyPrison_DissolveDarken: 0
+    - _SkyPrison_DissolveEdgeWidth: 0.12
+    - _SkyPrison_DissolveNoiseScale: 0.6
+    - _SkyPrison_EnableBodyClip: 1
+    - _SkyPrison_EnableHiddenOutline: 1
+    - _SkyPrison_EnvContrast: 1
+    - _SkyPrison_EnvDarken: 0
+    - _SkyPrison_EnvExposure: 0
+    - _SkyPrison_EnvSaturation: 1
+    - _SkyPrison_EnvShadowTintStrength: 0
+    - _SkyPrison_EnvTintStrength: 0
+    - _SkyPrison_FootDepthBias: 0
+    - _SkyPrison_FootDepthDebugTint: 0
+    - _SkyPrison_FootDepthStrength: 1
+    - _SkyPrison_FootVerticalDepthScale: 0
+    - _SkyPrison_HiddenOutlineAlpha: 1
+    - _SkyPrison_HiddenOutlineFarSampleScale: 2.35
+    - _SkyPrison_HiddenOutlineMinStableVotes: 2
+    - _SkyPrison_HiddenOutlineNoiseThreshold: 0.35
+    - _SkyPrison_HiddenOutlineStableFilter: 1
+    - _SkyPrison_HiddenOutlineWidthPixels: 2
+    - _SkyPrison_HologramAlpha: 0.75
+    - _SkyPrison_HologramCycleLength: 4
+    - _SkyPrison_HologramGridBright: 1.4
+    - _SkyPrison_HologramGridDensity: 14
+    - _SkyPrison_HologramGridLineWidth: 0.08
+    - _SkyPrison_HologramScanFreq: 2.2
+    - _SkyPrison_HologramScanSpeed: 1.4
+    - _SkyPrison_HologramSilhouetteAlpha: 0
+    - _SkyPrison_HologramSweepRangeY: 2
+    - _SkyPrison_HologramSweepWindow: 0.35
+    - _SkyPrison_HologramTrailLength: 0.4
+    - _SkyPrison_LogicalDepthZ: 0
+    - _SkyPrison_OcclusionAlpha: 1
+    - _SkyPrison_ShadowMaskStrength: 0
+    - _SkyPrison_StatusFlashActive: 0
+    - _SkyPrison_StatusFlashAlphaDip: 0.35
+    - _SkyPrison_StatusFlashCenterHeight: 0.9
+    - _SkyPrison_StatusFlashIntensity: 0
+    - _SkyPrison_StatusFlashProgress: 0
+    - _SkyPrison_StatusFlashRadius: 1
+    - _SkyPrison_StatusFlashRingWidth: 0.35
+    - _SkyPrison_StatusOutlineFlowSpeed: 0.6
+    - _SkyPrison_StatusOutlineIntensity: 0
+    - _SkyPrison_StatusOutlineNoiseScale: 1.2
+    - _SkyPrison_StatusOutlineWidth: 0.3
+    - _SkyPrison_StatusOutlineWidthPixels: 3
+    - _SkyPrison_StatusOutlineWidthVariance: 0.6
+    - _SkyPrison_StencilRef: 41
+    - _SkyPrison_UseCleanCharacterOutlineTex: 0
+    - _SkyPrison_UseFootDepthCompensation: 1
+    - _SkyPrison_UseHologramFill: 1
+    - _SkyPrison_ZTest: 4
+    - _StencilComp: 6
+    - _StencilReadMask: 255
+    - _StencilRef: 1
+    - _StencilWriteMask: 255
+    - _StraightAlphaInput: 0
+    - _TerrainOccludedHeightLocal: 1.0500001
+    - _TerrainOccludedWorldY: 3.6911297
+    - _TerrainOcclusionAmount: 1
+    - _TerrainOcclusionSoftness: 0.35
+    - _ThresholdEnd: 0.25
+    - _Use8Neighbourhood: 1
+    - _UseConservativeMask: 1
+    - _UseExternalBehindGate: 1
+    - _UseHardDiscard: 1
+    - _UseLogicalDepthMaskUV: 1
+    - _UseMaskCameraMatrix: 0
+    - _UseScreenSpaceOutlineWidth: 0
+    - _UseVertexColor: 1
+    - _VisibleZTest: 4
+    m_Colors:
+    - _CharacterDepthGradient: {r: 0, g: 0, b: 0, a: 0}
+    - _CharacterScreenCenter: {r: 0.5, g: 0.5, b: 0, a: 0}
+    - _CharacterScreenExtents: {r: 0.1, g: 0.1, b: 0, a: 0}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _MaskUVOffset: {r: 0, g: 0, b: 0, a: 0}
+    - _MaskUVOffsetPixels: {r: 0, g: 0, b: 0, a: 0}
+    - _MaskUvScaleOffset: {r: 1, g: 1, b: 0, a: 0}
+    - _OccludedTint: {r: 1, g: 1, b: 1, a: 0}
+    - _OutlineColor: {r: 1, g: 1, b: 0, a: 1}
+    - _SP_DepthRevealColor: {r: 1, g: 0.83, b: 0, a: 1}
+    - _SkyPrison_DissolveEdgeColor: {r: 0.5, g: 0.04, b: 0.02, a: 1}
+    - _SkyPrison_EnvTint: {r: 0.78, g: 0.88, b: 0.82, a: 1}
+    - _SkyPrison_FootWorldPos: {r: 0, g: 0, b: 0, a: 1}
+    - _SkyPrison_HiddenOutlineColor: {r: 1, g: 0.16, b: 0.16, a: 1}
+    - _SkyPrison_HologramFillColor: {r: 1, g: 0.35, b: 0.35, a: 0.8}
+    - _SkyPrison_StatusFlashColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SkyPrison_StatusOutlineColor: {r: 2.2, g: 0.7, b: 0.05, a: 1}
+    - _TintColor: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

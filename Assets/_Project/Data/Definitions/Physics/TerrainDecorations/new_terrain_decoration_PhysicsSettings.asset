@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e406a34780d3cd4086357a67ecf9e44, type: 3}
+  m_Name: new_terrain_decoration_PhysicsSettings
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonTerrainDecorationPhysicsSettings
+  decorationId: new_terrain_decoration
+  displayName: "\u4EAC\u6781\u91CD\u5DE5\u6C34\u6CE5\u58A9"
+  enablePhysicsStructure: 0
+  receiveVolumeCollision: 0
+  receiveAttackImpulse: 1
+  receiveExplosionImpulse: 1
+  receiveScriptedImpulse: 1
+  customPhysicsMesh: {fileID: 0}
+  autoPickLargestVisibleMesh: 1
+  forceConvexMeshCollider: 1
+  pushableLayerName: PushableProp
+  useHorizontalGroundPlane: 1
+  mass: 1
+  linearDamping: 1.5
+  angularDamping: 2.5
+  maxPlanarSpeed: 6
+  externalPushMultiplier: 1
+  applyForceAtTop: 1
+  topForceHeight: 0.9
+  topForceMultiplier: 2.5
+  paperDollPushMode: 1
+  paperDollTriggerKnockdownImmediately: 1
+  paperDollSuppressPhysicsForce: 1
+  paperDollKeepKinematicAfterTip: 1
+  paperDollAllowPushAfterKnockdown: 1
+  paperDollPostKnockdownPushMultiplier: 0.85
+  paperDollPostKnockdownUseRealPhysics: 1
+  paperDollPostKnockdownForceAtEdge: 1
+  paperDollPostKnockdownTorqueMultiplier: 1.2
+  paperDollPostKnockdownLinearDamping: 2
+  paperDollPostKnockdownAngularDamping: 1.2
+  paperDollUseGravityWhenPushedAfterKnockdown: 1
+  paperDollPostKnockdownMinimumImpulse: 0.65
+  paperDollPostKnockdownMinimumPlanarSpeed: 1.15
+  paperDollApplyGroundProtectionAfterPostPush: 0
+  realPhysicsAuthorityAfterKnockdown: 1
+  realPhysicsReleaseAfterPivotTip: 1
+  realPhysicsKeepDynamicWhenStable: 1
+  realPhysicsSkipGroundProtection: 1
+  realPhysicsSkipPlanarSpeedLimit: 1
+  realPhysicsAllowUnitBodyCollision: 1
+  realPhysicsUseGravity: 1
+  realPhysicsUseOffCenterImpulse: 1
+  realPhysicsUseExtraScriptTorque: 0
+  realPhysicsExtraTorqueMultiplier: 0
+  realPhysicsLinearDamping: 0.45
+  realPhysicsAngularDamping: 0.35
+  realPhysicsMaxAngularVelocity: 14
+  realPhysicsMaxDepenetrationVelocity: 3
+  realPhysicsDisableMinimumPlanarVelocity: 1
+  enableKnockdown: 1
+  protectAfterPivotRelease: 1
+  useLastKnownGroundWhenRayMisses: 1
+  useFallbackGroundPlaneWhenRayMisses: 0
+  fallbackGroundY: 0

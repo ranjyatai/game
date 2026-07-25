@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 58a416f9180b6004989c15cb6f82d5ff
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/Materials/Wheat.mat
+  uploadId: 912894

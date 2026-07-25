@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 015577ef642c6f74181850adac420db5
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/_Demo/DemoAssets/SGS_VolumeProfile.asset
+  uploadId: 912894

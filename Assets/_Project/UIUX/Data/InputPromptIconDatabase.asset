@@ -1,0 +1,342 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17006235e183ba84ea06f0fe68c66c59, type: 3}
+  m_Name: InputPromptIconDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonInputPromptIconDatabase
+  entries:
+  - iconKey: keyboard/a
+    displayName: A
+    icon: {fileID: -7374520971705580614, guid: aba5e77eda2b26c428d46fad36192a1a, type: 3}
+  - iconKey: keyboard/b
+    displayName: B
+    icon: {fileID: 3755557205858273087, guid: 3f66be33c172f914d984937fc6220471, type: 3}
+  - iconKey: keyboard/c
+    displayName: C
+    icon: {fileID: 7284720103671663570, guid: 74f864d3d78aa134a8482ded5520dc71, type: 3}
+  - iconKey: keyboard/d
+    displayName: D
+    icon: {fileID: 1766875651844258950, guid: 9ed81ac8fa9583d4eadba346f80e002c, type: 3}
+  - iconKey: keyboard/e
+    displayName: E
+    icon: {fileID: 9192209372824085672, guid: 5bda5944ecaf4b146ba0cd582381d3d1, type: 3}
+  - iconKey: keyboard/f
+    displayName: F
+    icon: {fileID: -1674722568577363638, guid: ff8b19e52cc79a34c921fdd489ca8057, type: 3}
+  - iconKey: keyboard/g
+    displayName: G
+    icon: {fileID: 8742004166256606090, guid: c802aa198f60e0c438ed7325c65821ff, type: 3}
+  - iconKey: keyboard/h
+    displayName: H
+    icon: {fileID: -930352542741761382, guid: e406a78f41356564e966072a6b84a959, type: 3}
+  - iconKey: keyboard/i
+    displayName: I
+    icon: {fileID: 4322306761951040645, guid: ff65745e262ea2741a41d14cc46d1bee, type: 3}
+  - iconKey: keyboard/j
+    displayName: J
+    icon: {fileID: 9071152184389823524, guid: f22c24014104c0349a461b5c6ec84529, type: 3}
+  - iconKey: keyboard/k
+    displayName: K
+    icon: {fileID: -1738465477803183436, guid: 66fee2a19215bab4f9892d0c1a755536, type: 3}
+  - iconKey: keyboard/l
+    displayName: L
+    icon: {fileID: -3089518567479720447, guid: 9f55960b4571610468564c882a3e8aa8, type: 3}
+  - iconKey: keyboard/m
+    displayName: M
+    icon: {fileID: -2534603665654594502, guid: 8b88afedb5bc82b4b998d25a82779249, type: 3}
+  - iconKey: keyboard/n
+    displayName: N
+    icon: {fileID: 3563984114911606363, guid: c3a5c0726a781644a9d9c0c266501921, type: 3}
+  - iconKey: keyboard/o
+    displayName: O
+    icon: {fileID: 3357807025403532049, guid: fe7a4bf729fb0034992ce3154fd914f8, type: 3}
+  - iconKey: keyboard/p
+    displayName: P
+    icon: {fileID: -6417085623736941951, guid: acf89328ca99bdb40bd91b9a3c96f3bf, type: 3}
+  - iconKey: keyboard/q
+    displayName: Q
+    icon: {fileID: 937368866426888023, guid: 26b4f72d3d4cfa249bc2bcc5b3f30ae4, type: 3}
+  - iconKey: keyboard/r
+    displayName: R
+    icon: {fileID: -6983456051316503777, guid: 6e57cf5d20223224cab560c8d62956c1, type: 3}
+  - iconKey: keyboard/s
+    displayName: S
+    icon: {fileID: -608955856693220060, guid: 96fe1fef358423b4db4f13883940599a, type: 3}
+  - iconKey: keyboard/t
+    displayName: T
+    icon: {fileID: -1913329050412719797, guid: f13431dda5996264195ce68d3363af40, type: 3}
+  - iconKey: keyboard/u
+    displayName: U
+    icon: {fileID: 5436781053850328741, guid: f7925ad75166d114da9a4da3b512f33c, type: 3}
+  - iconKey: keyboard/v
+    displayName: V
+    icon: {fileID: -6394678195648727938, guid: d3d145030af253c45856e252439c4a94, type: 3}
+  - iconKey: keyboard/w
+    displayName: W
+    icon: {fileID: 2034773411024399184, guid: 05d235a5d06dbd94fbd197334d2c724b, type: 3}
+  - iconKey: keyboard/x
+    displayName: X
+    icon: {fileID: -492269454237075673, guid: 06dfb57d98cae2c46ad0dffa09154cd8, type: 3}
+  - iconKey: keyboard/y
+    displayName: Y
+    icon: {fileID: -7915921778692477976, guid: 795dc7758d9523f4c8296a1329d7403b, type: 3}
+  - iconKey: keyboard/z
+    displayName: Z
+    icon: {fileID: 6437607492366380275, guid: 4400395f5946de8418f71e511fd8e7e2, type: 3}
+  - iconKey: keyboard/0
+    displayName: 0
+    icon: {fileID: -7955837468840799689, guid: 95d93112bfd022a4793ffa123d95a275, type: 3}
+  - iconKey: keyboard/1
+    displayName: 1
+    icon: {fileID: 567273014591336100, guid: 5816966e09d15854fb4f34b7d86b8cd1, type: 3}
+  - iconKey: keyboard/2
+    displayName: 2
+    icon: {fileID: 5262760719296590523, guid: aece3f7e0fdb4fe418ab52aa92ad3038, type: 3}
+  - iconKey: keyboard/3
+    displayName: 3
+    icon: {fileID: -3875480113049446844, guid: 31982306706058147b6af759d94e38af, type: 3}
+  - iconKey: keyboard/4
+    displayName: 4
+    icon: {fileID: 4625545002934097488, guid: 3564654bcf8e26c46a33eaae6989cf13, type: 3}
+  - iconKey: keyboard/5
+    displayName: 5
+    icon: {fileID: 1217359688920816714, guid: fcd6e22d0498533449606f465aa0f3b4, type: 3}
+  - iconKey: keyboard/6
+    displayName: 6
+    icon: {fileID: 663644365304616500, guid: 1be2e8fef947ab042b57240bd7bc9135, type: 3}
+  - iconKey: keyboard/7
+    displayName: 7
+    icon: {fileID: 1771540786860964645, guid: 596cdb3274aa9ec4a9d3e5b12ddbddd9, type: 3}
+  - iconKey: keyboard/8
+    displayName: 8
+    icon: {fileID: -3960436162374218337, guid: a4c0545728ec9c847811fd264f2aabcc, type: 3}
+  - iconKey: keyboard/9
+    displayName: 9
+    icon: {fileID: 5577499134501045490, guid: ce7027bef68c77142b7771412fd232ed, type: 3}
+  - iconKey: keyboard/space
+    displayName: Space
+    icon: {fileID: 8943277628844717619, guid: 617eab56cd6dd504ebed7647002cdcac, type: 3}
+  - iconKey: keyboard/shift
+    displayName: Shift
+    icon: {fileID: -4286794532374170109, guid: 2f17410a922476d46a7c9bf1a8b3e6c6, type: 3}
+  - iconKey: keyboard/ctrl
+    displayName: Ctrl
+    icon: {fileID: -1485786876409174226, guid: fd0969217385b1e4a802abf6345e9c6c, type: 3}
+  - iconKey: keyboard/alt
+    displayName: Alt
+    icon: {fileID: -5758197813253577680, guid: 0c34c57df1bea1e47904d2abad73db0b, type: 3}
+  - iconKey: keyboard/command
+    displayName: Command
+    icon: {fileID: 8691408574004212490, guid: 97eb52c10d914564ebeda3ec03003713, type: 3}
+  - iconKey: keyboard/tab
+    displayName: Tab
+    icon: {fileID: 8070136569901593157, guid: 57f406ec5d61a8b409adb4a65fa7cd72, type: 3}
+  - iconKey: keyboard/enter
+    displayName: Enter
+    icon: {fileID: -4700411001132792164, guid: 2a6a12b7be5d2ad49bd8a9aab3cf65b5, type: 3}
+  - iconKey: keyboard/esc
+    displayName: Esc
+    icon: {fileID: -6215080003364935638, guid: 8b496b8940ead2940bcb9b76b3fae226, type: 3}
+  - iconKey: keyboard/delete
+    displayName: Delete
+    icon: {fileID: -48267539443859153, guid: c83c9ae3708b0b04c85bbe880be78dda, type: 3}
+  - iconKey: keyboard/up
+    displayName: "\u2191"
+    icon: {fileID: 367865720897959555, guid: a0b11dbfae610b24e8f625a6ba140f91, type: 3}
+  - iconKey: keyboard/down
+    displayName: "\u2193"
+    icon: {fileID: -3531217875569441306, guid: 8014cad0bb9695644ac45545d0a3a787, type: 3}
+  - iconKey: keyboard/left
+    displayName: "\u2190"
+    icon: {fileID: -5797835429942485868, guid: 416441b4f496ee24794289572d5b66cb, type: 3}
+  - iconKey: keyboard/right
+    displayName: "\u2192"
+    icon: {fileID: 5429470648945596566, guid: 60ac46bfcbd64ed4b9fc95a6bf37f7dd, type: 3}
+  - iconKey: keyboard/f1
+    displayName: F1
+    icon: {fileID: 3724375553651995269, guid: 5bf44340dd820404689ccc27d685d061, type: 3}
+  - iconKey: keyboard/f2
+    displayName: F2
+    icon: {fileID: 8433783112661123491, guid: 438348b416f4d4444bc228d0d26dbd08, type: 3}
+  - iconKey: keyboard/f3
+    displayName: F3
+    icon: {fileID: 4985168237181469739, guid: e62d15a9542f48c4ba5aa5cce8661ffd, type: 3}
+  - iconKey: keyboard/f4
+    displayName: F4
+    icon: {fileID: 8111912487277219922, guid: 81bbf32adee422a4cbf5793122d14581, type: 3}
+  - iconKey: keyboard/f5
+    displayName: F5
+    icon: {fileID: -4520763132102299791, guid: b083910923e947b4d8464cf6572a81d5, type: 3}
+  - iconKey: keyboard/f6
+    displayName: F6
+    icon: {fileID: -5780985711630426849, guid: c3f978ee52bbb71418c44fcef1dcc8f7, type: 3}
+  - iconKey: keyboard/f7
+    displayName: F7
+    icon: {fileID: 4367335197943860936, guid: 08f7f33096293c749b292ed316b89656, type: 3}
+  - iconKey: keyboard/f8
+    displayName: F8
+    icon: {fileID: 223971995677463233, guid: ef0202c7fea991d459362e280a7b8c7b, type: 3}
+  - iconKey: keyboard/f9
+    displayName: F9
+    icon: {fileID: 7424030959506299237, guid: f526551831b58da49848edbbc426a4b0, type: 3}
+  - iconKey: keyboard/f10
+    displayName: F10
+    icon: {fileID: 8644346952151617752, guid: cd62fccaabed92143bac61cc406e02ef, type: 3}
+  - iconKey: keyboard/f11
+    displayName: F11
+    icon: {fileID: 8644425284686930959, guid: 95d3a9303bad5934e9b4a79de5d4c0e2, type: 3}
+  - iconKey: keyboard/f12
+    displayName: F12
+    icon: {fileID: 6141230300437945026, guid: e5aa5abba87260841a3cab58d63a0216, type: 3}
+  - iconKey: keyboard/home
+    displayName: Home
+    icon: {fileID: -4013526800314424110, guid: e243357baae28a24c810a3a2932581a4, type: 3}
+  - iconKey: keyboard/end
+    displayName: End
+    icon: {fileID: -5550213319057704316, guid: 006b089044d6f814583867d72ebe7701, type: 3}
+  - iconKey: keyboard/page_up
+    displayName: Page Up
+    icon: {fileID: -1669006168256716402, guid: e72daa38b98345641b29c692d4bce738, type: 3}
+  - iconKey: keyboard/page_down
+    displayName: Page Down
+    icon: {fileID: -4957266927066721328, guid: 72b4426cfb4c0bb41a0deea90ed72f6d, type: 3}
+  - iconKey: keyboard/ins
+    displayName: Ins
+    icon: {fileID: 8453542868080347504, guid: 7d6aa87843e36414d83e20a0a39b9dea, type: 3}
+  - iconKey: keyboard/num_lock
+    displayName: Num Lock
+    icon: {fileID: -729934990593953572, guid: 9853410a274ffb24f8c4a0432bbff734, type: 3}
+  - iconKey: keyboard/slash
+    displayName: /
+    icon: {fileID: 737026560332564552, guid: c16f1c5bdf654cb499f64119520bbb13, type: 3}
+  - iconKey: keyboard/backslash
+    displayName: \
+    icon: {fileID: 1812588484412657566, guid: 835f514f8b3bb4846954dde1fa0f146c, type: 3}
+  - iconKey: keyboard/plus
+    displayName: +
+    icon: {fileID: 1275478726065055650, guid: 299cf8b9d1ef1f04dbdd3606ed998d87, type: 3}
+  - iconKey: keyboard/minus
+    displayName: '-'
+    icon: {fileID: 3597069544741349209, guid: 95e62fcaecb778944901531dc2d196b9, type: 3}
+  - iconKey: keyboard/equals
+    displayName: =
+    icon: {fileID: -5352500900307042147, guid: 3f029a4fa6f9c444f8cc161e9a994167, type: 3}
+  - iconKey: keyboard/asterisk
+    displayName: '*'
+    icon: {fileID: -7067961214758526908, guid: e0ab0a6bb888a6141ba5927c66b6f99a, type: 3}
+  - iconKey: keyboard/colon
+    displayName: ':'
+    icon: {fileID: 0}
+  - iconKey: keyboard/period
+    displayName: .
+    icon: {fileID: 0}
+  - iconKey: mouse/left
+    displayName: "\u9F20\u6807\u5DE6\u952E"
+    icon: {fileID: 2813398510942481320, guid: 35bec12096142094a91a6c28a38d65d3, type: 3}
+  - iconKey: mouse/right
+    displayName: "\u9F20\u6807\u53F3\u952E"
+    icon: {fileID: -3855884846692223134, guid: ce94aa2d6e61d014586e7e0c1aec563b, type: 3}
+  - iconKey: mouse/scroll
+    displayName: "\u9F20\u6807\u6EDA\u8F6E"
+    icon: {fileID: -6108457566273570479, guid: 11ff0746ab83c9447b2a04ac36797da9, type: 3}
+  - iconKey: gamepad/xbox/a
+    displayName: A
+    icon: {fileID: -6131887085260667083, guid: cbf350f6643413042afad1aaad326e49, type: 3}
+  - iconKey: gamepad/xbox/b
+    displayName: B
+    icon: {fileID: 870560835513292267, guid: 8a5260c03e5b8004d897e4667cec874b, type: 3}
+  - iconKey: gamepad/xbox/x
+    displayName: X
+    icon: {fileID: 5437629037706950185, guid: c3517d7493b4d3e47b63eaa499daac16, type: 3}
+  - iconKey: gamepad/xbox/y
+    displayName: Y
+    icon: {fileID: 8012025397865764053, guid: 58c0c10e3226d5b4d832adfaba391d6c, type: 3}
+  - iconKey: gamepad/playstation/cross
+    displayName: "\xD7"
+    icon: {fileID: -7683349868191413965, guid: cde88f6e34c44d3468e5dfa1b14a056a, type: 3}
+  - iconKey: gamepad/playstation/circle
+    displayName: "\u25CB"
+    icon: {fileID: 3496949926710436609, guid: 26d452a45aa360849aa228a1d7937459, type: 3}
+  - iconKey: gamepad/playstation/square
+    displayName: "\u25A1"
+    icon: {fileID: -4197252670675476415, guid: e8ac0c6770b5dbb4d8490c6af37c0366, type: 3}
+  - iconKey: gamepad/playstation/triangle
+    displayName: "\u25B3"
+    icon: {fileID: 1462744269047420873, guid: 6bb920c20efb4634a8398c575cb5cdfb, type: 3}
+  - iconKey: gamepad/up
+    displayName: "\u2191"
+    icon: {fileID: -5453423947414480814, guid: 6eee53c0a582c2b4b9f81edb1d86b31d, type: 3}
+  - iconKey: gamepad/down
+    displayName: "\u2193"
+    icon: {fileID: -2997453079328588815, guid: d439b4f5f4c1b814a8d718f42befb179, type: 3}
+  - iconKey: gamepad/left
+    displayName: "\u2190"
+    icon: {fileID: 2032954133984082209, guid: 95a4c11b8aa7ec84ca5ad676995ed3fd, type: 3}
+  - iconKey: gamepad/right
+    displayName: "\u2192"
+    icon: {fileID: -4428718599762960936, guid: b335934a7ad8bac46aa4760f0862a5fd, type: 3}
+  - iconKey: gamepad/l
+    displayName: L
+    icon: {fileID: -4985960470064050047, guid: 23a9abc9a20fca64f924a17c008ec0a3, type: 3}
+  - iconKey: gamepad/r
+    displayName: R
+    icon: {fileID: 2232738631457946800, guid: bfc712960cab3b64b9d458db4b8e283b, type: 3}
+  - iconKey: gamepad/l1
+    displayName: L1
+    icon: {fileID: 3805859456627873029, guid: 20180743808b0054d925d3b0c26293ef, type: 3}
+  - iconKey: gamepad/r1
+    displayName: R1
+    icon: {fileID: -8299373954547502146, guid: ce33b2bf29bf4a2498289227f5a4a6b1, type: 3}
+  - iconKey: gamepad/l2
+    displayName: L2
+    icon: {fileID: -1320604019851167085, guid: 71bff39d19166ea43b949d1468417708, type: 3}
+  - iconKey: gamepad/r2
+    displayName: R2
+    icon: {fileID: -7207690619605389469, guid: 10f9f624b18559c4cbcac99c7163939e, type: 3}
+  - iconKey: gamepad/l3
+    displayName: L3
+    icon: {fileID: -4252865140920670856, guid: e3127fbc62413574ba1c30d21b4be57d, type: 3}
+  - iconKey: gamepad/r3
+    displayName: R3
+    icon: {fileID: 3840372388577244936, guid: a3b6ebd82068e654990c550c7a611859, type: 3}
+  - iconKey: gamepad/select
+    displayName: Select
+    icon: {fileID: -2521409800610722195, guid: 504ccf45fd4511a4bbe466ca8c686fb7, type: 3}
+  - iconKey: gamepad/star
+    displayName: Start
+    icon: {fileID: -505146257899602796, guid: b1b648a7670c8b042b790fd43efcbb4b, type: 3}
+  - iconKey: gamepad/keycap
+    displayName: Gamepad
+    icon: {fileID: -7254040385065104017, guid: 4c633062722fa644ba903b794dec4f6c, type: 3}
+  - iconKey: gamepad/xbox/lb
+    displayName: LB
+    icon: {fileID: 8165606675968433366, guid: 56b18616c9743c84288b6b1a5a2db1fd, type: 3}
+  - iconKey: gamepad/xbox/rb
+    displayName: RB
+    icon: {fileID: 8145377791130628235, guid: 1ea1bd39593160940a7cb648ec1fac2e, type: 3}
+  - iconKey: gamepad/xbox/lt
+    displayName: LT
+    icon: {fileID: -7135749518665568750, guid: e389e80ff636e534db8332c8cbd8d5e0, type: 3}
+  - iconKey: gamepad/xbox/rt
+    displayName: RT
+    icon: {fileID: -5556037894578323184, guid: 98bc09c627f1a9d47a1e83c3ca4175d0, type: 3}
+  - iconKey: gamepad/xbox/view
+    displayName: View
+    icon: {fileID: 511702016186633604, guid: 1e53ea40e1cc1194d8ecf8ce76579aea, type: 3}
+  - iconKey: gamepad/xbox/menu
+    displayName: Menu
+    icon: {fileID: -7663261051567289573, guid: 3d079d43630edcb4a81f509429fe6ef6, type: 3}
+  - iconKey: gamepad/xbox/l
+    displayName: L3
+    icon: {fileID: -4985960470064050047, guid: 23a9abc9a20fca64f924a17c008ec0a3, type: 3}
+  - iconKey: gamepad/xbox/r
+    displayName: R3
+    icon: {fileID: 2232738631457946800, guid: bfc712960cab3b64b9d458db4b8e283b, type: 3}

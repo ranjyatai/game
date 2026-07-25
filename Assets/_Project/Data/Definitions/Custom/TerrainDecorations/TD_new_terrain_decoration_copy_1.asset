@@ -1,0 +1,172 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2c6299d1deb1db49833f87a48b36ea5, type: 3}
+  m_Name: TD_new_terrain_decoration_copy_1
+  m_EditorClassIdentifier: Assembly-CSharp::TerrainDecorationDefinition
+  decorationId: new_terrain_decoration_copy_1
+  displayName: "\u53C9\u8F66"
+  category: 4
+  subCategory: Custom
+  tags: []
+  icon: {fileID: 1258846407226792769, guid: a538269e6f210dd43960de823f4ea496, type: 3}
+  note: "\u642C\u8FD0\u8D27\u7269\u7528\u7684\u5DE5\u7A0B\u53C9\u8F66\u3002"
+  isStandard: 0
+  variants:
+  - variantId: variant_1
+    displayName: "\u4EAC\u6781\u91CD\u5DE5\u6C34\u6CE5\u58A9"
+    prefab: {fileID: 8465375095308233507, guid: 149fa6b8eba288b45945b9cc753aa70c, type: 3}
+    weight: 1
+    previewIcon: {fileID: 0}
+    materialSlots:
+    - slotId: forklift_01_forklift_01_lod0_mat_0
+      displayName: Forklift_01_LOD0 / MAT 0
+      rendererPath: Forklift_01/Forklift_01_LOD0
+      materialIndex: 0
+      defaultMaterial: {fileID: 2100000, guid: b0b39ddd6def95842897ac49561cb3e7, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: b0b39ddd6def95842897ac49561cb3e7, type: 2}
+    - slotId: forklift_01_forklift_01_lod0_mat_1
+      displayName: Forklift_01_LOD0 / MAT 1
+      rendererPath: Forklift_01/Forklift_01_LOD0
+      materialIndex: 1
+      defaultMaterial: {fileID: 2100000, guid: c2345a487afed7543a99600eb2512a45, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: c2345a487afed7543a99600eb2512a45, type: 2}
+    - slotId: forklift_01_forklift_01_lod0_mat_2
+      displayName: Forklift_01_LOD0 / MAT 2
+      rendererPath: Forklift_01/Forklift_01_LOD0
+      materialIndex: 2
+      defaultMaterial: {fileID: 2100000, guid: 0613fe8b0da39f14e9c568b66db7f5a7, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: 0613fe8b0da39f14e9c568b66db7f5a7, type: 2}
+    - slotId: forklift_01_forklift_01_lod1_mat_0
+      displayName: Forklift_01_LOD1 / MAT 0
+      rendererPath: Forklift_01/Forklift_01_LOD1
+      materialIndex: 0
+      defaultMaterial: {fileID: 2100000, guid: b0b39ddd6def95842897ac49561cb3e7, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: b0b39ddd6def95842897ac49561cb3e7, type: 2}
+    - slotId: forklift_01_forklift_01_lod1_mat_1
+      displayName: Forklift_01_LOD1 / MAT 1
+      rendererPath: Forklift_01/Forklift_01_LOD1
+      materialIndex: 1
+      defaultMaterial: {fileID: 2100000, guid: c2345a487afed7543a99600eb2512a45, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: c2345a487afed7543a99600eb2512a45, type: 2}
+    - slotId: forklift_01_forklift_01_lod1_mat_2
+      displayName: Forklift_01_LOD1 / MAT 2
+      rendererPath: Forklift_01/Forklift_01_LOD1
+      materialIndex: 2
+      defaultMaterial: {fileID: 2100000, guid: 0613fe8b0da39f14e9c568b66db7f5a7, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: 0613fe8b0da39f14e9c568b66db7f5a7, type: 2}
+    - slotId: forklift_01_front_01_forklift_01_front_01_lod0_mat_0
+      displayName: Forklift_01_Front_01_LOD0 / MAT 0
+      rendererPath: Forklift_01_Front_01/Forklift_01_Front_01_LOD0
+      materialIndex: 0
+      defaultMaterial: {fileID: 2100000, guid: c2345a487afed7543a99600eb2512a45, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: c2345a487afed7543a99600eb2512a45, type: 2}
+    - slotId: forklift_01_front_01_forklift_01_front_01_lod1_mat_0
+      displayName: Forklift_01_Front_01_LOD1 / MAT 0
+      rendererPath: Forklift_01_Front_01/Forklift_01_Front_01_LOD1
+      materialIndex: 0
+      defaultMaterial: {fileID: 2100000, guid: c2345a487afed7543a99600eb2512a45, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: c2345a487afed7543a99600eb2512a45, type: 2}
+    - slotId: forklift_01_front_02_forklift_01_front_02_lod0_mat_0
+      displayName: Forklift_01_Front_02_LOD0 / MAT 0
+      rendererPath: Forklift_01_Front_02/Forklift_01_Front_02_LOD0
+      materialIndex: 0
+      defaultMaterial: {fileID: 2100000, guid: c2345a487afed7543a99600eb2512a45, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: c2345a487afed7543a99600eb2512a45, type: 2}
+    - slotId: forklift_01_front_02_forklift_01_front_02_lod1_mat_0
+      displayName: Forklift_01_Front_02_LOD1 / MAT 0
+      rendererPath: Forklift_01_Front_02/Forklift_01_Front_02_LOD1
+      materialIndex: 0
+      defaultMaterial: {fileID: 2100000, guid: c2345a487afed7543a99600eb2512a45, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: c2345a487afed7543a99600eb2512a45, type: 2}
+  randomVariantOnPlace: 1
+  randomVariantByWeight: 1
+  randomMaterialOnPlace: 0
+  structureTemplate: 0
+  autoEnsureStandardStructure: 1
+  repairMissingNodesOnly: 1
+  allowMove: 1
+  allowRotate: 1
+  allowScale: 1
+  snapToGrid: 1
+  placementCollisionMode: 4
+  allowVisualOverlap: 1
+  allowCollisionOverlap: 1
+  defaultPlacementRotation: {x: 0, y: 0, z: 0}
+  defaultScale: {x: 2.7, y: 2.7, z: 2.7}
+  footprintSize: {x: 3.035, y: 0.36900002}
+  enableRandomScale: 0
+  uniformRandomScale: 1
+  randomScaleMin: {x: 1, y: 1, z: 1}
+  randomScaleMax: {x: 1, y: 1, z: 1}
+  enableVisualRandomRotation: 1
+  visualRandomRotationMin: {x: 0, y: -90, z: 0}
+  visualRandomRotationMax: {x: 0, y: 90, z: 0}
+  visualRandomRotationAffectsRules: 1
+  collisionMode: 1
+  collisionSize: {x: 4.042808, y: 4.019485, z: 10.72662}
+  collisionOffset: {x: 0.03662059, y: 2.149028, z: 2.291431}
+  blockPlayer: 1
+  blockEnemy: 1
+  blockVision: 1
+  blockProjectile: 1
+  lockRuleSpaceFromVisualRandomRotation: 1
+  frontBackPlaneMode: 1
+  ruleForwardLocal: {x: 0, y: 0, z: 1}
+  rulePlaneOriginLocal: {x: 0, y: 0, z: 0}
+  planePushOutDistance: 0.05
+  occlusionMode: 3
+  fadeWhenBlockingPlayer: 0
+  fadeAlpha: 0.45
+  fadeDuration: 0.12
+  frontBackOcclusionWidthMultiplier: 1
+  frontBackOcclusionHeightMultiplier: 1
+  frontBackOcclusionDepthMultiplier: 1
+  frontOcclusionDepthRatio: 0.18
+  backOcclusionDepthRatio: 0.82
+  frontBackOcclusionCenterOffset: 0
+  frontBackOcclusionHorizontalOffset: 0
+  frontBackOcclusionHeightOffset: 0
+  frontBackOcclusionDepthOffset: 0
+  frontOccluderProxyMode: 2
+  frontOccluderProxyMaterial: {fileID: 0}
+  frontOccluderAlphaCutoff: 0.35
+  manualFrontOccluderProxyPrefab: {fileID: 0}
+  frontOccluderProxyWidthMultiplier: 1
+  frontOccluderProxyHeightMultiplier: 1
+  frontOccluderProxyDepthMultiplier: 1
+  frontOccluderProxyOffset: {x: 0, y: 0, z: 0}
+  shadowMode: 1
+  castShadow: 1
+  receiveShadow: 1
+  shadowCasterPrefab: {fileID: 0}
+  shadowCasterMaterial: {fileID: 0}
+  fogMode: 0
+  enableEnvironmentAudio: 0
+  environmentAudioPackage: {fileID: 0}
+  environmentAudioMinDistance: 1
+  environmentAudioMaxDistance: 12
+  environmentAudioVolume: 1
+  environmentAudioLoop: 1
+  showBoundsGizmo: 1
+  showCollisionGizmo: 1
+  showFrontBackPlaneGizmo: 1
+  gizmoColor: {r: 1, g: 0.55, b: 0.12, a: 1}

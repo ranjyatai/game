@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 73bde996abe124644b73fcfe760951f8
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/Shaders/Libraries/Bending.hlsl
+  uploadId: 912894

@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ce182952f62de44b29bac187538785, type: 3}
+  m_Name: SkyPrisonAudioGlobalSettings
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonAudioGlobalSettings
+  masterVolume: 1
+  seVolume: 1
+  meVolume: 1
+  bgmVolume: 0
+  voiceVolume: 1
+  ambienceVolume: 1
+  uiVolume: 1
+  useGlobalFootstepSettings: 1
+  footstepVolumeMultiplier: 1
+  footstepNoiseMultiplier: 0.014
+  applyOutputVolumeToFootstepNoise: 1
+  overrideEmitterMotionLoudness: 1
+  walkVolumeMultiplier: 0.7
+  runVolumeMultiplier: 1
+  sneakVolumeMultiplier: 0.15
+  jumpUpVolumeMultiplier: 1
+  landVolumeMultiplier: 1.35
+  overrideEmitterSurfaceDucking: 1
+  baseFootwearVolumeMultiplierWhenGroundSurfaceActive: 0.092
+  baseFootwearNoiseMultiplierWhenGroundSurfaceActive: 0.4
+  overrideEmitterGroundSurfaceMix: 1
+  groundSurfaceLayerVolumeMultiplier: 1
+  groundSurfaceLayerNoiseMultiplier: 1
+  dodgeSFXClips:
+  - {fileID: 8300000, guid: f1824f8e540f499429fe425a650cf027, type: 3}
+  dodgeSFXVolume: 1
+  useBuildAudibleFootstepPlaybackSafety: 1
+  applyBuildAudibleFootstepPlaybackSafetyInEditor: 1
+  buildAudibleFootstepSpatialBlend: 0.55
+  buildAudibleFootstepMinDistanceFloor: 12
+  buildAudibleFootstepMaxDistanceFloor: 160

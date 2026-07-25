@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2c6299d1deb1db49833f87a48b36ea5, type: 3}
+  m_Name: TD_new_terrain_decoration_2_copy_copy_1_copy_1_copy
+  m_EditorClassIdentifier: Assembly-CSharp::TerrainDecorationDefinition
+  decorationId: new_terrain_decoration_2_copy_copy_1_copy_1_copy
+  displayName: "\u62A4\u680F-\u62D0\u89D2"
+  category: 4
+  subCategory: Custom
+  tags: []
+  icon: {fileID: 1258846407226792769, guid: a538269e6f210dd43960de823f4ea496, type: 3}
+  note: 
+  isStandard: 0
+  variants:
+  - variantId: variant
+    displayName: "\u65B0\u7248\u672C"
+    prefab: {fileID: 6210815022423762455, guid: b95eb53fcc0c9704c86749d42c3043b2, type: 3}
+    weight: 1
+    previewIcon: {fileID: 0}
+    materialSlots:
+    - slotId: guard_rail_01a_co_guard_rail_01a_co_mat_0
+      displayName: Guard_Rail_01a_CO / MAT 0
+      rendererPath: Guard_Rail_01a_CO/Guard_Rail_01a_CO
+      materialIndex: 0
+      defaultMaterial: {fileID: 2100000, guid: 01671a0d2d3149943861bab266e9de36, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: 01671a0d2d3149943861bab266e9de36, type: 2}
+    - slotId: guard_rail_01a_co_guard_rail_01a_co_mat_0
+      displayName: Guard_Rail_01a_CO / MAT 0
+      rendererPath: Guard_Rail_01a_CO/Guard_Rail_01a_CO
+      materialIndex: 0
+      defaultMaterial: {fileID: 2100000, guid: 01671a0d2d3149943861bab266e9de36, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: 01671a0d2d3149943861bab266e9de36, type: 2}
+  randomVariantOnPlace: 0
+  randomVariantByWeight: 1
+  randomMaterialOnPlace: 0
+  structureTemplate: 0
+  autoEnsureStandardStructure: 1
+  repairMissingNodesOnly: 1
+  allowMove: 1
+  allowRotate: 1
+  allowScale: 1
+  snapToGrid: 1
+  placementCollisionMode: 2
+  allowVisualOverlap: 1
+  allowCollisionOverlap: 1
+  defaultPlacementRotation: {x: 0, y: 0, z: 0}
+  defaultScale: {x: 2, y: 2, z: 2}
+  footprintSize: {x: 1, y: 1}
+  enableRandomScale: 0
+  uniformRandomScale: 1
+  randomScaleMin: {x: 1, y: 1, z: 1}
+  randomScaleMax: {x: 1, y: 1, z: 1}
+  enableVisualRandomRotation: 0
+  visualRandomRotationMin: {x: 0, y: 0, z: 0}
+  visualRandomRotationMax: {x: 0, y: 0, z: 0}
+  visualRandomRotationAffectsRules: 0
+  collisionMode: 2
+  collisionSize: {x: 1, y: 1, z: 1}
+  collisionOffset: {x: 0, y: 0.5, z: 0}
+  blockPlayer: 1
+  blockEnemy: 1
+  blockVision: 0
+  blockProjectile: 0
+  lockRuleSpaceFromVisualRandomRotation: 1
+  frontBackPlaneMode: 1
+  ruleForwardLocal: {x: 0, y: 0, z: 1}
+  rulePlaneOriginLocal: {x: 0, y: 0, z: 0}
+  planePushOutDistance: 0.05
+  occlusionMode: 1
+  fadeWhenBlockingPlayer: 0
+  fadeAlpha: 0.45
+  fadeDuration: 0.12
+  frontBackOcclusionWidthMultiplier: 1
+  frontBackOcclusionHeightMultiplier: 1
+  frontBackOcclusionDepthMultiplier: 1
+  frontOcclusionDepthRatio: 0.18
+  backOcclusionDepthRatio: 0.82
+  frontBackOcclusionCenterOffset: 0
+  frontBackOcclusionHorizontalOffset: 0
+  frontBackOcclusionHeightOffset: 0
+  frontBackOcclusionDepthOffset: 0
+  frontOccluderProxyMode: 2
+  frontOccluderProxyMaterial: {fileID: 0}
+  frontOccluderAlphaCutoff: 0.35
+  manualFrontOccluderProxyPrefab: {fileID: 0}
+  frontOccluderProxyWidthMultiplier: 1
+  frontOccluderProxyHeightMultiplier: 1
+  frontOccluderProxyDepthMultiplier: 1
+  frontOccluderProxyOffset: {x: 0, y: 0, z: 0}
+  shadowMode: 1
+  castShadow: 1
+  receiveShadow: 1
+  shadowCasterPrefab: {fileID: 0}
+  shadowCasterMaterial: {fileID: 0}
+  fogMode: 0
+  enableEnvironmentAudio: 0
+  environmentAudioPackage: {fileID: 0}
+  environmentAudioMinDistance: 1
+  environmentAudioMaxDistance: 12
+  environmentAudioVolume: 1
+  environmentAudioLoop: 1
+  showBoundsGizmo: 1
+  showCollisionGizmo: 1
+  showFrontBackPlaneGizmo: 1
+  gizmoColor: {r: 1, g: 0.55, b: 0.12, a: 1}

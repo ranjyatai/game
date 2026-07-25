@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fd81388b5b9aa54a865091c496c2995, type: 3}
+  m_Name: BloodVFXSettings
+  m_EditorClassIdentifier: Assembly-CSharp::BloodVFXSettings
+  splashPrefabs:
+  - {fileID: 8007369982305464528, guid: 4ae5d2ab9b8c5444498df728275352c8, type: 3}
+  - {fileID: 8007369982305464528, guid: 85efed574c74bb24181b819f88da97b5, type: 3}
+  - {fileID: 6550804457596160986, guid: c2ff9a62d0009a64a81cc1a4bba59fd5, type: 3}
+  - {fileID: 4055846304957825616, guid: 700b4d22453a6ef438be63e4c5c37167, type: 3}
+  - {fileID: 4055846304957825616, guid: e855d12d7bfdb464b94ef1f1d20cf814, type: 3}
+  decalPrefabs:
+  - {fileID: 6382714592252116805, guid: 30ac41ea78fa3c34b846778c9ddaa065, type: 3}
+  - {fileID: 3974681117029527914, guid: 515c4249c55eafa42927e917b5666872, type: 3}
+  - {fileID: 8613160899172357324, guid: 32a335f2645bff1459c14683863f6d36, type: 3}
+  - {fileID: 8147888743447904401, guid: a653cd83d272f594ebd851b45945703c, type: 3}
+  - {fileID: 6382714592252116805, guid: 128933b14a622769f8f94874f6c9ac6c, type: 3}
+  - {fileID: 6382714592252116805, guid: 0157b42111c8a40dc4b6689ed138ecd6, type: 3}
+  decalMaterials:
+  - {fileID: 2100000, guid: 8c782c560fa74c44b95475942d215350, type: 2}
+  - {fileID: 2100000, guid: 8f1c9b462e2f5e54fa41bf8856d62522, type: 2}
+  - {fileID: 2100000, guid: 519589c16f24cc24d8fbe0557d47f34e, type: 2}
+  - {fileID: 2100000, guid: 710b6c107a640e84a8f12c3ac451a9a9, type: 2}
+  metalSparkPrefabs: []
+  energyBurstPrefabs: []

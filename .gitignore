@@ -1,0 +1,80 @@
+# Unity 生成的缓存/临时目录——都能重新生成，不需要进版本库
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+ProfilerCaptures/
+Backup/
+
+# Visual Studio / Rider 生成的项目文件
+.vs/
+.vsconfig
+*.csproj
+*.sln
+*.slnx
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Unity 崩溃日志
+sysinfo.txt
+*.stackdump
+
+# 打包/构建产物
+*.apk
+*.aab
+*.unitypackage
+*.app
+/SkyPrison/
+/axia test/
+
+# OS 自带垃圾文件
+.DS_Store
+Thumbs.db
+
+# Rider
+.idea/
+
+# 编辑器批处理调试日志（临时诊断用，不需要进版本库）
+*.log
+
+# 地面烘焙缓存——运行时/编辑器烘焙工具生成的中间数据，单个文件能到128MB+，超过
+# GitHub单文件100MB硬上限会直接被拒绝推送。可以在编辑器里重新烘焙，不需要进版本库。
+Assets/_Project/Data/Maps/GroundBakes/
+
+# 第三方 Asset Store 购买/下载的资源包——占了仓库绝大部分体积(总共10GB+)，导致
+# 8.6GB整体推送被GitHub服务端拒绝(HTTP 500)。这些包本身可以从各自的商店/来源
+# 重新获取，不属于自己写的项目内容，不需要进版本库；只追踪 Assets/_Project 底下
+# 自己的东西。
+/Assets/AAA Gunshot Sound Effects Pack – 365 Professional Weapon Fire SFX (71 Guns)/
+/Assets/Barefoot Sounds Pack Three/
+/Assets/CyberneticWalrus/
+/Assets/Deadly Kombat Free version/
+/Assets/Eric VFX Studio/
+/Assets/Floating Dust & Falling Ash/
+/Assets/Footsteps Pack Expanded/
+/Assets/HIVEMIND/
+/Assets/Industrial_Zone_Modular_Pack/
+/Assets/Matthew Guz/
+/Assets/Medieval Melee Weapons SFX Pack/
+/Assets/NamuFX/
+/Assets/NatureManufacture Assets/
+/Assets/Post_Apocalyptic_Store/
+/Assets/RVFX/
+/Assets/Rain VFX \[HDRP, URP\]/
+/Assets/Rain VFX \[URP\]/
+/Assets/RaindropFXPro_URP/
+/Assets/Stylized Water 3/
+/Assets/Stylized_Smoke_Dust/
+/Assets/Vefects/

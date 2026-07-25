@@ -1,0 +1,171 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4055ab9a992938c408bdd4fbe7c3acfe, type: 3}
+  m_Name: SkyPrisonInputSettings
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonInputSettings
+  settingsVersion: V6 - 2026-06-13 - quick item prompt bindings
+  normalizeDigitalMove: 1
+  enableGamepadAxes: 1
+  gamepadHorizontalAxis: Horizontal
+  gamepadVerticalAxis: Vertical
+  gamepadDeadZone: 0.2
+  enableSprintDoubleTapDodge: 0
+  sprintDoubleTapWindow: 0.26
+  sprintDoubleTapMinReleaseTime: 0.03
+  runSuppressAfterDoubleTapDodge: 0.08
+  noMoveInputDodgeForward: 0
+  directDodgeKeyStillAllowed: 1
+  bindings:
+  - action: 0
+    displayName: "\u4E0A\u79FB\u52A8"
+    triggerMode: 0
+    primaryKey: 119
+    secondaryKey: 273
+    gamepadKey: 0
+  - action: 1
+    displayName: "\u4E0B\u79FB\u52A8"
+    triggerMode: 0
+    primaryKey: 115
+    secondaryKey: 274
+    gamepadKey: 0
+  - action: 2
+    displayName: "\u5DE6\u79FB\u52A8"
+    triggerMode: 0
+    primaryKey: 97
+    secondaryKey: 276
+    gamepadKey: 0
+  - action: 3
+    displayName: "\u53F3\u79FB\u52A8"
+    triggerMode: 0
+    primaryKey: 100
+    secondaryKey: 275
+    gamepadKey: 0
+  - action: 10
+    displayName: "\u5954\u8DD1"
+    triggerMode: 0
+    primaryKey: 304
+    secondaryKey: 303
+    gamepadKey: 338
+  - action: 11
+    displayName: "\u6F5C\u884C"
+    triggerMode: 0
+    primaryKey: 306
+    secondaryKey: 99
+    gamepadKey: 339
+  - action: 14
+    displayName: "\u8DF3\u8DC3"
+    triggerMode: 1
+    primaryKey: 32
+    secondaryKey: 0
+    gamepadKey: 330
+  - action: 12
+    displayName: "\u95EA\u907F"
+    triggerMode: 1
+    primaryKey: 324
+    secondaryKey: 0
+    gamepadKey: 331
+  - action: 13
+    displayName: "\u4EA4\u4E92/\u62FE\u53D6/\u4F7F\u7528"
+    triggerMode: 1
+    primaryKey: 101
+    secondaryKey: 13
+    gamepadKey: 0
+  - action: 20
+    displayName: "\u8F7B\u653B\u51FB"
+    triggerMode: 1
+    primaryKey: 323
+    secondaryKey: 106
+    gamepadKey: 332
+  - action: 21
+    displayName: "\u91CD\u653B\u51FB\uFF08\u957F\u6309\u8F7B\u653B\u51FB\uFF09"
+    triggerMode: 0
+    primaryKey: 323
+    secondaryKey: 107
+    gamepadKey: 332
+  - action: 22
+    displayName: "\u6280\u80FD 1"
+    triggerMode: 1
+    primaryKey: 113
+    secondaryKey: 117
+    gamepadKey: 334
+  - action: 23
+    displayName: "\u6280\u80FD 2"
+    triggerMode: 1
+    primaryKey: 102
+    secondaryKey: 105
+    gamepadKey: 335
+  - action: 24
+    displayName: "\u6280\u80FD 3"
+    triggerMode: 1
+    primaryKey: 114
+    secondaryKey: 111
+    gamepadKey: 336
+  - action: 50
+    displayName: "\u5207\u6362\u62FE\u53D6\u76EE\u6807"
+    triggerMode: 1
+    primaryKey: 103
+    secondaryKey: 0
+    gamepadKey: 0
+  - action: 30
+    displayName: "\u80CC\u5305"
+    triggerMode: 1
+    primaryKey: 98
+    secondaryKey: 9
+    gamepadKey: 333
+  - action: 31
+    displayName: "\u5730\u56FE"
+    triggerMode: 1
+    primaryKey: 109
+    secondaryKey: 0
+    gamepadKey: 337
+  - action: 32
+    displayName: "\u83DC\u5355"
+    triggerMode: 1
+    primaryKey: 27
+    secondaryKey: 0
+    gamepadKey: 337
+  - action: 40
+    displayName: "\u5FEB\u6377\u7269\u54C1 1"
+    triggerMode: 1
+    primaryKey: 49
+    secondaryKey: 0
+    gamepadKey: 342
+  - action: 41
+    displayName: "\u5FEB\u6377\u7269\u54C1 2"
+    triggerMode: 1
+    primaryKey: 50
+    secondaryKey: 0
+    gamepadKey: 343
+  - action: 42
+    displayName: "\u5FEB\u6377\u7269\u54C1 3"
+    triggerMode: 1
+    primaryKey: 51
+    secondaryKey: 0
+    gamepadKey: 344
+  - action: 43
+    displayName: "\u5FEB\u6377\u7269\u54C1 4"
+    triggerMode: 1
+    primaryKey: 52
+    secondaryKey: 0
+    gamepadKey: 345
+  - action: 33
+    displayName: "\u89D2\u8272\u9762\u677F"
+    triggerMode: 1
+    primaryKey: 99
+    secondaryKey: 0
+    gamepadKey: 340
+  - action: 25
+    displayName: "\u6362\u5F39"
+    triggerMode: 1
+    primaryKey: 114
+    secondaryKey: 0
+    gamepadKey: 341

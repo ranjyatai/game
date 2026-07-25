@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b6b0f3a3b0a4a141ab9df19c2fc0f3a, type: 3}
+  m_Name: SkyPrisonWeatherEffectLibrary
+  m_EditorClassIdentifier: 
+  dustLightPrefab: {fileID: 5764828355101836832, guid: db04a177c4ade8b4593a9d29cf7aa4be, type: 3}
+  dustMediumPrefab: {fileID: 2087172838043791532, guid: 0bd946498221d2f429143e9a79c97dec, type: 3}
+  dustHeavyPrefab: {fileID: 4020074178504116278, guid: ba24ed333d0136c4d947c52c8882bb79, type: 3}
+  rainLightPrefab: {fileID: 3720585964583394440, guid: 3cac5e7d3ae3d934a9883820de18737a, type: 3}
+  rainMediumPrefab: {fileID: 4901136603311213527, guid: e9a307c145c193944abcac2082a904ee, type: 3}
+  rainHeavyPrefab: {fileID: 2978497391794610372, guid: c9027dd083031d14da3170b3b9984ff8, type: 3}
+  rainAmbientClip: {fileID: 8300000, guid: 1d08daf74de90e64d93603aa05db7216, type: 3}
+  heavyRainAmbientClip: {fileID: 8300000, guid: 87995eada868c384f90c25111fb2b2d2, type: 3}
+  heavyRainThunderClips:
+  - {fileID: 8300000, guid: 9472adc038c72974c8779db771470fc1, type: 3}
+  - {fileID: 8300000, guid: f49250a55dd2f6f4d915a0156d8169c7, type: 3}
+  - {fileID: 8300000, guid: 0b38125d6d7efaf4dadf71c535efe042, type: 3}

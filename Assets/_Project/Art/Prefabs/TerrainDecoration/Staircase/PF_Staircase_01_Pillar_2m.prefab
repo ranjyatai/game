@@ -1,0 +1,154 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1444354591585635348
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6802958178558098772}
+  m_Layer: 0
+  m_Name: PF_Staircase_01_Pillar_2m
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 4294967295
+  m_IsActive: 1
+--- !u!4 &6802958178558098772
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1444354591585635348}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 19.35381, y: 0.016669462, z: -10.333378}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5948185655873641950}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &6126736263238220341
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 6802958178558098772}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_Name
+      value: Staircase_Support_01a_2m
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 4294967295
+      objectReference: {fileID: 0}
+    - target: {fileID: 1647969009399458033, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_Name
+      value: Staircase_Support_01a_2m
+      objectReference: {fileID: 0}
+    - target: {fileID: 1647969009399458033, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 4294967295
+      objectReference: {fileID: 0}
+    - target: {fileID: 4742473837712756890, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_LODs.Array.data[0].screenRelativeHeight
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5387300629820804932, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_Name
+      value: Staircase_Support_01a_2m
+      objectReference: {fileID: 0}
+    - target: {fileID: 5387300629820804932, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      propertyPath: m_StaticEditorFlags
+      value: 4294967295
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2097475447257563289}
+  m_SourcePrefab: {fileID: 100100000, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+--- !u!4 &5948185655873641950 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+  m_PrefabInstance: {fileID: 6126736263238220341}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &6469390053945395044 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: bc1f0729022fb3e4c8bdbea105d35554, type: 3}
+  m_PrefabInstance: {fileID: 6126736263238220341}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &2097475447257563289
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6469390053945395044}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -3441880208749832509, guid: 3b177482735f5664da7617afd853e20e, type: 3}

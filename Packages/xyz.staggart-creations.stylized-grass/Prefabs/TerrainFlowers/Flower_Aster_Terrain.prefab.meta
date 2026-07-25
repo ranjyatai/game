@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 2c786fb73b0486f4dac8061ce8eead00
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/Prefabs/TerrainFlowers/Flower_Aster_Terrain.prefab
+  uploadId: 912894

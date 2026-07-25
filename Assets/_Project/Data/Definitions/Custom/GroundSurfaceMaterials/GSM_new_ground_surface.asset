@@ -1,0 +1,102 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a90b9b713586622408b581bcf2633f33, type: 3}
+  m_Name: GSM_new_ground_surface
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::GroundSurfaceMaterialDefinition
+  surfaceId: new_ground_surface
+  displayName: "\u8349\u5730-\u7EFF"
+  category: "\u8349\u5730"
+  isStandard: 1
+  note: 
+  baseColor: {r: 1, g: 1, b: 1, a: 0}
+  baseTexture: {fileID: 2800000, guid: 998ab784db128f3498eba63d9c6eb79d, type: 3}
+  safePreviewTexture: {fileID: 0}
+  editPreviewTexture: {fileID: 0}
+  runtimePreviewTexture: {fileID: 0}
+  finalBakeTexture: {fileID: 0}
+  baseMaterial: {fileID: 0}
+  useAsTerrainSurface: 1
+  terrainLayer: {fileID: 0}
+  terrainLayerTemplate: {fileID: 0}
+  advancedMaterialTemplate: {fileID: 0}
+  useAsOverlayStamp: 0
+  useAsSplinePattern: 0
+  useAsGroundOverlay: 0
+  previewIcon: {fileID: 0}
+  textureDistributionMode: 0
+  textureWorldSize: 4
+  randomScaleMin: 0.9
+  randomScaleMax: 1.15
+  randomOffsetStrength: 1
+  allowRotate90: 0
+  allowFlipX: 0
+  allowFlipY: 0
+  stampTexture: {fileID: 0}
+  stampWorldSize: {x: 1, y: 1}
+  stampOpacity: 1
+  stampBlendMode: 0
+  stampCanRotate: 1
+  stampCanScale: 1
+  stampOverridesSurfaceType: 0
+  splineTexture: {fileID: 0}
+  splineWorldWidth: 0.55
+  splineSegmentWorldLength: 1
+  splineStampSpacing: 0.1
+  splineOpacity: 1
+  splineFollowBrushDirection: 1
+  splineContinuous: 1
+  splineAngleSmoothing: 0.45
+  splineMaskEnabled: 0
+  splineMaskTexture: {fileID: 0}
+  splineMaskStrength: 1
+  splineMaskThreshold: 0.45
+  splineMaskSoftness: 0.08
+  splineMaskWorldSize: 3
+  splineMaskInvert: 0
+  splineMaskOffset: {x: 0, y: 0}
+  overlaySizeMode: 0
+  lockOverlaySize: 0
+  fixedOverlayWorldSize: {x: 1, y: 1}
+  fixedSplineWorldWidth: 0.55
+  lockOverlayWorldSize: 0
+  lockedOverlayWorldSize: {x: 1, y: 1}
+  lockSplineWorldWidth: 0
+  lockedSplineWorldWidth: 0.55
+  antiRepeatEnabled: 1
+  antiRepeatStrength: 0.62
+  antiRepeatWorldSize: 12
+  antiRepeatUvOffset: 0.72
+  antiRepeatToneJitter: 0.045
+  textureVariants: []
+  variantBlendStrength: 0.65
+  stochasticBlendStrength: 0.45
+  macroVariationTexture: {fileID: 0}
+  macroVariationStrength: 0.1221
+  macroVariationWorldSize: 16
+  baseColorBlendMode: 0
+  baseColorBlendStrength: 0
+  brightness: 1
+  contrast: 1
+  saturation: 1
+  surfaceType: 5
+  friction: 1
+  walkNoiseMultiplier: 1
+  runNoiseMultiplier: 1.25
+  sneakNoiseMultiplier: 0.55
+  landingNoiseMultiplier: 1.35
+  surfaceAudioPackage: {fileID: 11400000, guid: 307440c8d27271f40b0b5fa68b12a73f, type: 2}
+  audioRuntimeLayerKey: surface_grass
+  footstepAudioTag: surface_grass
+  landingAudioTag: surface_grass
+  slideAudioTag: surface_grass
+  defaultFootstepFx: {fileID: 0}
+  defaultLandingFx: {fileID: 0}

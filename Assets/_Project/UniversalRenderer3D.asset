@@ -1,0 +1,647 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-9160749383543749836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8290d111488e4d64c98751b580e96c80, type: 3}
+  m_Name: LootDropOcclusionOutlineFeature
+  m_EditorClassIdentifier: Assembly-CSharp::LootDropOcclusionOutlineFeature
+  m_Active: 0
+  characterMaskItemRTName: RT_MainCameraCharacterMask_Item
+  passEvent: 450
+  onlyMainCamera: 1
+--- !u!114 &-8937786817742463380
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6dbc02c707720914ebd96188ee840c98, type: 3}
+  m_Name: SkyPrisonMainCameraShadowOccluderStencilFeature_V1
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonMainCameraShadowOccluderStencilFeature_V1
+  m_Active: 1
+  settings:
+    scriptVersion: V1 - 2026-06-06 - shadow occluder stencil prepass
+    onlyMainCamera: 1
+    requiredCameraName: Main Camera
+    passEvent: 450
+    stencilRef: 1
+    stencilWriteMask: 255
+    zTest: 8
+    collectDecorationVisualRoots: 1
+    visualRootName: VisualRoot
+    fallbackToLayer: 1
+    fallbackLayerName: OcclusionMask
+    requireRendererEnabled: 1
+    requireActiveInHierarchy: 1
+    rejectPathKeywords: outline;shadow;canvas;ui;character;player;enemy;ally;item;trigger;collider;collision;frontoccluder;occluder;proxy;gizmo;debug
+    stencilWriterShader: {fileID: 0}
+    stencilWriterShaderName: Hidden/SkyPrison/ShadowOccluderStencilWriter
+    debugLogs: 0
+    lastStatus: SKIP camera=OcclusionMaskCamera, type=Game
+--- !u!114 &-7712744575805377286
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe83fddd05439f8479be7de88ed58e9a, type: 3}
+  m_Name: Sky Prison Main Camera Stencil Hidden Outline Feature V23
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonMainCameraStencilHiddenOutlineFeatureV23
+  m_Active: 0
+  settings:
+    scriptVersion: V26 - 2026-06-06 - shader asset paths bound to FrontOccluder/Outline
+      folder
+    onlyMainCamera: 1
+    requiredCameraName: Main Camera
+    clearStencilEvent: 450
+    preCharacterStencilEvent: 450
+    extractCharacterEvent: 450
+    occluderMaskEvent: 450
+    compositeEvent: 450
+    cleanCharacterOutlineEvent: 450
+    bodyClipApplyEvent: 450
+    outlineEvent: 500
+    fullAlphaMaskPassIndex: 1
+    stencilReadMask: 255
+    stencilWriteMask: 255
+    player:
+      enabled: 1
+      channelName: Player
+      stencilRef: 41
+      characterMaskRTName: RT_MainCameraCharacterMask_Player
+      hiddenMaskRTName: RT_MainCameraHiddenMask_Player
+      cleanOutlineRTName: RT_MainCameraCleanCharacterOutline_Player
+      outlineColor: {r: 1, g: 0.83, b: 0, a: 1}
+      pathKeywords: Player;PlayerRuntime
+    enemy:
+      enabled: 1
+      channelName: Enemy
+      stencilRef: 42
+      characterMaskRTName: RT_MainCameraCharacterMask_Enemy
+      hiddenMaskRTName: RT_MainCameraHiddenMask_Enemy
+      cleanOutlineRTName: RT_MainCameraCleanCharacterOutline_Enemy
+      outlineColor: {r: 1, g: 0.16, b: 0.16, a: 1}
+      pathKeywords: Enemy;Mob;Monster
+    item:
+      enabled: 1
+      channelName: Item
+      stencilRef: 43
+      characterMaskRTName: RT_MainCameraCharacterMask_Item
+      hiddenMaskRTName: RT_MainCameraHiddenMask_Item
+      cleanOutlineRTName: RT_MainCameraCleanCharacterOutline_Item
+      outlineColor: {r: 1, g: 1, b: 1, a: 1}
+      pathKeywords: Item;Drop;Loot;Pickup
+    ally:
+      enabled: 1
+      channelName: Ally
+      stencilRef: 44
+      characterMaskRTName: RT_MainCameraCharacterMask_Ally
+      hiddenMaskRTName: RT_MainCameraHiddenMask_Ally
+      cleanOutlineRTName: RT_MainCameraCleanCharacterOutline_Ally
+      outlineColor: {r: 0.56, g: 0.86, b: 1, a: 1}
+      pathKeywords: Ally;Friend
+    autoConfigureMaterialsInPlayMode: 1
+    spineOcclusionShaderName: Spine/SpineOcclusionComposite
+    configureOnlyOncePerRenderer: 1
+    bindNewOccluderMaskToSpineBody: 1
+    usePrecomputedHiddenMaskForBodyClip: 1
+    forceSpineMaskYSettings: 1
+    occluderLayerName: OcclusionMask
+    requireRendererEnabled: 1
+    requireActiveInHierarchy: 1
+    rejectPathKeywords: outline;shadow;canvas;ui;character;player;enemy;ally;item
+    occluderMaskRTName: RT_MainCameraOccluderMask_All
+    matchCameraSize: 1
+    fallbackWidth: 1920
+    fallbackHeight: 1080
+    filterMode: 0
+    stencilClearShaderAssetPath: Assets/_Project/Art/Shaders/Custom/FrontOccluder/Outline/SkyPrisonStencilClearOnly.shader
+    stencilToMaskShaderAssetPath: Assets/_Project/Art/Shaders/Custom/FrontOccluder/Outline/SkyPrisonStencilToMask.shader
+    occluderMaskShaderAssetPath: Assets/_Project/Art/Shaders/Custom/FrontOccluder/Outline/SkyPrisonOccluderSolidMask.shader
+    compositeShaderAssetPath: Assets/_Project/Art/Shaders/Custom/FrontOccluder/Outline/UnitHiddenMaskComposite.shader
+    cleanCharacterOutlineShaderAssetPath: Assets/_Project/Art/Shaders/Custom/FrontOccluder/Outline/SkyPrisonCleanCharacterSilhouetteOutlineMask.shader
+    hiddenOutlineShaderAssetPath: Assets/_Project/Art/Shaders/Custom/FrontOccluder/Outline/SkyPrisonCleanFinalHiddenOutlineOverlay.shader
+    stencilClearShaderName: Hidden/SkyPrison/StencilClearOnly
+    stencilToMaskShaderName: Hidden/SkyPrison/StencilToMask
+    occluderMaskShaderName: Hidden/SkyPrison/OccluderSolidMask
+    compositeShaderName: Hidden/SkyPrison/MaskMultiplyComposite
+    cleanCharacterOutlineShaderName: Hidden/SkyPrison/CleanCharacterSilhouetteOutlineMask
+    hiddenOutlineShaderName: Hidden/SkyPrison/CleanFinalHiddenOutlineOverlay
+    threshold: 0.01
+    outlineWidthPixels: 2
+    enableOfficialOverlay: 1
+    enableMeshHiddenOutline: 0
+    meshHiddenOutlineAlpha: 1
+    outlineDebugMode: 0
+    debugFillAlpha: 0.65
+    enableCleanCharacterOutlineInput: 1
+    cleanOutlineFarSampleScale: 2.4
+    cleanOutlineMinStableVotes: 2
+    cleanOutlineNoiseThreshold: 0.55
+    lastCameraStatus: SKIP camera=SceneCamera, type=SceneView
+    lastMaterialStatus: OK material config. checked=63, matchedRenderers=0, stencilSlots=0,
+      bodyClipTextureSlots=0, sharedBodyClipSlots=0, bodyClipMode=PrecomputedHiddenMask_AppliedByRenderPass,
+      cachedRenderers=0
+    lastClearStatus: '-'
+    lastCharacterStatus: '-'
+    lastOccluderStatus: COLLECT occluder renderers=0, layer=OcclusionMask
+    lastOutlineStatus: '-'
+--- !u!114 &-6394802454394906081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b9747016c28cb74690cf97eb692ca6a, type: 3}
+  m_Name: UnitStatusOutlinePresenceFeature
+  m_EditorClassIdentifier: Assembly-CSharp::UnitStatusOutlinePresenceFeature
+  m_Active: 1
+  captureShader: {fileID: 4800000, guid: 5d3bb8c851a42fa4bae4a84847237905, type: 3}
+  maxConcurrentUnits: 8
+  scanIntervalFrames: 15
+--- !u!114 &-6298840550029654937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a67bf8a30b9b6d49a3b2fa63d95e9b0, type: 3}
+  m_Name: EffekseerURPRenderPassFeature
+  m_EditorClassIdentifier: Effekseer.URP::EffekseerURPRenderPassFeature
+  m_Active: 1
+  LayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &-6214512615257031081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7166eb4bd7331f74fba8fe47d1b63d38, type: 3}
+  m_Name: CharacterPresenceFeature
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterPresenceFeature
+  m_Active: 1
+  captureShader: {fileID: 4800000, guid: 5d3bb8c851a42fa4bae4a84847237905, type: 3}
+--- !u!114 &-5721532558536370491
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1614fc811f8f184697d9bee70ab9fe5, type: 3}
+  m_Name: DecalRendererFeature
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.DecalRendererFeature
+  m_Active: 1
+  m_Settings:
+    technique: 2
+    maxDrawDistance: 1000
+    decalLayers: 0
+    dBufferSettings:
+      surfaceData: 2
+    screenSpaceSettings:
+      normalBlend: 0
+--- !u!114 &-2737790189208504755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd5ce549e0b646a7adf00b1b9fc8603d, type: 3}
+  m_Name: Stylized Grass
+  m_EditorClassIdentifier: sc.stylizedgrass.runtime::sc.stylizedgrass.runtime.GrassRenderFeature
+  m_Active: 1
+  bendingShader: {fileID: 4800000, guid: 83f1a74da0594f2439500e813fc6108b, type: 3}
+  settings:
+    enableBending: 1
+    debugBending: 0
+    bendingRenderRange: 50
+    forwardPerspectiveCorrection: 1
+    fadeAtMaxRenderingRange: 0
+    ditheringNoise: {fileID: 2800000, guid: 81200413a40918d4d8702e94db29911c, type: 3}
+    animateDithering: 1
+    ignoreSceneView: 0
+    ignoreOverlayCamera: 1
+--- !u!114 &-1894706708594283518
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f638f7645376bfa4889dc0ba075980ac, type: 3}
+  m_Name: SkyPrisonUIBackgroundBlurFeature
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonUIBackgroundBlurFeature
+  m_Active: 1
+  settings:
+    enabled: 1
+    shader: {fileID: 4800000, guid: f3d88e5ef2459384c9d912783e3638cc, type: 3}
+--- !u!114 &-1179571644050425505
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d5e4261b43c7754288d81dc6957626f, type: 3}
+  m_Name: Sky Prison Runtime Mask Diagnostic Overlay V1
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonRuntimeMaskDiagnosticOverlayFeatureV1
+  m_Active: 1
+  settings:
+    scriptVersion: V1 - 2026-06-05 - runtime RT diagnostic overlay only
+    onlyMainCamera: 1
+    requiredCameraName: Main Camera
+    overlayEvent: 210
+    diagnosticMode: 1
+    threshold: 0.01
+    firstColor: {r: 1, g: 0, b: 0, a: 0.45}
+    secondColor: {r: 0, g: 0.25, b: 1, a: 0.45}
+    overlapColor: {r: 0, g: 1, b: 0, a: 0.75}
+    characterMaskPlayerRTName: RT_MainCameraCharacterMask_Player
+    occluderMaskAllRTName: RT_MainCameraOccluderMask_All
+    hiddenMaskPlayerRTName: RT_MainCameraHiddenMask_Player
+    diagnosticShaderName: Hidden/SkyPrison/RuntimeMaskDiagnosticView
+    runtimeFirstRTPreview: {fileID: 0}
+    runtimeSecondRTPreview: {fileID: 0}
+    lastStatus: SKIP camera=OverheadUICamera, type=Game
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de640fe3d0db1804a85f9fc8f5cadab6, type: 3}
+  m_Name: UniversalRenderer3D
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalRendererData
+  debugShaders:
+    debugReplacementPS: {fileID: 4800000, guid: cf852408f2e174538bcd9b7fda1c5ae7, type: 3}
+    hdrDebugViewPS: {fileID: 4800000, guid: 573620ae32aec764abd4d728906d2587, type: 3}
+    probeVolumeSamplingDebugComputeShader: {fileID: 7200000, guid: 53626a513ea68ce47b59dc1299fe3959, type: 3}
+  probeVolumeResources:
+    probeVolumeDebugShader: {fileID: 0}
+    probeVolumeFragmentationDebugShader: {fileID: 0}
+    probeVolumeOffsetDebugShader: {fileID: 0}
+    probeVolumeSamplingDebugShader: {fileID: 0}
+    probeSamplingDebugMesh: {fileID: 0}
+    probeSamplingDebugTexture: {fileID: 0}
+    probeVolumeBlendStatesCS: {fileID: 0}
+  m_RendererFeatures:
+  - {fileID: 7834527446966997974}
+  - {fileID: 6049869828602937500}
+  - {fileID: 3407990881771266291}
+  - {fileID: -2737790189208504755}
+  - {fileID: 2634432127906669843}
+  - {fileID: -8937786817742463380}
+  - {fileID: -7712744575805377286}
+  - {fileID: -1894706708594283518}
+  - {fileID: 1851250989489165959}
+  - {fileID: -6214512615257031081}
+  - {fileID: -9160749383543749836}
+  - {fileID: -5721532558536370491}
+  - {fileID: -6298840550029654937}
+  - {fileID: -6394802454394906081}
+  - {fileID: 4170064773752753920}
+  m_RendererFeatureMap: d613843334d5b96c9c403b378e74f553f320bf91a69d4b2f4d76ad0e546a01da6c9e4a623e9af683022cb08049a6b4e587969772f7f6b01957be6bcbb39dc1a934037fadf87ade80c5969bb5730899b06704a876e40596a81fdafe800c1941a7000fe759d10bdf39
+  m_UseNativeRenderPass: 0
+  xrSystemData: {fileID: 0}
+  postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
+  m_AssetVersion: 3
+  m_PrepassLayerMask:
+    serializedVersion: 2
+    m_Bits: 268434359
+  m_OpaqueLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294966271
+  m_TransparentLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294966271
+  m_DefaultStencilState:
+    overrideStencilState: 0
+    stencilReference: 0
+    stencilCompareFunction: 8
+    passOperation: 2
+    failOperation: 0
+    zFailOperation: 0
+  m_ShadowTransparentReceive: 1
+  m_RenderingMode: 0
+  m_DepthPrimingMode: 0
+  m_CopyDepthMode: 1
+  m_DepthAttachmentFormat: 0
+  m_DepthTextureFormat: 0
+  m_AccurateGbufferNormals: 0
+  m_IntermediateTextureMode: 1
+--- !u!114 &1851250989489165959
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9694bab0faf00494fbe1edef3c1fe44f, type: 3}
+  m_Name: DeathGlitchRendererFeature
+  m_EditorClassIdentifier: Assembly-CSharp::DeathGlitchRendererFeature
+  m_Active: 1
+  settings:
+    speed: 8
+    blockSize: 0.08
+    rgbShift: 0.012
+    scanline: 0.18
+  glitchShader: {fileID: 4800000, guid: 9bf31c5984c4bc1469a26e5ce343ca38, type: 3}
+--- !u!114 &2634432127906669843
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b43b9280cfbfb3547a406464f11d0b8d, type: 3}
+  m_Name: Sky Prison Hidden Mask Outline Feature V16 Build Safe Shader References
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonMainCameraHiddenMaskOutlineFeature_V18_BuildSafePublicGateState_CompileFix
+  m_Active: 0
+  settings:
+    scriptVersion: V19 - 2026-06-06 - unit-level authorized occluder masks; no RT_MainCameraOccluderMask_All
+      for final outline/body clip.
+    onlyMainCamera: 1
+    requiredCameraName: GamePlayCamera
+    characterMaskEvent: 450
+    occluderMaskEvent: 450
+    hiddenCompositeEvent: 450
+    bodyBindEvent: 450
+    finalOutlineEvent: 500
+    debugOverlayEvent: 500
+    player:
+      enabled: 1
+      channelName: Player
+      characterMaskRTName: RT_MainCameraCharacterMask_Player
+      hiddenMaskRTName: RT_MainCameraHiddenMask_Player
+      outlineColor: {r: 1, g: 0.83, b: 0, a: 1}
+      pathKeywords: Player;PlayerRuntime
+    enemy:
+      enabled: 1
+      channelName: Enemy
+      characterMaskRTName: RT_MainCameraCharacterMask_Enemy
+      hiddenMaskRTName: RT_MainCameraHiddenMask_Enemy
+      outlineColor: {r: 1, g: 0.16, b: 0.16, a: 1}
+      pathKeywords: Enemy;Mob;Monster
+    item:
+      enabled: 1
+      channelName: Item
+      characterMaskRTName: RT_MainCameraCharacterMask_Item
+      hiddenMaskRTName: RT_MainCameraHiddenMask_Item
+      outlineColor: {r: 1, g: 1, b: 1, a: 1}
+      pathKeywords: Item;Drop;Loot;Pickup
+    ally:
+      enabled: 1
+      channelName: Ally
+      characterMaskRTName: RT_MainCameraCharacterMask_Ally
+      hiddenMaskRTName: RT_MainCameraHiddenMask_Ally
+      outlineColor: {r: 0.56, g: 0.86, b: 1, a: 1}
+      pathKeywords: Ally;Friend
+    spineOcclusionShaderName: Spine/SpineOcclusionComposite
+    fullAlphaMaskPassIndex: 1
+    autoConfigureMaterialsInPlayMode: 1
+    configureOnlyOncePerRenderer: 0
+    forceMaskYSettings: 1
+    characterMaskFromAuthorizedOccludedProxyOnly: 1
+    occludedProxyRootKeyword: OutlineProxyRoot
+    occludedProxyKeyword: _Occluded
+    collectAuthorizedProxyFromGateState: 1
+    drawDisabledAuthorizedProxyRenderers: 1
+    drawInactiveAuthorizedProxyRenderers: 1
+    alsoDrawAuthorizedSpineBodyFromGate: 1
+    occluderLayerName: OcclusionMask
+    requireRendererEnabled: 1
+    requireActiveInHierarchy: 1
+    rejectPathKeywords: outline;shadow;canvas;ui;character;player;enemy;ally;item
+    drawOccludersWithOriginalMaterials: 1
+    forceSolidOccluderMaskInput: 1
+    fallbackOccluderPassIndex: 0
+    enableShadowOccluderMask: 1
+    shadowOccluderGlobalTextureName: _SkyPrison_GlobalShadowOccluderMask
+    shadowOccluderLegacyGlobalTextureName: RT_MainCameraShadowOccluderMask_All
+    shadowMaskCollectAllOcclusionLayerRenderers: 1
+    shadowMaskUseMainCameraVisualGeometry: 1
+    shadowMaskVisualRootName: VisualRoot
+    shadowMaskFallbackToOcclusionLayerWhenNoVisual: 1
+    shadowMaskVisualRejectPathKeywords: outline;shadow;canvas;ui;character;player;enemy;ally;item;trigger;collider;collision;frontoccluder;occluder;proxy;gizmo;debug
+    shadowMaskUseRejectPathKeywords: 1
+    shadowMaskRequireRendererEnabled: 1
+    shadowMaskRequireActiveInHierarchy: 1
+    occluderMaskRTName: RT_MainCameraOccluderMask_All_LegacyUnused
+    matchCameraSize: 1
+    fallbackWidth: 1920
+    fallbackHeight: 1080
+    filterMode: 1
+    renderTargetScale: 0.5
+    occluderMaskShader: {fileID: 0}
+    occluderMaskShaderName: Hidden/SkyPrison/OccluderSolidMask
+    compositeShader: {fileID: 0}
+    compositeShaderName: Hidden/SkyPrison/MaskMultiplyComposite
+    threshold: 0.01
+    sampleBothY: 0
+    enableBodyClip: 1
+    enableHiddenOutline: 1
+    outlineWidthPixels: 2
+    outlineAlpha: 1
+    drawFinalOutlineWithHiddenEdgeOverlay: 1
+    drawFinalHiddenMaskFillOverlay: 1
+    finalHiddenMaskFillAlpha: 0.22
+    disableSpineInternalOutlineWhenUsingFinalOverlay: 1
+    debugViewMode: 0
+    debugChannel: 0
+    debugAlpha: 0.65
+    debugEdgeWidthPixels: 2
+    debugCharacterColor: {r: 0, g: 1, b: 1, a: 0.65}
+    debugOccluderColor: {r: 1, g: 0, b: 1, a: 0.65}
+    debugHiddenColor: {r: 1, g: 1, b: 0, a: 0.75}
+    debugEdgeColor: {r: 1, g: 0.25, b: 0, a: 0.95}
+    lastCameraStatus: SKIP camera=SceneCamera, type=SceneView
+    lastCharacterStatus: OK CharacterMask V17 UNIT_AUTHORIZED Player -> RT_MainCameraCharacterMask_Player,
+      renderers=0, drawCalls=0, passIndex=1, camera=Main Camera
+    lastOccluderStatus: OK OccluderMask -> RT_MainCameraOccluderMask_All_LegacyUnused,
+      renderers=0, drawCalls=0, originalMaterials=True, forceSolid=True, effectiveOriginal=False,
+      camera=Main Camera
+    lastCompositeStatus: OK HiddenComposite Ally -> RT_MainCameraHiddenMask_Ally,
+      character=RT_MainCameraCharacterMask_Ally, occluder=RT_MainCameraOccluderMask_Ally,
+      camera=Main Camera
+    lastBodyBindStatus: OK BodyBind Enemy, hidden=RT_MainCameraHiddenMask_Enemy,
+      character=RT_MainCameraCharacterMask_Enemy, occluder=RT_MainCameraOccluderMask_Enemy,
+      renderers=1, slots=1
+    lastDebugStatus: OK FinalOutline V20 live unit masks. channels=4, camera=Main
+      Camera
+--- !u!114 &3407990881771266291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59b46517a74ea03419ed8b6c1088770e, type: 3}
+  m_Name: SkyPrison 2.5D Distance Blur
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonOrthographicDistanceBlurRendererFeature
+  m_Active: 1
+  settings:
+    enabled: 1
+    shader: {fileID: 4800000, guid: 0e3fe1b73db49d742b63745bea3b692f, type: 3}
+    applyToSceneView: 0
+    targetMode: 1
+    afterOverlayCameraName: GamePlayCamera
+    maskMode: 3
+    focusDistance: 8
+    blurRange: 40
+    screenBlurStartY: 0.231
+    screenBlurEndY: 0.3
+    screenFocusY: 0.48
+    screenClearHalfHeight: 0.18
+    screenFocusFadeRange: 0.28
+    maxRadius: 11.8
+    intensity: 0.449
+    halfBlurRadiusScale: 1
+    quarterBlurRadiusScale: 1.25
+    debugShowBlurMask: 0
+--- !u!114 &4170064773752753920
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23f5b083ae0721c4aae399f322976f87, type: 3}
+  m_Name: RaindropFX_URP
+  m_EditorClassIdentifier: RaindropFX.URP::RaindropFX.RaindropFX_URPRenderFeature
+  m_Active: 1
+  blurSettings:
+    renderPassEvent: 550
+    blurIteration: 2
+    downSampling: 4
+  rfxSettings:
+    renderPassEvent: 550
+  gpuSettings:
+    renderPassEvent: 550
+--- !u!114 &6049869828602937500
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b3d386ba5cd94485973aee1479b272e, type: 3}
+  m_Name: RenderObjects
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.RenderObjects
+  m_Active: 1
+  settings:
+    passTag: RenderObjects
+    Event: 500
+    filterSettings:
+      RenderQueueType: 1
+      LayerMask:
+        serializedVersion: 2
+        m_Bits: 2048
+      PassNames: []
+    overrideMaterial: {fileID: 2100000, guid: 8ffb429145102654080ed1bfd5a8c805, type: 2}
+    overrideMaterialPassIndex: 0
+    overrideShader: {fileID: 0}
+    overrideShaderPassIndex: 0
+    overrideMode: 1
+    overrideDepthState: 1
+    depthCompareFunction: 8
+    enableWrite: 0
+    stencilSettings:
+      overrideStencilState: 0
+      stencilReference: 0
+      stencilCompareFunction: 8
+      passOperation: 0
+      failOperation: 0
+      zFailOperation: 0
+    cameraSettings:
+      overrideCamera: 0
+      restoreCamera: 1
+      offset: {x: 0, y: 0, z: 0, w: 0}
+      cameraFieldOfView: 60
+--- !u!114 &7834527446966997974
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b3d386ba5cd94485973aee1479b272e, type: 3}
+  m_Name: RFCharacterStencilCut
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.RenderObjects
+  m_Active: 0
+  settings:
+    passTag: RFCharacterStencilCut
+    Event: 500
+    filterSettings:
+      RenderQueueType: 1
+      LayerMask:
+        serializedVersion: 2
+        m_Bits: 256
+      PassNames: []
+    overrideMaterial: {fileID: 2100000, guid: 6a628d39952e17a4cba6b009cf3bd1f9, type: 2}
+    overrideMaterialPassIndex: 0
+    overrideShader: {fileID: 0}
+    overrideShaderPassIndex: 0
+    overrideMode: 1
+    overrideDepthState: 1
+    depthCompareFunction: 8
+    enableWrite: 0
+    stencilSettings:
+      overrideStencilState: 0
+      stencilReference: 0
+      stencilCompareFunction: 8
+      passOperation: 0
+      failOperation: 0
+      zFailOperation: 0
+    cameraSettings:
+      overrideCamera: 0
+      restoreCamera: 1
+      offset: {x: 0, y: 0, z: 0, w: 0}
+      cameraFieldOfView: 60

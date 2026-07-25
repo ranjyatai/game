@@ -1,0 +1,88 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e82e2a0560eefc40b5ed565fe86f767, type: 3}
+  m_Name: SkyPrisonItemMaterialSoundTable
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonItemMaterialSoundTable
+  globalVolumeMultiplier: 0.691
+  entries:
+  - material: 0
+    pickupClips:
+    - {fileID: 8300000, guid: e1ea3db84b3232f468952a2895881313, type: 3}
+    dropClips:
+    - {fileID: 8300000, guid: a1a40707bd5080441bf9adc78331086f, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0.05
+  - material: 1
+    pickupClips:
+    - {fileID: 8300000, guid: bdc37d2be3fa9f34cb0eae9dbadaca25, type: 3}
+    dropClips:
+    - {fileID: 8300000, guid: f15361b784a9ec541a36bea3fe0fc5cd, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0.05
+  - material: 2
+    pickupClips:
+    - {fileID: 8300000, guid: 222659acf0030374cbeda45f039f6a97, type: 3}
+    dropClips:
+    - {fileID: 8300000, guid: e7bfa2e6f5f7a3e46be0875f51512217, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0.05
+  - material: 3
+    pickupClips:
+    - {fileID: 8300000, guid: 322f9cab4737b1d43ab1e4cb76843978, type: 3}
+    dropClips:
+    - {fileID: 8300000, guid: c8253a2550e172c43bd7165255920873, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0.05
+  - material: 4
+    pickupClips:
+    - {fileID: 8300000, guid: 98d988780da085b49a0c3a2a5c725fdc, type: 3}
+    dropClips:
+    - {fileID: 8300000, guid: 22c90d8f072ed394495c6b72724af84f, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0.05
+  - material: 5
+    pickupClips:
+    - {fileID: 8300000, guid: 41f5dd4cb346e0f44acc93a4e85059f3, type: 3}
+    dropClips:
+    - {fileID: 8300000, guid: d181dce731295d34da431387f3802f72, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0.05
+  - material: 6
+    pickupClips:
+    - {fileID: 8300000, guid: da08852c8a7e15649b326fb1ffad70d4, type: 3}
+    dropClips:
+    - {fileID: 8300000, guid: fae1ce3cd7e7339458925620d998952c, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0.05
+  - material: 7
+    pickupClips:
+    - {fileID: 8300000, guid: baeba668e408ff54394deaf5d0abae9d, type: 3}
+    dropClips:
+    - {fileID: 8300000, guid: b780d972f004a7d458bef6adf7ab925b, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0.05
+  - material: 8
+    pickupClips:
+    - {fileID: 8300000, guid: e3190d4e43bc01841aaebd0e56f673c5, type: 3}
+    dropClips:
+    - {fileID: 8300000, guid: 27aed5be80ce8f34899a933dc683b198, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0.05

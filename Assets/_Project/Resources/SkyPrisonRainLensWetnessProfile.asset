@@ -1,0 +1,96 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7fd9488000d3734a9e00ee676215985, type: 3}
+  m_Name: SkyPrisonRainLensWetnessProfile
+  m_EditorClassIdentifier:
+  components:
+  - {fileID: 2682275993418739160}
+--- !u!114 &2682275993418739160
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2ba6179f864e4e48924fb8844220f79, type: 3}
+  m_Name: RaindropFX_GPU
+  m_EditorClassIdentifier:
+  active: 1
+  enable:
+    m_OverrideState: 1
+    m_Value: 0
+  fadeout_fadein_switch:
+    m_OverrideState: 1
+    m_Value: 0
+  _noiseTex:
+    m_OverrideState: 1
+    m_Value: {fileID: 2800000, guid: 8fcef4a58a23b8e40b5e7a91f6ca222e, type: 3}
+    dimension: 1
+  refreshRate:
+    m_OverrideState: 1
+    m_Value: 10
+  DownSampling:
+    m_OverrideState: 1
+    m_Value: 1
+  StaticSpawnRate:
+    m_OverrideState: 1
+    m_Value: 5
+  DynamicSpawnRate:
+    m_OverrideState: 1
+    m_Value: 1
+  staticRaindropSize:
+    m_OverrideState: 1
+    m_Value: 1
+  dynamicRaindropSize:
+    m_OverrideState: 1
+    m_Value: 2.25
+  dynamicLifetime:
+    m_OverrideState: 1
+    m_Value: 1
+  staticLifetime:
+    m_OverrideState: 1
+    m_Value: 1
+  sharpenEdge:
+    m_OverrideState: 1
+    m_Value: 0.275
+  fusion:
+    m_OverrideState: 1
+    m_Value: 2
+  gravity:
+    m_OverrideState: 1
+    m_Value: {x: 0, y: -0.6}
+  wind:
+    m_OverrideState: 1
+    m_Value: {x: 0, y: 0}
+  windTurbulence:
+    m_OverrideState: 1
+    m_Value: 0.1
+  distortion:
+    m_OverrideState: 1
+    m_Value: 0
+  _inBlack:
+    m_OverrideState: 1
+    m_Value: 0
+  _inWhite:
+    m_OverrideState: 1
+    m_Value: 10
+  _outWhite:
+    m_OverrideState: 1
+    m_Value: 150
+  _outBlack:
+    m_OverrideState: 1
+    m_Value: 5
+  debug:
+    m_OverrideState: 1
+    m_Value: 0

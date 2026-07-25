@@ -1,0 +1,144 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95169ef5aa7c7d74d8b97245531beea5, type: 3}
+  m_Name: SkyPrisonSystemSETable
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonSystemSETable
+  entries:
+  - type: 1
+    clips:
+    - {fileID: 8300000, guid: 17dbc934e86d9cf4faddff82c553785c, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 2
+    clips:
+    - {fileID: 8300000, guid: 339005d61ea26b14982df198cc26e967, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 3
+    clips:
+    - {fileID: 8300000, guid: 3c469fdf96f67ec45975ff7e9fb26d89, type: 3}
+    volume: 0.252
+    pitch: 1
+    pitchVariance: 0
+  - type: 4
+    clips:
+    - {fileID: 8300000, guid: fec2eecd713175d46ba54e124e75fea3, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 5
+    clips:
+    - {fileID: 8300000, guid: e83957256a66cf04095924ccfae6b98c, type: 3}
+    volume: 0.36
+    pitch: 1
+    pitchVariance: 0
+  - type: 6
+    clips: []
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 7
+    clips:
+    - {fileID: 8300000, guid: 2d81e5cce505fd54d8de8e0120eaa0f0, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 8
+    clips:
+    - {fileID: 8300000, guid: 9820bbad5e1fc9d469a72aecb0331d5e, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 9
+    clips:
+    - {fileID: 8300000, guid: cc7c5394132cfb5458ecb1d91c0487bc, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 10
+    clips:
+    - {fileID: 8300000, guid: b1564cde4b04194448a5cdef7bc04f72, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 11
+    clips: []
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 12
+    clips:
+    - {fileID: 8300000, guid: 4b3128bf7de5c2341ad53469bad1d1aa, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 13
+    clips:
+    - {fileID: 8300000, guid: 4b3128bf7de5c2341ad53469bad1d1aa, type: 3}
+    volume: 0.924
+    pitch: 0.8
+    pitchVariance: 0
+  - type: 14
+    clips:
+    - {fileID: 8300000, guid: 61e9cc4409d97d9428eac09ba55122bf, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 15
+    clips: []
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 16
+    clips:
+    - {fileID: 8300000, guid: 61e9cc4409d97d9428eac09ba55122bf, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 17
+    clips:
+    - {fileID: 8300000, guid: b1564cde4b04194448a5cdef7bc04f72, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 18
+    clips:
+    - {fileID: 8300000, guid: 0b7bde5d17227d74688de88a68a5787b, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 19
+    clips:
+    - {fileID: 8300000, guid: b1564cde4b04194448a5cdef7bc04f72, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 20
+    clips:
+    - {fileID: 8300000, guid: 280213fd5cb94754599265c11c6a6330, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 21
+    clips:
+    - {fileID: 8300000, guid: c60ed19927850ef49a22891233388446, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 22
+    clips:
+    - {fileID: 8300000, guid: 1a6e1dc40021b194b909f0b783640d7d, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0

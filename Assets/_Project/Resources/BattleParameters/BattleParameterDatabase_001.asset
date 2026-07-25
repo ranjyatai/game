@@ -1,0 +1,790 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f35fc27bc73e3c845b8511080c2e6e62, type: 3}
+  m_Name: BattleParameterDatabase_001
+  m_EditorClassIdentifier: Assembly-CSharp::BattleParameterDatabase
+  databaseId: battle_parameters_001
+  displayName: "\u6218\u6597\u53C2\u6570 001"
+  note: 
+  isRuntimeActive: 1
+  anomalyDecayDelay: 1.2
+  anomalyDecayPerSecond: 10
+  coreAttributes:
+  - key: maxHp
+    displayName: "\u6700\u5927\u751F\u547D\u503C"
+    note: 
+    valueType: 0
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: maxLp
+    displayName: "\u6700\u5927\u8D1F\u8377\u503C"
+    note: 
+    valueType: 0
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: atk
+    displayName: "\u653B\u51FB\u529B"
+    note: 
+    valueType: 1
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: def
+    displayName: "\u9632\u5FA1"
+    note: 
+    valueType: 1
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: critRate
+    displayName: "\u66B4\u51FB\u7387"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: critDamageMultiplier
+    displayName: "\u66B4\u51FB\u4F24\u5BB3\u500D\u7387"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: hp
+    displayName: "\u751F\u547D\u503CHP"
+    note: 
+    valueType: 0
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 1
+    isStandard: 1
+    defaultValue: 0
+  - key: lp
+    displayName: "\u8D1F\u8377\u503CLP"
+    note: 
+    valueType: 0
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 1
+    isStandard: 1
+    defaultValue: 0
+  - key: atkSpeed
+    displayName: "\u653B\u51FB\u901F\u5EA6"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: hpRecoveryRate
+    displayName: "\u751F\u547D\u503C\u56DE\u590D\u7387"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: lpRecoveryRate
+    displayName: "\u8D1F\u8377\u503C\u56DE\u590D\u7387"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: heatDamage
+    displayName: "\u707C\u70ED\u4F24\u5BB3"
+    note: 
+    valueType: 1
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: shockDamage
+    displayName: "\u7535\u78C1\u4F24\u5BB3"
+    note: 
+    valueType: 1
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: corrosionDamage
+    displayName: "\u8150\u8680\u4F24\u5BB3"
+    note: 
+    valueType: 1
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: freezeDamage
+    displayName: "\u51BB\u7ED3\u4F24\u5BB3"
+    note: 
+    valueType: 1
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: dodgeLpCostRate
+    displayName: "\u95EA\u907F\u6D88\u8017"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: sprintLpCostRate
+    displayName: "\u51B2\u523A\u6D88\u8017"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: lightAtkLpCostRate
+    displayName: "\u8F7B\u653B\u51FB\u6D88\u8017"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: heavyAtkLpCostRate
+    displayName: "\u91CD\u653B\u51FB\u6D88\u8017"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: chargeAtkLpCostRate
+    displayName: "\u84C4\u529B\u653B\u51FB\u6D88\u8017"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: lpRecoveryDelayRate
+    displayName: "\u8D1F\u8377\u503C\u6062\u590D\u5EF6\u8FDF"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: dodgeInvulTimeRate
+    displayName: "\u95EA\u907F\u65E0\u654C\u65F6\u95F4"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: staggerRecoveryRate
+    displayName: "\u786C\u76F4\u6062\u590D\u901F\u5EA6"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: poise
+    displayName: "\u97E7\u6027"
+    note: 
+    valueType: 1
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: hitRecoveryRate
+    displayName: "\u53D7\u51FB\u6062\u590D\u901F\u5EA6"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: negativeCritRate
+    displayName: "\u8D1F\u66B4\u51FB\u7387"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: negativeCritDamageMultiplier
+    displayName: "\u8D1F\u66B4\u51FB\u4F24\u5BB3\u500D\u7387"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: lpRecoveryBase
+    displayName: "\u8D1F\u8377\u503C\u6062\u590D\u57FA\u7840\u901F\u5EA6"
+    note: 
+    valueType: 1
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: hpRecoveryBase
+    displayName: "\u751F\u547D\u503C\u6062\u590D\u57FA\u7840\u901F\u5EA6"
+    note: 
+    valueType: 1
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: lpRecoveryDelayBase
+    displayName: "\u8D1F\u8377\u503C\u6062\u590D\u57FA\u7840\u5EF6\u8FDF"
+    note: 
+    valueType: 1
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: heatBuildUp
+    displayName: "\u707C\u70ED\u5F02\u5E38\u8D4B\u4E88\u500D\u7387"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: shockBuildUp
+    displayName: "\u7535\u78C1\u5F02\u5E38\u8D4B\u4E88\u500D\u7387"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: corrosionBuildUp
+    displayName: "\u8150\u8680\u5F02\u5E38\u8D4B\u4E88\u500D\u7387"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: freezeBuildUp
+    displayName: "\u51BB\u7ED3\u5F02\u5E38\u8D4B\u4E88\u500D\u7387"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: slashResist
+    displayName: "\u5BF9\u65A9\u51FB\u6297\u6027"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: strikeResist
+    displayName: "\u5BF9\u6376\u6253\u6297\u6027"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: impactResist
+    displayName: "\u5BF9\u51B2\u51FB\u6297\u6027"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: heatResist
+    displayName: "\u5BF9\u707C\u70ED\u6297\u6027"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: shockResist
+    displayName: "\u5BF9\u7535\u78C1\u6297\u6027"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: corrosionResist
+    displayName: "\u5BF9\u8150\u8680\u6297\u6027"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  - key: freezeResist
+    displayName: "\u5BF9\u51BB\u7ED3\u6297\u6027"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 0
+  actionModules:
+  - key: one_hand_sword
+    displayName: "\u5355\u624B\u5251\u6A21\u7EC4"
+    note: 
+    isStandard: 1
+    moveSpeed: 5.4
+    sprintSpeed: 7.6
+    dodgeDistance: 3
+    weightInfluence: 1
+    attackSpeedBase: 1
+    lightAttackStartup: 0.1
+    lightAttackRecovery: 0.16
+    heavyAttackStartup: 0.22
+    heavyAttackRecovery: 0.3
+    comboInterval: 0.08
+    chargeTime: 0.35
+    poiseBase: 0
+    staggerRecovery: 1
+    hitRecovery: 1
+  - key: hammer
+    displayName: "\u5927\u9524\u6A21\u7EC4"
+    note: 
+    isStandard: 1
+    moveSpeed: 4.5
+    sprintSpeed: 6.4
+    dodgeDistance: 3
+    weightInfluence: 1
+    attackSpeedBase: 0.78
+    lightAttackStartup: 0.18
+    lightAttackRecovery: 0.28
+    heavyAttackStartup: 0.36
+    heavyAttackRecovery: 0.46
+    comboInterval: 0.14
+    chargeTime: 0.62
+    poiseBase: 10
+    staggerRecovery: 1
+    hitRecovery: 1
+  damageTypes:
+  - key: slash
+    displayName: "\u65A9\u51FB"
+    note: 
+    isStandard: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    icon: {fileID: 0}
+  - key: strike
+    displayName: "\u6253\u51FB"
+    note: 
+    isStandard: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    icon: {fileID: 0}
+  - key: impact
+    displayName: "\u51B2\u51FB"
+    note: 
+    isStandard: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    icon: {fileID: 0}
+  elementAnomalies:
+  - key: heat
+    displayName: "\u707C\u70ED"
+    anomalyDisplayName: "\u707C\u70ED\u5F02\u5E38"
+    note: 
+    color: {r: 1, g: 0.3599887, b: 0.25098038, a: 1}
+    icon: {fileID: 0}
+    defaultAnomalyAccumulationRate: 1
+    isStandard: 1
+    enableAnomalyStatusOnFull: 1
+    enableAnomalyStatusOnResolve: 0
+    enableAnomalyStatusOnResolved: 0
+    enableAnomalyStatusOnTrigger: 0
+    grantedStatusDefinition: {fileID: 11400000, guid: a91a37228f1513d4baafdff1e61d2cb4, type: 2}
+    grantedStatusKey: status_burn
+    grantedStatusDisplayName: "\u707C\u70ED"
+    statusKey: 
+    statusDefinitionKey: 
+    anomalyStatusKey: 
+    runtimeStatusKey: 
+    effectStatusKey: 
+    triggerStatusKey: 
+    buildupStatusKey: 
+    accumulatedStatusKey: 
+    resolvedStatusKey: 
+    damageTypeKey: heat
+    dotDamageTypeKey: heat
+    maxAccumulation: 100
+    accumulationThreshold: 100
+    maxAnomalyValue: 100
+    duration: 6
+    anomalyDuration: 6
+    defaultDuration: 6
+    decayPerSecond: 0
+    recoverDelay: 0
+    damageInterval: 1
+    dotDamagePerSecond: 0
+  - key: shock
+    displayName: "\u7535\u78C1"
+    anomalyDisplayName: "\u7535\u78C1\u5F02\u5E38"
+    note: 
+    color: {r: 0.45, g: 0.75, b: 1, a: 1}
+    icon: {fileID: 0}
+    defaultAnomalyAccumulationRate: 1
+    isStandard: 1
+    enableAnomalyStatusOnFull: 0
+    enableAnomalyStatusOnResolve: 0
+    enableAnomalyStatusOnResolved: 0
+    enableAnomalyStatusOnTrigger: 0
+    grantedStatusDefinition: {fileID: 0}
+    grantedStatusKey: 
+    grantedStatusDisplayName: 
+    statusKey: 
+    statusDefinitionKey: 
+    anomalyStatusKey: 
+    runtimeStatusKey: 
+    effectStatusKey: 
+    triggerStatusKey: 
+    buildupStatusKey: 
+    accumulatedStatusKey: 
+    resolvedStatusKey: 
+    damageTypeKey: shock
+    dotDamageTypeKey: shock
+    maxAccumulation: 100
+    accumulationThreshold: 100
+    maxAnomalyValue: 100
+    duration: 6
+    anomalyDuration: 6
+    defaultDuration: 6
+    decayPerSecond: 0
+    recoverDelay: 0
+    damageInterval: 1
+    dotDamagePerSecond: 0
+  - key: corrosion
+    displayName: "\u8150\u8680"
+    anomalyDisplayName: "\u8150\u8680\u5F02\u5E38"
+    note: 
+    color: {r: 0.45, g: 1, b: 0.55, a: 1}
+    icon: {fileID: 0}
+    defaultAnomalyAccumulationRate: 1
+    isStandard: 1
+    enableAnomalyStatusOnFull: 0
+    enableAnomalyStatusOnResolve: 0
+    enableAnomalyStatusOnResolved: 0
+    enableAnomalyStatusOnTrigger: 0
+    grantedStatusDefinition: {fileID: 0}
+    grantedStatusKey: 
+    grantedStatusDisplayName: 
+    statusKey: 
+    statusDefinitionKey: 
+    anomalyStatusKey: 
+    runtimeStatusKey: 
+    effectStatusKey: 
+    triggerStatusKey: 
+    buildupStatusKey: 
+    accumulatedStatusKey: 
+    resolvedStatusKey: 
+    damageTypeKey: corrosion
+    dotDamageTypeKey: corrosion
+    maxAccumulation: 100
+    accumulationThreshold: 100
+    maxAnomalyValue: 100
+    duration: 6
+    anomalyDuration: 6
+    defaultDuration: 6
+    decayPerSecond: 0
+    recoverDelay: 0
+    damageInterval: 1
+    dotDamagePerSecond: 0
+  - key: freeze
+    displayName: "\u51BB\u7ED3"
+    anomalyDisplayName: "\u51BB\u7ED3\u5F02\u5E38"
+    note: 
+    color: {r: 0.65, g: 0.9, b: 1, a: 1}
+    icon: {fileID: 0}
+    defaultAnomalyAccumulationRate: 1
+    isStandard: 1
+    enableAnomalyStatusOnFull: 0
+    enableAnomalyStatusOnResolve: 0
+    enableAnomalyStatusOnResolved: 0
+    enableAnomalyStatusOnTrigger: 0
+    grantedStatusDefinition: {fileID: 0}
+    grantedStatusKey: 
+    grantedStatusDisplayName: 
+    statusKey: 
+    statusDefinitionKey: 
+    anomalyStatusKey: 
+    runtimeStatusKey: 
+    effectStatusKey: 
+    triggerStatusKey: 
+    buildupStatusKey: 
+    accumulatedStatusKey: 
+    resolvedStatusKey: 
+    damageTypeKey: freeze
+    dotDamageTypeKey: freeze
+    maxAccumulation: 100
+    accumulationThreshold: 100
+    maxAnomalyValue: 100
+    duration: 6
+    anomalyDuration: 6
+    defaultDuration: 6
+    decayPerSecond: 0
+    recoverDelay: 0
+    damageInterval: 1
+    dotDamagePerSecond: 0
+  statusDisplays:
+  - key: new_status_display
+    displayName: "\u65B0\u72B6\u6001\u663E\u793A"
+    note: 
+    refreshDirection: 3
+    overflowMode: 0
+    maxLines: 1
+    iconSize: {x: 18, y: 18}
+    spacing: {x: 2, y: 2}
+    rotatePageInterval: 1.25
+    exposeToUnitUI: 1
+    uiSemanticKey: overhead_status
+    isStandard: 0
+  formulaRules:
+  - key: new_formula_rule
+    displayName: "\u65B0\u516C\u5F0F\u89C4\u5219"
+    note: 
+    baseValueAttributeKey: 
+    baseValueDisplayName: 
+    additiveTerms:
+    - key: flat_slot
+      displayName: "\u52A0\u7B97\u5F15\u7528\u69FD"
+      sourceAttributeKey: 
+      sourceDisplayName: "\u52A0\u7B97\u5F15\u7528\u69FD"
+      defaultValue: 0
+      isStandard: 1
+    - key: atk
+      displayName: "\u653B\u51FB\u529B"
+      sourceAttributeKey: atk
+      sourceDisplayName: "\u653B\u51FB\u529B"
+      defaultValue: 0
+      isStandard: 0
+    - key: def
+      displayName: "\u9632\u5FA1"
+      sourceAttributeKey: def
+      sourceDisplayName: "\u9632\u5FA1"
+      defaultValue: 0
+      isStandard: 0
+    - key: heatDamage
+      displayName: "\u707C\u70ED\u4F24\u5BB3"
+      sourceAttributeKey: heatDamage
+      sourceDisplayName: "\u707C\u70ED\u4F24\u5BB3"
+      defaultValue: 0
+      isStandard: 0
+    - key: shockDamage
+      displayName: "\u7535\u78C1\u4F24\u5BB3"
+      sourceAttributeKey: shockDamage
+      sourceDisplayName: "\u7535\u78C1\u4F24\u5BB3"
+      defaultValue: 0
+      isStandard: 0
+    - key: corrosionDamage
+      displayName: "\u8150\u8680\u4F24\u5BB3"
+      sourceAttributeKey: corrosionDamage
+      sourceDisplayName: "\u8150\u8680\u4F24\u5BB3"
+      defaultValue: 0
+      isStandard: 0
+    - key: freezeDamage
+      displayName: "\u51BB\u7ED3\u4F24\u5BB3"
+      sourceAttributeKey: freezeDamage
+      sourceDisplayName: "\u51BB\u7ED3\u4F24\u5BB3"
+      defaultValue: 0
+      isStandard: 0
+    - key: new_term
+      displayName: "\u65B0\u8BCD\u6761"
+      sourceAttributeKey: 
+      sourceDisplayName: 
+      defaultValue: 0
+      isStandard: 0
+    multiplicativeTerms:
+    - key: multiplier_slot
+      displayName: "\u4E58\u7B97\u5F15\u7528\u69FD"
+      sourceAttributeKey: 
+      sourceDisplayName: "\u4E58\u7B97\u5F15\u7528\u69FD"
+      defaultValue: 0
+      isStandard: 1
+    - key: critDamageMultiplier
+      displayName: "\u66B4\u51FB\u4F24\u5BB3\u500D\u7387"
+      sourceAttributeKey: critDamageMultiplier
+      sourceDisplayName: "\u66B4\u51FB\u4F24\u5BB3\u500D\u7387"
+      defaultValue: 0
+      isStandard: 0
+    - key: heatBuildUp
+      displayName: "\u707C\u70ED\u5F02\u5E38\u8D4B\u4E88\u500D\u7387"
+      sourceAttributeKey: heatBuildUp
+      sourceDisplayName: "\u707C\u70ED\u5F02\u5E38\u8D4B\u4E88\u500D\u7387"
+      defaultValue: 0
+      isStandard: 0
+    - key: shockBuildUp
+      displayName: "\u7535\u78C1\u5F02\u5E38\u8D4B\u4E88\u500D\u7387"
+      sourceAttributeKey: shockBuildUp
+      sourceDisplayName: "\u7535\u78C1\u5F02\u5E38\u8D4B\u4E88\u500D\u7387"
+      defaultValue: 0
+      isStandard: 0
+    - key: corrosionBuildUp
+      displayName: "\u8150\u8680\u5F02\u5E38\u8D4B\u4E88\u500D\u7387"
+      sourceAttributeKey: corrosionBuildUp
+      sourceDisplayName: "\u8150\u8680\u5F02\u5E38\u8D4B\u4E88\u500D\u7387"
+      defaultValue: 0
+      isStandard: 0
+    - key: freezeBuildUp
+      displayName: "\u51BB\u7ED3\u5F02\u5E38\u8D4B\u4E88\u500D\u7387"
+      sourceAttributeKey: freezeBuildUp
+      sourceDisplayName: "\u51BB\u7ED3\u5F02\u5E38\u8D4B\u4E88\u500D\u7387"
+      defaultValue: 0
+      isStandard: 0
+    - key: slashResist
+      displayName: "\u5BF9\u65A9\u51FB\u6297\u6027"
+      sourceAttributeKey: slashResist
+      sourceDisplayName: "\u5BF9\u65A9\u51FB\u6297\u6027"
+      defaultValue: 0
+      isStandard: 0
+    - key: strikeResist
+      displayName: "\u5BF9\u6376\u6253\u6297\u6027"
+      sourceAttributeKey: strikeResist
+      sourceDisplayName: "\u5BF9\u6376\u6253\u6297\u6027"
+      defaultValue: 0
+      isStandard: 0
+    - key: impactResist
+      displayName: "\u5BF9\u51B2\u51FB\u6297\u6027"
+      sourceAttributeKey: impactResist
+      sourceDisplayName: "\u5BF9\u51B2\u51FB\u6297\u6027"
+      defaultValue: 0
+      isStandard: 0
+    - key: heatResist
+      displayName: "\u5BF9\u707C\u70ED\u6297\u6027"
+      sourceAttributeKey: heatResist
+      sourceDisplayName: "\u5BF9\u707C\u70ED\u6297\u6027"
+      defaultValue: 0
+      isStandard: 0
+    - key: shockResist
+      displayName: "\u5BF9\u7535\u78C1\u6297\u6027"
+      sourceAttributeKey: shockResist
+      sourceDisplayName: "\u5BF9\u7535\u78C1\u6297\u6027"
+      defaultValue: 0
+      isStandard: 0
+    - key: corrosionResist
+      displayName: "\u5BF9\u8150\u8680\u6297\u6027"
+      sourceAttributeKey: corrosionResist
+      sourceDisplayName: "\u5BF9\u8150\u8680\u6297\u6027"
+      defaultValue: 0
+      isStandard: 0
+    - key: freezeResist
+      displayName: "\u5BF9\u51BB\u7ED3\u6297\u6027"
+      sourceAttributeKey: freezeResist
+      sourceDisplayName: "\u5BF9\u51BB\u7ED3\u6297\u6027"
+      defaultValue: 0
+      isStandard: 0
+    - key: negativeCritDamageMultiplier
+      displayName: "\u8D1F\u66B4\u51FB\u4F24\u5BB3\u500D\u7387"
+      sourceAttributeKey: negativeCritDamageMultiplier
+      sourceDisplayName: "\u8D1F\u66B4\u51FB\u4F24\u5BB3\u500D\u7387"
+      defaultValue: 0
+      isStandard: 0
+    finalMultiplier: 1
+    minClamp: 0
+    maxClamp: 999999
+    randomMinMultiplier: 1
+    randomMaxMultiplier: 1

@@ -1,0 +1,23 @@
+{
+  "name": "xyz.staggart-creations.stylized-grass",
+  "description": "Stylized grass shader for the Universal Render Pipeline",
+  "version": "2.0.1",
+  "unity": "6000.0",
+  "displayName": "Stylized Grass Shader (Unity 6)",
+  "dependencies": {
+    "com.unity.render-pipelines.universal": "17.0.4"
+  },
+  "author": {
+    "name": "Staggart Creations",
+    "email": "contact@staggart.xyz",
+    "url": "http://staggart.xyz/"
+  },
+  "keywords": [
+    "grass",
+    "shader",
+    "stylized",
+    "wind",
+    "urp"
+  ],
+  "unityRelease": "22f1"
+}

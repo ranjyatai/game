@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37600d2b343ea0847ac945ea73927454, type: 3}
+  m_Name: MD_Cooling Tower & Exhaust Zone
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::MapDefinition
+  mapKey: newmap
+  fileName: Cooling Tower & Exhaust Zone
+  displayName: "\u7269\u6D41\u8F93\u9001\u5ECA\u9053"
+  description: 
+  localizedNames:
+  - languageCode: zh-CN
+    text: "\u7269\u6D41\u8F93\u9001\u5ECA\u9053"
+  - languageCode: ja
+    text: "\u7269\u6D41\u642C\u9001\u56DE\u5ECA"
+  - languageCode: en
+    text: Logistics Conveyor Corridor
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: 
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 
+  scenePath: Assets/_Project/Maps/Raid/OldFactory/Cooling Tower & Exhaust Zone/Cooling
+    Tower & Exhaust Zone.unity
+  sceneGuid: b4dc05e239ec9b14c83939d2d357ed9b
+  mapBoundsCenter: {x: 0, y: 0, z: 0}
+  mapBoundsSize: {x: 64, y: 6, z: 64}
+  enablePhysicalMapBounds: 1
+  mapBoundsWallThickness: 2
+  mapBoundsWallHeight: 12
+  mapBoundsUseCeiling: 0
+  mapBoundsCeilingThickness: 1
+  enableFogOfWar: 1
+  fogStrength: 0.72
+  fogSoftEdgeWidth: 3.5
+  environmentPreset: 1
+  skyRenderModel: {fileID: 0}
+  skyboxMaterial: {fileID: 0}
+  ambientColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
+  environmentAreaLightColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
+  environmentAreaLightIntensity: 0.45
+  environmentAreaLightSize: 16
+  environmentAreaLightPosition: {x: 0, y: 8, z: 0}
+  environmentAreaLightEuler: {x: 90, y: 0, z: 0}
+  mainLightColor: {r: 1, g: 1, b: 1, a: 1}
+  mainLightIntensity: 0.6
+  mainLightEuler: {x: 50, y: -30, z: 0}
+  enableSceneFog: 0
+  sceneFogColor: {r: 0.55, g: 0.58, b: 0.62, a: 1}
+  fogStartDistance: 20
+  fogEndDistance: 80
+  postProcessProfile: {fileID: 0}
+  environmentFxPrefab: {fileID: 0}
+  enableDayNightCycle: 0
+  startTimeOfDay: 12
+  enableWeather: 0
+  weatherType: 0
+  weatherIntensity: 0.5
+  lensWetnessIntensity: 0
+  enableDepthOfField: 0
+  focusDistance: 8
+  blurStrength: 0.4
+  triggerPackages: []

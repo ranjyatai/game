@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: caf08089c5271214e937bb303bcc9a76, type: 3}
+  m_Name: SkyPrisonOcclusionRenderResources
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonOcclusionRenderResources
+  unitHiddenMaskCompositeMaterial: {fileID: 2100000, guid: c36a0bbd09561934dbe85c3feaa950bc, type: 2}
+  unitHiddenMaskCompositeShader: {fileID: 4800000, guid: 90c599996d9532b45880e3949be531e7, type: 3}
+  outlineOverlayBaseMaterial: {fileID: 0}

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 6285efcb019849a439242aa9ee77fc27
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/Prefabs/TerrainFlowers/Flower_Chamomile_Terrain.prefab
+  uploadId: 912894

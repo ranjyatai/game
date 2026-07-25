@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 883d9a6d7dd9d954cb68f4d11b776e52
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/Prefabs/TerrainGrass/GrassBillboard_Terrain.prefab
+  uploadId: 912894

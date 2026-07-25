@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 08ebbb61bdf84e919fb3753ab40e1dcb
+timeCreated: 1681127467
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/Runtime/ColorMapRendering.cs
+  uploadId: 912894

@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5cc7dd88118bce439ec92fcc6bf26eb, type: 3}
+  m_Name: MapWeatherRegistry
+  m_EditorClassIdentifier: Assembly-CSharp::MapWeatherRegistry
+  entries:
+  - mapKey: newmap
+    sceneName: Still Vault
+    scenePath: Assets/_Project/Maps/Hub/StillVault/Still Vault/Still Vault.unity
+    weatherPrefab: {fileID: 4901136603311213527, guid: e9a307c145c193944abcac2082a904ee, type: 3}
+    boundsCenter: {x: 0, y: 0, z: 0}
+    boundsSize: {x: 122, y: 6, z: 122}
+    lensWetnessIntensity: 0.261
+    isHeavyRain: 0
+    ambientClip: {fileID: 8300000, guid: 1d08daf74de90e64d93603aa05db7216, type: 3}
+    ambientVolume: 0.18891999
+    thunderClips: []

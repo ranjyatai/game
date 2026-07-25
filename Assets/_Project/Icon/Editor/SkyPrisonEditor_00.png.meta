@@ -1,0 +1,390 @@
+fileFormatVersion: 2
+guid: 4ef3cf4bc91e9c14386bc048000a39c8
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 6333399421525310124
+    second: SkyPrisonEditor_00_0
+  - first:
+      213: 8253855507003550643
+    second: SkyPrisonEditor_00_1
+  - first:
+      213: 5017478738087068815
+    second: SkyPrisonEditor_00_2
+  - first:
+      213: -6752617645624535755
+    second: SkyPrisonEditor_00_3
+  - first:
+      213: -121280329970558355
+    second: SkyPrisonEditor_00_4
+  - first:
+      213: 983950917040062682
+    second: SkyPrisonEditor_00_5
+  - first:
+      213: -8574070922264374275
+    second: SkyPrisonEditor_00_6
+  - first:
+      213: -2072070994294297387
+    second: SkyPrisonEditor_00_7
+  - first:
+      213: 1456145885794688135
+    second: SkyPrisonEditor_00_8
+  - first:
+      213: -4291134877579962106
+    second: SkyPrisonEditor_00_9
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: SkyPrisonEditor_00_0
+      rect:
+        serializedVersion: 2
+        x: 398
+        y: 397
+        width: 407
+        height: 394
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: caa3ea4d731c4e750800000000000000
+      internalID: 6333399421525310124
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkyPrisonEditor_00_1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 211
+        width: 267
+        height: 54
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bb29525ad59b8270800000000000000
+      internalID: 8253855507003550643
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkyPrisonEditor_00_2
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 0
+        width: 153
+        height: 263
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f8441cb145aa1a540800000000000000
+      internalID: 5017478738087068815
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkyPrisonEditor_00_3
+      rect:
+        serializedVersion: 2
+        x: 391
+        y: 32
+        width: 190
+        height: 224
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 535d3883702e942a0800000000000000
+      internalID: -6752617645624535755
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkyPrisonEditor_00_4
+      rect:
+        serializedVersion: 2
+        x: 628
+        y: 2
+        width: 267
+        height: 263
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d6adcd5be20215ef0800000000000000
+      internalID: -121280329970558355
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkyPrisonEditor_00_5
+      rect:
+        serializedVersion: 2
+        x: 947
+        y: 12
+        width: 256
+        height: 227
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad0c7965522b7ad00800000000000000
+      internalID: 983950917040062682
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkyPrisonEditor_00_6
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 9
+        width: 100
+        height: 74
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df31d6f6ce7c20980800000000000000
+      internalID: -8574070922264374275
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkyPrisonEditor_00_7
+      rect:
+        serializedVersion: 2
+        x: 33
+        y: 0
+        width: 199
+        height: 198
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5dca2b3b8668e33e0800000000000000
+      internalID: -2072070994294297387
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkyPrisonEditor_00_8
+      rect:
+        serializedVersion: 2
+        x: 165
+        y: 9
+        width: 102
+        height: 73
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 78c50f7d7f4453410800000000000000
+      internalID: 1456145885794688135
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SkyPrisonEditor_00_9
+      rect:
+        serializedVersion: 2
+        x: 389
+        y: 3
+        width: 193
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6099e827093d274c0800000000000000
+      internalID: -4291134877579962106
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      SkyPrisonEditor_00_0: 6333399421525310124
+      SkyPrisonEditor_00_1: 8253855507003550643
+      SkyPrisonEditor_00_2: 5017478738087068815
+      SkyPrisonEditor_00_3: -6752617645624535755
+      SkyPrisonEditor_00_4: -121280329970558355
+      SkyPrisonEditor_00_5: 983950917040062682
+      SkyPrisonEditor_00_6: -8574070922264374275
+      SkyPrisonEditor_00_7: -2072070994294297387
+      SkyPrisonEditor_00_8: 1456145885794688135
+      SkyPrisonEditor_00_9: -4291134877579962106
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

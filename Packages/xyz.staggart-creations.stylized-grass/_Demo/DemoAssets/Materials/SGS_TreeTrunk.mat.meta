@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ab78ac9e3808ddd4fbea5b92312f0c23
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/_Demo/DemoAssets/Materials/SGS_TreeTrunk.mat
+  uploadId: 912894

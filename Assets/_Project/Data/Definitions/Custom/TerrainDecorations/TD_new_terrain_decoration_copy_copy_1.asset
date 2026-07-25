@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2c6299d1deb1db49833f87a48b36ea5, type: 3}
+  m_Name: TD_new_terrain_decoration_copy_copy_1
+  m_EditorClassIdentifier: Assembly-CSharp::TerrainDecorationDefinition
+  decorationId: new_terrain_decoration_copy_copy_1
+  displayName: "\u6696\u901A\u7A7A\u8C03"
+  category: 4
+  subCategory: Custom
+  tags: []
+  icon: {fileID: 1258846407226792769, guid: a538269e6f210dd43960de823f4ea496, type: 3}
+  note: 
+  isStandard: 0
+  variants:
+  - variantId: variant_1
+    displayName: "\u5706\u9525\u8DEF\u969C"
+    prefab: {fileID: 612667875152028097, guid: 35b9d094858d1ab44801e52283d1eab4, type: 3}
+    weight: 1
+    previewIcon: {fileID: 0}
+    materialSlots:
+    - slotId: hvac_01a_hvac_01a_mat_0
+      displayName: HVAC_01a / MAT 0
+      rendererPath: HVAC_01a/HVAC_01a
+      materialIndex: 0
+      defaultMaterial: {fileID: 2100000, guid: 858ba6e59e0777241a7e38ac782a55f7, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: 858ba6e59e0777241a7e38ac782a55f7, type: 2}
+    - slotId: hvac_01a_hvac_01a_mat_0
+      displayName: HVAC_01a / MAT 0
+      rendererPath: HVAC_01a/HVAC_01a
+      materialIndex: 0
+      defaultMaterial: {fileID: 2100000, guid: 858ba6e59e0777241a7e38ac782a55f7, type: 2}
+      allowedMaterials:
+      - {fileID: 2100000, guid: 858ba6e59e0777241a7e38ac782a55f7, type: 2}
+  randomVariantOnPlace: 1
+  randomVariantByWeight: 1
+  randomMaterialOnPlace: 0
+  structureTemplate: 0
+  autoEnsureStandardStructure: 1
+  repairMissingNodesOnly: 1
+  allowMove: 1
+  allowRotate: 1
+  allowScale: 1
+  snapToGrid: 1
+  placementCollisionMode: 4
+  allowVisualOverlap: 1
+  allowCollisionOverlap: 0
+  defaultPlacementRotation: {x: 0, y: 0, z: 0}
+  defaultScale: {x: 3, y: 3, z: 3}
+  footprintSize: {x: 3.035, y: 0.36900002}
+  enableRandomScale: 0
+  uniformRandomScale: 1
+  randomScaleMin: {x: 1, y: 1, z: 1}
+  randomScaleMax: {x: 1, y: 1, z: 1}
+  enableVisualRandomRotation: 0
+  visualRandomRotationMin: {x: 0, y: -50, z: 0}
+  visualRandomRotationMax: {x: 0, y: 50, z: 0}
+  visualRandomRotationAffectsRules: 1
+  collisionMode: 1
+  collisionSize: {x: 1.422304, y: 1.422304, z: 2.0439606}
+  collisionOffset: {x: 0, y: 0, z: 0.99779075}
+  blockPlayer: 1
+  blockEnemy: 1
+  blockVision: 0
+  blockProjectile: 1
+  lockRuleSpaceFromVisualRandomRotation: 1
+  frontBackPlaneMode: 1
+  ruleForwardLocal: {x: 0, y: 0, z: 1}
+  rulePlaneOriginLocal: {x: 0, y: 0, z: 0}
+  planePushOutDistance: 0.05
+  occlusionMode: 3
+  fadeWhenBlockingPlayer: 0
+  fadeAlpha: 0.45
+  fadeDuration: 0.12
+  frontBackOcclusionWidthMultiplier: 1
+  frontBackOcclusionHeightMultiplier: 1
+  frontBackOcclusionDepthMultiplier: 1
+  frontOcclusionDepthRatio: 0.18
+  backOcclusionDepthRatio: 0.82
+  frontBackOcclusionCenterOffset: 0
+  frontBackOcclusionHorizontalOffset: 0
+  frontBackOcclusionHeightOffset: 0
+  frontBackOcclusionDepthOffset: 0
+  frontOccluderProxyMode: 2
+  frontOccluderProxyMaterial: {fileID: 0}
+  frontOccluderAlphaCutoff: 0.35
+  manualFrontOccluderProxyPrefab: {fileID: 0}
+  frontOccluderProxyWidthMultiplier: 1
+  frontOccluderProxyHeightMultiplier: 1
+  frontOccluderProxyDepthMultiplier: 1
+  frontOccluderProxyOffset: {x: 0, y: 0, z: 0}
+  shadowMode: 1
+  castShadow: 1
+  receiveShadow: 1
+  shadowCasterPrefab: {fileID: 0}
+  shadowCasterMaterial: {fileID: 0}
+  fogMode: 0
+  enableEnvironmentAudio: 0
+  environmentAudioPackage: {fileID: 0}
+  environmentAudioMinDistance: 1
+  environmentAudioMaxDistance: 12
+  environmentAudioVolume: 1
+  environmentAudioLoop: 1
+  showBoundsGizmo: 1
+  showCollisionGizmo: 1
+  showFrontBackPlaneGizmo: 1
+  gizmoColor: {r: 1, g: 0.55, b: 0.12, a: 1}

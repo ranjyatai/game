@@ -1,0 +1,325 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a03883ee59c8a5241acf98a2e13e87dc, type: 3}
+  m_Name: SAP_AP_Surface_Mud
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonAudioPackage
+  packageKey: AP_Surface_Mud
+  displayName: "\u6CE5\u571F"
+  packageType: 1
+  playMode: 0
+  timelineLengthSeconds: 8
+  masterVolume: 1
+  randomVolumeRange: {x: 0.95, y: 1.05}
+  randomPitchRange: {x: 0.96, y: 1.04}
+  spatial3D: 1
+  minDistance: 1
+  maxDistance: 18
+  noiseRadius: 5
+  noiseStrength: 1
+  tracks:
+  - trackId: af5b48059cff4fcb9c83c7c840dc40da
+    displayName: footstep_l
+    runtimeLayerKey: 
+    footSideCondition: 0
+    color: {r: 0.95, g: 0.35, b: 0.8, a: 1}
+    mute: 0
+    solo: 0
+    locked: 0
+    mixerChannelId: c30df7a3999549d8b487a298f4ed8819
+    segments:
+    - segmentId: 18662530bc304cb5a26467bef68d549d
+      displayName: MudSteps02
+      sourceClip: {fileID: 8300000, guid: cb831967a11fa584e91eaab58ba520aa, type: 3}
+      timelineStart: 0
+      sourceStart: 0
+      sourceEnd: 0.37302083
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: ab6b625b5e6a4b27ab337607cbf9f816
+      displayName: MudSteps05
+      sourceClip: {fileID: 8300000, guid: 91332ab34a9f9ad459b43a6fdd9cf247, type: 3}
+      timelineStart: 0.35
+      sourceStart: 0
+      sourceEnd: 0.48747918
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 0fb2046d97e6487d8e9a12e0c59cf5d7
+      displayName: MudSteps06
+      sourceClip: {fileID: 8300000, guid: 8745c4dc6162fed448f1f4eca402b72d, type: 3}
+      timelineStart: 0.85
+      sourceStart: 0
+      sourceEnd: 0.47372916
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 9e271568ce0c4cfeacb09e15f0d38199
+      displayName: MudSteps17
+      sourceClip: {fileID: 8300000, guid: 5ec3063c0ed7a184ca772bec621a72c4, type: 3}
+      timelineStart: 1.3000001
+      sourceStart: 0
+      sourceEnd: 0.56579167
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 9aebb033172a45469d516020e0a2c33c
+      displayName: MudSteps13
+      sourceClip: {fileID: 8300000, guid: eddb33be11351dc4cba8560c0587e977, type: 3}
+      timelineStart: 1.85
+      sourceStart: 0
+      sourceEnd: 0.4140625
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 293b9ff17a704fe5958f2277e8d8b479
+      displayName: MudSteps25
+      sourceClip: {fileID: 8300000, guid: 23303edf32308ec4fb813a87c47632a9, type: 3}
+      timelineStart: 2.25
+      sourceStart: 0
+      sourceEnd: 0.39541668
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 6817a12280a849469c073e1f77bbae8a
+      displayName: MudSteps26
+      sourceClip: {fileID: 8300000, guid: b783d48578c5c914f81690bb2f10602f, type: 3}
+      timelineStart: 2.65
+      sourceStart: 0
+      sourceEnd: 0.36183333
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 12df279a679f4be78b501ba43f04694b
+      displayName: MudSteps19
+      sourceClip: {fileID: 8300000, guid: d6016d6f84ef58549a11ca6d53c01076, type: 3}
+      timelineStart: 3
+      sourceStart: 0
+      sourceEnd: 0.5334167
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 8d8d3f650cb841ce91cc344b6e319312
+      displayName: MudSteps61
+      sourceClip: {fileID: 8300000, guid: 8e7530cda4015434596dc5552db662b9, type: 3}
+      timelineStart: 3.55
+      sourceStart: 0
+      sourceEnd: 0.58564585
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 92d80f26ecab4ce3bdd5330cbde9349a
+      displayName: MudSteps70
+      sourceClip: {fileID: 8300000, guid: e72178c8c25f94140a5c7ac7955e95ce, type: 3}
+      timelineStart: 4.15
+      sourceStart: 0
+      sourceEnd: 0.67889583
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+  - trackId: 91a2b247e8334589a3f98a4f5d7ccca5
+    displayName: footstep_r
+    runtimeLayerKey: 
+    footSideCondition: 0
+    color: {r: 0.4, g: 0.85, b: 0.55, a: 1}
+    mute: 0
+    solo: 0
+    locked: 0
+    mixerChannelId: a9ffbf3137a548ecbfdffe688a7ea33c
+    segments:
+    - segmentId: 8376b28c560d446a847aa0e7e1ccc64e
+      displayName: MudSteps70
+      sourceClip: {fileID: 8300000, guid: e72178c8c25f94140a5c7ac7955e95ce, type: 3}
+      timelineStart: 4.15
+      sourceStart: 0
+      sourceEnd: 0.67889583
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: a2f427a2edef432aa5799d47a332104a
+      displayName: MudSteps61
+      sourceClip: {fileID: 8300000, guid: 8e7530cda4015434596dc5552db662b9, type: 3}
+      timelineStart: 3.55
+      sourceStart: 0
+      sourceEnd: 0.58564585
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 5370885d1f20477cb548ba0f3dee1ee6
+      displayName: MudSteps19
+      sourceClip: {fileID: 8300000, guid: d6016d6f84ef58549a11ca6d53c01076, type: 3}
+      timelineStart: 3
+      sourceStart: 0
+      sourceEnd: 0.5334167
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 4d2b4b06e34c4b1882e2212b515f3aad
+      displayName: MudSteps26
+      sourceClip: {fileID: 8300000, guid: b783d48578c5c914f81690bb2f10602f, type: 3}
+      timelineStart: 2.65
+      sourceStart: 0
+      sourceEnd: 0.36183333
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 9e7c314723744d55a63916de4d2b918e
+      displayName: MudSteps25
+      sourceClip: {fileID: 8300000, guid: 23303edf32308ec4fb813a87c47632a9, type: 3}
+      timelineStart: 2.25
+      sourceStart: 0
+      sourceEnd: 0.39541668
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 28099fe452854252a65909dec3968c3d
+      displayName: MudSteps13
+      sourceClip: {fileID: 8300000, guid: eddb33be11351dc4cba8560c0587e977, type: 3}
+      timelineStart: 1.85
+      sourceStart: 0
+      sourceEnd: 0.4140625
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 2a57ccba54a44d2c93388d20f439ab4e
+      displayName: MudSteps17
+      sourceClip: {fileID: 8300000, guid: 5ec3063c0ed7a184ca772bec621a72c4, type: 3}
+      timelineStart: 1.3000001
+      sourceStart: 0
+      sourceEnd: 0.56579167
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: ee6c703c66c14dce8172c554189fed39
+      displayName: MudSteps06
+      sourceClip: {fileID: 8300000, guid: 8745c4dc6162fed448f1f4eca402b72d, type: 3}
+      timelineStart: 0.85
+      sourceStart: 0
+      sourceEnd: 0.47372916
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: 4be033a3fb444b32b977f3dd9ac139fa
+      displayName: MudSteps05
+      sourceClip: {fileID: 8300000, guid: 91332ab34a9f9ad459b43a6fdd9cf247, type: 3}
+      timelineStart: 0.35
+      sourceStart: 0
+      sourceEnd: 0.48747918
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+    - segmentId: d94afee941e04dd7957899dce288dd8d
+      displayName: MudSteps02
+      sourceClip: {fileID: 8300000, guid: cb831967a11fa584e91eaab58ba520aa, type: 3}
+      timelineStart: 0
+      sourceStart: 0
+      sourceEnd: 0.37302083
+      volume: 1
+      pitch: 1
+      pan: 0
+      fadeIn: 0
+      fadeOut: 0
+      randomWeight: 1
+      tag: 
+  mixerChannels:
+  - channelId: c30df7a3999549d8b487a298f4ed8819
+    displayName: Track 1
+    volume: 1
+    pan: -0.1
+    mute: 0
+    solo: 0
+    editorMeterPreview: 0
+    effects: []
+  - channelId: a9ffbf3137a548ecbfdffe688a7ea33c
+    displayName: Track 2
+    volume: 1
+    pan: 0.1
+    mute: 0
+    solo: 0
+    editorMeterPreview: 0
+    effects: []

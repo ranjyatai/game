@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e048f20b1c5de8e4da982e6e98ccbef3, type: 3}
+  m_Name: SK_NewSkill
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
+  skillKey: new_skill
+  displayName: "\u7A7A\u624B\u6325\u62F3"
+  description: 
+  category: 0
+  spineAnimationKey: Attack/Attack
+  spineEventKey: hit
+  isChargeSkill: 0
+  charge:
+    chargeHoldEventKey: charge_hold
+    releaseTimeScale: 1
+    fullChargeHoldSeconds: 1
+    fullChargeDamageMultiplier: 1.5
+    fullChargeReachedSE: []
+    holdLpCostPerSecond: 3
+    dashOnRelease: 1
+    dashDistance: 10
+    dashFallbackDurationSeconds: 0.25
+  hitbox:
+    shape: 0
+    offset: {x: 0, y: 0}
+    radius: 1
+    size: {x: 1, y: 1}
+    zDepth: 2
+  damageMultiplier: 1
+  damageTypeKey: strike
+  attributeHits: []
+  lpCost: 5
+  knockbackForce: 1.2
+  stunDuration: 0.2
+  startupTime: 0.12
+  activeTime: 0.18
+  recoveryTime: 0.2
+  nextComboSkillKey: 
+  swingVFX: {fileID: 0}
+  swingSE:
+  - clip: {fileID: 8300000, guid: a67eca3bbc86b424bad1d5cecd7b700c, type: 3}
+    volume: 1
+  - clip: {fileID: 8300000, guid: a67eca3bbc86b424bad1d5cecd7b700c, type: 3}
+    volume: 1
+  swingSEVolume: 1
+  hitSE:
+  - clip: {fileID: 8300000, guid: f2d380445ce7a2246830468e83db5891, type: 3}
+    volume: 1
+  - clip: {fileID: 8300000, guid: 4f181f52332c0d64a9e6b0a9c5ca079a, type: 3}
+    volume: 1
+  whiffSE: []
+  seVolume: 1
+  localizedNames:
+  - languageCode: 
+    text: 
+  - languageCode: zh-CN
+    text: 
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 
+  localizedDescriptions:
+  - languageCode: 
+    text: 
+  - languageCode: zh-CN
+    text: 
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 

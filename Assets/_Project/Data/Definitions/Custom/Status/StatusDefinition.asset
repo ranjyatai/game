@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a59a8e3c3a10b8549b3d66632ce92121, type: 3}
+  m_Name: StatusDefinition
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::StatusDefinition
+  statusId: status_electric
+  displayName: "\u7535\u78C1"
+  note: 
+  description: 
+  localizedNames:
+  - languageCode: zh-CN
+    text: "\u7535\u78C1"
+  - languageCode: ja
+    text: "\u96FB\u78C1"
+  - languageCode: en
+    text: Electric
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: 
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 
+  isStandard: 0
+  isBuff: 0
+  isHidden: 0
+  showInHud: 1
+  icon: {fileID: 21300000, guid: 3e133bba35ca5174eb347fa95186ae7c, type: 3}
+  grantMode: 1
+  accumulationSourceKey: accum_status_electric
+  accumulationThreshold: 0
+  durationType: 1
+  baseDuration: 15
+  durationUpdateMode: 0
+  maxDuration: 0
+  canStack: 0
+  baseStack: 1
+  maxStack: 1
+  stackUpdateMode: 2
+  attributeModifiers: []
+  enableDot: 1
+  dotTickInterval: 1
+  dotTargetResource: 0
+  dotValueMode: 0
+  dotBaseValue: 0
+  dotPercentValue: 0
+  dotReferenceAttributeKey: 
+  dotReferenceAttributeDisplayName: 
+  dotReferenceAttributeValueType: 1
+  dotAttributeRatio: 1
+  dotStackMode: 0
+  dotStackAddValue: 0
+  dotAffectedByResistance: 1
+  dotCanKill: 1
+  dotDamageTypeKey: 
+  dotDamageTypeDisplayName: 
+  onApplyTriggerKey: 
+  onTickTriggerKey: 
+  tickInterval: 0
+  onRemoveTriggerKey: 
+  onExpireTriggerKey: 
+  onApplyVfxKey: 
+  persistentVfxKey: 
+  tickVfxKey: 
+  tickVfxInterval: 0
+  onRemoveVfxKey: 
+  onExpireVfxKey: 
+  onApplySfxKey: 
+  onRemoveSfxKey: 
+  onExpireSfxKey: 
+  enableRegain: 0
+  regainRatio: 0
+  useStatusOutline: 0
+  statusOutlineColor: {r: 2.2, g: 0.7, b: 0.05, a: 1}
+  statusOutlineWidthPixels: 3
+  statusOutlineWidthVariance: 0.6
+  statusOutlineFlowSpeed: 0.6
+  statusOutlineNoiseScale: 1.2
+  statusOutlineFadeInSeconds: 0.35
+  statusOutlineFadeOutSeconds: 0.6
+  useStatusFlash: 0
+  statusFlashColor: {r: 1, g: 1, b: 1, a: 1}
+  statusFlashDuration: 0.3
+  statusFlashAlphaDip: 0.35

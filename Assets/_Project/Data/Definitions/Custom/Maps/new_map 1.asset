@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37600d2b343ea0847ac945ea73927454, type: 3}
+  m_Name: new_map 1
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::MapDefinition
+  mapKey: new_map
+  displayName: "\u65E7\u5DE5\u5382"
+  description: 
+  localizedNames:
+  - languageCode: zh-CN
+    text: "\u65E7\u5DE5\u5382"
+  - languageCode: ja
+    text: "\u5EC3\u5DE5\u5834"
+  - languageCode: en
+    text: Old Factory
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: 
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 
+  scenePath: Assets/_Project/Scene/Maps/new_map 1.unity
+  sceneGuid: 3536a276bec542e4c9f0b8f1a23f8624
+  mapBoundsCenter: {x: 0, y: 0, z: 0}
+  mapBoundsSize: {x: 192, y: 6, z: 192}
+  enableFogOfWar: 1
+  fogStrength: 0.72
+  fogSoftEdgeWidth: 3.5
+  skyRenderModel: {fileID: 0}
+  enableDayNightCycle: 0
+  startTimeOfDay: 12
+  enableWeather: 0
+  weatherType: 0
+  weatherIntensity: 0.5
+  lensWetnessIntensity: 0
+  enableDepthOfField: 0
+  focusDistance: 8
+  blurStrength: 0.4

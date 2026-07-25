@@ -1,0 +1,224 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2bbe3305b30b1e04ea576172df23f1ff, type: 3}
+  m_Name: UD_Enemy_TestMob_01
+  m_EditorClassIdentifier: Assembly-CSharp::UnitDefinition
+  unitId: enemy_mob_01
+  displayName: "\u5F52\u5DE2\u8005"
+  note: "\u5F52\u5DE2\u8005"
+  description: 
+  localizedNames:
+  - languageCode: zh-CN
+    text: "\u5F52\u5DE2\u8005"
+  - languageCode: ja
+    text: "\u5E30\u5DE3\u8005"
+  - languageCode: en
+    text: Homing One
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: 
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 
+  defineType: 0
+  characterIdentity: 1
+  battleParameterDatabase: {fileID: 11400000, guid: 3c13b9e9fb8f4d745ae0bdef8be1a073, type: 2}
+  anomalyReceiveMultiplier: 1
+  prefab: {fileID: 6792121149318721521, guid: e50f7445e5ee2f9459702ad8ec3e27f1, type: 3}
+  visualChannel: 0
+  spinePrefab: {fileID: 11400000, guid: 41dc9191bbf45e249ae17016cc6180b6, type: 2}
+  model3DPrefab: {fileID: 0}
+  icon: {fileID: 0}
+  controlMode: 1
+  aiBehaviorPackage: {fileID: 11400000, guid: 1514717ca3f4d5e439616ea9e08bec6c, type: 2}
+  enableVision: 1
+  visionRadius: 19
+  visionHeight: 2.2
+  visionShape: 1
+  visionAngle: 90
+  useFacingDirection: 1
+  ignoreObstacleOcclusion: 0
+  shareVisionToFaction: 0
+  ignoreFogOfWar: 0
+  canUseHearing: 1
+  canBePerceived: 1
+  hearingMultiplier: 1
+  hearingBaseRange: 10
+  hearingMaxRange: 30
+  hearingSuspicionThreshold: 0.005
+  hearingAlertThreshold: 0.015
+  hearingDetectThreshold: 0.04
+  hearingMemorySeconds: 3
+  useOcclusionOutline: 1
+  useSharedOutlineGroup: 1
+  useKinematicBody: 1
+  freezeRotationX: 1
+  freezeRotationY: 1
+  freezeRotationZ: 1
+  allowPhysicalPush: 0
+  defaultFootstepAudioPackage: {fileID: 11400000, guid: b7d72b61e1683894b95be202871fa99c, type: 2}
+  lockShadowProjectorTransform: 1
+  shadowLocalPosition: {x: 0, y: -0.02, z: 0}
+  shadowLocalEuler: {x: 0, y: 0, z: 0}
+  shadowLocalScale: {x: 1, y: 1, z: 1}
+  overheadUiOffsetX: -0.2
+  overheadUiOffsetY: 0
+  autoOverheadNameVisibility: 1
+  manualShowOverheadName: 0
+  overheadHpBarStyle: {fileID: 11400000, guid: 5359b53c975f08f4bb8a7d16dbe9d995, type: 2}
+  overrideCollisionShape: 1
+  collisionLocalCenter: {x: 0, y: 0.7, z: 0}
+  collisionRadius: 0.6
+  collisionHeight: 1.2
+  enableUnitBodyCollision: 1
+  unitBodyLayerName: UnitBody
+  enableUnitPhysicsProbe: 1
+  unitPhysicsProbeLayerName: UnitPhysicsProbe
+  unitPhysicsProbeRootName: UnitPhysicsProbe
+  unitPhysicsProbeLocalCenter: {x: 0, y: 0.65, z: 0}
+  unitPhysicsProbeRadius: 0.36
+  unitPhysicsProbeHeight: 1.15
+  movementType: 0
+  idealWalkSpeed: 1.2
+  idealSneakSpeed: 2
+  idealRunSpeed: 5.2
+  idealJumpHeight: 1.8
+  lightBurdenJumpHeightMultiplier: 1
+  mediumBurdenJumpHeightMultiplier: 0.88
+  heavyBurdenJumpHeightMultiplier: 0.62
+  overweightDisablesJump: 1
+  movementInertia: 45
+  minWalkSpeed: 1.2
+  sustainedMoveSpeedMultiplier: 0.93
+  sustainedMoveDelay: 0.12
+  defaultCombatModule: {fileID: 11400000, guid: 4d1faac69f08e954eb929c32da88a3ae, type: 2}
+  bloodVFXType: 0
+  bloodColor: {r: 0.72, g: 0.02, b: 0.02, a: 1}
+  animationKeys:
+    idleKey: Idle
+    walkKey: move
+    runKey: run_heavy
+    sneakKey: sneak
+    jumpKey: jump
+    jumpStartKey: Jump_Start
+    jumpAirKey: Jump_Air
+    jumpLandKey: Jump_Land
+    attackKey: Attack
+    hitKey: Hurt
+    dodgeKey: dodge
+    dodgeForwardKey: dodge_forward
+    dodgeBackKey: dodge_back
+    deathKey: Die
+    driveMovementAnimation: 1
+    movementAnimationFade: 0.08
+    oneShotLockSeconds: 0.18
+  playDeathAnimation: 1
+  deathTriggerName: Die
+  useCorpseDecay: 1
+  corpseDecaySeconds: 2
+  corpseCleanupMode: 1
+  treatAsRespawnablePlayer: 0
+  useDeathDissolve: 1
+  deathDissolveSeconds: 1.2
+  deathDissolveDarkenFraction: 0.35
+  deathDissolveEdgeColor: {r: 0.5, g: 0.04, b: 0.02, a: 1}
+  deathDissolveEdgeWidth: 0.12
+  deathDissolveNoiseTexture: {fileID: 0}
+  deathDissolveNoiseScale: 0.6
+  dropProfiles:
+  - {fileID: 11400000, guid: 48c31c8ed0fbc444d918a799668a9204, type: 2}
+  parameterValues:
+  - parameterKey: maxHp
+    value: 100
+  - parameterKey: maxLp
+    value: 100
+  - parameterKey: atk
+    value: 17
+  - parameterKey: def
+    value: 0
+  - parameterKey: critRate
+    value: 0
+  - parameterKey: critDamageMultiplier
+    value: 0
+  - parameterKey: hp
+    value: 0
+  - parameterKey: lp
+    value: 0
+  - parameterKey: atkSpeed
+    value: 0
+  - parameterKey: hpRecoveryRate
+    value: 0
+  - parameterKey: lpRecoveryRate
+    value: 999
+  - parameterKey: heatDamage
+    value: 0
+  - parameterKey: shockDamage
+    value: 0
+  - parameterKey: corrosionDamage
+    value: 0
+  - parameterKey: freezeDamage
+    value: 0
+  - parameterKey: dodgeLpCostRate
+    value: 0
+  - parameterKey: sprintLpCostRate
+    value: 0
+  - parameterKey: lightAtkLpCostRate
+    value: 0
+  - parameterKey: heavyAtkLpCostRate
+    value: 0
+  - parameterKey: chargeAtkLpCostRate
+    value: 0
+  - parameterKey: lpRecoveryDelayRate
+    value: 0
+  - parameterKey: dodgeInvulTimeRate
+    value: 0
+  - parameterKey: staggerRecoveryRate
+    value: 0
+  - parameterKey: poise
+    value: 0
+  - parameterKey: hitRecoveryRate
+    value: 0
+  - parameterKey: negativeCritRate
+    value: 0
+  - parameterKey: negativeCritDamageMultiplier
+    value: 0
+  - parameterKey: lpRecoveryBase
+    value: 0
+  - parameterKey: hpRecoveryBase
+    value: 0
+  - parameterKey: lpRecoveryDelayBase
+    value: 0
+  - parameterKey: heatBuildUp
+    value: 0
+  - parameterKey: shockBuildUp
+    value: 0
+  - parameterKey: corrosionBuildUp
+    value: 0
+  - parameterKey: freezeBuildUp
+    value: 0
+  - parameterKey: slashResist
+    value: 0
+  - parameterKey: strikeResist
+    value: 0
+  - parameterKey: impactResist
+    value: 0
+  - parameterKey: heatResist
+    value: 0
+  - parameterKey: shockResist
+    value: 0
+  - parameterKey: corrosionResist
+    value: 0
+  - parameterKey: freezeResist
+    value: 0
+  - parameterKey: new_attribute
+    value: 0

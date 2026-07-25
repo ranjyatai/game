@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 0d18d2a98a6a4bb48e7ad14384692198
+timeCreated: 1769429416
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/Shaders/Passes/MetaPass.hlsl
+  uploadId: 912894

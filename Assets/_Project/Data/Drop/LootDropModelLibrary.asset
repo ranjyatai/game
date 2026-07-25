@@ -1,0 +1,103 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e257a7c8f6ef5e947bf216fe8af57ab8, type: 3}
+  m_Name: LootDropModelLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::LootDropModelLibrary
+  modelSizeMultiplier: 1.3
+  hologramMaterial: {fileID: 2100000, guid: ed0bdf5015c499443a6d49d352b5cc18, type: 2}
+  vfxHueShiftShader: {fileID: 4800000, guid: 9566f40704b073443b3311a2aa4baecd, type: 3}
+  beaconMaterial: {fileID: 2100000, guid: b073ddc3e84600140aa0260cb3146b02, type: 2}
+  beaconVFXPrefab: {fileID: 2234102089612265214, guid: 52c059300fecf3948ae41282e759517a, type: 3}
+  beaconVFXScale: {x: 1, y: 1, z: 1}
+  generalEntries:
+  - category: 0
+    model: {fileID: 919132149155446097, guid: 180a63e916071c84c88c1e8a1c985b36, type: 3}
+    mesh: {fileID: 0}
+    scaleOverride: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+  - category: 1
+    model: {fileID: 0}
+    mesh: {fileID: 0}
+    scaleOverride: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+  - category: 2
+    model: {fileID: 919132149155446097, guid: 0d89db07abaab2f4a99346d85bef2ac4, type: 3}
+    mesh: {fileID: 0}
+    scaleOverride: 0.6
+    rotationOffset: {x: -11.79, y: 33.117, z: -75.266}
+  - category: 6
+    model: {fileID: 919132149155446097, guid: 972fc91acd851b64da6b8f0982b89ecc, type: 3}
+    mesh: {fileID: 0}
+    scaleOverride: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+  - category: 7
+    model: {fileID: 919132149155446097, guid: 9df84c5b0a9198a49a982b67594b2d07, type: 3}
+    mesh: {fileID: 0}
+    scaleOverride: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+  materialEntries:
+  - subCategory: 0
+    model: {fileID: 919132149155446097, guid: 5e2850f2c4c01e144b2b9aba29c887ad, type: 3}
+    mesh: {fileID: 0}
+    scaleOverride: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+  - subCategory: 1
+    model: {fileID: 919132149155446097, guid: c9413379edb8cd149870a4ca536dd0b6, type: 3}
+    mesh: {fileID: 0}
+    scaleOverride: 0.3
+    rotationOffset: {x: 0, y: 0, z: 0}
+  - subCategory: 2
+    model: {fileID: 919132149155446097, guid: 3ba8fd2026136364a89b794a2a605c7f, type: 3}
+    mesh: {fileID: 0}
+    scaleOverride: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+  - subCategory: 3
+    model: {fileID: 919132149155446097, guid: 1d372c8c4d87a2f42b139d8d02cab863, type: 3}
+    mesh: {fileID: 0}
+    scaleOverride: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+  - subCategory: 4
+    model: {fileID: 919132149155446097, guid: e56fcaebcdffeb04ab00938525cc6d94, type: 3}
+    mesh: {fileID: 0}
+    scaleOverride: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+  equipmentEntries:
+  - slot: 0
+    model: {fileID: 919132149155446097, guid: 77badc9269588b9489ace8a25d11f40e, type: 3}
+    mesh: {fileID: 0}
+    scaleOverride: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+  - slot: 10
+    model: {fileID: 919132149155446097, guid: 7a4a26fa582f28645819e77fed0afb65, type: 3}
+    mesh: {fileID: 0}
+    scaleOverride: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+  - slot: 20
+    model: {fileID: 919132149155446097, guid: 5772d97048942fc49b4476179a6e860e, type: 3}
+    mesh: {fileID: 0}
+    scaleOverride: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+  - slot: 30
+    model: {fileID: 919132149155446097, guid: 35e2ad1076c3a064fbf24946e17b8503, type: 3}
+    mesh: {fileID: 0}
+    scaleOverride: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+  - slot: 40
+    model: {fileID: 919132149155446097, guid: cf4eb0b0fb0f47c458a7e273f4ea1df6, type: 3}
+    mesh: {fileID: 0}
+    scaleOverride: 1
+    rotationOffset: {x: 0, y: 0, z: 0}
+  - slot: 50
+    model: {fileID: 919132149155446097, guid: 187182d5413380142983b455ff362326, type: 3}
+    mesh: {fileID: 0}
+    scaleOverride: 1
+    rotationOffset: {x: 0, y: 0, z: 0}

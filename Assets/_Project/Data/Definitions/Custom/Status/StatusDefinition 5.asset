@@ -1,0 +1,81 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a59a8e3c3a10b8549b3d66632ce92121, type: 3}
+  m_Name: StatusDefinition 5
+  m_EditorClassIdentifier: Assembly-CSharp::StatusDefinition
+  statusId: status_usurp
+  displayName: "\u7BE1\u593A\u8005"
+  note: 
+  description: 
+  localizedNames:
+  - languageCode: zh-CN
+    text: "\u7BE1\u593A\u8005"
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: 
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 
+  isStandard: 0
+  isBuff: 0
+  isHidden: 0
+  showInHud: 1
+  icon: {fileID: 0}
+  grantMode: 0
+  accumulationSourceKey: 
+  accumulationThreshold: 0
+  durationType: 1
+  baseDuration: 0
+  durationUpdateMode: 0
+  maxDuration: 0
+  canStack: 0
+  baseStack: 1
+  maxStack: 1
+  stackUpdateMode: 2
+  attributeModifiers: []
+  enableDot: 0
+  dotTickInterval: 1
+  dotTargetResource: 0
+  dotValueMode: 0
+  dotBaseValue: 0
+  dotPercentValue: 0
+  dotReferenceAttributeKey: 
+  dotReferenceAttributeDisplayName: 
+  dotReferenceAttributeValueType: 1
+  dotAttributeRatio: 1
+  dotStackMode: 0
+  dotStackAddValue: 0
+  dotAffectedByResistance: 1
+  dotCanKill: 1
+  dotDamageTypeKey: 
+  dotDamageTypeDisplayName: 
+  onApplyTriggerKey: 
+  onTickTriggerKey: 
+  tickInterval: 0
+  onRemoveTriggerKey: 
+  onExpireTriggerKey: 
+  onApplyVfxKey: 
+  persistentVfxKey: 
+  tickVfxKey: 
+  tickVfxInterval: 0
+  onRemoveVfxKey: 
+  onExpireVfxKey: 
+  onApplySfxKey: 
+  onRemoveSfxKey: 
+  onExpireSfxKey: 
+  enableRegain: 0
+  regainRatio: 0

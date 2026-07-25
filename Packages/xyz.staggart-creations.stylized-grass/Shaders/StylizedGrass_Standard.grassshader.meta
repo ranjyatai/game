@@ -1,0 +1,44 @@
+fileFormatVersion: 2
+guid: f6c3aa64fdb1460d928f40a04c112292
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: e6184650ac6a41b0b15e379b89d2d609, type: 3}
+  template: {instanceID: 0}
+  settings:
+    shaderName: Default
+    autoIntegration: 1
+    rendererIntegration: 1
+    customIncludeDirectives:
+    - enabled: 0
+      type: 4
+      value: ADVANCED_BENDING 1
+    additionalPasses: []
+  dependencies:
+  - Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl
+  - Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl
+  - Packages/com.unity.render-pipelines.universal/ShaderLibrary/SurfaceInput.hlsl
+  - Packages/xyz.staggart-creations.stylized-grass/Shaders/Libraries/Input.hlsl
+  - Packages/xyz.staggart-creations.stylized-grass/Shaders/Libraries/Common.hlsl
+  - Packages/xyz.staggart-creations.stylized-grass/Shaders/Libraries/Color.hlsl
+  - Packages/xyz.staggart-creations.stylized-grass/Shaders/Libraries/Lighting.hlsl
+  - Packages/xyz.staggart-creations.stylized-grass/Shaders/Passes/LightingPass.hlsl
+  - Assets/Integrations/Vegetation Studio/AwesomeTechnologies/VegetationStudioPro/Runtime/Shaders/Resources/Stacks_Includes_Utility/VSPro_HDIndirect.cginc
+  - Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl
+  - Packages/xyz.staggart-creations.stylized-grass/Shaders/Passes/ShadowPass.hlsl
+  - Packages/xyz.staggart-creations.stylized-grass/Shaders/Passes/DepthPass.hlsl
+  - Packages/xyz.staggart-creations.stylized-grass/Shaders/Passes/MotionPass.hlsl
+  - Packages/xyz.staggart-creations.stylized-grass/Shaders/Passes/MetaPass.hlsl
+  configurationState:
+    rendererIntegration: 1
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/Shaders/StylizedGrass_Standard.grassshader
+  uploadId: 912894

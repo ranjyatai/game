@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3edac668c9a4abf4d953dc90d0abcd5e, type: 3}
+  m_Name: Tower_Colormap
+  m_EditorClassIdentifier: sc.stylizedgrass.runtime::sc.stylizedgrass.runtime.GrassColorMap
+  bounds:
+    m_Center: {x: 0.0000076293945, y: 3, z: -0.0000038146973}
+    m_Extent: {x: 61, y: 3, z: 61}
+  uv: {x: -60.999992, y: -61.000004, z: 0.008196721, w: 0}
+  texture: {fileID: 0}
+  hasScalemap: 0
+  overrideTexture: 0
+  customTex: {fileID: 0}

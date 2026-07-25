@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecfe04645be89b2448eed406747f7e2a, type: 3}
+  m_Name: FootstepVFXSettings
+  m_EditorClassIdentifier: Assembly-CSharp::FootstepVFXSettings
+  runDustPrefabs:
+  - {fileID: 873612347705952065, guid: ead579d748dab0946b74b95e616285e5, type: 3}
+  jumpDustPrefabs: []
+  landDustPrefabs:
+  - {fileID: 4099697807421558640, guid: f125038640dfd6949a2bd6149a582a67, type: 3}
+  dodgeDustPrefabs:
+  - {fileID: 873612347705952065, guid: ead579d748dab0946b74b95e616285e5, type: 3}
+  chargeDustPrefabs:
+  - {fileID: 873612347705952065, guid: ead579d748dab0946b74b95e616285e5, type: 3}
+  unarmedAttackDustPrefabs:
+  - {fileID: 3218155619814301318, guid: 1fd298aad49b9354ab98b82abaa0980b, type: 3}

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: b005fe6e55ab822409a48b20fc0284d1
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 357954
+  packageName: Stylized Grass Shader (for Unity 6)
+  packageVersion: 2.0.1
+  assetPath: Packages/xyz.staggart-creations.stylized-grass/Editor/sc.stylizedgrass.editor.asmdef
+  uploadId: 912894

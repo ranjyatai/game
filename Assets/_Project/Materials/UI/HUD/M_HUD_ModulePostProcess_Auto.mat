@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_HUD_ModulePostProcess_Auto
+  m_Shader: {fileID: 4800000, guid: 0de4fb0d26bac054e892676aee929006, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BackdropExposure: 1
+    - _BackdropSampleStrength: 0
+    - _BlendOp: 0
+    - _ChromaticAlphaBoost: 1
+    - _ChromaticAmount: 0.45000002
+    - _ChromaticAngle: 0
+    - _ChromaticSoftness: 0.18
+    - _DstBlend: 10
+    - _GeometryFringeDebug: 0
+    - _GeometryFringeOutputBoost: 1.09
+    - _GeometryFringeStrength: 0.01575
+    - _GeometryFringeWidth: 2.63
+    - _HUDBrightness: 1
+    - _HUDContrast: 1.37
+    - _HUDEmission: 0
+    - _HUDLightStrength: 1
+    - _HUDSaturation: 1.49
+    - _HUDSourceFloor: 0
+    - _HUDSourcePreserve: 1
+    - _ScreenPixelScale: 1
+    - _SkyPrisonBlendMode: 0
+    - _SrcBlend: 5
+    - _UsePSBackdropRecipe: 0
+    m_Colors:
+    - _BackdropFallbackColor: {r: 0.03, g: 0.08, b: 0.13, a: 0}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

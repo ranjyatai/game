@@ -1,0 +1,169 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-7039023087955698314
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e3e95a05e4c9774397eeeb7bdee8ccb, type: 3}
+  m_Name: Jump_5
+  m_EditorClassIdentifier: spine-unity::Spine.Unity.AnimationReferenceAsset
+  skeletonDataAsset: {fileID: 11400000, guid: 7bddca2a0ee4dc0478daec66c1c739de, type: 2}
+  animationName: Jump_5
+--- !u!114 &-6121560490349776994
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e3e95a05e4c9774397eeeb7bdee8ccb, type: 3}
+  m_Name: Jump_4
+  m_EditorClassIdentifier: spine-unity::Spine.Unity.AnimationReferenceAsset
+  skeletonDataAsset: {fileID: 11400000, guid: 7bddca2a0ee4dc0478daec66c1c739de, type: 2}
+  animationName: Jump_4
+--- !u!114 &-5649454177452406572
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e3e95a05e4c9774397eeeb7bdee8ccb, type: 3}
+  m_Name: Jump_6
+  m_EditorClassIdentifier: spine-unity::Spine.Unity.AnimationReferenceAsset
+  skeletonDataAsset: {fileID: 11400000, guid: 7bddca2a0ee4dc0478daec66c1c739de, type: 2}
+  animationName: Jump_6
+--- !u!114 &-2396671760725571261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e3e95a05e4c9774397eeeb7bdee8ccb, type: 3}
+  m_Name: Jump_3
+  m_EditorClassIdentifier: spine-unity::Spine.Unity.AnimationReferenceAsset
+  skeletonDataAsset: {fileID: 11400000, guid: 7bddca2a0ee4dc0478daec66c1c739de, type: 2}
+  animationName: Jump_3
+--- !u!114 &-1450674659162400230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e3e95a05e4c9774397eeeb7bdee8ccb, type: 3}
+  m_Name: Jump_2
+  m_EditorClassIdentifier: spine-unity::Spine.Unity.AnimationReferenceAsset
+  skeletonDataAsset: {fileID: 11400000, guid: 7bddca2a0ee4dc0478daec66c1c739de, type: 2}
+  animationName: Jump_2
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f30f83b4b98ce44cbae81286c0efac1, type: 3}
+  m_Name: Axia_base_AnimationReferences
+  m_EditorClassIdentifier: spine-unity::Spine.Unity.AnimationReferenceAssetContainer
+  skeletonDataAsset: {fileID: 11400000, guid: 7bddca2a0ee4dc0478daec66c1c739de, type: 2}
+--- !u!114 &1862148890245973842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e3e95a05e4c9774397eeeb7bdee8ccb, type: 3}
+  m_Name: Attack
+  m_EditorClassIdentifier: spine-unity::Spine.Unity.AnimationReferenceAsset
+  skeletonDataAsset: {fileID: 11400000, guid: 7bddca2a0ee4dc0478daec66c1c739de, type: 2}
+  animationName: Attack
+--- !u!114 &4175564189867531195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e3e95a05e4c9774397eeeb7bdee8ccb, type: 3}
+  m_Name: Eye
+  m_EditorClassIdentifier: spine-unity::Spine.Unity.AnimationReferenceAsset
+  skeletonDataAsset: {fileID: 11400000, guid: 7bddca2a0ee4dc0478daec66c1c739de, type: 2}
+  animationName: Eye
+--- !u!114 &5852168639264046003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e3e95a05e4c9774397eeeb7bdee8ccb, type: 3}
+  m_Name: Idle
+  m_EditorClassIdentifier: spine-unity::Spine.Unity.AnimationReferenceAsset
+  skeletonDataAsset: {fileID: 11400000, guid: 7bddca2a0ee4dc0478daec66c1c739de, type: 2}
+  animationName: Idle
+--- !u!114 &7351710334146453747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e3e95a05e4c9774397eeeb7bdee8ccb, type: 3}
+  m_Name: Run
+  m_EditorClassIdentifier: spine-unity::Spine.Unity.AnimationReferenceAsset
+  skeletonDataAsset: {fileID: 11400000, guid: 7bddca2a0ee4dc0478daec66c1c739de, type: 2}
+  animationName: Run
+--- !u!114 &7362159435606538617
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e3e95a05e4c9774397eeeb7bdee8ccb, type: 3}
+  m_Name: Move
+  m_EditorClassIdentifier: spine-unity::Spine.Unity.AnimationReferenceAsset
+  skeletonDataAsset: {fileID: 11400000, guid: 7bddca2a0ee4dc0478daec66c1c739de, type: 2}
+  animationName: Move
+--- !u!114 &9193702198412421757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e3e95a05e4c9774397eeeb7bdee8ccb, type: 3}
+  m_Name: Jump_1
+  m_EditorClassIdentifier: spine-unity::Spine.Unity.AnimationReferenceAsset
+  skeletonDataAsset: {fileID: 11400000, guid: 7bddca2a0ee4dc0478daec66c1c739de, type: 2}
+  animationName: Jump_1
