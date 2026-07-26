@@ -2047,14 +2047,6 @@ MonoBehaviour:
       text: "\u54C1\u5207\u308C"
     - languageCode: en
       text: Sold Out
-  - key: 
-    texts:
-    - languageCode: zh-CN
-      text: "\u4F9B\u7ED9\u7AD9"
-    - languageCode: ja
-      text: "\u4F9B\u7D66\u6240"
-    - languageCode: en
-      text: Supply Post
   - key: shop_name_demo_shop
     texts:
     - languageCode: zh-CN
@@ -2071,3 +2063,131 @@ MonoBehaviour:
       text: "\u9AA8\u8463\u5E02"
     - languageCode: en
       text: Antique Shop
+  - key: shop_tab_buy
+    texts:
+    - languageCode: zh-CN
+      text: "\u8D2D\u4E70"
+    - languageCode: ja
+      text: "\u8CFC\u5165"
+    - languageCode: en
+      text: Buy
+  - key: shop_tab_sell
+    texts:
+    - languageCode: zh-CN
+      text: "\u51FA\u552E"
+    - languageCode: ja
+      text: "\u8CB7\u53D6"
+    - languageCode: en
+      text: Sell
+  - key: shop_sell_empty
+    texts:
+    - languageCode: zh-CN
+      text: "\u6CA1\u6709\u80FD\u5356\u7684\u4E1C\u897F"
+    - languageCode: ja
+      text: "\u58F2\u308C\u308B\u3082\u306E\u304C\u3042\u308A\u307E\u305B\u3093"
+    - languageCode: en
+      text: Nothing to sell
+  - key: shop_gain_label
+    texts:
+    - languageCode: zh-CN
+      text: "\u83B7\u5F97"
+    - languageCode: ja
+      text: "\u7372\u5F97"
+    - languageCode: en
+      text: Gain
+  - key: shop_confirm_sell_button
+    texts:
+    - languageCode: zh-CN
+      text: "\u786E\u8BA4\u51FA\u552E"
+    - languageCode: ja
+      text: "\u8CB7\u53D6\u78BA\u5B9A"
+    - languageCode: en
+      text: Confirm Sell
+  - key: shop_sell_cart_empty
+    texts:
+    - languageCode: zh-CN
+      text: "\u51FA\u552E\u6E05\u5355\u4E3A\u7A7A"
+    - languageCode: ja
+      text: "\u8CB7\u53D6\u30EA\u30B9\u30C8\u304C\u7A7A\u3067\u3059"
+    - languageCode: en
+      text: Sell list is empty
+  - key: shop_back_to_sell
+    texts:
+    - languageCode: zh-CN
+      text: "\u8FD4\u56DE\u51FA\u552E"
+    - languageCode: ja
+      text: "\u8CB7\u53D6\u306B\u623B\u308B"
+    - languageCode: en
+      text: Back to Sell
+  - key: shop_sell_confirm_message
+    texts:
+    - languageCode: zh-CN
+      text: "\u51FA\u552E\u6E05\u5355\u91CC\u6709\u7A00\u6709\u7269\u54C1\uFF0C\u786E\u5B9A\u8981\u51FA\u552E\u5417\uFF1F"
+    - languageCode: ja
+      text: "\u8CB7\u53D6\u30EA\u30B9\u30C8\u306B\u30EC\u30A2\u30A2\u30A4\u30C6\u30E0\u304C\u542B\u307E\u308C\u3066\u3044\u307E\u3059\u3002\u58F2\u5374\u3057\u307E\u3059\u304B\uFF1F"
+    - languageCode: en
+      text: The sell list contains rare items. Are you sure you want to sell them?
+  - key: shop_sell_confirm_cancel
+    texts:
+    - languageCode: zh-CN
+      text: "\u53D6\u6D88"
+    - languageCode: ja
+      text: "\u30AD\u30E3\u30F3\u30BB\u30EB"
+    - languageCode: en
+      text: Cancel
+  - key: ui_settings_sell_confirm
+    texts:
+    - languageCode: zh-CN
+      text: "\u51FA\u552E\u7A00\u6709\u7269\u54C1\u4E8C\u6B21\u786E\u8BA4"
+    - languageCode: ja
+      text: "\u30EC\u30A2\u30A2\u30A4\u30C6\u30E0\u58F2\u5374\u306E\u78BA\u8A8D"
+    - languageCode: en
+      text: Confirm Selling Rare Items
+  - key: ui_settings_sell_confirm_lv5
+    texts:
+    - languageCode: zh-CN
+      text: "Lv5\u4EE5\u4E0A\u4E8C\u6B21\u786E\u8BA4"
+    - languageCode: ja
+      text: "Lv5\u4EE5\u4E0A\u3067\u78BA\u8A8D"
+    - languageCode: en
+      text: Confirm at Lv5+
+  - key: ui_settings_sell_confirm_lv8
+    texts:
+    - languageCode: zh-CN
+      text: "Lv8\u4EE5\u4E0A\u4E8C\u6B21\u786E\u8BA4"
+    - languageCode: ja
+      text: "Lv8\u4EE5\u4E0A\u3067\u78BA\u8A8D"
+    - languageCode: en
+      text: Confirm at Lv8+
+  - key: ui_settings_sell_confirm_off
+    texts:
+    - languageCode: zh-CN
+      text: "\u4E0D\u63D0\u793A"
+    - languageCode: ja
+      text: "\u78BA\u8A8D\u3057\u306A\u3044"
+    - languageCode: en
+      text: Never
+  - key: shop_add_button
+    texts:
+    - languageCode: zh-CN
+      text: "\u52A0\u5165"
+    - languageCode: ja
+      text: "\u8FFD\u52A0"
+    - languageCode: en
+      text: Add
+  - key: ui_hint_switch_tab
+    texts:
+    - languageCode: zh-CN
+      text: "\u5207\u6362\u8D2D\u4E70/\u51FA\u552E"
+    - languageCode: ja
+      text: "\u8CFC\u5165/\u8CB7\u53D6\u5207\u66FF"
+    - languageCode: en
+      text: Switch Buy/Sell
+  - key: ui_hint_adjust_qty
+    texts:
+    - languageCode: zh-CN
+      text: "\u8C03\u6574\u6570\u91CF"
+    - languageCode: ja
+      text: "\u6570\u91CF\u8ABF\u6574"
+    - languageCode: en
+      text: Adjust Quantity

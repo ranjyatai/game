@@ -34,6 +34,11 @@ namespace SkyPrison.Runtime.UI
         private Image[] _highlightEdges;
         private int _hlFocus = -1;
 
+        /// <summary>当前手柄焦点落在哪个按钮上——外部窗口想在"光标停在某一项上"时接入
+        /// 额外的快捷键（比如商店用 L2/R2 直接调焦点项的数量，不用先把光标挪到具体的
+        /// "-"/"+"按钮上）时用这个查询，没有焦点时返回 null。</summary>
+        public Button CurrentFocusedButton => (_focus >= 0 && _focus < _targets.Count) ? _targets[_focus] : null;
+
         /// <summary>喂目标按钮列表——窗口每次重建按钮（比如切换分类）后都要重新调一次。</summary>
         public void SetTargets(IReadOnlyList<Button> buttons)
         {

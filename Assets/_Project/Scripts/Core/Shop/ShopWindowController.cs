@@ -65,8 +65,31 @@ public class ShopWindowController : SkyPrisonBaseWindowController
     [SerializeField] private Text       afterLabel;         // "结账后"
     private bool _showingCheckout;
 
+    // ── 购买/出售 标签页 ─────────────────────────────────────────────────
+    [Header("购买/出售标签页")]
+    [SerializeField] private Button   buyTabButton;
+    [SerializeField] private Text     buyTabLabel;
+    [SerializeField] private Button   sellTabButton;
+    [SerializeField] private Text     sellTabLabel;
+    [SerializeField] private RectTransform tabUnderline;
+    [SerializeField] private GameObject sellViewRoot;
+    [SerializeField] private Transform  sellContent;
+    [SerializeField] private GameObject sellRowPrefab;
+    [SerializeField] private Text       sellEmptyText; // 没有能卖的东西时的提示
+    // 出售清单入口——跟购物区右下角的"结账"按钮完全对称，用户明确要求出售要走
+    // "选数量→加入清单→结账页确认"两段式，不能一点就直接卖掉。
+    [SerializeField] private Button     sellGoToCheckoutButton;
+    [SerializeField] private Text       sellGoToCheckoutLabel;
+    [SerializeField] private Text       sellCartCountText;
+    private bool _showingSellTab;
+    private readonly List<GameObject> _sellRows = new List<GameObject>();
+    private Coroutine _tabUnderlineRoutine;
+    private static readonly Color TabActiveColor   = new Color(0.42f, 0.92f, 0.68f, 1f);
+    private static readonly Color TabInactiveColor = new Color(0.6f, 0.62f, 0.64f, 1f);
+
     // ── 运行时 ──────────────────────────────────────────────────────────
     private ShoppingCart  _cart;
+    private SellCart      _sellCart;
     private ShopItemEntry _selected;
 
     private readonly List<GameObject> _shelfRows = new List<GameObject>();
@@ -104,8 +127,151 @@ public class ShopWindowController : SkyPrisonBaseWindowController
         {
             new SkyPrisonWindowHint { iconKey = "mouse/left", gamepadIconKey = "gamepad/xbox/a", fallbackText = "选择", label = L("ui_hint_select_goods", "选择商品") },
             new SkyPrisonWindowHint { iconKey = "mouse/left", gamepadIconKey = "gamepad/xbox/a", fallbackText = "选择", label = L("ui_hint_add_cart_checkout", "加入购物车/结账") },
+            SkyPrisonWindowHint.GamepadIcon("gamepad/xbox/lb", "LB/RB", L("ui_hint_switch_tab", "切换购买/出售")),
+            SkyPrisonWindowHint.GamepadIcon("gamepad/l2", "L2/R2", L("ui_hint_adjust_qty", "调整数量")),
             SkyPrisonWindowHint.Icon("keyboard/esc", "Esc", L("ui_hint_close", "关闭")),
         };
+    }
+
+    // LB/RB 切换购买/出售标签页——跟 SkyPrisonInventoryGamepad 里背包筛选标签页的
+    // LB/RB 是同一套按键约定(JoystickButton4/5)，用户明确要求手柄操作跟游戏其它
+    // 窗口保持一贯，不要另起一套。
+    //
+    // 数量调整——用户明确要求"不要必须把光标像鼠标一样精确移到-/+按钮上才能调"。
+    // 货架卡片的数量胶囊平时是鼠标hover才显示的(ShopShelfRowHover)，手柄没有hover
+    // 概念，原本压根摸不到；购物车/出售清单虽然常驻显示，但"-"/"+"是各自独立的
+    // 手柄目标，需要额外多按一次方向键才能精确停在上面，也不够顺手。改成 L2/R2：
+    // 不管当前手柄焦点落在这一行的哪个子控件上，只要焦点还在这一行的范围内，L2/R2
+    // 都直接对这一行的数量做减/加，货架卡片额外需要在拿到焦点时把胶囊强制显示出来
+    // (等同鼠标hover)。跟背包/仓库把L2/R2用作排序切换是同一个"手柄专属功能键"的
+    // 复用惯例，只是在商店窗口里换成了这个更贴合场景的用途。
+    private GameObject _gamepadFocusedShelfRow;
+
+    private void Update()
+    {
+        if (_cart == null) return; // 窗口没打开
+        if (_sellConfirmRoot != null && _sellConfirmRoot.activeSelf) return; // 二次确认弹窗开着时不响应，避免背后标签/数量跟着变
+
+        if (Input.GetKeyDown(KeyCode.JoystickButton5)) // RB / R1
+        {
+            if (!_showingSellTab) SwitchTab(true);
+            else SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Forbidden);
+        }
+        else if (Input.GetKeyDown(KeyCode.JoystickButton4)) // LB / L1
+        {
+            if (_showingSellTab) SwitchTab(false);
+            else SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Forbidden);
+        }
+
+        UpdateGamepadQuantityAdjust();
+    }
+
+    private void UpdateGamepadQuantityAdjust()
+    {
+        if (_gamepadNav == null) return;
+        Button focused = _gamepadNav.CurrentFocusedButton;
+
+        // 货架卡片：数量胶囊平时藏着，焦点落上来/离开时要跟鼠标hover一样显隐。
+        GameObject focusedShelfRow = null;
+        if (focused != null)
+            foreach (var row in _shelfRows)
+                if (row != null && focused.gameObject == row) { focusedShelfRow = row; break; }
+
+        if (focusedShelfRow != _gamepadFocusedShelfRow)
+        {
+            _gamepadFocusedShelfRow?.GetComponent<ShopShelfRowHover>()?.SetGamepadFocused(false);
+            focusedShelfRow?.GetComponent<ShopShelfRowHover>()?.SetGamepadFocused(true);
+            _gamepadFocusedShelfRow = focusedShelfRow;
+        }
+
+        if (focused == null) return;
+
+        bool l2 = L2Down();
+        bool r2 = R2Down();
+        if (!l2 && !r2) return;
+
+        if (focusedShelfRow != null)
+        {
+            InvokeChildButton(focusedShelfRow, l2 ? "QuickAddButton/QtyCapsule/QAMinus" : "QuickAddButton/QtyCapsule/QAPlus");
+            return;
+        }
+
+        foreach (var row in _cartRows)
+        {
+            if (row == null || !focused.transform.IsChildOf(row.transform)) continue;
+            InvokeChildButton(row, l2 ? "QtyGroup/QtyMinus" : "QtyGroup/QtyPlus");
+            return;
+        }
+        foreach (var row in _sellRows)
+        {
+            if (row == null || !focused.transform.IsChildOf(row.transform)) continue;
+            InvokeChildButton(row, l2 ? "QtyGroup/QtyMinus" : "QtyGroup/QtyPlus");
+            return;
+        }
+    }
+
+    private static void InvokeChildButton(GameObject row, string childPath)
+    {
+        var btn = FindChildButton(row, childPath);
+        if (btn != null && btn.interactable) btn.onClick.Invoke();
+    }
+
+    // L2/R2 跨平台单帧边缘检测——跟 SkyPrisonInventoryGamepad 的 L2Down()/R2Down()
+    // 完全同一套做法(PS4原生走数字键，Xbox走扳机轴)，没有复用是因为那边是私有方法、
+    // 挂在背包面板上，这边是独立的商店窗口，各自维护一份状态。
+    private bool? _ps4NativeCached;
+    private bool _l2WasDown, _r2WasDown;
+    private const string AxisL2 = "Axis 9";
+    private const string AxisR2 = "Axis 10";
+    private const float TriggerThreshold = 0.5f;
+
+    private bool IsPS4Native()
+    {
+        if (_ps4NativeCached.HasValue) return _ps4NativeCached.Value;
+        bool result = false;
+        foreach (string n in Input.GetJoystickNames())
+            if (!string.IsNullOrEmpty(n) &&
+                (n.IndexOf("Wireless Controller", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                 n.IndexOf("DualShock", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                 n.IndexOf("PS4", System.StringComparison.OrdinalIgnoreCase) >= 0))
+                { result = true; break; }
+        _ps4NativeCached = result;
+        return result;
+    }
+
+    private bool L2Down()
+    {
+        if (IsPS4Native()) return Input.GetKeyDown(KeyCode.JoystickButton6);
+        float v = SafeAxisRaw(AxisL2);
+        bool down = v > TriggerThreshold;
+        bool result = down && !_l2WasDown;
+        _l2WasDown = down;
+        return result;
+    }
+
+    private bool R2Down()
+    {
+        if (IsPS4Native()) return Input.GetKeyDown(KeyCode.JoystickButton7);
+        float v = SafeAxisRaw(AxisR2);
+        bool down = v > TriggerThreshold;
+        bool result = down && !_r2WasDown;
+        _r2WasDown = down;
+        return result;
+    }
+
+    private static bool _axisMissingLogged;
+    private static float SafeAxisRaw(string axisName)
+    {
+        try { return Input.GetAxisRaw(axisName); }
+        catch
+        {
+            if (!_axisMissingLogged)
+            {
+                Debug.LogWarning($"[ShopWindowController] 未找到输入轴 \"{axisName}\"，请确认 InputManager 已配置。");
+                _axisMissingLogged = true;
+            }
+            return 0f;
+        }
     }
 
     // ── 生命周期 ─────────────────────────────────────────────────────────
@@ -131,14 +297,18 @@ public class ShopWindowController : SkyPrisonBaseWindowController
 
         _cart = new ShoppingCart(shopDefinition.defaultCurrencyId);
         _cart.OnCartChanged += RefreshCartUI;
+        _sellCart = new SellCart();
+        _sellCart.OnCartChanged += RefreshCartUI;
         if (CurrencyRuntime.Instance != null)
             CurrencyRuntime.Instance.OnCurrencyChanged += OnCurrencyChangedRefreshSummary;
 
         if (goToCheckoutLabel != null) goToCheckoutLabel.text = L("shop_checkout_button", "结账");
-        if (backToShopLabel   != null) backToShopLabel.text   = L("shop_back_to_shop", "返回购物");
-        if (costLabel   != null) costLabel.text   = L("shop_cost_label", "所需");
+        if (sellGoToCheckoutLabel != null) sellGoToCheckoutLabel.text = L("shop_checkout_button", "结账");
         if (walletLabel != null) walletLabel.text = L("shop_wallet_label", "所持");
         if (afterLabel  != null) afterLabel.text  = L("shop_after_label", "结账后");
+        if (buyTabLabel  != null) buyTabLabel.text  = L("shop_tab_buy", "购买");
+        if (sellTabLabel != null) sellTabLabel.text = L("shop_tab_sell", "出售");
+        if (sellEmptyText != null) sellEmptyText.text = L("shop_sell_empty", "没有能卖的东西");
 
         BuildShelf();
         SelectEntry(_displayedPool.Count > 0 ? _displayedPool[0] : null);
@@ -162,30 +332,303 @@ public class ShopWindowController : SkyPrisonBaseWindowController
             backToShopButton.onClick.RemoveAllListeners();
             backToShopButton.onClick.AddListener(ToggleCheckoutView);
         }
+        if (sellGoToCheckoutButton != null)
+        {
+            sellGoToCheckoutButton.onClick.RemoveAllListeners();
+            sellGoToCheckoutButton.onClick.AddListener(ToggleCheckoutView);
+        }
+
+        if (buyTabButton != null)
+        {
+            buyTabButton.onClick.RemoveAllListeners();
+            buyTabButton.onClick.AddListener(() => SwitchTab(false));
+        }
+        if (sellTabButton != null)
+        {
+            sellTabButton.onClick.RemoveAllListeners();
+            sellTabButton.onClick.AddListener(() => SwitchTab(true));
+        }
+        _showingSellTab = false;
+        UpdateTabVisual(false); // 刚打开不用播滑动动画，直接摆到"购买"标签底下
+        RefreshCheckoutModeLabels();
 
         RefreshGamepadTargets();
     }
 
     // 标题栏购物车按钮：购物区/结账区二选一显示，不是同时铺开两块。
+    // 结账页此时展示"购买购物车"还是"出售清单"，由进入结账那一刻所在的标签页决定
+    // (_showingSellTab 在切标签时才会变，进入/退出结账不影响它，天然就是"记住来源标签")。
     private void ToggleCheckoutView()
     {
         _showingCheckout = !_showingCheckout;
         SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Switch);
         ApplyViewVisibility();
+        if (_showingCheckout) RefreshCheckoutModeLabels();
+        RefreshCartUI();
         RefreshGamepadTargets();
+    }
+
+    // 结账页复用同一套"所需/所持/结账后"三行 + 同一个结账按钮，出售模式下把
+    // "所需"换成"获得"，跟购买模式共用同一份UI，不用另起一套结账界面。左下角
+    // "返回购物"在出售模式下用户反馈"感觉有点奇怪"——这里不是要回到购买页面，
+    // 换成"返回出售"更贴切，跟标签同一套图标/按钮，只是文字随模式换。
+    private void RefreshCheckoutModeLabels()
+    {
+        if (costLabel != null) costLabel.text = L(_showingSellTab ? "shop_gain_label" : "shop_cost_label", _showingSellTab ? "获得" : "所需");
+        if (backToShopLabel != null) backToShopLabel.text = L(_showingSellTab ? "shop_back_to_sell" : "shop_back_to_shop", _showingSellTab ? "返回出售" : "返回购物");
     }
 
     private void ApplyViewVisibility()
     {
-        if (shoppingViewRoot != null) shoppingViewRoot.SetActive(!_showingCheckout);
+        bool showShopping = !_showingCheckout && !_showingSellTab;
+        bool showSell = !_showingCheckout && _showingSellTab;
+        if (shoppingViewRoot != null) shoppingViewRoot.SetActive(showShopping);
+        if (sellViewRoot != null) sellViewRoot.SetActive(showSell);
         if (checkoutViewRoot != null) checkoutViewRoot.SetActive(_showingCheckout);
+    }
+
+    // ── 购买/出售 标签页 ─────────────────────────────────────────────────
+
+    private void SwitchTab(bool toSell)
+    {
+        if (_showingSellTab == toSell && !_showingCheckout) return;
+        _showingSellTab = toSell;
+        _showingCheckout = false; // 切标签的时候如果正好在结账视图，先退回去，不能让结账悬在一个不对应任何标签的状态
+        // 用户明确要求"购买和出售切换以后各自购物车要清除"——买/卖是两套独立会话，
+        // 切标签之后旧的选购/待卖清单不该继续悬在那里，两边都清空重新开始。
+        _cart?.Clear();
+        _sellCart?.Clear();
+        SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Switch);
+        ApplyViewVisibility();
+        UpdateTabVisual(true);
+        if (toSell) BuildSellList();
+        RefreshGamepadTargets();
+    }
+
+    // animate=false 只在窗口刚打开那一下用——一开就播一次滑动动画没意义，直接摆到位。
+    private void UpdateTabVisual(bool animate)
+    {
+        if (buyTabLabel != null) buyTabLabel.color = _showingSellTab ? TabInactiveColor : TabActiveColor;
+        if (sellTabLabel != null) sellTabLabel.color = _showingSellTab ? TabActiveColor : TabInactiveColor;
+
+        if (tabUnderline == null) return;
+        Button activeTab = _showingSellTab ? sellTabButton : buyTabButton;
+        if (activeTab == null) return;
+        var targetRt = activeTab.GetComponent<RectTransform>();
+        if (targetRt == null) return;
+
+        if (!animate)
+        {
+            tabUnderline.anchoredPosition = new Vector2(targetRt.anchoredPosition.x, tabUnderline.anchoredPosition.y);
+            tabUnderline.sizeDelta = new Vector2(targetRt.sizeDelta.x, tabUnderline.sizeDelta.y);
+            return;
+        }
+
+        if (_tabUnderlineRoutine != null) StopCoroutine(_tabUnderlineRoutine);
+        _tabUnderlineRoutine = StartCoroutine(AnimateUnderline(targetRt.anchoredPosition.x, targetRt.sizeDelta.x));
+    }
+
+    // 用户明确要求"移动也要有过程，不要突然闪过去"——下划线从当前位置/宽度平滑
+    // 过渡到目标标签页底下，不是瞬间跳过去。
+    private System.Collections.IEnumerator AnimateUnderline(float targetX, float targetW)
+    {
+        float startX = tabUnderline.anchoredPosition.x;
+        float startW = tabUnderline.sizeDelta.x;
+        const float duration = 0.18f;
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(t / duration);
+            k = k * k * (3f - 2f * k); // smoothstep 缓动，不是匀速
+            tabUnderline.anchoredPosition = new Vector2(Mathf.Lerp(startX, targetX, k), tabUnderline.anchoredPosition.y);
+            tabUnderline.sizeDelta = new Vector2(Mathf.Lerp(startW, targetW, k), tabUnderline.sizeDelta.y);
+            yield return null;
+        }
+        tabUnderline.anchoredPosition = new Vector2(targetX, tabUnderline.anchoredPosition.y);
+        tabUnderline.sizeDelta = new Vector2(targetW, tabUnderline.sizeDelta.y);
+        _tabUnderlineRoutine = null;
+    }
+
+    // ── 出售 ─────────────────────────────────────────────────────────────
+
+    private void BuildSellList()
+    {
+        foreach (var go in _sellRows) if (go) Destroy(go);
+        _sellRows.Clear();
+
+        bool any = false;
+        if (sellContent != null && sellRowPrefab != null && shopDefinition.enableSelling)
+        {
+            var inv = InventoryRuntimeBootstrap.Instance?.Inventory;
+            if (inv != null)
+            {
+                foreach (var entry in inv.Slots)
+                {
+                    if (entry == null || entry.IsEmpty || !IsSellable(entry.definition)) continue;
+                    any = true;
+                    var row = Instantiate(sellRowPrefab, sellContent);
+                    _sellRows.Add(row);
+                    BindSellRow(row, entry);
+                }
+            }
+        }
+
+        if (sellEmptyText != null) sellEmptyText.gameObject.SetActive(!any);
+        RefreshGamepadTargets();
+    }
+
+    // 两层过滤：物品自身是否允许出售 + 这家店收不收这个分类。装备大类现在完全不在
+    // 收购范围内（以后要收装备——耐久/词条怎么定价还没设计，先不放开）。
+    private bool IsSellable(ItemDefinition def)
+    {
+        if (def == null || !def.canSell) return false;
+        if (def.majorCategory != ItemMajorCategory.General) return false;
+        if (shopDefinition.sellCategoryWhitelist != null && shopDefinition.sellCategoryWhitelist.Count > 0
+            && !shopDefinition.sellCategoryWhitelist.Contains(def.category)) return false;
+        return true;
+    }
+
+    // 出售价 = 物品自身定价(优先匹配商店默认货币，没配就退到它第一条价格) × 商店的
+    // 收购倍率，向下不封顶但最低给1个，不能出现卖了不给钱的情况。
+    private int ResolveSellUnitPrice(ItemDefinition def, out string currencyId)
+    {
+        currencyId = shopDefinition.defaultCurrencyId;
+        int basePrice = 0;
+        foreach (var p in def.currencyPrices)
+        {
+            if (p.currencyId == currencyId) { basePrice = p.price; break; }
+            if (basePrice == 0) { basePrice = p.price; currencyId = p.currencyId; }
+        }
+        return Mathf.Max(1, Mathf.RoundToInt(basePrice * shopDefinition.sellPriceMultiplier));
+    }
+
+    // 数量步进 + "加入"——跟货架卡片(BindShelfRow)同一套两段式交互：选好数量后
+    // 只是加进出售清单，不是当场卖掉，真正的库存/货币变化留到结账页确认。
+    private void BindSellRow(GameObject row, InventoryItemEntry entry)
+    {
+        var iconTf = row.transform.Find("Icon");
+        if (iconTf != null)
+        {
+            var iconImg = iconTf.GetComponent<Image>();
+            if (iconImg != null) iconImg.sprite = entry.definition.icon;
+        }
+
+        SetChildText(row, "SellItemName", entry.definition.GetLocalizedDisplayName());
+        var nameText = row.transform.Find("SellItemName")?.GetComponent<Text>();
+        if (nameText != null) nameText.color = QualityColor(entry.definition.itemLevel);
+
+        SetChildText(row, "SellItemQty", $"×{entry.count}");
+        // 满一组用户明确要求跟背包窗口同款橙色(InventorySlotView.CountFull)，两处
+        // 视觉语言得一致，不能出售列表这边自己另配一套颜色。
+        var ownedQtyText = row.transform.Find("SellItemQty")?.GetComponent<Text>();
+        if (ownedQtyText != null)
+            ownedQtyText.color = entry.IsStackFull
+                ? new Color(1.00f, 0.62f, 0.22f, 1f)
+                : new Color(0.65f, 0.67f, 0.69f, 1f);
+
+        int unitPrice = ResolveSellUnitPrice(entry.definition, out string cid);
+
+        var qtyInput = FindChildInputField(row, "QtyGroup/SellQty");
+        var minusBtn = FindChildButton(row, "QtyGroup/QtyMinus");
+        var plusBtn  = FindChildButton(row, "QtyGroup/QtyPlus");
+        var priceText = row.transform.Find("TotalGroup/SellItemPrice")?.GetComponent<Text>();
+        var totalIconTf = row.transform.Find("TotalGroup/SellIcon");
+        if (totalIconTf != null)
+        {
+            var totalIconImg = totalIconTf.GetComponent<Image>();
+            if (totalIconImg != null) totalIconImg.sprite = defaultCurrencyIcon;
+        }
+
+        int[] qtyBox = { 1 };
+        int EffectiveMaxQty() => Mathf.Max(0, entry.count - (_sellCart?.GetQuantity(entry) ?? 0));
+
+        void RefreshQty()
+        {
+            if (qtyInput != null) qtyInput.SetTextWithoutNotify(qtyBox[0].ToString());
+            if (priceText != null) priceText.text = "+" + (unitPrice * qtyBox[0]).ToString("N0");
+        }
+        RefreshQty();
+
+        if (minusBtn != null)
+        {
+            minusBtn.onClick.RemoveAllListeners();
+            minusBtn.onClick.AddListener(() => { qtyBox[0] = Mathf.Max(1, qtyBox[0] - 1); RefreshQty(); });
+        }
+        if (plusBtn != null)
+        {
+            plusBtn.onClick.RemoveAllListeners();
+            plusBtn.onClick.AddListener(() => { qtyBox[0] = Mathf.Max(1, Mathf.Min(Mathf.Max(1, EffectiveMaxQty()), qtyBox[0] + 1)); RefreshQty(); });
+        }
+        if (qtyInput != null)
+        {
+            qtyInput.onValueChanged.RemoveAllListeners();
+            qtyInput.onValueChanged.AddListener(text =>
+            {
+                if (priceText == null) return;
+                if (!int.TryParse(text, out int typed) || typed <= 0) return;
+                priceText.text = "+" + (unitPrice * typed).ToString("N0");
+            });
+            qtyInput.onEndEdit.RemoveAllListeners();
+            qtyInput.onEndEdit.AddListener(text =>
+            {
+                if (!int.TryParse(text, out int typed)) typed = qtyBox[0];
+                qtyBox[0] = Mathf.Clamp(typed, 1, Mathf.Max(1, EffectiveMaxQty()));
+                RefreshQty();
+            });
+        }
+
+        var sellBtn = FindChildButton(row, "SellButton");
+        if (sellBtn != null)
+        {
+            // "加入"按钮文字之前是生成器建prefab时烘焙的静态文本，从没接过字典表——
+            // 用户反馈切语言之后这颗按钮永远是中文，这里补上跟其它按钮一样的L()查表。
+            var sellBtnLabel = sellBtn.transform.Find("Label")?.GetComponent<Text>();
+            if (sellBtnLabel != null) sellBtnLabel.text = L("shop_add_button", "加入");
+
+            var captured = entry;
+            sellBtn.onClick.RemoveAllListeners();
+            sellBtn.onClick.AddListener(() =>
+            {
+                int before = _sellCart?.GetQuantity(captured) ?? 0;
+                _sellCart?.AddOrIncrement(captured, qtyBox[0], unitPrice, cid);
+                int after = _sellCart?.GetQuantity(captured) ?? 0;
+                SkyPrisonSystemSEPlayer.Play(after > before ? SkyPrisonSystemSEType.Confirm : SkyPrisonSystemSEType.Forbidden);
+                qtyBox[0] = Mathf.Max(1, Mathf.Min(qtyBox[0], Mathf.Max(1, EffectiveMaxQty())));
+                RefreshQty();
+            });
+        }
     }
 
     // 货架行/购物车行/加购/结账按钮随时会因为选品、结账重建，重建后都要重喂一次。
     private void RefreshGamepadTargets()
     {
         if (_gamepadNav == null) return;
+
+        // 稀有物品出售二次确认弹窗开着的时候，手柄目标必须收窄到只剩弹窗自己这两个
+        // 按钮——不然背后货架/购物车那些按钮还能被手柄选中/触发，等于弹窗形同虚设。
+        if (_sellConfirmRoot != null && _sellConfirmRoot.activeSelf)
+        {
+            var popupTargets = new List<Button>();
+            if (_sellConfirmCancelButton != null) popupTargets.Add(_sellConfirmCancelButton);
+            if (_sellConfirmYesButton != null) popupTargets.Add(_sellConfirmYesButton);
+            _gamepadNav.SetTargets(popupTargets);
+            return;
+        }
+
         var targets = new List<Button>();
+        if (buyTabButton != null) targets.Add(buyTabButton);
+        if (sellTabButton != null) targets.Add(sellTabButton);
+        foreach (var row in _sellRows)
+        {
+            if (row == null) continue;
+            var minusBtn = FindChildButton(row, "QtyGroup/QtyMinus");
+            var plusBtn  = FindChildButton(row, "QtyGroup/QtyPlus");
+            var sellBtn  = FindChildButton(row, "SellButton");
+            if (minusBtn != null) targets.Add(minusBtn);
+            if (plusBtn != null) targets.Add(plusBtn);
+            if (sellBtn != null) targets.Add(sellBtn);
+        }
         foreach (var row in _shelfRows)
         {
             if (row == null) continue;
@@ -213,6 +656,8 @@ public class ShopWindowController : SkyPrisonBaseWindowController
         // 鼠标点。按当前显示的是哪个视图，把对应能看见的那个按钮加进去。
         if (!_showingCheckout && goToCheckoutButton != null && goToCheckoutButton.gameObject.activeInHierarchy)
             targets.Add(goToCheckoutButton);
+        if (!_showingCheckout && sellGoToCheckoutButton != null && sellGoToCheckoutButton.gameObject.activeInHierarchy)
+            targets.Add(sellGoToCheckoutButton);
         if (_showingCheckout && backToShopButton != null && backToShopButton.gameObject.activeInHierarchy)
             targets.Add(backToShopButton);
         if (checkoutButton != null && checkoutButton.gameObject.activeInHierarchy) targets.Add(checkoutButton);
@@ -232,7 +677,11 @@ public class ShopWindowController : SkyPrisonBaseWindowController
         if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
         _cart?.Clear();
         _cart = null;
+        _sellCart?.Clear();
+        _sellCart = null;
         _selected = null;
+        _gamepadFocusedShelfRow = null;
+        HideSellConfirmPopup();
     }
 
     // 玩家在窗口开着的时候通过别的途径拿到/花掉货币（比如触发器掉落），所需/所持/
@@ -260,12 +709,16 @@ public class ShopWindowController : SkyPrisonBaseWindowController
     {
         RefreshTitle();
         if (goToCheckoutLabel != null) goToCheckoutLabel.text = L("shop_checkout_button", "结账");
-        if (backToShopLabel   != null) backToShopLabel.text   = L("shop_back_to_shop", "返回购物");
-        if (costLabel   != null) costLabel.text   = L("shop_cost_label", "所需");
+        if (sellGoToCheckoutLabel != null) sellGoToCheckoutLabel.text = L("shop_checkout_button", "结账");
+        RefreshCheckoutModeLabels();
         if (walletLabel != null) walletLabel.text = L("shop_wallet_label", "所持");
         if (afterLabel  != null) afterLabel.text  = L("shop_after_label", "结账后");
+        if (buyTabLabel  != null) buyTabLabel.text  = L("shop_tab_buy", "购买");
+        if (sellTabLabel != null) sellTabLabel.text = L("shop_tab_sell", "出售");
+        if (sellEmptyText != null) sellEmptyText.text = L("shop_sell_empty", "没有能卖的东西");
         BuildShelf();
         SelectEntry(_selected);
+        if (_showingSellTab) BuildSellList();
         RefreshCheckoutButton();
     }
 
@@ -544,11 +997,26 @@ public class ShopWindowController : SkyPrisonBaseWindowController
 
     // ── 购物车区 ─────────────────────────────────────────────────────────
 
+    // 结账页此刻展示的是"购买购物车"还是"出售清单"——见 ToggleCheckoutView 的注释，
+    // 由进入结账时所在的标签页(_showingSellTab)决定，两种模式共用同一套结账UI。
+    private bool CheckoutIsSellMode => _showingSellTab;
+
     private void RefreshCartUI()
     {
         foreach (var go in _cartRows) if (go) Destroy(go);
         _cartRows.Clear();
 
+        if (CheckoutIsSellMode) BuildSellCartRows();
+        else BuildBuyCartRows();
+
+        RefreshPaymentSummary();
+        RefreshCartCountBadges();
+        RefreshCheckoutButton();
+        RefreshGamepadTargets();
+    }
+
+    private void BuildBuyCartRows()
+    {
         if (_cart == null) return;
 
         int lineIndex = 0;
@@ -627,13 +1095,90 @@ public class ShopWindowController : SkyPrisonBaseWindowController
                 });
             }
         }
+    }
 
-        RefreshPaymentSummary();
+    // 出售清单行——复用跟购物车行完全相同的 cartRowPrefab/子节点路径，只是数据源
+    // 换成 SellCart.Lines，合计数字带"+"号(卖出获得)。跟 BuildBuyCartRows 是同一套
+    // 交互(数量步进直接改清单数量，减到0整行移除)，两段式流程完全对称。
+    private void BuildSellCartRows()
+    {
+        if (_sellCart == null) return;
 
+        int lineIndex = 0;
+        foreach (var line in _sellCart.Lines)
+        {
+            if (cartContent == null || cartRowPrefab == null) break;
+            var row = Instantiate(cartRowPrefab, cartContent);
+            _cartRows.Add(row);
+
+            var rowBg = row.GetComponent<Image>();
+            if (rowBg != null)
+                rowBg.color = lineIndex % 2 == 0 ? new Color(1f, 1f, 1f, 0.04f) : new Color(1f, 1f, 1f, 0.09f);
+            lineIndex++;
+
+            var iconTf = row.transform.Find("Icon");
+            if (iconTf != null)
+            {
+                var iconImg = iconTf.GetComponent<Image>();
+                if (iconImg != null) iconImg.sprite = line.entry.definition != null ? line.entry.definition.icon : null;
+            }
+
+            SetChildText(row, "CartItemName", line.entry.definition.GetLocalizedDisplayName());
+            var cartNameText = row.transform.Find("CartItemName")?.GetComponent<Text>();
+            if (cartNameText != null) cartNameText.color = QualityColor(line.entry.definition.itemLevel);
+
+            var qtyInput = FindChildInputField(row, "QtyGroup/CartItemQty");
+            if (qtyInput != null) qtyInput.SetTextWithoutNotify(line.quantity.ToString());
+
+            SetChildText(row, "TotalGroup/CartItemTotal", "+" + line.lineTotal.ToString("N0"));
+            var totalIconTf = row.transform.Find("TotalGroup/TotalIcon");
+            if (totalIconTf != null)
+            {
+                var totalIconImg = totalIconTf.GetComponent<Image>();
+                if (totalIconImg != null) totalIconImg.sprite = defaultCurrencyIcon;
+            }
+
+            var capturedEntry = line.entry;
+            var minusBtn = FindChildButton(row, "QtyGroup/QtyMinus");
+            var plusBtn  = FindChildButton(row, "QtyGroup/QtyPlus");
+            if (minusBtn != null)
+            {
+                minusBtn.onClick.AddListener(() =>
+                {
+                    int newQty = _sellCart.GetQuantity(capturedEntry) - 1;
+                    _sellCart.SetQuantity(capturedEntry, newQty);
+                    SkyPrisonSystemSEPlayer.Play(newQty <= 0 ? SkyPrisonSystemSEType.Cancel : SkyPrisonSystemSEType.Switch);
+                });
+            }
+            if (plusBtn != null)
+            {
+                plusBtn.onClick.AddListener(() =>
+                {
+                    int newQty = _sellCart.GetQuantity(capturedEntry) + 1;
+                    _sellCart.SetQuantity(capturedEntry, newQty);
+                    SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Switch);
+                });
+            }
+            if (qtyInput != null)
+            {
+                qtyInput.onEndEdit.AddListener(text =>
+                {
+                    if (!int.TryParse(text, out int typed)) typed = _sellCart.GetQuantity(capturedEntry);
+                    _sellCart.SetQuantity(capturedEntry, typed);
+                    SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Switch);
+                });
+            }
+        }
+    }
+
+    // 购买购物车角标(cartCountText)/出售清单角标(sellCartCountText)——两个按钮
+    // 各自独立，互不影响。
+    private void RefreshCartCountBadges()
+    {
         if (cartCountText != null)
         {
             int totalQty = 0;
-            foreach (var line in _cart.Lines) totalQty += line.quantity;
+            if (_cart != null) foreach (var line in _cart.Lines) totalQty += line.quantity;
             cartCountText.text = totalQty > 0 ? totalQty.ToString() : "";
             // cartCountText 只是圆形角标里的数字文字，之前只隐藏它，圆形背景(父物体
             // "Count")还留在原地——用户反馈"没东西的时候右上角不需要有这个圆形"，
@@ -641,18 +1186,24 @@ public class ShopWindowController : SkyPrisonBaseWindowController
             Transform badgeRoot = cartCountText.transform.parent;
             if (badgeRoot != null) badgeRoot.gameObject.SetActive(totalQty > 0);
         }
-
-        RefreshCheckoutButton();
-        RefreshGamepadTargets();
+        if (sellCartCountText != null)
+        {
+            int totalQty = 0;
+            if (_sellCart != null) foreach (var line in _sellCart.Lines) totalQty += line.quantity;
+            sellCartCountText.text = totalQty > 0 ? totalQty.ToString() : "";
+            Transform badgeRoot = sellCartCountText.transform.parent;
+            if (badgeRoot != null) badgeRoot.gameObject.SetActive(totalQty > 0);
+        }
     }
 
     private void RefreshCheckoutButton()
     {
         if (checkoutButton == null) return;
 
-        bool canCheckout = _cart != null && !_cart.IsEmpty
-                           && _cart.CanAfford(CurrencyRuntime.Instance)
-                           && InventoryRuntimeBootstrap.Instance?.Inventory != null;
+        bool sellMode = CheckoutIsSellMode;
+        bool canCheckout = sellMode
+            ? _sellCart != null && !_sellCart.IsEmpty && InventoryRuntimeBootstrap.Instance?.Inventory != null
+            : _cart != null && !_cart.IsEmpty && _cart.CanAfford(CurrencyRuntime.Instance) && InventoryRuntimeBootstrap.Instance?.Inventory != null;
 
         // interactable 故意保持 true（不设成 false）——用户明确要求"点击是拒绝"，
         // 如果 interactable=false，Button.onClick 根本不会触发，OnCheckout() 里的
@@ -668,9 +1219,18 @@ public class ShopWindowController : SkyPrisonBaseWindowController
 
         if (checkoutLabel != null)
         {
-            checkoutLabel.text = canCheckout
-                ? L("shop_checkout_button", "结账")
-                : (_cart == null || _cart.IsEmpty ? L("shop_cart_empty", "购物车为空") : L("shop_insufficient_funds", "余额不足"));
+            if (sellMode)
+            {
+                checkoutLabel.text = canCheckout
+                    ? L("shop_confirm_sell_button", "确认出售")
+                    : L("shop_sell_cart_empty", "出售清单为空");
+            }
+            else
+            {
+                checkoutLabel.text = canCheckout
+                    ? L("shop_checkout_button", "结账")
+                    : (_cart == null || _cart.IsEmpty ? L("shop_cart_empty", "购物车为空") : L("shop_insufficient_funds", "余额不足"));
+            }
             checkoutLabel.color = canCheckout ? SkyPrisonUIPalette.ColdGreen : new Color(0.6f, 0.6f, 0.6f, 1f);
         }
 
@@ -683,30 +1243,56 @@ public class ShopWindowController : SkyPrisonBaseWindowController
 
     // 所需/所持/结账后三行，全部右对齐（用户明确要求）。演示商店只有单一货币，
     // 按 shopDefinition.defaultCurrencyId 取值；购物车里出现别的货币的情况暂不处理
-    // （目前项目里只有这一种演示货币）。
+    // （目前项目里只有这一种演示货币）。出售模式下"所需"这一行复用同一个字段，
+    // 内容/正负号换成"获得"+正数(见 RefreshCheckoutModeLabels 换标签文字)。
     private void RefreshPaymentSummary()
     {
         if (cartCostText == null && cartWalletText == null && cartAfterText == null) return;
-        if (_cart == null || shopDefinition == null) return;
+        if (shopDefinition == null) return;
 
         string cid = shopDefinition.defaultCurrencyId;
-        var totals = _cart.GetTotals();
-        long cost = totals.TryGetValue(cid, out long c) ? c : 0;
         long wallet = CurrencyRuntime.Instance != null ? CurrencyRuntime.Instance.Get(cid) : 0;
-        long after = wallet - cost;
 
-        // 标签("所需"/"所持"/"结账后")是编辑器生成时烘焙好的静态文字，这几个字段
-        // 只是数字部分——数字要带千分位逗号（用户明确要求），用 "N0" 格式化。
-        if (cartCostText != null) cartCostText.text = cost.ToString("N0");
+        if (CheckoutIsSellMode)
+        {
+            if (_sellCart == null) return;
+            var totals = _sellCart.GetTotals();
+            long gain = totals.TryGetValue(cid, out long g) ? g : 0;
+            long after = wallet + gain;
+            if (cartCostText != null) cartCostText.text = "+" + gain.ToString("N0");
+            if (cartWalletText != null) cartWalletText.text = wallet.ToString("N0");
+            if (cartAfterText != null)
+            {
+                cartAfterText.text = after.ToString("N0");
+                cartAfterText.color = SkyPrisonUIPalette.ColdGreen;
+            }
+            return;
+        }
+
+        if (_cart == null) return;
+        var buyTotals = _cart.GetTotals();
+        long cost = buyTotals.TryGetValue(cid, out long c) ? c : 0;
+        long afterBuy = wallet - cost;
+
+        // "所需"前面加个"-"号，让人一眼看出这是要扣掉的钱（用户明确要求，行的
+        // 上下顺序也改成"所持"在上"所需"在下——那部分改动在生成器里，这里只管
+        // 数字文字本身）。
+        if (cartCostText != null) cartCostText.text = "-" + cost.ToString("N0");
         if (cartWalletText != null) cartWalletText.text = wallet.ToString("N0");
         if (cartAfterText != null)
         {
-            cartAfterText.text = after.ToString("N0");
-            cartAfterText.color = after < 0 ? InsufficientFundsColor : SkyPrisonUIPalette.ColdGreen;
+            cartAfterText.text = afterBuy.ToString("N0");
+            cartAfterText.color = afterBuy < 0 ? InsufficientFundsColor : SkyPrisonUIPalette.ColdGreen;
         }
     }
 
     private void OnCheckout()
+    {
+        if (CheckoutIsSellMode) OnConfirmSell();
+        else OnConfirmBuy();
+    }
+
+    private void OnConfirmBuy()
     {
         if (_cart == null || InventoryRuntimeBootstrap.Instance?.Inventory == null) return;
 
@@ -741,6 +1327,209 @@ public class ShopWindowController : SkyPrisonBaseWindowController
                 SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Forbidden);
                 break;
         }
+    }
+
+    // 出售清单确认——跟购买结账完全对称，为空/背包状态异常都拦一下再执行。清单里
+    // 有稀有物品(itemLevel >= 设置里配的阈值，默认Lv5，可在设置界面调成Lv8或关掉)
+    // 的话先弹二次确认，用户明确要求"别手滑卖了贵重东西"。
+    private void OnConfirmSell()
+    {
+        if (_sellCart == null || InventoryRuntimeBootstrap.Instance?.Inventory == null) return;
+
+        if (_sellCart.IsEmpty)
+        {
+            SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Forbidden);
+            return;
+        }
+
+        int threshold = SaveManager.Settings?.sellConfirmRarityThreshold ?? 5;
+        if (threshold >= 0)
+        {
+            foreach (var line in _sellCart.Lines)
+            {
+                if (line.entry?.definition != null && line.entry.definition.itemLevel >= threshold)
+                {
+                    ShowSellConfirmPopup();
+                    return;
+                }
+            }
+        }
+
+        ExecuteSellCheckout();
+    }
+
+    private void ExecuteSellCheckout()
+    {
+        var result = _sellCart.Checkout(CurrencyRuntime.Instance, InventoryRuntimeBootstrap.Instance?.Inventory);
+        switch (result)
+        {
+            case SellCart.CheckoutResult.Success:
+                SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Purchase);
+                // 出售清单重建——背包实际库存已经变了，能卖的行/数量上限要跟着刷新。
+                if (_showingSellTab) BuildSellList();
+                if (_showingCheckout) ToggleCheckoutView();
+                break;
+            case SellCart.CheckoutResult.InventoryError:
+                SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Forbidden);
+                break;
+        }
+    }
+
+    // ── 稀有物品出售二次确认弹窗 ─────────────────────────────────────────────
+    // 运行时现搭，风格照抄背包丢弃/拆分弹窗(SkyPrisonInventoryInteraction.EnsurePopup)：
+    // 半透明遮罩+黑底小框+四角白色L形角标+白框按钮，不额外发明新弹窗样式。
+    private GameObject _sellConfirmRoot;
+    private Text       _sellConfirmMessageText;
+    private Button     _sellConfirmCancelButton;
+    private Button     _sellConfirmYesButton;
+
+    private void EnsureSellConfirmPopup()
+    {
+        if (_sellConfirmRoot != null) return;
+
+        Font font = LocalizationRuntime.Instance != null ? LocalizationRuntime.Instance.GetCurrentFont() : null;
+
+        RectTransform popupRt = NewPopupRect("SellConfirmPopup", transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        _sellConfirmRoot = popupRt.gameObject;
+        var backdrop = _sellConfirmRoot.AddComponent<Image>();
+        backdrop.color = new Color(0f, 0f, 0f, 0.6f);
+        backdrop.raycastTarget = true;
+
+        RectTransform box = NewPopupRect("Box", popupRt, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(680f, 300f));
+        var boxBg = box.gameObject.AddComponent<Image>();
+        boxBg.color = new Color(0.08f, 0.09f, 0.10f, 0.97f);
+        AddPopupCornerBrackets(box);
+
+        _sellConfirmMessageText = NewPopupText("Message", box, font, 30, TextAnchor.MiddleCenter,
+            new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -32f), new Vector2(-64f, 176f));
+        _sellConfirmMessageText.color = Color.white;
+        _sellConfirmMessageText.horizontalOverflow = HorizontalWrapMode.Wrap;
+
+        _sellConfirmCancelButton = MakePopupButton(L("shop_sell_confirm_cancel", "取消"), box, font, new Vector2(0.5f, 0f), new Vector2(-160f, 40f), () =>
+        {
+            SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Cancel);
+            HideSellConfirmPopup();
+        });
+        _sellConfirmYesButton = MakePopupButton(L("shop_confirm_sell_button", "确认出售"), box, font, new Vector2(0.5f, 0f), new Vector2(160f, 40f), () =>
+        {
+            HideSellConfirmPopup();
+            ExecuteSellCheckout();
+        });
+
+        _sellConfirmRoot.SetActive(false);
+    }
+
+    private void ShowSellConfirmPopup()
+    {
+        EnsureSellConfirmPopup();
+        if (_sellConfirmMessageText != null)
+            _sellConfirmMessageText.text = L("shop_sell_confirm_message", "出售清单里有稀有物品，确定要出售吗？");
+        _sellConfirmRoot.SetActive(true);
+        SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Open);
+        RefreshGamepadTargets(); // 弹窗弹出的时候手柄目标要收窄到只剩这两个按钮，见 RefreshGamepadTargets 顶部判断
+    }
+
+    private void HideSellConfirmPopup()
+    {
+        if (_sellConfirmRoot == null) return;
+        _sellConfirmRoot.SetActive(false);
+        RefreshGamepadTargets(); // 关掉弹窗后手柄目标要恢复回窗口原本那一套
+    }
+
+    // ── 弹窗小工具——跟 SkyPrisonInventoryInteraction 的同名私有方法保持同一套做法 ──
+    private static RectTransform NewPopupRect(string name, Transform parent,
+        Vector2 anchorMin, Vector2 anchorMax, Vector2 anchoredPos, Vector2 sizeDelta)
+    {
+        var go = new GameObject(name, typeof(RectTransform));
+        var rt = (RectTransform)go.transform;
+        rt.SetParent(parent, false);
+        rt.anchorMin = anchorMin; rt.anchorMax = anchorMax;
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = anchoredPos; rt.sizeDelta = sizeDelta;
+        return rt;
+    }
+
+    private static Text NewPopupText(string name, Transform parent, Font font, int size, TextAnchor align,
+        Vector2 anchorMin, Vector2 anchorMax, Vector2 anchoredPos, Vector2 sizeDelta)
+    {
+        RectTransform rt = NewPopupRect(name, parent, anchorMin, anchorMax, anchoredPos, sizeDelta);
+        var t = rt.gameObject.AddComponent<Text>();
+        if (font != null) t.font = font;
+        t.fontSize = size;
+        t.alignment = align;
+        t.horizontalOverflow = HorizontalWrapMode.Overflow;
+        t.raycastTarget = false;
+        return t;
+    }
+
+    private static Button MakePopupButton(string label, RectTransform parent, Font font, Vector2 anchor, Vector2 anchoredPos, System.Action onClick)
+    {
+        RectTransform rt = NewPopupRect("Btn_" + label, parent, anchor, anchor, anchoredPos, new Vector2(240f, 72f));
+
+        var img = rt.gameObject.AddComponent<Image>();
+        img.color = new Color(1f, 1f, 1f, 0f);
+        img.raycastTarget = true;
+
+        var btn = rt.gameObject.AddComponent<Button>();
+        btn.transition = Selectable.Transition.None;
+        var nav = btn.navigation; nav.mode = Navigation.Mode.None; btn.navigation = nav;
+        btn.onClick.AddListener(() => onClick());
+
+        AddPopupWhiteFrame(rt, 2f);
+
+        Text t = NewPopupText("Label", rt, font, 32, TextAnchor.MiddleCenter,
+            Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        t.text = label;
+        t.color = Color.white;
+        t.raycastTarget = false;
+
+        SkyPrisonUIButtonFeedback.Attach(rt.gameObject);
+        return btn;
+    }
+
+    private static void AddPopupWhiteFrame(RectTransform parent, float thickness)
+    {
+        AddPopupEdge(parent, "Frame_T", new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, thickness));
+        AddPopupEdge(parent, "Frame_B", new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0f, thickness));
+        AddPopupEdge(parent, "Frame_L", new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(thickness, 0f));
+        AddPopupEdge(parent, "Frame_R", new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(thickness, 0f));
+    }
+
+    private static void AddPopupEdge(RectTransform parent, string name, Vector2 aMin, Vector2 aMax, Vector2 size)
+    {
+        var go = new GameObject(name, typeof(RectTransform));
+        var rt = (RectTransform)go.transform;
+        rt.SetParent(parent, false);
+        rt.anchorMin = aMin; rt.anchorMax = aMax;
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = Vector2.zero;
+        rt.sizeDelta = size;
+        var img = go.AddComponent<Image>();
+        img.color = new Color(1f, 1f, 1f, 0.85f);
+        img.raycastTarget = false;
+    }
+
+    private static void AddPopupCornerBrackets(RectTransform parent, float arm = 26f, float thickness = 2f)
+    {
+        Vector2[] corners = { new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(1f, 0f) };
+        foreach (var c in corners)
+        {
+            AddPopupCornerArm(parent, "Corner_H", c, new Vector2(arm, thickness));
+            AddPopupCornerArm(parent, "Corner_V", c, new Vector2(thickness, arm));
+        }
+    }
+
+    private static void AddPopupCornerArm(RectTransform parent, string name, Vector2 corner, Vector2 size)
+    {
+        var go = new GameObject(name, typeof(RectTransform));
+        var rt = (RectTransform)go.transform;
+        rt.SetParent(parent, false);
+        rt.anchorMin = corner; rt.anchorMax = corner; rt.pivot = corner;
+        rt.anchoredPosition = Vector2.zero;
+        rt.sizeDelta = size;
+        var img = go.AddComponent<Image>();
+        img.color = new Color(1f, 1f, 1f, 0.9f);
+        img.raycastTarget = false;
     }
 
     // 结账后刷新货架行的库存显示

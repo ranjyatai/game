@@ -190,6 +190,8 @@ public class ItemDefinition : ScriptableObject
     public float weightOrQuartz = 0f;
     public bool isKeyItem = false;
     public bool canDiscard = true;
+    [Tooltip("能不能卖给商店——任务道具/重要物品这种天生不该卖的关掉，不管去哪家店都不会出现在出售列表里。商店自己还会再按分类过滤一层，两层都过了才能卖。")]
+    public bool canSell = true;
 
     [Header("使用效果")]
     public List<ItemEffectEntry> effects = new List<ItemEffectEntry>();

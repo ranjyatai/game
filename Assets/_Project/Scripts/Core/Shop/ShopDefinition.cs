@@ -47,4 +47,14 @@ public class ShopDefinition : ScriptableObject
 
     [Header("库存刷新（章节开始时重置库存，随机商店模式下同时重新抽选品/价格）")]
     public bool refreshStockOnChapterStart = true;
+
+    [Header("出售（玩家把背包物品卖给这家商店）")]
+    [Tooltip("这家店收不收东西——关掉的话商店窗口不显示\"出售\"标签页（比如自动贩卖机式的商店，只卖不收）。")]
+    public bool enableSelling = true;
+
+    [Tooltip("出售价 = 物品自身定价 × 这个倍率。留空列表=不限制分类，什么道具类物品(General大类)都收；" +
+             "列了具体分类的话只收列表里这些分类，装备大类始终不在收购范围内(以后要收装备再单独设计)。")]
+    public float sellPriceMultiplier = 0.5f;
+
+    public List<ItemCategory> sellCategoryWhitelist = new List<ItemCategory>();
 }

@@ -2068,7 +2068,30 @@ public class SettingsWindowUI : MonoBehaviour
         BuildToggleRow(contentRt, 2, L("ui_settings_autosave", "自动保存"),
             s == null || s.autoSaveEnabled, v => { if (s != null) s.autoSaveEnabled = v; });
 
-        BuildLinkRow(contentRt, 3, L("ui_settings_clear_cache", "清除缓存"),
+        // 商店出售稀有物品前二次确认——用户明确要求可调阈值(Lv5/Lv8/不提示)，默认Lv5以上。
+        string[] sellConfirmLabels =
+        {
+            L("ui_settings_sell_confirm_lv5", "Lv5以上二次确认"),
+            L("ui_settings_sell_confirm_lv8", "Lv8以上二次确认"),
+            L("ui_settings_sell_confirm_off", "不提示"),
+        };
+        int[] sellConfirmValues = { 5, 8, -1 };
+        int sellConfirmIdx = 0;
+        if (s != null)
+        {
+            int foundIdx = System.Array.IndexOf(sellConfirmValues, s.sellConfirmRarityThreshold);
+            sellConfirmIdx = foundIdx >= 0 ? foundIdx : 0;
+        }
+        BuildValueCycleRow(contentRt, 3, L("ui_settings_sell_confirm", "出售稀有物品二次确认"),
+            sellConfirmLabels, sellConfirmLabels[sellConfirmIdx],
+            v =>
+            {
+                int idx = System.Array.IndexOf(sellConfirmLabels, v);
+                if (idx < 0) idx = 0;
+                if (s != null) s.sellConfirmRarityThreshold = sellConfirmValues[idx];
+            });
+
+        BuildLinkRow(contentRt, 4, L("ui_settings_clear_cache", "清除缓存"),
             L("ui_settings_clear_cache_action", "清除"), ShowClearCacheConfirm);
     }
 

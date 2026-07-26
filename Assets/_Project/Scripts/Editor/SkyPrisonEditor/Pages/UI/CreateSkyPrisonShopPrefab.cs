@@ -19,6 +19,7 @@ namespace SkyPrison.Editor.UI
         public const string ResMirrorPath = "Assets/Resources/UI/Window/PF_SkyPrisonShop.prefab";
         private const string ShelfRowPrefabPath = "Assets/_Project/Prefabs/UI/Window/PF_ShopShelfRow.prefab";
         private const string CartRowPrefabPath  = "Assets/_Project/Prefabs/UI/Window/PF_ShopCartRow.prefab";
+        private const string SellRowPrefabPath  = "Assets/_Project/Prefabs/UI/Window/PF_ShopSellRow.prefab";
         private const string DemoShopAssetPath  = "Assets/_Project/Data/Definitions/Custom/Shop/SD_DemoShop.asset";
 
         // 上一版 2700宽+偏移420 直接把窗口顶到实际测试屏幕外面去了（用户截图只剩详情区
@@ -112,7 +113,44 @@ namespace SkyPrison.Editor.UI
             // 标题栏原来的购物车图标按钮去掉了（用户明确要求）——右下角新增的"结账"
             // 大按钮已经能做同一件事，数量角标也跟着挪到那个按钮上（下面创建）。
 
-            float contentTop = SkyPrisonFloatingWindowKit.TitleBarHeight;
+            // ── 购买/出售 标签页——左上角，标题栏正下方（用户明确要求：标签式，选中
+            // 有绿色下划线，切换要有滑动过程不能瞬间跳过去）。
+            const float tabBarH = 72f, tabW = 176f, tabGap = 4f, tabUnderlineH = 4f * 1f;
+            var tabBarRt = MakeRect("TabBar", panel, new Vector2(0f, 1f), new Vector2(1f, 1f));
+            tabBarRt.pivot = new Vector2(0.5f, 1f);
+            tabBarRt.sizeDelta = new Vector2(0f, tabBarH);
+            tabBarRt.anchoredPosition = new Vector2(0f, -SkyPrisonFloatingWindowKit.TitleBarHeight);
+
+            Button MakeTabButton(string name, string label, float x, out Text labelOut)
+            {
+                var tabRt = MakeRect(name, tabBarRt, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f));
+                tabRt.pivot = new Vector2(0f, 0.5f);
+                tabRt.sizeDelta = new Vector2(tabW, tabBarH - 8f);
+                tabRt.anchoredPosition = new Vector2(x, 0f);
+                tabRt.gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
+                var btn = tabRt.gameObject.AddComponent<Button>();
+                btn.transition = Selectable.Transition.None;
+                NoAutoNav(btn);
+                var labelRt = MakeRect("Label", tabRt, Vector2.zero, Vector2.one);
+                labelOut = labelRt.gameObject.AddComponent<Text>();
+                labelOut.text = label; labelOut.font = LoadLegacyFont(); labelOut.fontSize = 32;
+                labelOut.alignment = TextAnchor.MiddleCenter; labelOut.raycastTarget = false;
+                return btn;
+            }
+
+            var buyTabBtn  = MakeTabButton("BuyTab", "购买", 24f, out Text buyTabLabelText);
+            var sellTabBtn = MakeTabButton("SellTab", "出售", 24f + tabW + tabGap, out Text sellTabLabelText);
+            buyTabLabelText.color = SkyPrisonUIPalette.ColdGreen; // 初始就是"购买"标签选中态
+
+            var tabUnderlineRt = MakeRect("TabUnderline", tabBarRt, new Vector2(0f, 0f), new Vector2(0f, 0f));
+            tabUnderlineRt.pivot = new Vector2(0f, 0f);
+            tabUnderlineRt.sizeDelta = new Vector2(tabW, tabUnderlineH);
+            tabUnderlineRt.anchoredPosition = new Vector2(24f, 6f);
+            var tabUnderlineImg = tabUnderlineRt.gameObject.AddComponent<Image>();
+            tabUnderlineImg.color = SkyPrisonUIPalette.ColdGreen;
+            tabUnderlineImg.raycastTarget = false;
+
+            float contentTop = SkyPrisonFloatingWindowKit.TitleBarHeight + tabBarH;
 
             // ── 购物区(左货架+右详情) ────────────────────────────────────────
             var shoppingRoot = MakeRect("ShoppingViewRoot", panel, Vector2.zero, Vector2.one);
@@ -326,10 +364,90 @@ namespace SkyPrison.Editor.UI
             // 摆在结账界面这个更宽的区域里（结账界面用的是整个面板宽度，摆得下）。
             var checkoutRefs = BuildCheckoutArea(checkoutRoot, font, rightModuleRight - rightModuleLeft, checkoutEntryH);
 
+            // ── 出售区（把背包物品卖给商店，初始隐藏）──────────────────────────
+            var sellRoot = MakeRect("SellViewRoot", panel, Vector2.zero, Vector2.one);
+            sellRoot.offsetMin = new Vector2(24f, 24f);
+            sellRoot.offsetMax = new Vector2(-24f, -contentTop);
+            sellRoot.gameObject.SetActive(false);
+
+            // 底部让出一块给"去结账"入口按钮——跟购物区右下角"结账"按钮同一套尺寸/
+            // 交互逻辑，用户明确要求出售也要走"选数量→加入清单→结账页确认"两段式，
+            // 不能一点就直接卖掉，所以出售列表本身不再是终点，得有路走到确认页。
+            var sellScrollArea = MakeRect("SellScrollArea", sellRoot, Vector2.zero, Vector2.one);
+            sellScrollArea.offsetMin = new Vector2(0f, checkoutEntryH + 16f);
+            sellScrollArea.offsetMax = Vector2.zero;
+            Transform sellContent = BuildScrollArea(sellScrollArea, out _, useGrid: false, showScrollbar: true);
+
+            var sellEmptyRt = MakeRect("SellEmptyText", sellScrollArea, Vector2.zero, Vector2.one);
+            var sellEmptyText = sellEmptyRt.gameObject.AddComponent<Text>();
+            sellEmptyText.text = "没有能卖的东西"; sellEmptyText.font = LoadLegacyFont(); sellEmptyText.fontSize = 32;
+            sellEmptyText.color = new Color(0.55f, 0.58f, 0.6f, 1f);
+            sellEmptyText.alignment = TextAnchor.MiddleCenter;
+            sellEmptyText.raycastTarget = false;
+            sellEmptyText.gameObject.SetActive(false);
+
+            // 出售区"去结账"入口按钮——完全照抄购物区 GoToCheckoutButton 那一份
+            // (同尺寸/同风格/同一个 ToggleCheckoutView() 处理函数)，右上角数量角标
+            // 换成出售清单自己的计数(sellCartCountText)。
+            // 用户反馈"结账"按钮拉满整行太长了，而且要跟购物区那个按钮同一个位置——
+            // 之前直接照抄了 checkoutEntryRt 的 anchoredPosition，忽略了 sellRoot 和
+            // shoppingRoot 的 offsetMin 其实不一样：shoppingRoot 左/下边距是(0,0)(紧贴
+            // 面板边缘)，sellRoot 是(24,24)(整体内缩24)。两边局部坐标系原点错开了24，
+            // 直接搬同一个 anchoredPosition 就会带出一个24px的偏移。这里减掉这个差值，
+            // 让两个按钮换算到面板坐标系下落在完全同一个位置。
+            var sellCheckoutEntryRt = MakeRect("SellGoToCheckoutButton", sellRoot, new Vector2(0f, 0f), new Vector2(0f, 0f));
+            sellCheckoutEntryRt.pivot = new Vector2(0.5f, 0f);
+            sellCheckoutEntryRt.sizeDelta = new Vector2(rightModuleRight - rightModuleLeft, checkoutEntryH);
+            sellCheckoutEntryRt.anchoredPosition = new Vector2(rightModuleCenterX - 24f, 0f);
+            var sellCheckoutEntryImg = sellCheckoutEntryRt.gameObject.AddComponent<Image>();
+            sellCheckoutEntryImg.color = new Color(0f, 0f, 0f, 0f);
+            SkyPrisonFloatingWindowKit.AddOutline(sellCheckoutEntryRt, SkyPrisonUIPalette.ColdGreen, 2f * mul);
+            var sellCheckoutEntryBtn = sellCheckoutEntryRt.gameObject.AddComponent<Button>();
+            sellCheckoutEntryBtn.transition = Selectable.Transition.None;
+            NoAutoNav(sellCheckoutEntryBtn);
+            var sellCheckoutEntryFeedback = SkyPrisonUIButtonFeedback.Attach(sellCheckoutEntryRt.gameObject);
+
+            if (cartIconSprite != null)
+            {
+                var sellCartIconRt = MakeRect("CartIcon", sellCheckoutEntryRt, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f));
+                sellCartIconRt.pivot = new Vector2(0f, 0.5f);
+                sellCartIconRt.sizeDelta = new Vector2(checkoutIconSize * mul, checkoutIconSize * mul);
+                sellCartIconRt.anchoredPosition = new Vector2(32f * mul, 0f);
+                var sellCartIconImg = sellCartIconRt.gameObject.AddComponent<Image>();
+                sellCartIconImg.sprite = cartIconSprite; sellCartIconImg.preserveAspect = true; sellCartIconImg.raycastTarget = false;
+                sellCartIconImg.color = SkyPrisonUIPalette.ColdGreen;
+            }
+
+            var sellCheckoutEntryLabel = MakeRect("Label", sellCheckoutEntryRt, Vector2.zero, Vector2.one).gameObject.AddComponent<Text>();
+            sellCheckoutEntryLabel.text = "结账"; sellCheckoutEntryLabel.font = LoadLegacyFont(); sellCheckoutEntryLabel.fontSize = 40;
+            sellCheckoutEntryLabel.alignment = TextAnchor.MiddleCenter; sellCheckoutEntryLabel.color = SkyPrisonUIPalette.ColdGreen;
+            sellCheckoutEntryLabel.raycastTarget = false;
+
+            var sellCartCountRt = MakeRect("Count", sellCheckoutEntryRt, new Vector2(1f, 1f), new Vector2(1f, 1f));
+            sellCartCountRt.pivot = new Vector2(1f, 1f);
+            sellCartCountRt.sizeDelta = new Vector2(64f * mul, 64f * mul);
+            sellCartCountRt.anchoredPosition = new Vector2(10f * mul, 10f * mul);
+            var sellCartCountBg = sellCartCountRt.gameObject.AddComponent<Image>();
+            sellCartCountBg.sprite = LoadOrCreatePersistedRoundedRectSprite(64, 32);
+            sellCartCountBg.type = Image.Type.Simple;
+            sellCartCountBg.color = SkyPrisonUIPalette.ColdGreen;
+            var sellCartCountText = MakeRect("Label", sellCartCountRt, Vector2.zero, Vector2.one).gameObject.AddComponent<Text>();
+            sellCartCountText.font = LoadLegacyFont(); sellCartCountText.fontSize = 30; sellCartCountText.fontStyle = FontStyle.Bold;
+            sellCartCountText.color = new Color(0.13f, 0.14f, 0.15f, 1f);
+            sellCartCountText.alignment = TextAnchor.MiddleCenter;
+            sellCartCountText.raycastTarget = false;
+
+            var sellCountGraphics = new HashSet<Graphic>(sellCartCountRt.GetComponentsInChildren<Graphic>(true));
+            var sellFeedbackTargets = new List<Graphic>();
+            foreach (Graphic g in sellCheckoutEntryRt.GetComponentsInChildren<Graphic>(true))
+                if (!sellCountGraphics.Contains(g)) sellFeedbackTargets.Add(g);
+            sellCheckoutEntryFeedback.Configure(sellFeedbackTargets.ToArray());
+
             // ── 行模板 prefab（Instantiate用）──────────────────────────────
             EnsureFolder("Assets/_Project/Prefabs/UI/Window");
             GameObject shelfRowPrefab = BuildAndSaveShelfRowPrefab(font);
             GameObject cartRowPrefab  = BuildAndSaveCartRowPrefab(font);
+            GameObject sellRowPrefab  = BuildAndSaveSellRowPrefab(font);
 
             var controller = root.AddComponent<ShopWindowController>();
             var so = new SerializedObject(controller);
@@ -363,6 +481,18 @@ namespace SkyPrison.Editor.UI
             so.FindProperty("costLabel").objectReferenceValue = checkoutRefs.costLabel;
             so.FindProperty("walletLabel").objectReferenceValue = checkoutRefs.walletLabel;
             so.FindProperty("afterLabel").objectReferenceValue = checkoutRefs.afterLabel;
+            so.FindProperty("buyTabButton").objectReferenceValue = buyTabBtn;
+            so.FindProperty("buyTabLabel").objectReferenceValue = buyTabLabelText;
+            so.FindProperty("sellTabButton").objectReferenceValue = sellTabBtn;
+            so.FindProperty("sellTabLabel").objectReferenceValue = sellTabLabelText;
+            so.FindProperty("tabUnderline").objectReferenceValue = tabUnderlineRt;
+            so.FindProperty("sellViewRoot").objectReferenceValue = sellRoot.gameObject;
+            so.FindProperty("sellContent").objectReferenceValue = sellContent;
+            so.FindProperty("sellRowPrefab").objectReferenceValue = sellRowPrefab;
+            so.FindProperty("sellEmptyText").objectReferenceValue = sellEmptyText;
+            so.FindProperty("sellGoToCheckoutButton").objectReferenceValue = sellCheckoutEntryBtn;
+            so.FindProperty("sellGoToCheckoutLabel").objectReferenceValue = sellCheckoutEntryLabel;
+            so.FindProperty("sellCartCountText").objectReferenceValue = sellCartCountText;
             so.ApplyModifiedPropertiesWithoutUndo();
 
             EnsureFolder("Assets/Resources/UI/Window");
@@ -514,8 +644,10 @@ namespace SkyPrison.Editor.UI
                 valueText.alignment = TextAnchor.MiddleRight; valueText.raycastTarget = false;
                 return (labelText, valueText);
             }
-            (r.costLabel, r.costText)     = MakeSummaryRow("CostRow", "所需", 0f);
-            (r.walletLabel, r.walletText) = MakeSummaryRow("WalletRow", "所持", rowH + rowGap);
+            // 用户明确要求"所持"在上"所需"在下（所需那行数字带负号，读起来像"从所持里
+            // 扣掉这些"，顺序也要符合这个直觉）。
+            (r.walletLabel, r.walletText) = MakeSummaryRow("WalletRow", "所持", 0f);
+            (r.costLabel, r.costText)     = MakeSummaryRow("CostRow", "所需", rowH + rowGap);
 
             // 分隔线——压在"结账后"这一行上方，跟前两行区分开（用户明确要求）。
             var dividerRt = MakeRect("Divider", summaryRt, new Vector2(0f, 1f), new Vector2(1f, 1f));
@@ -1007,6 +1139,144 @@ namespace SkyPrison.Editor.UI
             PrefabUtility.SaveAsPrefabAsset(go, CartRowPrefabPath);
             Object.DestroyImmediate(go);
             return AssetDatabase.LoadAssetAtPath<GameObject>(CartRowPrefabPath);
+        }
+
+        private static GameObject BuildAndSaveSellRowPrefab(TMP_FontAsset font)
+        {
+            // 出售行——用户明确要求"不能一点就把一组全卖掉，要跟购买一样的UI逻辑"：
+            // 加一个"- N +"数量步进(跟购物车行QtyGroup同一套胶囊控件)，选好数量后
+            // 点"加入"只是加进出售清单，真正的扣除要到结账页点"确认出售"才执行，
+            // 跟购买(货架选数量→加购物车→结账确认)完全对称。
+            const float rowH = 116f;
+            var go = new GameObject("ShopSellRow", typeof(RectTransform));
+            var rt = (RectTransform)go.transform;
+            rt.sizeDelta = new Vector2(0f, rowH);
+            var le = go.AddComponent<LayoutElement>();
+            le.preferredHeight = rowH; le.flexibleWidth = 1f;
+
+            var bg = go.AddComponent<Image>();
+            bg.color = new Color(1f, 1f, 1f, 0.04f);
+
+            var iconRt = MakeRect("Icon", rt, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f));
+            iconRt.pivot = new Vector2(0f, 0.5f);
+            iconRt.sizeDelta = new Vector2(100f, 100f);
+            iconRt.anchoredPosition = new Vector2(12f, 0f);
+            var iconImg = iconRt.gameObject.AddComponent<Image>();
+            iconImg.preserveAspect = true;
+
+            var nameRt = MakeRect("SellItemName", rt, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f));
+            nameRt.pivot = new Vector2(0f, 0.5f);
+            nameRt.sizeDelta = new Vector2(300f, 44f);
+            nameRt.anchoredPosition = new Vector2(128f, 16f);
+            var nameText = nameRt.gameObject.AddComponent<Text>();
+            nameText.font = LoadLegacyFont(); nameText.fontSize = 44; nameText.color = Color.white;
+            nameText.alignment = TextAnchor.MiddleLeft;
+            nameText.horizontalOverflow = HorizontalWrapMode.Overflow; nameText.verticalOverflow = VerticalWrapMode.Overflow;
+
+            // "拥有×N"——小字副标题，压在名字下面，纯提示信息，不参与交互。
+            var qtyRt = MakeRect("SellItemQty", rt, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f));
+            qtyRt.pivot = new Vector2(0f, 0.5f);
+            qtyRt.sizeDelta = new Vector2(300f, 32f);
+            qtyRt.anchoredPosition = new Vector2(128f, -26f);
+            var qtyText = qtyRt.gameObject.AddComponent<Text>();
+            qtyText.font = LoadLegacyFont(); qtyText.fontSize = 26; qtyText.color = new Color(0.65f, 0.67f, 0.69f, 1f);
+            qtyText.alignment = TextAnchor.MiddleLeft;
+            qtyText.horizontalOverflow = HorizontalWrapMode.Overflow;
+
+            // 数量步进——跟购物车行QtyGroup同一套"环形胶囊 + - / 输入框 / +"做法，
+            // 默认选中数量=1，上限=玩家实际持有数量(运行时按 entry.count 夹范围)。
+            const float capsuleW = 220f, capsuleH = 64f;
+            var qtyGroupRt = MakeRect("QtyGroup", rt, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
+            qtyGroupRt.pivot = new Vector2(1f, 0.5f);
+            qtyGroupRt.sizeDelta = new Vector2(capsuleW, capsuleH);
+            // 用户反馈数量胶囊跟合计价格块之间挤在一起重叠了——三块(数量/合计/加入按钮)
+            // 都是pivot=1从右边缘算距离，之前的x值算出来右边两块之间只留了负间距，
+            // 现在每块之间都留足24px真实间隙，不再靠"看起来数字对得上"去猜。
+            qtyGroupRt.anchoredPosition = new Vector2(-432f, 0f);
+            Sprite ringSprite = LoadOrCreatePersistedRingSprite(64, (int)(capsuleH / 2f), 3);
+            var ringImg = MakeRect("Ring", qtyGroupRt, Vector2.zero, Vector2.one).gameObject.AddComponent<Image>();
+            ringImg.sprite = ringSprite; ringImg.type = Image.Type.Sliced; ringImg.color = Color.white; ringImg.raycastTarget = false;
+
+            var qtyMinusRt = MakeRect("QtyMinus", qtyGroupRt, new Vector2(0f, 0f), new Vector2(0.3f, 1f));
+            qtyMinusRt.offsetMin = Vector2.zero; qtyMinusRt.offsetMax = Vector2.zero;
+            qtyMinusRt.gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
+            var qtyMinusBtn = qtyMinusRt.gameObject.AddComponent<Button>();
+            NoAutoNav(qtyMinusBtn);
+            SkyPrisonUIButtonFeedback.Attach(qtyMinusRt.gameObject);
+            var qtyMinusLabel = MakeRect("Label", qtyMinusRt, Vector2.zero, Vector2.one).gameObject.AddComponent<Text>();
+            qtyMinusLabel.text = "-"; qtyMinusLabel.font = LoadLegacyFont(); qtyMinusLabel.fontSize = 34;
+            qtyMinusLabel.alignment = TextAnchor.MiddleCenter; qtyMinusLabel.color = Color.white; qtyMinusLabel.raycastTarget = false;
+
+            var qtyInputRt = MakeRect("SellQty", qtyGroupRt, new Vector2(0.3f, 0f), new Vector2(0.7f, 1f));
+            qtyInputRt.offsetMin = Vector2.zero; qtyInputRt.offsetMax = Vector2.zero;
+            var qtyBg = qtyInputRt.gameObject.AddComponent<Image>();
+            qtyBg.color = new Color(0f, 0f, 0f, 0f);
+            var qtyInput = qtyInputRt.gameObject.AddComponent<InputField>();
+            qtyInput.contentType = InputField.ContentType.IntegerNumber;
+            qtyInput.characterLimit = 4;
+            qtyInput.lineType = InputField.LineType.SingleLine;
+            NoAutoNav(qtyInput);
+
+            var qtyInputTextRt = MakeRect("Text", qtyInputRt, Vector2.zero, Vector2.one);
+            qtyInputTextRt.offsetMin = new Vector2(4f, 0f); qtyInputTextRt.offsetMax = new Vector2(-4f, 0f);
+            var qtyInputText = qtyInputTextRt.gameObject.AddComponent<Text>();
+            qtyInputText.text = "1"; qtyInputText.font = LoadLegacyFont(); qtyInputText.fontSize = 34; qtyInputText.color = Color.white;
+            qtyInputText.alignment = TextAnchor.MiddleCenter; qtyInputText.fontStyle = FontStyle.Bold;
+            qtyInput.textComponent = qtyInputText;
+            qtyInput.text = "1";
+
+            var qtyPlusRt = MakeRect("QtyPlus", qtyGroupRt, new Vector2(0.7f, 0f), new Vector2(1f, 1f));
+            qtyPlusRt.offsetMin = Vector2.zero; qtyPlusRt.offsetMax = Vector2.zero;
+            qtyPlusRt.gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f);
+            var qtyPlusBtn = qtyPlusRt.gameObject.AddComponent<Button>();
+            NoAutoNav(qtyPlusBtn);
+            SkyPrisonUIButtonFeedback.Attach(qtyPlusRt.gameObject);
+            var qtyPlusLabel = MakeRect("Label", qtyPlusRt, Vector2.zero, Vector2.one).gameObject.AddComponent<Text>();
+            qtyPlusLabel.text = "+"; qtyPlusLabel.font = LoadLegacyFont(); qtyPlusLabel.fontSize = 34;
+            qtyPlusLabel.alignment = TextAnchor.MiddleCenter; qtyPlusLabel.color = Color.white; qtyPlusLabel.raycastTarget = false;
+
+            // 合计价格——货币图标+数字，绿色加号(+N)表示卖出获得，随选中数量实时乘算。
+            var totalGroupRt = MakeRect("TotalGroup", rt, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
+            totalGroupRt.pivot = new Vector2(1f, 0.5f);
+            totalGroupRt.sizeDelta = new Vector2(220f, 56f);
+            totalGroupRt.anchoredPosition = new Vector2(-188f, 0f);
+
+            var totalIconRt = MakeRect("SellIcon", totalGroupRt, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f));
+            totalIconRt.pivot = new Vector2(0f, 0.5f);
+            totalIconRt.sizeDelta = new Vector2(44f, 44f);
+            totalIconRt.anchoredPosition = Vector2.zero;
+            var totalIconImg = totalIconRt.gameObject.AddComponent<Image>();
+            totalIconImg.preserveAspect = true;
+
+            var totalRt = MakeRect("SellItemPrice", totalGroupRt, Vector2.zero, Vector2.one);
+            totalRt.offsetMin = new Vector2(56f, 0f); totalRt.offsetMax = Vector2.zero;
+            var totalText = totalRt.gameObject.AddComponent<Text>();
+            totalText.font = LoadLegacyFont(); totalText.fontSize = 36; totalText.color = SkyPrisonUIPalette.ColdGreen;
+            totalText.alignment = TextAnchor.MiddleRight;
+            totalText.horizontalOverflow = HorizontalWrapMode.Overflow;
+
+            const float sellBtnW = 140f, sellBtnH = 76f;
+            var sellBtnRt = MakeRect("SellButton", rt, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f));
+            sellBtnRt.pivot = new Vector2(1f, 0.5f);
+            sellBtnRt.sizeDelta = new Vector2(sellBtnW, sellBtnH);
+            sellBtnRt.anchoredPosition = new Vector2(-24f, 0f);
+            // 用户明确要求"加入"按钮改成线框样式、不要圆角——跟结账区"返回购物"/
+            // "结账"按钮同一套做法：透明背景 + AddOutline() 描边(直角，不是圆角贴图)。
+            var sellBtnImg = sellBtnRt.gameObject.AddComponent<Image>();
+            sellBtnImg.color = new Color(0f, 0f, 0f, 0f);
+            SkyPrisonFloatingWindowKit.AddOutline(sellBtnRt, SkyPrisonUIPalette.ColdGreen, 2f);
+            var sellBtn = sellBtnRt.gameObject.AddComponent<Button>();
+            NoAutoNav(sellBtn);
+            SkyPrisonUIButtonFeedback.Attach(sellBtnRt.gameObject);
+            var sellBtnLabelRt = MakeRect("Label", sellBtnRt, Vector2.zero, Vector2.one);
+            sellBtnLabelRt.offsetMin = Vector2.zero; sellBtnLabelRt.offsetMax = Vector2.zero;
+            var sellBtnLabel = sellBtnLabelRt.gameObject.AddComponent<Text>();
+            sellBtnLabel.text = "加入"; sellBtnLabel.font = LoadLegacyFont(); sellBtnLabel.fontSize = 36;
+            sellBtnLabel.alignment = TextAnchor.MiddleCenter; sellBtnLabel.color = SkyPrisonUIPalette.ColdGreen; sellBtnLabel.raycastTarget = false;
+
+            PrefabUtility.SaveAsPrefabAsset(go, SellRowPrefabPath);
+            Object.DestroyImmediate(go);
+            return AssetDatabase.LoadAssetAtPath<GameObject>(SellRowPrefabPath);
         }
 
         // ── 圆角矩形 Sprite（持久化到磁盘）────────────────────────────────────

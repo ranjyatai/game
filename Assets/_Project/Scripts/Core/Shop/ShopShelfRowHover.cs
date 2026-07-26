@@ -59,21 +59,30 @@ namespace SkyPrison.Runtime.UI
             }
         }
 
-        public void OnPointerEnter(PointerEventData eventData)
-        {
-            if (!SoldOut)
-            {
-                QuickAddPanel?.SetActive(true);
-                AddToCartBadge?.SetActive(true);
-            }
-            HoverOutline?.SetActive(true);
-        }
+        public void OnPointerEnter(PointerEventData eventData) => SetGamepadFocused(true);
 
-        public void OnPointerExit(PointerEventData eventData)
+        public void OnPointerExit(PointerEventData eventData) => SetGamepadFocused(false);
+
+        // 手柄光标(SkyPrisonListGamepadNav焦点)落在这张卡片上时，跟鼠标悬停走同一套
+        // 显隐逻辑——数量胶囊平时只在"有人在看这张卡"的时候才冒出来，手柄没有鼠标
+        // 悬停这个概念，焦点落上来就等同于悬停。
+        public void SetGamepadFocused(bool focused)
         {
-            QuickAddPanel?.SetActive(false);
-            HoverOutline?.SetActive(false);
-            AddToCartBadge?.SetActive(false);
+            if (focused)
+            {
+                if (!SoldOut)
+                {
+                    QuickAddPanel?.SetActive(true);
+                    AddToCartBadge?.SetActive(true);
+                }
+                HoverOutline?.SetActive(true);
+            }
+            else
+            {
+                QuickAddPanel?.SetActive(false);
+                HoverOutline?.SetActive(false);
+                AddToCartBadge?.SetActive(false);
+            }
         }
 
         private void OnDisable()

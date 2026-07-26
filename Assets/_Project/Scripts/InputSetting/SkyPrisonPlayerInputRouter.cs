@@ -174,7 +174,15 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
             // 但角色面板是"可以互相切换"的悬浮窗口（跟设置/暂停菜单那种真·模态不是一类），
             // 面板开着时按背包键应该照样能切过去，不该被面板自己造成的 ExternalBlock 挡住。
             bool blockedByRealModal = SkyPrison.Runtime.UI.SkyPrisonWindowManager_V1.ExternalBlock && !CharacterPanelController.IsOpen;
-            if (settingsEarly.GetActionDown(SkyPrisonInputAction.Inventory) && !blockedByRealModal)
+            // 商店这类"真模态"prefab窗口(metadata.lockGameplayInput=true)开着的时候，
+            // 背包/角色面板这些快捷键不该还能把别的窗口叠开在它上面——用户明确要求
+            // "商店界面不应该允许按B打开背包，其他任何呼出的窗口都应该冻结"。这个跟
+            // blockedByRealModal(ExternalBlock)是两回事：ExternalBlock 是暂停菜单/设置
+            // 这类纯代码全屏窗口用的标记，AnyMovementLockingWindowOpen 是走 windowManager
+            // Open()/Close() 流程的prefab窗口(商店等)用的。不能拿来挡 Menu(Esc)键——
+            // Esc 本来就该能关掉这类窗口，下面 Menu 分支已经单独处理，不要混进来。
+            bool blockedByLockingWindow = SkyPrison.Runtime.UI.SkyPrisonWindowManager_V1.AnyMovementLockingWindowOpen;
+            if (settingsEarly.GetActionDown(SkyPrisonInputAction.Inventory) && !blockedByRealModal && !blockedByLockingWindow)
             {
                 ToggleInventory();
                 lastInputEvent = "Inventory";
@@ -185,7 +193,7 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
             // "!ExternalBlock"，面板打开后再按一次 C 会被自己造成的 ExternalBlock 挡住、
             // 关不掉。用 blockedByRealModal 放行"关闭自己/从背包切过来"这些情况，
             // 只有设置/暂停菜单这种真·模态开着时才真正挡住 C 键。
-            if (settingsEarly.GetActionDown(SkyPrisonInputAction.CharacterPanel) && !blockedByRealModal)
+            if (settingsEarly.GetActionDown(SkyPrisonInputAction.CharacterPanel) && !blockedByRealModal && !blockedByLockingWindow)
             {
                 // 同理，按 C 是"切换到角色面板"，背包开着的话先关掉背包再开面板。
                 if (!CharacterPanelController.IsOpen && windowManager != null && windowManager.IsOpen("inventory"))

@@ -36,6 +36,7 @@ public class SettingsData
     public bool  screenShake        = true;
     public bool  harmonyMode        = false;   // 和谐模式：隐藏血腥特效
     public bool  autoSaveEnabled    = true;    // 关掉后 SaveManager.Save() 只在玩家手动存档时才落盘
+    public int   sellConfirmRarityThreshold = 5; // 商店出售稀有物品二次确认阈值：itemLevel>=此值弹二次确认；-1=不提示
 
     // ── 手柄 ──────────────────────────────────────────────────────────────
     public float gamepadDeadzone    = 0.25f;   // 同步到 PlayerAimFacingController.GamepadDeadZone
