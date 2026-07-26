@@ -30,10 +30,14 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
     // 但角色阴影/本体实际走的是UnitSpriteSortingController那套按深度动态计算的排序
     // (orderMultiplier=1000，clamp在±300000之间，不是固定小范围)，-10这个值在角色
     // 深度算出来是负数比较大的区域会反而盖住阴影，表现就是"投影压不到贴花上面"。
-    // 改成一个稳妥压过UnitSpriteSortingController.minOrder(-300000)下限的安全值，
-    // 不管角色在地图哪个位置、算出来的排序值是多少，贴花/地面贴图永远稳定排在
-    // 阴影下面，不用再跟着角色那套动态范围猜。
-    private const int SafeGroundDecalSortingOrder = -400000;
+    // 当时改成了-400000想"稳妥压过±300000下限"，但 Renderer/SortingGroup.sortingOrder
+    // 底层是16位有符号整数(范围只有-32768..32767)，-400000 早就超出这个范围，写进去
+    // 会静默按16位环绕成 -400000 mod 65536 → 实际生效值是 -6784——这个正数级别的值
+    // 反而比血迹贴花(BloodVFXManager.DecalSortingOrder，早年间同一个坑已经修过一次，
+    // 定在16位下限-32768)大，血迹贴花被地面贴花盖住的bug根源就是这个。改成16位范围内
+    // 真正有效、且明确低于血迹贴花新值(见BloodVFXManager.cs)的一个安全值，不再假装
+    // 能压过±300000这个本来就不可能用sortingOrder字段完整表示的范围。
+    private const int SafeGroundDecalSortingOrder = -32767;
     private const int GroundStampSortingOrder = SafeGroundDecalSortingOrder;
     private const string GroundOverlayPreferredLayerName = "GroundVisual";
     private const string GroundOverlayFallbackLayerName = "Default";

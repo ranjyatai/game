@@ -24,7 +24,15 @@ public class BloodVFXManager : MonoBehaviour
     // -100000 远超这个下限，赋值时静默溢出绕成了 +31072（正好排到最前面，跟预期完全
     //相反）——同类坑之前在 Canvas.sortingOrder 上也踩过一次，这次是 Renderer/
     // SortingGroup 版本，必须卡在合法范围内，不能拍脑袋写任意大的数。
-    private const int DecalSortingOrder = -32768;
+    //
+    // 之前这里直接卡在16位下限-32768("永远垫底")，但地图装饰物贴花(马路线等，见
+    // SkyPrisonMapObjectPlacementToolWindow.SafeGroundDecalSortingOrder)也是同一套
+    // sortingOrder机制、同样想垫底，两边都想抢最底那个值就没法分先后——而且地面
+    // 装饰物那边之前的值本身也溢出了(-400000绕成+58752再解释成有符号数变成-6784)，
+    // 意外地比血迹这个-32768还大，血迹反而被装饰物盖住。血迹应该"贴在装饰物贴花
+    // 上面"（视觉上是先铺路面再溅血），不用垫到绝对最底——留出比装饰物新值
+    // (-32767)高一点的余量即可，两边都在16位范围内，顺序明确。
+    private const int DecalSortingOrder = -32760;
 
     // ── 和谐模式 ──────────────────────────────────────────────────────────────
     private static bool _harmonyMode = false;
