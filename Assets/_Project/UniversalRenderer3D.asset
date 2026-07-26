@@ -47,7 +47,7 @@ MonoBehaviour:
     stencilWriterShader: {fileID: 0}
     stencilWriterShaderName: Hidden/SkyPrison/ShadowOccluderStencilWriter
     debugLogs: 0
-    lastStatus: SKIP camera=OcclusionMaskCamera, type=Game
+    lastStatus: SKIP camera=OverheadUICamera, type=Game
 --- !u!114 &-7712744575805377286
 MonoBehaviour:
   m_ObjectHideFlags: 0

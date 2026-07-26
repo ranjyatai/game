@@ -202,11 +202,23 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
             // 的确认按钮，这里补上跟 Inventory/CharacterPanel 一样的 blockedByRealModal 检查。
             if (settingsEarly.GetActionDown(SkyPrisonInputAction.Menu) && !PauseMenuController.IsOpen && !blockedByRealModal)
             {
-                // 背包等悬浮窗口打开时，Esc 优先关窗口，而不是叠加弹出暂停菜单
-                if (windowManager != null && windowManager.IsOpen("inventory"))
-                    windowManager.Close("inventory");
+                // 任何走 SkyPrisonWindowManager_V1 的悬浮窗口开着的时候，Esc 都应该先关
+                // 窗口，不叠加弹出暂停菜单——之前这里只特判了"inventory"，商店/仓库/
+                // 世界地图这些窗口完全没被照顾到，按Esc会直接跳过关窗口去开暂停菜单，
+                // 变成"窗口开着+暂停菜单同时叠在一起"这种设计上不该出现的状态（暂停菜单
+                // 的 HideAllGameCanvases() 会把窗口的Canvas一起遮住，关暂停菜单时又只
+                // 恢复了部分状态，就是之前商店按钮点击失灵那个bug的根源）。改成通用判断，
+                // 只要还有窗口开着就先关（正常情况下同一时间只会有一个），全部关掉之后
+                // 再按才轮到暂停菜单。
+                if (windowManager != null && windowManager.HasAnyWindowOpen())
+                {
+                    foreach (string key in windowManager.OpenedWindowKeys)
+                        windowManager.Close(key);
+                }
                 else
+                {
                     PauseMenuController.Show();
+                }
                 lastInputEvent = "Menu";
             }
         }
