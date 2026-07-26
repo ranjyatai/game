@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -47,6 +48,13 @@ public class ShopDefinition : ScriptableObject
 
     [Header("库存刷新（章节开始时重置库存，随机商店模式下同时重新抽选品/价格）")]
     public bool refreshStockOnChapterStart = true;
+
+    // 运行时记录"上一次刷新库存时的章节ID"，用来判断"是不是真的进入了新章节"——
+    // 之前 ShopWindowController.OnWindowOpen() 只看 refreshStockOnChapterStart 这个
+    // 开关本身，开着的话每次开窗口都会重置库存，用户反馈"限定数量道具卖完关窗口
+    // 重开又满了"。不序列化(ScriptableObject资产本身不该记这种运行时状态，会跨
+    // 存档/跨编辑器会话串)，只在这次游戏进程里有效。
+    [NonSerialized] public string lastStockRefreshChapterId = null;
 
     [Header("出售（玩家把背包物品卖给这家商店）")]
     [Tooltip("这家店收不收东西——关掉的话商店窗口不显示\"出售\"标签页（比如自动贩卖机式的商店，只卖不收）。")]

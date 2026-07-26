@@ -284,15 +284,27 @@ public class ShopWindowController : SkyPrisonBaseWindowController
         RefreshTitle();
         LocalizationRuntime.OnLanguageChanged += OnLanguageChangedRefreshShopTexts;
 
-        // 初始化运行时库存
+        // 初始化运行时库存——"该不该重进货"只在"真的进入了新章节"时才成立，不是
+        // "每次开窗口"都成立。之前这里只看 refreshStockOnChapterStart 这个开关本身，
+        // 开着的话每次开窗口都会把限定库存重置满，用户反馈"限定数量道具卖完关窗口
+        // 重开又满了"——现在改成拿当前章节ID跟上次刷新时记的ID比对，真的换章节了
+        // 才重置，同一章节内反复开关窗口不会再把库存刷回去。
         bool firstTimeOpen = shopDefinition.items.Count > 0 && shopDefinition.items[0].remainingStock < 0;
+        string currentChapterId = SaveManager.Player?.activeSession?.chapterId;
+        bool enteredNewChapter = shopDefinition.refreshStockOnChapterStart
+            && shopDefinition.lastStockRefreshChapterId != currentChapterId;
+        bool shouldRestock = firstTimeOpen || enteredNewChapter;
+
         foreach (var entry in shopDefinition.items)
-            if (entry.remainingStock < 0 || shopDefinition.refreshStockOnChapterStart)
+            if (entry.remainingStock < 0 || shouldRestock)
                 entry.remainingStock = entry.stock;
+
+        if (shouldRestock)
+            shopDefinition.lastStockRefreshChapterId = currentChapterId;
 
         // 随机商店模式下，"该不该重新抽一批上架"跟"该不该重置库存"是同一个触发条件——
         // 都是"新的一次进货"，不用另开一条规则。
-        if (firstTimeOpen || shopDefinition.refreshStockOnChapterStart)
+        if (shouldRestock)
             RerollDisplayPool();
 
         _cart = new ShoppingCart(shopDefinition.defaultCurrencyId);
