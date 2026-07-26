@@ -297,6 +297,20 @@ public class MainMenuSettingsWindow : EditorWindow
                 shop.currentLevel));
             shop.refreshStockOnChapterStart = EditorGUILayout.Toggle("章节开始时重置库存", shop.refreshStockOnChapterStart);
 
+            EditorGUILayout.Space(6);
+            shop.stockMode = (ShopStockMode)EditorGUILayout.EnumPopup(
+                new GUIContent("商店模式", "固定商店：下面配几个货架就一直卖几个。随机商店：下面的货架当\"物品池\"用，每次刷新从里面随机抽几件上架（古董店这种）。"),
+                shop.stockMode);
+            if (shop.stockMode == ShopStockMode.RandomPool)
+            {
+                shop.randomDisplayCount = Mathf.Max(1, EditorGUILayout.IntField(
+                    new GUIContent("每次随机展示几件", "从下面物品池里(先按解锁等级筛过)随机抽几件上架，抽不满物品池数量就有几件放几件。"),
+                    shop.randomDisplayCount));
+                EditorGUILayout.HelpBox("随机商店模式下，下面\"货架商品\"列表里的价格覆盖列会被随机价格区间列取代——" +
+                    "两个都填>0且上限>=下限才会对该商品启用随机定价，不填就还是按物品自身定价。",
+                    MessageType.Info);
+            }
+
             EditorGUILayout.Space(10);
             EditorGUILayout.LabelField("货架商品", EditorStyles.miniBoldLabel);
             DrawShopItemsList(shop);
@@ -406,10 +420,20 @@ public class MainMenuSettingsWindow : EditorWindow
 
     private void DrawShopItemsList(ShopDefinition shop)
     {
+        bool randomMode = shop.stockMode == ShopStockMode.RandomPool;
+
         EditorGUILayout.BeginHorizontal(EditorStyles.miniBoldLabel);
         GUILayout.Label("物品", GUILayout.Width(140));
         GUILayout.Label("货币(空=默认)", GUILayout.Width(90));
-        GUILayout.Label("价格(0=按物品)", GUILayout.Width(90));
+        if (randomMode)
+        {
+            GUILayout.Label("随机价下限", GUILayout.Width(70));
+            GUILayout.Label("随机价上限", GUILayout.Width(70));
+        }
+        else
+        {
+            GUILayout.Label("价格(0=按物品)", GUILayout.Width(90));
+        }
         GUILayout.Label("库存(0=无限)", GUILayout.Width(80));
         GUILayout.Label("解锁等级", GUILayout.Width(60));
         GUILayout.Label("", GUILayout.Width(40));
@@ -434,7 +458,16 @@ public class MainMenuSettingsWindow : EditorWindow
                 }, "ItemDefinition");
             }
             entry.currencyOverride = DrawCurrencyPopup(entry.currencyOverride, true, GUILayout.Width(90));
-            entry.priceOverride = Mathf.Max(0, EditorGUILayout.IntField(entry.priceOverride, GUILayout.Width(90)));
+
+            if (randomMode)
+            {
+                entry.randomPriceMin = Mathf.Max(0, EditorGUILayout.IntField(entry.randomPriceMin, GUILayout.Width(70)));
+                entry.randomPriceMax = Mathf.Max(0, EditorGUILayout.IntField(entry.randomPriceMax, GUILayout.Width(70)));
+            }
+            else
+            {
+                entry.priceOverride = Mathf.Max(0, EditorGUILayout.IntField(entry.priceOverride, GUILayout.Width(90)));
+            }
 
             // 界面上 0 表示无限库存，跟 ShopItemEntry.stock 内部约定的 -1 不是同一个数——
             // 运行时那套(IsOutOfStock/ResolvePrice等)全都认 -1，这里只在编辑器输入层做转换，

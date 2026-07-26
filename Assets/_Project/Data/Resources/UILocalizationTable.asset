@@ -2058,8 +2058,16 @@ MonoBehaviour:
   - key: shop_name_demo_shop
     texts:
     - languageCode: zh-CN
-      text: 
+      text: "\u4F9B\u7ED9\u7AD9"
     - languageCode: ja
-      text: 
+      text: "\u4F9B\u7D66\u6240"
     - languageCode: en
       text: Supply Post
+  - key: shop_name_new_shop
+    texts:
+    - languageCode: zh-CN
+      text: "\u53E4\u8463\u5E97"
+    - languageCode: ja
+      text: "\u9AA8\u8463\u5E02"
+    - languageCode: en
+      text: Antique Shop

@@ -75,6 +75,10 @@ public class ShopWindowController : SkyPrisonBaseWindowController
     // RefreshShelfStock() 不能再假设"第 i 行对应第 i 个 item"，得存一份实际配对。
     private readonly List<ShopItemEntry> _shelfEntries = new List<ShopItemEntry>();
     private readonly List<GameObject> _cartRows  = new List<GameObject>();
+    // 当前上架展示的商品——Fixed模式下就是shopDefinition.items全部；RandomPool模式下
+    // 是每次刷新从解锁物品池里随机抽出来的那一批。只在"该刷新库存"的时候重新抽一次，
+    // 不能每次BuildShelf()都重抽（切语言/选中商品也会调BuildShelf()，抽选品不该跟着变）。
+    private readonly List<ShopItemEntry> _displayedPool = new List<ShopItemEntry>();
     private SkyPrisonListGamepadNav _gamepadNav;
 
     // 必须跟生成器里 SkyPrisonUIPrefabMetadata_V1.uiId("shop")完全一致——
@@ -115,9 +119,15 @@ public class ShopWindowController : SkyPrisonBaseWindowController
         LocalizationRuntime.OnLanguageChanged += OnLanguageChangedRefreshShopTexts;
 
         // 初始化运行时库存
+        bool firstTimeOpen = shopDefinition.items.Count > 0 && shopDefinition.items[0].remainingStock < 0;
         foreach (var entry in shopDefinition.items)
             if (entry.remainingStock < 0 || shopDefinition.refreshStockOnChapterStart)
                 entry.remainingStock = entry.stock;
+
+        // 随机商店模式下，"该不该重新抽一批上架"跟"该不该重置库存"是同一个触发条件——
+        // 都是"新的一次进货"，不用另开一条规则。
+        if (firstTimeOpen || shopDefinition.refreshStockOnChapterStart)
+            RerollDisplayPool();
 
         _cart = new ShoppingCart(shopDefinition.defaultCurrencyId);
         _cart.OnCartChanged += RefreshCartUI;
@@ -131,7 +141,7 @@ public class ShopWindowController : SkyPrisonBaseWindowController
         if (afterLabel  != null) afterLabel.text  = L("shop_after_label", "结账后");
 
         BuildShelf();
-        SelectEntry(shopDefinition.items.Count > 0 ? shopDefinition.items[0] : null);
+        SelectEntry(_displayedPool.Count > 0 ? _displayedPool[0] : null);
         RefreshCartUI();
         RefreshCheckoutButton();
 
@@ -261,6 +271,47 @@ public class ShopWindowController : SkyPrisonBaseWindowController
 
     // ── 货架 ─────────────────────────────────────────────────────────────
 
+    // 决定这次"该卖什么"——Fixed模式就是全部items(还是要过一遍等级过滤)；RandomPool
+    // 模式先按等级筛出"当前买得到"的候选池，再洗牌抽 randomDisplayCount 件，同时给
+    // 抽中的每一件按各自的随机价格区间(如果配了的话)单独抽一个价格。只在"该重新
+    // 进货"的时候调用一次，不能每次刷新UI都重抽（不然选中商品、切语言都会导致
+    // 货架商品跟着变，体验很怪）。
+    private void RerollDisplayPool()
+    {
+        _displayedPool.Clear();
+        foreach (var entry in shopDefinition.items) entry.rolledPrice = -1;
+
+        if (shopDefinition.stockMode == ShopStockMode.Fixed)
+        {
+            foreach (var entry in shopDefinition.items)
+                if (entry.unlockLevel <= shopDefinition.currentLevel)
+                    _displayedPool.Add(entry);
+            return;
+        }
+
+        var eligible = new List<ShopItemEntry>();
+        foreach (var entry in shopDefinition.items)
+            if (entry.unlockLevel <= shopDefinition.currentLevel)
+                eligible.Add(entry);
+
+        // Fisher-Yates 洗牌，取前 randomDisplayCount 个。
+        for (int i = eligible.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            (eligible[i], eligible[j]) = (eligible[j], eligible[i]);
+        }
+
+        int count = Mathf.Min(Mathf.Max(0, shopDefinition.randomDisplayCount), eligible.Count);
+        for (int i = 0; i < count; i++)
+        {
+            var entry = eligible[i];
+            _displayedPool.Add(entry);
+            entry.rolledPrice = entry.HasRandomPriceRange
+                ? Random.Range(entry.randomPriceMin, entry.randomPriceMax + 1)
+                : -1;
+        }
+    }
+
     private void BuildShelf()
     {
         foreach (var go in _shelfRows) if (go) Destroy(go);
@@ -268,12 +319,8 @@ public class ShopWindowController : SkyPrisonBaseWindowController
         _shelfEntries.Clear();
         if (shelfContent == null || shelfRowPrefab == null) return;
 
-        foreach (var entry in shopDefinition.items)
+        foreach (var entry in _displayedPool)
         {
-            // 商店等级解锁——未到等级的商品直接不上架，不在货架露出（等真正的等级/
-            // 提示系统落地后，这里再改成"置灰+显示Lv.X解锁"而不是直接隐藏）。
-            if (entry.unlockLevel > shopDefinition.currentLevel) continue;
-
             var row = Instantiate(shelfRowPrefab, shelfContent);
             _shelfRows.Add(row);
             _shelfEntries.Add(entry);

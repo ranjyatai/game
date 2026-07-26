@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 625be72a7d4ad7647b99cd8af43e784a, type: 3}
+  m_Name: SD_new_shop
+  m_EditorClassIdentifier: Assembly-CSharp::ShopDefinition
+  shopId: new_shop
+  displayName: "\u53E4\u8463\u5E97"
+  displayNameKey: shop_name_new_shop
+  defaultCurrencyId: token
+  currentLevel: 1
+  stockMode: 0
+  randomDisplayCount: 5
+  items:
+  - item: {fileID: 0}
+    fixedCount: 0
+    stock: -1
+    currencyOverride: 
+    priceOverride: 0
+    unlockLevel: 1
+    randomPriceMin: 0
+    randomPriceMax: 0
+  - item: {fileID: 0}
+    fixedCount: 0
+    stock: -1
+    currencyOverride: 
+    priceOverride: 0
+    unlockLevel: 1
+    randomPriceMin: 0
+    randomPriceMax: 0
+  - item: {fileID: 0}
+    fixedCount: 0
+    stock: -1
+    currencyOverride: 
+    priceOverride: 0
+    unlockLevel: 1
+    randomPriceMin: 0
+    randomPriceMax: 0
+  - item: {fileID: 0}
+    fixedCount: 0
+    stock: -1
+    currencyOverride: 
+    priceOverride: 0
+    unlockLevel: 1
+    randomPriceMin: 0
+    randomPriceMax: 0
+  refreshStockOnChapterStart: 1
