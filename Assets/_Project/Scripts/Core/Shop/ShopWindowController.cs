@@ -198,13 +198,13 @@ public class ShopWindowController : SkyPrisonBaseWindowController
 
         foreach (var row in _cartRows)
         {
-            if (row == null || !focused.transform.IsChildOf(row.transform)) continue;
+            if (row == null || focused.gameObject != row) continue;
             InvokeChildButton(row, l2 ? "QtyGroup/QtyMinus" : "QtyGroup/QtyPlus");
             return;
         }
         foreach (var row in _sellRows)
         {
-            if (row == null || !focused.transform.IsChildOf(row.transform)) continue;
+            if (row == null || focused.gameObject != row) continue;
             InvokeChildButton(row, l2 ? "QtyGroup/QtyMinus" : "QtyGroup/QtyPlus");
             return;
         }
@@ -289,23 +289,36 @@ public class ShopWindowController : SkyPrisonBaseWindowController
         // 开着的话每次开窗口都会把限定库存重置满，用户反馈"限定数量道具卖完关窗口
         // 重开又满了"——现在改成拿当前章节ID跟上次刷新时记的ID比对，真的换章节了
         // 才重置，同一章节内反复开关窗口不会再把库存刷回去。
-        bool firstTimeOpen = shopDefinition.items.Count > 0 && shopDefinition.items[0].remainingStock < 0;
+        bool firstTimeOpen = !shopDefinition.stockInitializedThisSession;
         string currentChapterId = SaveManager.Player?.activeSession?.chapterId;
         bool enteredNewChapter = shopDefinition.refreshStockOnChapterStart
             && shopDefinition.lastStockRefreshChapterId != currentChapterId;
         bool shouldRestock = firstTimeOpen || enteredNewChapter;
 
         foreach (var entry in shopDefinition.items)
-            if (entry.remainingStock < 0 || shouldRestock)
+            if (entry.remainingStock < 0 && entry.stock >= 0 || shouldRestock)
                 entry.remainingStock = entry.stock;
 
         if (shouldRestock)
+        {
             shopDefinition.lastStockRefreshChapterId = currentChapterId;
+            shopDefinition.stockInitializedThisSession = true;
+        }
 
         // 随机商店模式下，"该不该重新抽一批上架"跟"该不该重置库存"是同一个触发条件——
-        // 都是"新的一次进货"，不用另开一条规则。
-        if (shouldRestock)
+        // 都是"新的一次进货"，不用另开一条规则。不该重进货的时候，直接复用上次缓存
+        // 在 shopDefinition 上的展示池——控制器实例本身在窗口关闭时会被销毁，
+        // _displayedPool 不会跨窗口开关存活，只能靠 shopDefinition 这份缓存续上。
+        if (shouldRestock || shopDefinition.cachedDisplayedPool == null)
+        {
             RerollDisplayPool();
+            CacheDisplayedPool();
+        }
+        else
+        {
+            _displayedPool.Clear();
+            _displayedPool.AddRange(shopDefinition.cachedDisplayedPool);
+        }
 
         _cart = new ShoppingCart(shopDefinition.defaultCurrencyId);
         _cart.OnCartChanged += RefreshCartUI;
@@ -590,6 +603,17 @@ public class ShopWindowController : SkyPrisonBaseWindowController
             });
         }
 
+        var captured = entry;
+        void DoAddToSellCart()
+        {
+            int before = _sellCart?.GetQuantity(captured) ?? 0;
+            _sellCart?.AddOrIncrement(captured, qtyBox[0], unitPrice, cid);
+            int after = _sellCart?.GetQuantity(captured) ?? 0;
+            SkyPrisonSystemSEPlayer.Play(after > before ? SkyPrisonSystemSEType.Confirm : SkyPrisonSystemSEType.Forbidden);
+            qtyBox[0] = Mathf.Max(1, Mathf.Min(qtyBox[0], Mathf.Max(1, EffectiveMaxQty())));
+            RefreshQty();
+        }
+
         var sellBtn = FindChildButton(row, "SellButton");
         if (sellBtn != null)
         {
@@ -598,17 +622,18 @@ public class ShopWindowController : SkyPrisonBaseWindowController
             var sellBtnLabel = sellBtn.transform.Find("Label")?.GetComponent<Text>();
             if (sellBtnLabel != null) sellBtnLabel.text = L("shop_add_button", "加入");
 
-            var captured = entry;
             sellBtn.onClick.RemoveAllListeners();
-            sellBtn.onClick.AddListener(() =>
-            {
-                int before = _sellCart?.GetQuantity(captured) ?? 0;
-                _sellCart?.AddOrIncrement(captured, qtyBox[0], unitPrice, cid);
-                int after = _sellCart?.GetQuantity(captured) ?? 0;
-                SkyPrisonSystemSEPlayer.Play(after > before ? SkyPrisonSystemSEType.Confirm : SkyPrisonSystemSEType.Forbidden);
-                qtyBox[0] = Mathf.Max(1, Mathf.Min(qtyBox[0], Mathf.Max(1, EffectiveMaxQty())));
-                RefreshQty();
-            });
+            sellBtn.onClick.AddListener(DoAddToSellCart);
+        }
+
+        // 手柄目标是整行(row根节点的Button)，不是"-"/"+"/加入这几个小控件——用户
+        // 明确要求"焦点应该落在整条上，不该非得精确停在-/+上"。整行的A键=加入，
+        // 数量调整交给 UpdateGamepadQuantityAdjust() 里的 L2/R2。
+        var rowBtn = row.GetComponent<Button>();
+        if (rowBtn != null)
+        {
+            rowBtn.onClick.RemoveAllListeners();
+            rowBtn.onClick.AddListener(DoAddToSellCart);
         }
     }
 
@@ -634,12 +659,11 @@ public class ShopWindowController : SkyPrisonBaseWindowController
         foreach (var row in _sellRows)
         {
             if (row == null) continue;
-            var minusBtn = FindChildButton(row, "QtyGroup/QtyMinus");
-            var plusBtn  = FindChildButton(row, "QtyGroup/QtyPlus");
-            var sellBtn  = FindChildButton(row, "SellButton");
-            if (minusBtn != null) targets.Add(minusBtn);
-            if (plusBtn != null) targets.Add(plusBtn);
-            if (sellBtn != null) targets.Add(sellBtn);
+            // 用户明确要求"焦点应该落在整条上，不该非得精确停在-/+/加入这几个小
+            // 控件上"——手柄目标改成整行(row根节点的Button)一个目标，A=加入，
+            // 数量调整交给 UpdateGamepadQuantityAdjust() 里的 L2/R2。
+            var rowBtn = row.GetComponent<Button>();
+            if (rowBtn != null) targets.Add(rowBtn);
         }
         foreach (var row in _shelfRows)
         {
@@ -656,12 +680,9 @@ public class ShopWindowController : SkyPrisonBaseWindowController
         foreach (var row in _cartRows)
         {
             if (row == null) continue;
-            // RemoveButton 已经被数量步进取代（减到0直接移除），手柄目标改成喂
-            // QtyMinus/QtyPlus 这两个按钮。
-            var minusBtn = FindChildButton(row, "QtyGroup/QtyMinus");
-            var plusBtn  = FindChildButton(row, "QtyGroup/QtyPlus");
-            if (minusBtn != null) targets.Add(minusBtn);
-            if (plusBtn != null) targets.Add(plusBtn);
+            // 同上——整行一个手柄目标，数量用 L2/R2 调，不用先精确停在"-"/"+"上。
+            var rowBtn = row.GetComponent<Button>();
+            if (rowBtn != null) targets.Add(rowBtn);
         }
         // 之前手柄目标列表里完全没有"结账"入口按钮和"返回购物"按钮——手柄用户
         // 选完商品、加进购物车之后，压根没有路径能用手柄切到结账视图，只能靠
@@ -775,6 +796,14 @@ public class ShopWindowController : SkyPrisonBaseWindowController
                 ? Random.Range(entry.randomPriceMin, entry.randomPriceMax + 1)
                 : -1;
         }
+    }
+
+    // RerollDisplayPool() 结束后调用——把这次抽中的展示池缓存到 shopDefinition 上，
+    // 供同一次进货周期内后续新建的窗口实例(关闭商店会销毁控制器实例)直接复用，
+    // 不用假装"不重抽也没事"。
+    private void CacheDisplayedPool()
+    {
+        shopDefinition.cachedDisplayedPool = new List<ShopItemEntry>(_displayedPool);
     }
 
     private void BuildShelf()

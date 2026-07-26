@@ -56,6 +56,23 @@ public class ShopDefinition : ScriptableObject
     // 存档/跨编辑器会话串)，只在这次游戏进程里有效。
     [NonSerialized] public string lastStockRefreshChapterId = null;
 
+    // 单独一个"这次游戏进程里到底进过货没有"的标记——不能靠"items[0].remainingStock
+    // < 0"来判断"没进过货"，因为 stock 字段本身也用 -1 表示"无限库存"，货架第一件
+    // 商品如果刚好是无限库存道具，进货后 remainingStock 也会被写成 -1，跟"没进过货"
+    // 撞车，导致每次开窗口都误判成"第一次打开"，限定库存的东西怎么买都会刷回去
+    // （用户实测复现的正是这个：急救药物无限库存排第一个，把后面的刮刮卡买空后
+    // 重开窗口又满了）。
+    [NonSerialized] public bool stockInitializedThisSession = false;
+
+    // 随机商店模式下"这次进货抽中的是哪几件"也要缓存在这里，不能只存在
+    // ShopWindowController实例身上——关闭商店窗口时 SkyPrisonWindowManager_V1 会把
+    // 整个窗口GameObject销毁(Destroy)，下次打开是全新的控制器实例，实例字段(比如
+    // 原来的_displayedPool)不会跟着活下来。之前"每次开窗口都重抽"掩盖了这个问题
+    // (反正每次都重新算)，改成"不该重进货的时候不重抽"之后，新实例拿到的是空
+    // 列表，货架直接空白——这里补一份跟stockInitializedThisSession同生命周期的
+    // 缓存，不该重抽的时候直接复用这份，而不是假装"不用管"。
+    [NonSerialized] public List<ShopItemEntry> cachedDisplayedPool = null;
+
     [Header("出售（玩家把背包物品卖给这家商店）")]
     [Tooltip("这家店收不收东西——关掉的话商店窗口不显示\"出售\"标签页（比如自动贩卖机式的商店，只卖不收）。")]
     public bool enableSelling = true;

@@ -1042,6 +1042,13 @@ namespace SkyPrison.Editor.UI
             var bg = go.AddComponent<Image>();
             bg.color = new Color(1f, 1f, 1f, 0.04f);
 
+            // 整行本身也是一个Button——纯粹给手柄导航当目标用(用户明确要求"焦点该
+            // 落在整条上，不该非得精确停在-/+上")，鼠标点整行目前没有对应动作，
+            // onClick留空即可，不影响鼠标直接点"-"/"+"/输入框这些子控件。
+            var rowBtn = go.AddComponent<Button>();
+            rowBtn.transition = Selectable.Transition.None;
+            NoAutoNav(rowBtn);
+
             // 图标/名字用户反馈还能再放大1.3~1.4倍——72→100(约1.39x)，40号字→54号(1.35x)。
             var iconRt = MakeRect("Icon", rt, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f));
             iconRt.pivot = new Vector2(0f, 0.5f);
@@ -1156,6 +1163,13 @@ namespace SkyPrison.Editor.UI
 
             var bg = go.AddComponent<Image>();
             bg.color = new Color(1f, 1f, 1f, 0.04f);
+
+            // 整行本身也是一个Button——手柄导航目标，A键=加入(跟子物体SellButton
+            // 同一个动作，见ShopWindowController.BindSellRow)。用户明确要求"焦点该
+            // 落在整条上，不该非得精确停在-/+/加入这几个小控件上"。
+            var rowBtn = go.AddComponent<Button>();
+            rowBtn.transition = Selectable.Transition.None;
+            NoAutoNav(rowBtn);
 
             var iconRt = MakeRect("Icon", rt, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f));
             iconRt.pivot = new Vector2(0f, 0.5f);
