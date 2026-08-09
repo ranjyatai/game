@@ -414,9 +414,27 @@ public class SkyPrisonMapInspectorPanel
         page.DrawRow("启用顶部封顶", page.SelectedMapSO.FindProperty("mapBoundsUseCeiling"));
         page.DrawRow("顶部厚度", page.SelectedMapSO.FindProperty("mapBoundsCeilingThickness"));
         if (EditorGUI.EndChangeCheck())
+        {
             ApplySelectedMapPropertiesNow();
 
+            // 改了边界就立刻应用到 Scene。之前只写资产、不碰场景，你必须记得再去
+            // 按一次"同步到 Scene"——忘了按就会出现"定义写着400、场景还是64"这种
+            // 两边不一致的状态，而且界面上完全看不出来(尺寸那一栏读的是资产值，
+            // 显示的永远是400)。只在这张地图自己的 Scene 正开着时才自动应用，
+            // 避免把边界写到一个不相干的场景里。
+            if (IsSelectedMapSceneOpen())
+                SyncMapDefinitionToScene();
+        }
+
         EditorGUILayout.Space(6f);
+
+        if (!IsSelectedMapSceneOpen())
+        {
+            EditorGUILayout.HelpBox(
+                "这张地图的 Scene 没有打开，改动只写进了地图定义资产。打开对应 Scene 后会自动应用，或手动点下面的「同步到 Scene」。",
+                MessageType.Info);
+            EditorGUILayout.Space(4f);
+        }
 
         EditorGUILayout.BeginHorizontal();
         GUILayout.Space(140f);
@@ -476,6 +494,19 @@ public class SkyPrisonMapInspectorPanel
             "同步：把当前地图定义写入 Scene，包括 MapBounds、战争迷雾与 Terrain 对齐。\n" +
             "生成 / 矫正：执行一次完整 Scene 修复：同步 MapBounds、矫正 Terrain、按启用状态生成/矫正物理边界，并清理已经废弃的四层 GroundOverlay / RoadLine Overlay。不会移动 WorldRoot、UnitRoot、System、相机或 Canvas，也不会重算已有摆放坐标。",
             MessageType.None);
+    }
+
+    /// <summary>当前打开的 Scene 是不是这张地图自己的 Scene——按 MapDefinition
+    /// 上绑定的 scenePath 比对。没绑定过就返回 false，宁可不自动同步，也不能把
+    /// 边界写进一个不相干的场景。</summary>
+    private bool IsSelectedMapSceneOpen()
+    {
+        MapDefinition map = page.SelectedMap;
+        if (map == null || string.IsNullOrWhiteSpace(map.scenePath)) return false;
+
+        UnityEngine.SceneManagement.Scene active = EditorSceneManager.GetActiveScene();
+        return active.IsValid()
+            && string.Equals(active.path, map.scenePath, System.StringComparison.OrdinalIgnoreCase);
     }
 
     private void SyncMapDefinitionToScene()
@@ -570,6 +601,8 @@ public class SkyPrisonMapInspectorPanel
 
     private void DrawEnvironmentSection()
     {
+        EditorGUI.BeginChangeCheck();
+
         page.DrawRow("环境预设", page.SelectedMapSO.FindProperty("environmentPreset"));
         page.DrawRow("天空渲染模型", page.SelectedMapSO.FindProperty("skyRenderModel"));
         page.DrawRow("Skybox 材质", page.SelectedMapSO.FindProperty("skyboxMaterial"));
@@ -595,6 +628,32 @@ public class SkyPrisonMapInspectorPanel
         page.DrawRow("雾颜色", page.SelectedMapSO.FindProperty("sceneFogColor"));
         page.DrawRow("雾开始距离", page.SelectedMapSO.FindProperty("fogStartDistance"));
         page.DrawRow("雾结束距离", page.SelectedMapSO.FindProperty("fogEndDistance"));
+
+        EditorGUILayout.Space(4f);
+        EditorGUILayout.LabelField("体积高度雾（Atmospheric Height Fog）", EditorStyles.miniBoldLabel);
+        SerializedProperty heightFogProp = page.SelectedMapSO.FindProperty("enableHeightFog");
+        page.DrawRow("启用体积雾", heightFogProp);
+
+        if (heightFogProp != null && heightFogProp.boolValue)
+        {
+            page.DrawRow("近处雾色", page.SelectedMapSO.FindProperty("heightFogColorStart"));
+            page.DrawRow("远处雾色", page.SelectedMapSO.FindProperty("heightFogColorEnd"));
+            page.DrawRow("雾色混合", page.SelectedMapSO.FindProperty("heightFogColorDuo"));
+            page.DrawRow("浓度", page.SelectedMapSO.FindProperty("heightFogIntensity"));
+            page.DrawRow("起雾距离", page.SelectedMapSO.FindProperty("heightFogDistanceStart"));
+            page.DrawRow("完全被吞距离", page.SelectedMapSO.FindProperty("heightFogDistanceEnd"));
+            page.DrawRow("距离衰减", page.SelectedMapSO.FindProperty("heightFogDistanceFalloff"));
+            page.DrawRow("雾底高度", page.SelectedMapSO.FindProperty("heightFogHeightStart"));
+            page.DrawRow("雾顶高度", page.SelectedMapSO.FindProperty("heightFogHeightEnd"));
+            page.DrawRow("高度衰减", page.SelectedMapSO.FindProperty("heightFogHeightFalloff"));
+            page.DrawRow("噪声速度", page.SelectedMapSO.FindProperty("heightFogNoiseSpeed"));
+            page.DrawRow("噪声距离", page.SelectedMapSO.FindProperty("heightFogNoiseDistanceEnd"));
+
+            EditorGUILayout.HelpBox(
+                "体积雾接管期间，上面那套 RenderSettings 线性雾会被自动关闭——两套同时开会叠成一片糊。\n" +
+                "相机模式已强制设为 Orthographic：本项目是正交相机，按透视公式算雾距离会导致浓度整片均匀、没有纵深。",
+                MessageType.Info);
+        }
         page.DrawRow("后处理 Profile", page.SelectedMapSO.FindProperty("postProcessProfile"));
         page.DrawRow("环境特效 Prefab", page.SelectedMapSO.FindProperty("environmentFxPrefab"));
 
@@ -603,7 +662,30 @@ public class SkyPrisonMapInspectorPanel
         page.DrawRow("昼夜交替", page.SelectedMapSO.FindProperty("enableDayNightCycle"));
         page.DrawRow("初始时间", page.SelectedMapSO.FindProperty("startTimeOfDay"));
 
+        // 这一整节以前连 BeginChangeCheck 都没有——改 Skybox、Ambient、主光强度这些
+        // 只会写进地图定义资产，Scene 里一点反应都没有，必须记得再去按下面那个
+        // "同步到当前 Scene"。表现就是"改了设置地图没变化，好像根本不看编辑器的设置"。
+        // 跟边界那一节同一个坑，一起改成即时生效。
+        if (EditorGUI.EndChangeCheck())
+        {
+            ApplySelectedMapPropertiesNow();
+            if (IsSelectedMapSceneOpen())
+            {
+                SkyPrisonMapEnvironmentEditorUtility.ApplyEnvironmentToCurrentScene(page.SelectedMap);
+                EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+            }
+        }
+
         EditorGUILayout.Space(6f);
+
+        if (!IsSelectedMapSceneOpen())
+        {
+            EditorGUILayout.HelpBox(
+                "这张地图的 Scene 没有打开，环境改动只写进了地图定义资产。打开对应 Scene 后改动会即时生效，或直接点下面的「应用到地图 Scene」（会自动切过去并保存）。",
+                MessageType.Info);
+            EditorGUILayout.Space(4f);
+        }
+
         DrawConstrainedHelpBox(
             "地图环境只同步默认舞台气氛：Skybox、Ambient、Area Light、主方向光、场景雾、CameraPostProcessVolume 与环境特效。不会改地形、遮挡、相机栈、单位、地图物件坐标。Point Light 不再作为环境光默认生成。",
             MessageType.Info);
@@ -619,41 +701,28 @@ public class SkyPrisonMapInspectorPanel
             page.SelectedMapSO?.Update();
         }
 
-        if (GUILayout.Button("检查环境结构", GUILayout.Width(130f), GUILayout.Height(24f)))
+        // 砍掉了三个按钮：
+        //   「自动补齐/矫正」——它的调用序列是 ApplyEnvironmentToScene 的严格子集，
+        //     少了 EnsureHeightFog 和全部 RenderSettings 赋值。名字听着像"什么都会
+        //     修好"，实际点完雾球不会建、参数一个都不生效，是个陷阱。
+        //   「同步到当前 Scene」——对当前打开的任意场景生效，不校验是不是这张地图
+        //     绑定的那个，选错地图一点就把设置刷到别人场景上，而且不保存。
+        //     下面的「应用到地图 Scene」是它的安全版本（解析绑定、必要时切场景、结束保存）。
+        //   「检查环境结构」——只 Debug.Log 结构，排查价值低于它占的位置。
+        // 另外上面 EndChangeCheck 已经做了改动即时同步（场景打开时），
+        // 手动同步按钮在日常流程里本来就用不到。
+
+        if (GUILayout.Button("应用到地图 Scene", GUILayout.Width(150f), GUILayout.Height(24f)))
         {
             ApplySelectedMapPropertiesNow();
-            SkyPrisonMapEnvironmentEditorUtility.InspectEnvironmentStructureCurrentScene(page.SelectedMap);
+            SkyPrisonMapEnvironmentEditorUtility.ApplyEnvironmentToMapScene(page.SelectedMap);
         }
 
-        if (GUILayout.Button("自动补齐/矫正", GUILayout.Width(130f), GUILayout.Height(24f)))
-        {
-            ApplySelectedMapPropertiesNow();
-            SkyPrisonMapEnvironmentEditorUtility.AutoFixEnvironmentStructureCurrentScene(page.SelectedMap);
-        }
-
-        if (GUILayout.Button("同步到当前 Scene", GUILayout.Width(130f), GUILayout.Height(24f)))
-        {
-            ApplySelectedMapPropertiesNow();
-            SkyPrisonMapEnvironmentEditorUtility.ApplyEnvironmentToCurrentScene(page.SelectedMap);
-        }
-
-        GUILayout.FlexibleSpace();
-        EditorGUILayout.EndHorizontal();
-
-        EditorGUILayout.BeginHorizontal();
-        GUILayout.Space(140f);
-
-        if (GUILayout.Button("从当前 Scene 回读到页面", GUILayout.Width(190f), GUILayout.Height(24f)))
+        if (GUILayout.Button("从 Scene 回读到页面", GUILayout.Width(170f), GUILayout.Height(24f)))
         {
             SkyPrisonMapEnvironmentEditorUtility.PullEnvironmentFromCurrentScene(page.SelectedMap);
             page.EnsureSelectedSerializedObject();
             page.SelectedMapSO?.Update();
-        }
-
-        if (GUILayout.Button("同步环境到地图 Scene", GUILayout.Width(190f), GUILayout.Height(24f)))
-        {
-            ApplySelectedMapPropertiesNow();
-            SkyPrisonMapEnvironmentEditorUtility.ApplyEnvironmentToMapScene(page.SelectedMap);
         }
 
         GUILayout.FlexibleSpace();

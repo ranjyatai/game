@@ -14,57 +14,11 @@ public static class SkyPrisonMapEnvironmentEditorUtility
     private const string PostProcessVolumeName = "CameraPostProcessVolume";
     private const string GrassColorMapRendererName = "GrassColorMapRenderer";
 
-    public static void InspectEnvironmentStructureCurrentScene(MapDefinition map)
-    {
-        if (map == null)
-        {
-            EditorUtility.DisplayDialog("地图环境", "未选择地图定义。", "确定");
-            return;
-        }
-
-        GameObject root = FindInActiveScene(EnvironmentRootName);
-        Light area = FindEnvironmentAreaLight();
-        Light main = FindMainDirectionalLight();
-        Volume volume = FindPostProcessVolume();
-        Component grassColorMap = FindGrassColorMapRenderer();
-
-        Debug.Log(
-            "[SkyPrisonMapEnvironment] 当前 Scene 环境结构：\n" +
-            $"Root: {(root != null ? root.name : "缺失")}\n" +
-            $"Environment Area Light: {(area != null ? area.name : "缺失")}\n" +
-            $"Environment Area Light Type: {(area != null ? area.type.ToString() : "-")}\n" +
-            $"Main Directional Light: {(main != null ? main.name : "缺失")}\n" +
-            $"Skybox: {(RenderSettings.skybox != null ? RenderSettings.skybox.name : "None")}\n" +
-            $"Ambient Mode: {RenderSettings.ambientMode}\n" +
-            $"Fog: {RenderSettings.fog}\n" +
-            $"PostProcess Volume: {(volume != null ? volume.name : "缺失")}\n" +
-            $"Grass Color Map Renderer: {(grassColorMap != null ? grassColorMap.name + " / " + grassColorMap.GetType().FullName : "缺失")}\n\n" +
-            "规则：地图环境补光默认使用 Ambient + Area Light；Point Light 不再作为环境光。草地融合节点默认挂在环境根节点下，只补齐节点和组件，不改草材质。");
-    }
-
-    public static void AutoFixEnvironmentStructureCurrentScene(MapDefinition map)
-    {
-        if (map == null)
-            return;
-
-        Undo.IncrementCurrentGroup();
-        Undo.SetCurrentGroupName("Auto Fix Map Environment Structure");
-
-        Scene scene = SceneManager.GetActiveScene();
-        GameObject root = EnsureEnvironmentRoot(scene);
-        EnsureEnvironmentAreaLight(root.transform);
-        EnsureMainDirectionalLight(root.transform);
-        EnsureSkyRenderModel(root.transform, map);
-        EnsureEnvironmentEffect(root.transform, map);
-        EnsurePostProcessVolume(root.transform, map);
-        EnsureGrassColorMapRenderer(root.transform, map, scene);
-
-        RemoveWrongEnvironmentPointLight(root.transform);
-
-        EditorSceneManager.MarkSceneDirty(scene);
-        SceneView.RepaintAll();
-        Debug.Log("[SkyPrisonMapEnvironment] 已自动补齐/矫正当前 Scene 的地图环境结构。默认环境光为 Area Light，不再生成 Point Light。", root);
-    }
+    // InspectEnvironmentStructureCurrentScene / AutoFixEnvironmentStructureCurrentScene
+    // 已随对应的两个按钮一起删除。前者只打印结构日志；后者的调用序列是
+    // ApplyEnvironmentToScene 的严格子集（少 EnsureHeightFog 和全部 RenderSettings
+    // 赋值），点了会让人以为环境已经同步好，实际雾球没建、参数没生效。
+    // 需要"只建结构不套数值"的场合就直接调 ApplyEnvironmentToScene——它是幂等的。
 
     public static void ApplyEnvironmentToCurrentScene(MapDefinition map)
     {
@@ -88,11 +42,22 @@ public static class SkyPrisonMapEnvironmentEditorUtility
         EnsureGrassColorMapRenderer(root.transform, map, scene);
 
         RemoveWrongEnvironmentPointLight(root.transform);
+        EnsureHeightFog(root.transform, map, main);
 
         RenderSettings.skybox = map.skyboxMaterial;
         RenderSettings.ambientMode = AmbientMode.Flat;
         RenderSettings.ambientLight = map.ambientColor;
-        RenderSettings.fog = map.enableSceneFog;
+
+        // 环境反射以前完全不在同步范围内，是"关了灯还是不黑"的隐藏来源之一：
+        // 就算 ambientLight 归零、场景里一盏灯都不剩，只要 skybox 还在、
+        // reflectionIntensity 还是 1，所有 PBR 材质仍然会从天空盒采到一层反射亮度，
+        // 画面永远压不到黑。地下场景必须能把它关掉。
+        // Skybox 留空时强制按 0 处理——没有天空盒却留着反射强度没有任何意义。
+        RenderSettings.reflectionIntensity =
+            map.skyboxMaterial != null ? Mathf.Clamp01(map.environmentReflectionIntensity) : 0f;
+        // 体积高度雾接管时，必须把 RenderSettings 那套线性雾关掉——两套雾同时作用
+        // 在同一批像素上会叠成一片糊，而且调哪一边都看不出是谁在起作用。
+        RenderSettings.fog = map.enableSceneFog && !map.enableHeightFog;
         RenderSettings.fogMode = FogMode.Linear;
         RenderSettings.fogColor = map.sceneFogColor;
         RenderSettings.fogStartDistance = map.fogStartDistance;
@@ -313,13 +278,22 @@ public static class SkyPrisonMapEnvironmentEditorUtility
                 break;
 
             case MapEnvironmentPreset.Underground:
-                map.ambientColor = new Color(0.34f, 0.40f, 0.42f, 1f);
-                map.environmentAreaLightColor = new Color(0.38f, 0.46f, 0.48f, 1f);
-                map.environmentAreaLightIntensity = 0.42f;
+                // 地下 = 没有自然光，所有亮度都必须来自场景里摆的灯。
+                // 原来这套值(ambient 0.34 / 主光 0.16)其实是"阴天的白天"——地下哪来
+                // 的太阳。环境光和主光都必须归零，否则场景里摆多少灯都被这层底光糊平，
+                // 灯光完全体现不出来，画面是均匀的灰而不是"光照到的地方才亮"。
+                // ambient 留一点点(0.035)而不是纯 0：全黑会让没照到的物体彻底消失，
+                // 玩家连墙在哪都看不出来，那是可读性缺陷不是氛围。
+                map.ambientColor = new Color(0.035f, 0.042f, 0.055f, 1f);
+                map.environmentAreaLightColor = new Color(0.16f, 0.20f, 0.26f, 1f);
+                map.environmentAreaLightIntensity = 0f;
                 map.environmentAreaLightSize = 10f;
-                map.mainLightColor = new Color(0.50f, 0.62f, 0.70f, 1f);
-                map.mainLightIntensity = 0.16f;
-                map.sceneFogColor = new Color(0.30f, 0.36f, 0.38f, 1f);
+                map.mainLightColor = new Color(0.30f, 0.36f, 0.45f, 1f);
+                map.mainLightIntensity = 0f;
+                map.enableSceneFog = true;
+                map.sceneFogColor = new Color(0.03f, 0.038f, 0.05f, 1f);
+                map.fogStartDistance = 6f;
+                map.fogEndDistance = 42f;
                 break;
 
             case MapEnvironmentPreset.AlertRed:
@@ -555,26 +529,8 @@ public static class SkyPrisonMapEnvironmentEditorUtility
         return fallback;
     }
 
-    private static Component FindGrassColorMapRenderer()
-    {
-        GameObject go = FindInActiveScene(EnvironmentRootName + "/" + GrassColorMapRendererName) ?? FindInActiveScene(GrassColorMapRendererName);
-        System.Type rendererType = FindStylizedGrassColorMapRendererType();
-        if (go != null && rendererType != null)
-            return go.GetComponent(rendererType);
-
-        if (rendererType == null)
-            return null;
-
-        UnityEngine.Object[] objects = Object.FindObjectsByType(rendererType, FindObjectsSortMode.None);
-        for (int i = 0; i < objects.Length; i++)
-        {
-            Component component = objects[i] as Component;
-            if (component != null)
-                return component;
-        }
-
-        return null;
-    }
+    // FindGrassColorMapRenderer 唯一的使用者是已删除的「检查环境结构」，一并删掉。
+    // 补齐路径走的是 EnsureGrassColorMapRenderer，不经过这里。
 
     private static void TryAssignFirstTerrainToColorMapRenderer(Component component, Scene scene)
     {
@@ -1029,6 +985,144 @@ public static class SkyPrisonMapEnvironmentEditorUtility
         {
             return false;
         }
+    }
+
+    private const string HeightFogObjectName = "HeightFogGlobal";
+
+    /// <summary>把地图定义里的体积高度雾参数同步到场景。
+    ///
+    /// 勾上创建、取消勾选直接删除，场景里不留残骸。
+    /// （早先的实现是「只禁用不删除」，理由是 HeightFogGlobal 上挂着预设材质和时间轴
+    /// 引用。但下面 fogMode 被写死成 UseScriptSettings，预设那条路径根本不走，所有
+    /// 参数都来自地图定义，删掉再建能完整还原，没有会丢的手工配置。）
+    ///
+    /// fogCameraMode 强制设成 Orthographic：本项目相机是正交的，而 AHF 默认按
+    /// Perspective 算距离。不改的话雾的浓度分布完全不对——正交投影下没有透视
+    /// 收敛，按透视公式算出来的距离是错的，表现为整片雾浓度均匀、完全没有纵深。
+    /// 这个包支持正交是它能用在这个项目上的前提条件。</summary>
+    private static void EnsureHeightFog(Transform envRoot, MapDefinition map, Light mainLight)
+    {
+        if (envRoot == null || map == null)
+            return;
+
+        // 场景里所有的 HeightFogGlobal，含未激活的。envRoot.Find 只看环境根底下，
+        // 而插件自己的菜单 (BOXOPHOBIC > Height Fog) 和旧版本都可能在别处留下一个。
+        var found = Object.FindObjectsByType<AtmosphericHeightFog.HeightFogGlobal>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        // 取消勾选：全部删掉，场景里不留残骸。
+        if (!map.enableHeightFog)
+        {
+            for (int i = 0; i < found.Length; i++)
+            {
+                if (found[i] != null)
+                    Undo.DestroyObjectImmediate(found[i].gameObject);
+            }
+            return;
+        }
+
+        // 勾上：收敛成唯一的一个。多个雾球会各自往同一批全局 uniform 里写值、
+        // 再各自叠加合成一遍，画面直接糊掉。
+        Transform existing = envRoot.Find(HeightFogObjectName);
+        for (int i = 0; i < found.Length; i++)
+        {
+            if (found[i] == null) continue;
+            Transform t = found[i].transform;
+            if (existing == null)
+            {
+                // 环境根下没有，就把别处那个收编过来，而不是再建一个
+                existing = t;
+                if (t.parent != envRoot)
+                    Undo.SetTransformParent(t, envRoot, "Adopt Height Fog");
+                t.gameObject.name = HeightFogObjectName;
+                continue;
+            }
+            if (t != existing)
+            {
+                Debug.LogWarning($"[SkyPrisonMapEnvironment] 场景里有多余的雾球「{t.name}」，已删除。" +
+                                 $"体积雾只能有一个，多个会叠加合成把画面糊掉。");
+                Undo.DestroyObjectImmediate(t.gameObject);
+            }
+        }
+
+        GameObject go = existing != null ? existing.gameObject : null;
+        if (go == null)
+        {
+            go = new GameObject(HeightFogObjectName);
+            go.transform.SetParent(envRoot, false);
+            Undo.RegisterCreatedObjectUndo(go, "Create Height Fog");
+        }
+        go.SetActive(true);
+
+        // AHF 的雾球是一个 Cull Front 的透明网格，必须被主相机画出来才有效果。
+        // new GameObject() 默认落在 Default(0) 层，而本项目没有任何一台相机的
+        // cullingMask 包含第 0 层（Main=384 只有 7/8，其余三台各管 10、5+20、19），
+        // 于是雾球谁都不画，勾了开关也完全看不到雾。已存在的对象一并纠正。
+        int worldLayer = LayerMask.NameToLayer("World3D");
+        if (worldLayer >= 0 && go.layer != worldLayer)
+            go.layer = worldLayer;
+
+        // 尺寸必须自己算。AHF 2.x 把自动缩放彻底停用了——HeightFogGlobal 里的
+        // SetFogSphereTransform() 只有定义没有调用点，autoFogPositionAndScale 字段
+        // 本身也被注释掉，插件预期你用它自带的预制体（尺寸烘在里面）。这里是手工
+        // new 出来的，localScale 默认 (1,1,1)，就是个直径 1 米的小黑球。
+        //
+        // 雾球是 Cull Front 的反面球，相机必须始终在球内才有雾。相机跟着玩家在整张
+        // 地图上跑，所以球要把地图水平范围整个包住：400×400 的半对角线约 283 米。
+        // 取直径 = 最长水平边 × 2（400 → 直径 800、半径 400）留足余量。
+        //
+        // 上限受相机远裁剪面约束：相机到球背面的最远距离 ≈ 半径 + 相机偏离中心的距离，
+        // 超过远裁剪面的话背面会被裁掉、雾上出现空洞。远裁剪面 1000 时 400 的半径很安全。
+        float horizontalExtent = Mathf.Max(map.mapBoundsSize.x, map.mapBoundsSize.z);
+        float diameter = Mathf.Max(horizontalExtent * 2f, 50f);
+
+        Camera cam = Camera.main;
+        if (cam != null)
+        {
+            // 留出「相机偏离地图中心」的余量，再打个九折防止背面贴着远裁剪面
+            float maxOffset = horizontalExtent * 0.71f;
+            float maxDiameter = Mathf.Max((cam.farClipPlane - maxOffset) * 2f * 0.9f, 50f);
+            diameter = Mathf.Min(diameter, maxDiameter);
+        }
+
+        go.transform.position = map.mapBoundsCenter;
+        go.transform.localScale = new Vector3(diameter, diameter, diameter);
+
+        var fog = go.GetComponent<AtmosphericHeightFog.HeightFogGlobal>();
+        if (fog == null)
+            fog = go.AddComponent<AtmosphericHeightFog.HeightFogGlobal>();
+
+        Undo.RecordObject(fog, "Sync Height Fog");
+
+        fog.autoAssingSceneObjects = true;
+        fog.mainDirectional = mainLight;
+        fog.fogMode = AtmosphericHeightFog.FogMode.UseScriptSettings;
+        fog.fogCameraMode = AtmosphericHeightFog.FogCameraMode.Orthographic;
+
+        // 这三项组件默认值本来就对，但手动改过组件的场景重新应用时要能被纠正回来。
+        fog.renderMode = AtmosphericHeightFog.FogRendering.RenderAsGlobalOverlay;
+        fog.fogAxisMode = AtmosphericHeightFog.FogAxisMode.YAxis;
+        fog.fogLayersMode = AtmosphericHeightFog.FogLayersMode.MultiplyDistanceAndHeight;
+
+        fog.fogIntensity = Mathf.Clamp01(map.heightFogIntensity);
+        fog.fogColorStart = map.heightFogColorStart;
+        fog.fogColorEnd = map.heightFogColorEnd;
+        fog.fogColorDuo = Mathf.Clamp01(map.heightFogColorDuo);
+
+        // 不要把起雾距离钳到 0：负值是 AHF 的正常用法，表示雾从相机位置就已经存在
+        // （官方样本用 -60）。钳成 0 会在近处切出一圈没有雾的清晰区，边界很硬。
+        fog.fogDistanceStart = map.heightFogDistanceStart;
+        fog.fogDistanceEnd = Mathf.Max(map.heightFogDistanceStart + 0.01f, map.heightFogDistanceEnd);
+        fog.fogDistanceFalloff = map.heightFogDistanceFalloff;
+
+        fog.fogHeightStart = map.heightFogHeightStart;
+        fog.fogHeightEnd = Mathf.Max(map.heightFogHeightStart + 0.01f, map.heightFogHeightEnd);
+        fog.fogHeightFalloff = map.heightFogHeightFalloff;
+
+        fog.noiseSpeed = map.heightFogNoiseSpeed;
+        fog.noiseDistanceEnd = Mathf.Max(1f, map.heightFogNoiseDistanceEnd);
+
+        EditorUtility.SetDirty(fog);
     }
 
     private static void RemoveWrongEnvironmentPointLight(Transform root)
