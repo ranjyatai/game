@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: da2b744cf761f024ea0f901ee75b6615
+timeCreated: 1559733106
+licenseType: Free
+NativeFormatImporter:
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 143825
+  packageName: Atmospheric Height Fog | Optimized Fog for Consoles, Mobile and VR
+  packageVersion: 3.9.1
+  assetPath: Assets/BOXOPHOBIC/Atmospheric Height Fog/Demo/Materials/Opaque.mat
+  uploadId: 903986

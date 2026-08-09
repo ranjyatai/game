@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 2c16351ee2de94a41a959db143e1f6a7
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 99888
+  packageName: Volumetric Light Beam
+  packageVersion: 2.2.8
+  assetPath: Assets/VolumetricLightBeamPackage/VolumetricLightBeam.unitypackage
+  uploadId: 941772
