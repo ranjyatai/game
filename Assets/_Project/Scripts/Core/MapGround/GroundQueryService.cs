@@ -144,7 +144,9 @@ public class GroundQueryService : MonoBehaviour
             hasGround = true,
             groundY = groundY,
             surfaceType = bestMarker.surfaceType,
-            surfaceMaterial = null,
+            // 以前这里恒为 null，导致踩在模型表面（站台、楼梯、桥）时查得到 surfaceType
+            // 却拿不到定义资产，脚步声只能退回基础鞋声层。marker 上现在直接引用定义。
+            surfaceMaterial = bestMarker.surfaceDefinition,
             isFallDeathArea = false,
             hitCollider = bestHit.collider,
             groundBlock = null,
