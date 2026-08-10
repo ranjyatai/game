@@ -193,9 +193,49 @@ public class TerrainDecorationRuntimeApplier : MonoBehaviour
         ApplyLayerStructure();
         ApplyShadowSettings(definition);
         ApplyHeightFade(definition);
+        ApplyWalkableSurface(definition);
 
         if (applyMaterialSlotsOnApply)
             ApplyMaterialSlots(definition);
+    }
+
+    /// <summary>
+    /// 定义里填了 walkableSurface 就在根节点挂 GroundSurfaceMarker 并写入，留空则移除。
+    ///
+    /// 挂在根节点而不是碰撞体上：GroundQueryService 向下射线命中碰撞体后是用
+    /// GetComponentInParent&lt;GroundSurfaceMarker&gt;() 往上找的，碰撞体在
+    /// CollisionRoot/Main_Collision_Box，根节点是它的祖先，找得到。挂根节点还能
+    /// 覆盖 CustomRoot 模式下自定义的碰撞结构，不用关心碰撞体具体在哪一层子节点。
+    ///
+    /// 跟 ApplyHeightFade 同一个时机（编辑器放置/模板同步），不是运行时。
+    /// </summary>
+    private void ApplyWalkableSurface(TerrainDecorationDefinition definition)
+    {
+        GroundSurfaceMarker marker = GetComponent<GroundSurfaceMarker>();
+
+        if (definition.walkableSurface == null)
+        {
+            // 从"能踩"改回"不能踩"时要把 marker 收掉，否则残留一个 surfaceDefinition
+            // 为空的 marker，会让 GroundQueryService 认为这里有地面却没有材质——
+            // 比完全没有 marker 更难查。
+            if (marker != null)
+                DestroyMarkerComponent(marker);
+            return;
+        }
+
+        if (marker == null)
+            marker = gameObject.AddComponent<GroundSurfaceMarker>();
+
+        marker.surfaceDefinition = definition.walkableSurface;
+        marker.surfaceType = definition.walkableSurface.surfaceType;
+    }
+
+    private static void DestroyMarkerComponent(GroundSurfaceMarker marker)
+    {
+        if (Application.isPlaying)
+            Destroy(marker);
+        else
+            DestroyImmediate(marker);
     }
 
     // "高层建筑物"勾选框——像遮挡代理体一样，在ApplyDefinition这个编辑器放置/同步时机

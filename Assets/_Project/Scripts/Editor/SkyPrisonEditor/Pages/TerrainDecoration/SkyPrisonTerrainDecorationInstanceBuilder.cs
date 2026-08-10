@@ -86,6 +86,17 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
 
         ClearGeneratedCollisionChildren(collisionRoot);
 
+        // 商店素材的 PF 常常自带 MeshCollider，它们跟着 InstantiatePrefab 一起进了
+        // VisualRoot。以前这里只管 CollisionRoot，于是定义里写着"碰撞模式=无"、
+        // CollisionRoot 也确实关掉了，视觉子树里那份碰撞却仍然生效——
+        // 表现是纯视觉物件照样把角色绊住（铁轨 MeshCollider 顶面 0.0208，
+        // 地形 0，Motor 按"离脚底最近"选地面，走过去就是一连串 2cm 台阶）。
+        //
+        // 碰撞归定义管：Box/Mesh 由 Builder 在 CollisionRoot 里生成，None 就是没有。
+        // 视觉子树一律不参与碰撞。CustomRoot 例外——那个模式本来就是"我自己接管"。
+        if (collisionMode != CollisionCustomRoot)
+            DisableCollidersUnder(visualRoot);
+
         if (collisionMode == CollisionNone)
         {
             collisionRoot.gameObject.SetActive(false);
@@ -1033,6 +1044,32 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         if (visualRoot == null)
             return;
 
+        // 只给 LOD0 建碰撞。GetComponentsInChildren 会把所有 LOD 层级的网格都抓进来，
+        // 而 renderer.enabled 过滤不掉它们——LODGroup 是运行时才切换启用状态的，
+        // 编辑器里各级渲染器都是启用的。
+        //
+        // 不过滤的后果是一个物件叠出 N 个形状互不相同的凹面 MeshCollider（站台实测 4 个）：
+        // 脚底射线取到的是 LOD3 的粗糙面，身体扫掠却撞在 LOD0 的面上，几个碰撞体的
+        // 穿透解算互相打架，把角色一点点推出去——表现就是"站上平台后会滑下来"。
+        var lodMembers = new HashSet<Renderer>();
+        var lod0Members = new HashSet<Renderer>();
+        foreach (LODGroup group in visualRoot.GetComponentsInChildren<LODGroup>(true))
+        {
+            if (group == null) continue;
+            LOD[] lods = group.GetLODs();
+            for (int l = 0; l < lods.Length; l++)
+            {
+                Renderer[] rs = lods[l].renderers;
+                if (rs == null) continue;
+                for (int r = 0; r < rs.Length; r++)
+                {
+                    if (rs[r] == null) continue;
+                    lodMembers.Add(rs[r]);
+                    if (l == 0) lod0Members.Add(rs[r]);
+                }
+            }
+        }
+
         List<MeshFilter> meshFilters = new List<MeshFilter>(visualRoot.GetComponentsInChildren<MeshFilter>(true));
         int created = 0;
         for (int i = 0; i < meshFilters.Count; i++)
@@ -1043,6 +1080,12 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
 
             Renderer renderer = source.GetComponent<Renderer>();
             if (renderer != null && !renderer.enabled)
+                continue;
+
+            // 属于某个 LODGroup、但不在 LOD0 里的，跳过。
+            // 同一个渲染器可能同时挂在多级 LOD 上，所以判定要看"在不在 LOD0"，
+            // 而不是"在不在 LOD1 以上"。
+            if (renderer != null && lodMembers.Contains(renderer) && !lod0Members.Contains(renderer))
                 continue;
 
             GameObject proxy = new GameObject("__PhysicsMeshCollider_" + created.ToString("00") + "_" + MakeSafeName(source.gameObject.name));
@@ -1545,6 +1588,32 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         Transform visualRoot = root.transform.Find(VisualRootName);
         if (visualRoot != null)
             SetLayerRecursivelyIfExists(visualRoot.gameObject, "World3D");
+    }
+
+    /// <summary>
+    /// 关掉视觉子树里的碰撞体。
+    ///
+    /// 用 enabled=false 而不是删除：VisualRoot 底下是 PF 实例，删组件会产生
+    /// "移除组件"这种破坏性 override，PF 更新或 Revert 时容易出问题；禁用只是
+    /// 一个普通属性 override，可逆、也能在 Inspector 里一眼看出来。
+    /// 触发器不动——那些是别的系统在用（遮挡、区域判定），不是地面碰撞。
+    /// </summary>
+    private static void DisableCollidersUnder(Transform visualRoot)
+    {
+        if (visualRoot == null)
+            return;
+
+        Collider[] colliders = visualRoot.GetComponentsInChildren<Collider>(true);
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            Collider c = colliders[i];
+            if (c == null || c.isTrigger || !c.enabled)
+                continue;
+
+            Undo.RecordObject(c, "Disable Visual Collider");
+            c.enabled = false;
+            EditorUtility.SetDirty(c);
+        }
     }
 
     private static string ResolveBlockingLayer(bool blockPlayer, bool blockEnemy, bool blockProjectile)

@@ -62,6 +62,12 @@ public sealed class SkyPrisonTerrainDecorationFrontOccluderTrigger : MonoBehavio
 
     [Tooltip("当前物体和单位视觉高度范围至少要有这么多重叠，才允许进入普通前后深度遮挡。")]
     public float minSideOcclusionHeightOverlap = 0.02f;
+    [Tooltip("角色脚底高于遮挡体顶面时直接判定为「站在它上面」，不施加遮挡。\n\n" +
+             "下面那套带 padding 的高度重叠测试拦不住这种情形：脚底正好等于顶面时真实重叠是 0，" +
+             "但两侧各加 padding 会凭空造出 2×padding 的重叠，必然越过门槛。")]
+    public bool rejectOcclusionWhenUnitStandsOnTop = true;
+    [Tooltip("判定「站在上面」的容差。脚底比遮挡体顶面低这么多以内仍算站在上面，吸收浮点误差和脚部网格的轻微下沉。")]
+    public float standOnTopEpsilon = 0.05f;
 
     [Tooltip("Raycast 检测层。应包含当前装饰物 VisualRoot 下真实模型 / MeshCollider / BoxCollider 所在层，例如 World3D。")]
     public LayerMask raycastLayers = ~0;
@@ -2867,6 +2873,21 @@ public sealed class SkyPrisonTerrainDecorationFrontOccluderTrigger : MonoBehavio
         {
             unitMinY = fallbackBounds.min.y;
             unitMaxY = fallbackBounds.max.y;
+        }
+
+        // 角色站在遮挡体顶上时，脚底 Y 正好等于遮挡体顶面 Y，真实重叠是 0。
+        // 但下面的重叠测试给两边各加了 padding，于是凭空造出 2×padding 的重叠
+        // （实测 0.16），而门槛 minSideOcclusionHeightOverlap 只有 0.02，必然放行。
+        // 结果就是站在站台上的角色被站台自己遮挡——而且因为遮挡代理体的边界正好
+        // 从角色身上穿过，画面上表现为角色左右各半、一半带网点一半正常。
+        //
+        // 这道闸的本意就是拦掉"角色在遮挡体上方"，所以先做一次不带 padding 的显式判定。
+        if (rejectOcclusionWhenUnitStandsOnTop &&
+            unitMinY >= occluderBounds.max.y - Mathf.Max(0f, standOnTopEpsilon))
+        {
+            debugLastRejectReason =
+                $"Unit stands on top: unitMinY={unitMinY:0.###} >= occluderMaxY={occluderBounds.max.y:0.###}.";
+            return false;
         }
 
         float padding = Mathf.Max(0f, sideOcclusionHeightPadding);

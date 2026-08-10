@@ -165,6 +165,12 @@ public class TerrainDecorationDefinition : ScriptableObject
     public bool blockVision = false;
     public bool blockProjectile = false;
 
+    [Tooltip("可站立表面的地表材质。填了才会产生地表脚步声层；留空只有基础鞋声。\n\n" +
+             "注意「挡住」和「能站上去」不是一回事——树、栏杆、墙 blockPlayer 也是 true，" +
+             "但站不上去，那些保持留空。只给站台、楼梯、平台、桥这类真正能踩的填。\n\n" +
+             "填在定义上，所有实例自动生效，不用逐个去场景里挂组件。")]
+    public GroundSurfaceMaterialDefinition walkableSurface;
+
     [Header("Rule Space / Front Back")]
     public bool lockRuleSpaceFromVisualRandomRotation = true;
     public TerrainDecorationFrontBackPlaneMode frontBackPlaneMode = TerrainDecorationFrontBackPlaneMode.CollisionBounds;
