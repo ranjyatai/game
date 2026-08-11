@@ -196,8 +196,12 @@ public class TerrainGroundMotorV5 : MonoBehaviour
     public bool debugOnlyWhenStuck = true;
     [Tooltip("判定「想动」的最小输入位移。")]
     public float debugStuckMinInput = 0.02f;
-    [Tooltip("判定「没动」的最大实际位移。")]
+    [Tooltip("判定「没动」的最大实际位移（绝对值下限）。")]
     public float debugStuckMaxMoved = 0.01f;
+    [Range(0.05f, 0.9f)]
+    [Tooltip("实际位移低于「想要位移 × 这个比例」就算被卡。0.3 表示只走出了想走距离的三成以下。\n\n" +
+             "只用绝对值门槛会漏掉「还在挪但被大幅削减」的情况，而那和完全不动是同一个问题。")]
+    public float debugStuckMovedRatio = 0.3f;
 
     [Header("Commercial Stuck Rescue")]
     [Tooltip("只有在退穿透确实产生了修正（角色真嵌在几何里）时才允许卡死救援介入。\n\n" +
@@ -318,6 +322,10 @@ public class TerrainGroundMotorV5 : MonoBehaviour
     private Collider currentGroundCollider;
     /// 调试用：最近一次产生退穿透修正的碰撞体路径。
     private string lastBlockingColliderName = "";
+    /// 调试用：扫掠内部的中间值，见 ResolveHorizontalBodyCollisionStep 里的记录点。
+    private float lastSweepWanted, lastSweepHitDistance, lastSweepSafeTravel;
+    private bool lastSweepOverlapped;
+    private string lastSweepHitName = "";
     /// 归因日志已输出行数，到上限自动关闭，见 LogHorizontalAttribution。
     private int debugAttributionLineCount;
     /// 本帧退穿透是否真的产生了修正——即角色确实嵌在几何里，而不只是被扫掠挡住。
@@ -327,6 +335,10 @@ public class TerrainGroundMotorV5 : MonoBehaviour
     private bool hasGroundAnchor;
     private Vector3 groundAnchorPoint;
     private Vector3 lastFramePosition;
+    /// 上一 tick 结束时的位置，用来检测 tick 之间有没有别的系统改过 Transform。
+    private Vector3 prevTickEndPosition;
+    private bool hasPrevTickEnd;
+    private Vector3 externalDisplacementSinceLastTick;
     private Vector3 lastSafePosition;
     private bool hasLastSafePosition;
     private float safePositionRecordTimer;
@@ -630,6 +642,14 @@ public class TerrainGroundMotorV5 : MonoBehaviour
 
         Vector3 position = rb != null ? rb.position : transform.position;
         lastFramePosition = position;
+
+        // 上一 tick 结束时的位置 vs 这一 tick 开始时的位置。
+        // 两者不等 = tick 之间有 Motor 之外的东西写了 Transform，把角色搬走了。
+        // 「能动能跳但离不开这个点」正是这个特征：Motor 每帧算出并应用了位移，
+        // 然后被别的系统撤销。归因日志只测一次 tick 内的 to-from，看不到这一段。
+        externalDisplacementSinceLastTick = hasPrevTickEnd
+            ? Horizontal(position - prevTickEndPosition)
+            : Vector3.zero;
         bodyBlockedThisFrame = false;
 
         Vector3 footOffset = GetFootOffset();
@@ -734,6 +754,8 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         }
 
         MoveTo(candidate);
+        prevTickEndPosition = candidate;
+        hasPrevTickEnd = true;
     }
 
     private Vector3 ApplyCommercialStuckRescue(
@@ -906,6 +928,12 @@ public class TerrainGroundMotorV5 : MonoBehaviour
             Collider c = bodyOverlapBuffer[i];
             if (ShouldIgnoreAsBodyBlock(c))
                 continue;
+
+            // 扫掠拦截和退穿透是两条独立路径：这里探到障碍就直接拒绝移动，不产生穿透。
+            // 之前只在退穿透里记录阻挡者，于是"被挡住但没嵌进去"的情况下
+            // 归因日志显示「最近阻挡=无」，查不出是谁在挡。
+            if (debugHorizontalAttribution)
+                lastBlockingColliderName = c != null ? c.name : "";
 
             return true;
         }
@@ -1484,8 +1512,17 @@ public class TerrainGroundMotorV5 : MonoBehaviour
             // 只记录"想动却没动"的帧。原来的条件是"位移够大才打"，恰好把卡住的帧
             // 全部过滤掉了——卡住时位移接近 0，永远达不到阈值，日志里剩下的全是
             // 正常移动的帧，看起来一切正常。查卡死必须反过来筛。
-            if (input.magnitude < debugStuckMinInput || total.magnitude > debugStuckMaxMoved)
-                return;
+            //
+            // 无条件记录，连输入门槛也去掉。
+            //
+            // 前面反复调判据（位移够大才打 → 想动却没动 → 绝对值门槛 → 按比例 →
+            // 有输入才记），每调一次就要重新复现一次，五轮下来卡住的那一帧一次都没录到。
+            //
+            // 最后这道输入门槛尤其致命：如果卡住的原因就是「输入没进到 Motor」，
+            // 那 input.magnitude 恒为 0，这一帧永远被跳过——**要查的现象正好被判据排除掉**。
+            // 「跑不出去也跳不出去」符合这个特征：物理阻挡只挡水平，不会让人跳不起来。
+            //
+            // 录之前先筛就总有筛错的风险。全录下来，事后过滤。600 行上限防刷爆。
         }
         else if (total.magnitude < debugHorizontalAttributionThreshold)
         {
@@ -1504,14 +1541,36 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         }
 
         Debug.Log(
-            $"[水平归因] 状态={state} 合计={total.magnitude:0.0000}m 方向=({total.x:0.###},{total.z:0.###})\n" +
+            // 单位名字必须带上：场景里有多个 Motor（玩家 + 敌人），敌人正常走动会把日志
+            // 刷满，玩家卡住的帧混在里面分不出来——上一轮就是因此读到了敌人的记录，
+            // 得出"没有一帧卡住"的错误结论。
+            $"[水平归因][{transform.root.name}/{name}] 状态={state} " +
+            $"合计={total.magnitude:0.0000}m 方向=({total.x:0.###},{total.z:0.###})\n" +
+            // 输入的世界朝向必须记：被挡住时合计位移是 (0,0)，看不出角色想往哪走。
+            // 「按不同方向都出不去」和「所有方向都被挡」是两回事，只有把
+            // 原始输入的世界朝向打出来才分得开——如果不管按哪儿它都指向墙，
+            // 那问题在输入到世界方向的转换，不在物理。
+            $"  输入朝向=({(input.sqrMagnitude > 1e-8f ? input.normalized.x : 0f):0.##}," +
+            $"{(input.sqrMagnitude > 1e-8f ? input.normalized.z : 0f):0.##})\n" +
             $"  输入={input.magnitude:0.0000}  地面/下落={groundFall.magnitude:0.0000}  " +
             $"身体solve={bodySolve.magnitude:0.0000}  卡死救援={rescue.magnitude:0.0000}\n" +
             $"  单位分离={separation.magnitude:0.0000}  分离后阻挡={sepBlock.magnitude:0.0000}  " +
             $"兜底退穿透={finalDepen.magnitude:0.0000}\n" +
             $"  当前地面={(currentGroundCollider != null ? currentGroundCollider.name : "无")}  " +
             $"真嵌入={depenetratedThisFrame}  " +
-            $"最近阻挡={(string.IsNullOrEmpty(lastBlockingColliderName) ? "无" : lastBlockingColliderName)}", this);
+            $"最近阻挡={(string.IsNullOrEmpty(lastBlockingColliderName) ? "无" : lastBlockingColliderName)}\n" +
+            $"  卡住={(total.magnitude <= Mathf.Max(debugStuckMaxMoved, input.magnitude * debugStuckMovedRatio) ? "是" : "否")}  " +
+            $"想走={input.magnitude:0.0000}  实走={total.magnitude:0.0000}\n" +
+            // 「跳不出去」需要垂直方向的量：起跳请求有没有被接受、垂直速度、
+            // 脚底到地面的距离。只记水平位移判断不了跳跃为什么无效。
+            $"  垂直: Y位移={(to.y - from.y):0.0000}  垂直速度={verticalVelocity:0.###}  " +
+            $"跳跃激活={jumpActive}  坡度={currentSlopeAngle:0.#}°\n" +
+            // tick 之间被外部改动的位移。不为 0 就说明 Motor 之外有东西在写 Transform。
+            $"  ★外部位移={externalDisplacementSinceLastTick.magnitude:0.0000}  " +
+            $"方向=({externalDisplacementSinceLastTick.x:0.###},{externalDisplacementSinceLastTick.z:0.###})\n" +
+            $"  扫掠: 想走={lastSweepWanted:0.0000} 撞到={lastSweepHitDistance:0.0000} " +
+            $"允许走={lastSweepSafeTravel:0.0000} 起点重叠={lastSweepOverlapped} " +
+            $"撞的是={(string.IsNullOrEmpty(lastSweepHitName) ? "无" : lastSweepHitName)}", this);
     }
 
     private bool IsCurrentGroundCollider(Collider col)
@@ -1650,8 +1709,56 @@ public class TerrainGroundMotorV5 : MonoBehaviour
 
             blockedThisStep = true;
 
-            float safeTravel = Mathf.Max(0f, hit.distance - Mathf.Max(0f, bodyCastSkin));
+            // 起点就和碰撞体重叠时（hit.distance == 0），必须放行远离墙面的移动。
+            //
+            // 实测卡死时：想走=0.0160 撞到=0.0000 允许走=0.0000。
+            // 胶囊投射的起点已经嵌在站台网格里，距离恒为 0，按 hit.distance - skin
+            // 算出来永远是 0，于是任何方向都走不了。而退穿透那边
+            // depenetrateOnlyRealOverlap 认为这不算真重叠，也不把角色推出去——
+            // 「重叠到无法移动，又不够重叠到被推开」，死锁。
+            //
+            // 而且脱离重叠的唯一手段就是移动，所以重叠时一律禁止移动必然锁死。
+            // 这里只禁止「继续压向墙面」的方向，其余方向放行整步，由退穿透收尾。
+            Vector3 earlyNormal = hit.normal;
+            earlyNormal.y = 0f;
+            bool startsOverlapped = hit.distance <= 0.0001f;
+
+            float safeTravel;
+            if (startsOverlapped)
+            {
+                // 起点重叠时不做任何方向判断，直接放行整步。
+                //
+                // 这里的 hit.normal 不是真实表面法线，而是「投射方向的反向」——
+                // 实测卡死时法线恒为 (1,0,0) / (-1,0,0) 这种纯坐标轴向量，而站台在
+                // 角色北侧，表面法线不可能是正东正西。往西走返回 (1,0,0)、往东走返回
+                // (-1,0,0)，永远和移动方向相反。
+                //
+                // 上一版用它做「有没有压向墙面」的点积判断，点积恒为 -1，于是任何方向
+                // 都被判成压墙、一律返回 0——等于没修。
+                //
+                // 脱离重叠的唯一手段就是移动，重叠时冻结必然锁死，所以这里无条件放行，
+                // 由退穿透和下一帧重新投射收尾。
+                safeTravel = distance;
+            }
+            else
+            {
+                // 皮肤厚度不能超过实际可用距离，否则「保持间隙」会变成「冻结」。
+                float effectiveSkin = Mathf.Min(Mathf.Max(0f, bodyCastSkin), hit.distance * 0.5f);
+                safeTravel = Mathf.Max(0f, hit.distance - effectiveSkin);
+            }
             safeTravel = Mathf.Min(safeTravel, distance);
+
+            // 扫掠内部的中间值：想走多远、撞到多远、扣掉皮肤后允许走多远。
+            // 「身体solve 吃掉了位移」这一个数字分不出是被钳成 0 还是根本没进这段，
+            // 必须看这三个量。记在字段里，由同一帧的归因日志一起打出来，不单独刷屏。
+            if (debugHorizontalAttribution)
+            {
+                lastSweepWanted = distance;
+                lastSweepHitDistance = hit.distance;
+                lastSweepSafeTravel = safeTravel;
+                lastSweepHitName = hit.collider != null ? hit.collider.name : "";
+                lastSweepOverlapped = startsOverlapped;
+            }
             resolved += direction * safeTravel;
 
             Vector3 wallNormal = hit.normal;
@@ -1667,12 +1774,23 @@ public class TerrainGroundMotorV5 : MonoBehaviour
             bodyBlockedThisFrame = true;
             lastBlockingNormal = wallNormal;
 
-            if (clearVelocityWhenBodyBlocked)
+            // 起点重叠时不能用这个法线扣速度——它是「投射方向的反向」而不是真实
+            // 表面法线，扣掉的正好是沿移动方向的全部速度，每帧清一次，角色永远从 0
+            // 重新加速。表现就是贴着墙走的时候一直在减速、走不快。
+            //
+            // 之前归因日志里「想走」恒为 0.0160（一帧的加速量）就是这么来的：
+            // 不是角色进了什么减速状态，是速度每帧都被这一行清掉了。
+            if (clearVelocityWhenBodyBlocked && !startsOverlapped)
                 RemoveVelocityIntoWall(wallNormal);
 
             // 连续撞到两个差异很大的墙面法线时，说明角色已经被送进内角。
             // 不再继续把剩余位移投影到第二面墙上，否则会在 A 面 / B 面之间来回咬住。
-            if (enableCornerDeadlockBreak && previousWallNormal.sqrMagnitude > 0.0001f)
+            //
+            // 但起点重叠时的法线不可信——它是「投射方向的反向」，而每次迭代后方向会
+            // 因投影而改变，于是连续两次的"法线"必然差异很大，拐角保护被误触发，
+            // 速度被 clearVelocityWhenCornerLocked 直接清零。表现就是蹭到站台边缘
+            // 就掉速。这里跳过，只用真实法线做内角判定。
+            if (enableCornerDeadlockBreak && !startsOverlapped && previousWallNormal.sqrMagnitude > 0.0001f)
             {
                 float normalDot = Vector3.Dot(previousWallNormal, wallNormal);
                 if (normalDot <= cornerNormalDotThreshold)
@@ -1692,7 +1810,10 @@ public class TerrainGroundMotorV5 : MonoBehaviour
                 }
             }
 
-            previousWallNormal = wallNormal;
+            // 只记真实法线。起点重叠时的法线是投射方向的反向，记下来会污染下一次
+            // 迭代的内角判定——那正是蹭到边缘就掉速的来源。
+            if (!startsOverlapped)
+                previousWallNormal = wallNormal;
 
             Vector3 consumed = direction * safeTravel;
             Vector3 left = remaining - consumed;
@@ -2058,6 +2179,12 @@ public class TerrainGroundMotorV5 : MonoBehaviour
                 bestDistance = h.distance;
                 bestHit = h;
                 found = true;
+
+                // 位移钳制是第三条独立的阻挡路径：既不是重叠测试拒绝移动，也不是退穿透
+                // 推开，而是沿位移方向投射、撞到就把距离截短。前两处插桩都覆盖不到它，
+                // 于是卡住时归因日志显示「最近阻挡=无」。
+                if (debugHorizontalAttribution)
+                    lastBlockingColliderName = h.collider != null ? h.collider.name : "";
             }
         }
 

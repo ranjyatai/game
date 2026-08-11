@@ -167,7 +167,6 @@ public class UnitActionController : MonoBehaviour
     [SerializeField] private bool sneakHeld = false;
     [SerializeField] private float stateLockedUntil = 0f;
     [SerializeField] private string lastActionRequest = "";
-
     [Header("Jump Debug")]
     [SerializeField] private int jumpRequestCount = 0;
     [SerializeField] private bool lastJumpRequestAcceptedByAction = false;
@@ -313,6 +312,13 @@ public class UnitActionController : MonoBehaviour
         if (loadRuntime != null && !loadRuntime.TrySpendDodge())
             return;
 
+        // 超重(Heavy/Overweight)时 movement.CanDodge 会是 false——movement.RequestDodge
+        // 本身只是把这次闪避排进队列，真正的负重门槛判定在队列消费时(TryStartDodge)
+        // 才发生，这里(外层)没提前查一遍的话，SFX会照样在闪避被内层拒绝之前先播完，
+        // 玩家会听到"闪避音效响了但人没动"。
+        if (movement != null && !movement.CanDodge)
+            return;
+
         currentDodgeKind = forward ? UnitMovementController.DodgeRuntimeState.Forward : UnitMovementController.DodgeRuntimeState.Back;
         movement?.RequestDodge(forward);
         currentState = UnitActionState.Dodge;
@@ -327,6 +333,10 @@ public class UnitActionController : MonoBehaviour
             return;
 
         if (loadRuntime != null && !loadRuntime.TrySpendDodge())
+            return;
+
+        // 同上——超重时提前拦截，不让SFX抢跑在真正的负重判定前面。
+        if (movement != null && !movement.CanDodge)
             return;
 
         currentDodgeKind = dodgeKind == UnitMovementController.DodgeRuntimeState.None ? UnitMovementController.DodgeRuntimeState.Forward : dodgeKind;
@@ -470,6 +480,10 @@ public class UnitActionController : MonoBehaviour
         // (RequestDodge/RequestDodge(Vector2,...))是同一类位移动作，理应共用同一套
         // 消耗检查，不能因为走的是专属入口就绕过资源消耗，变成不花TP的白嫖闪避。
         if (loadRuntime != null && !loadRuntime.TrySpendDodge())
+            return false;
+
+        // 同 RequestDodge——超重时提前拦截，不让SFX抢跑在真正的负重判定前面。
+        if (!movement.CanDodge)
             return false;
 
         currentAttackKind = AttackRequestKind.None;
@@ -774,19 +788,20 @@ public class UnitActionController : MonoBehaviour
 
         if (finalRun)
         {
-            if (loadRuntime != null)
+            // 超重判定必须放在LP消耗之前——movement.CanRun是纯读取(无副作用)，
+            // loadRuntime.TrySpendSprint一旦调用就会真的扣掉LP。之前顺序反了：
+            // 先扣LP、再判超重，超重时finalRun虽然最终还是被压成false(不会真的跑)，
+            // 但LP在这之前已经被TrySpendSprint扣掉了——表现就是"奔跑被禁止了，
+            // 但按住奔跑键LP还在掉"。改成先判超重，超重就直接跳过LP消耗，
+            // 压根不调用TrySpendSprint。
+            if (movement != null && !movement.CanRun)
+                finalRun = false;
+
+            if (finalRun && loadRuntime != null)
             {
                 if (!loadRuntime.CanSprint || !loadRuntime.TrySpendSprint(Time.deltaTime))
                     finalRun = false;
             }
-
-            // 之前这里只看耐力(loadRuntime.CanSprint)，完全不知道超重——超重时
-            // UnitMovementController 内部的 Burden 系统已经把 wantsRun 压成 false、
-            // 真实移动速度也确实变慢了，但这里的 finalRun 没跟着变，导致
-            // currentLocomotion 还是被判成 Sprint，Spine 播的还是奔跑动画/姿势，
-            // 跟"人物明明超重、按下奔跑键角色姿势还是在跑"这个反馈对得上。
-            if (finalRun && movement != null && !movement.CanRun)
-                finalRun = false;
         }
 
         currentLocomotion = ResolveLocomotion(finalMove, finalRun, finalSneak);
