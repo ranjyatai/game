@@ -75,6 +75,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         GroundSurfaceMaterial,
         Unit,
         Item,
+        Region,
         Trigger,
         SpawnPoint,
         Effect,
@@ -172,6 +173,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         new ToolBookmark(PlacementObjectKind.GroundSurfaceMaterial, "地表材质", true),
         new ToolBookmark(PlacementObjectKind.Unit, "单位", true),
         new ToolBookmark(PlacementObjectKind.Item, "道具", true),
+        new ToolBookmark(PlacementObjectKind.Region, "区域", true),
         new ToolBookmark(PlacementObjectKind.Trigger, "触发器", false),
         new ToolBookmark(PlacementObjectKind.SpawnPoint, "出生点", false),
         new ToolBookmark(PlacementObjectKind.Effect, "特效", false),
@@ -222,6 +224,18 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
     private Vector2 placedItemScroll;
     private string placedItemSearch = "";
     private GameObject itemPreviewInstance;
+
+    // 区域（Region）放置。
+    private string regionNameInput = "Region";
+    private Vector3 regionSizeInput = new Vector3(4f, 3f, 4f);
+    private SkyPrisonSceneRegionMarker.RegionShape regionShapeInput;
+    private readonly List<SkyPrisonSceneRegionMarker> placedRegionCache = new List<SkyPrisonSceneRegionMarker>();
+    private readonly HashSet<int> placedRegionSelectionIds = new HashSet<int>();
+    private Vector2 placedRegionScroll;
+    private string placedRegionSearch = "";
+    private bool regionDragging;
+    private Vector3 regionDragStart;
+    private Vector3 regionDragCurrent;
     private readonly List<Renderer> itemPreviewRenderers = new List<Renderer>();
     private bool itemPreviewCanPlace = true;
     private readonly HashSet<int> placedSelectionIds = new HashSet<int>();
@@ -658,6 +672,8 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
                 return selectedUnitDefinition != null && selectedUnitDefinition.prefab != null;
             case PlacementObjectKind.Item:
                 return selectedItemDefinition != null;
+            case PlacementObjectKind.Region:
+                return !string.IsNullOrWhiteSpace(regionNameInput);
             default:
                 return false;
         }
@@ -1073,6 +1089,12 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         if (currentKind == PlacementObjectKind.Item)
         {
             DrawItemPlacePage();
+            return;
+        }
+
+        if (currentKind == PlacementObjectKind.Region)
+        {
+            DrawRegionPlacePage();
             return;
         }
 
@@ -1622,6 +1644,12 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             return;
         }
 
+        if (currentKind == PlacementObjectKind.Region)
+        {
+            DrawRegionPlacedPage();
+            return;
+        }
+
         DrawFutureKindPlaceholder();
     }
 
@@ -1896,6 +1924,9 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             case PlacementObjectKind.Item:
                 canEnable = selectedItemDefinition != null;
                 break;
+            case PlacementObjectKind.Region:
+                canEnable = !string.IsNullOrWhiteSpace(regionNameInput);
+                break;
         }
 
         placementMode = enabled && canEnable;
@@ -1966,6 +1997,13 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         {
             if (placementMode)
                 OnItemPlacementSceneGUI(sceneView);
+            return;
+        }
+
+        if (currentKind == PlacementObjectKind.Region)
+        {
+            if (placementMode)
+                OnRegionPlacementSceneGUI(sceneView);
             return;
         }
 
@@ -7923,6 +7961,335 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             StringComparison.OrdinalIgnoreCase));
         placedItemSelectionIds.RemoveWhere(id => !placedItemCache.Exists(x => x != null && x.gameObject.GetInstanceID() == id));
     }
+
+    // ===== 区域（Region）放置 =====
+    // 2026-08-11 从编译产物反编译还原：此文件的工作区改动被误执行 git checkout 覆盖，
+    // 丢失的正是这一整套区域放置功能。逻辑与还原前一致，局部变量名和注释来自反编译。
+
+    private void DrawRegionPlacePage()
+    {
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.LabelField("放置设置", EditorStyles.boldLabel);
+        regionNameInput = EditorGUILayout.TextField("区域名字", regionNameInput);
+        regionShapeInput = (SkyPrisonSceneRegionMarker.RegionShape)(object)EditorGUILayout.EnumPopup("形状", (Enum)(object)regionShapeInput);
+        regionSizeInput.y = EditorGUILayout.FloatField("高度(Y)", regionSizeInput.y);
+        EditorGUILayout.LabelField("父节点", "WorldRoot/RegionRoot");
+        EditorGUILayout.HelpBox("进入放置模式后，在场景里按住鼠标左键拖拽画出区域范围(XZ)，松开鼠标生成，跟WC3 WE的Region操作一样。高度用上面填的Y，放置后大小/位置直接在Inspector里改这个物体的BoxCollider就行，不用回到这个工具里调。触发器/任务条件里选\"区域\"槽位时，就是从这里放的这些区域里选。", (MessageType)0);
+        if (string.IsNullOrWhiteSpace(regionNameInput))
+        {
+            EditorGUILayout.HelpBox("请先填写区域名字。", (MessageType)2);
+        }
+        EditorGUILayout.Space(4f);
+        DrawPlacementModeLargeButton();
+        EditorGUILayout.EndVertical();
+    }
+
+    private void OnRegionPlacementSceneGUI(SceneView sceneView)
+    {
+        if (string.IsNullOrWhiteSpace(regionNameInput))
+        {
+            return;
+        }
+        Event current = Event.current;
+        HandleUtility.AddDefaultControl(GUIUtility.GetControlID((FocusType)2));
+        if ((int)current.type == 4 && (int)current.keyCode == 27)
+        {
+            regionDragging = false;
+            SetPlacementMode(enabled: false);
+            current.Use();
+            return;
+        }
+        if ((int)current.type == 0 && current.button == 1)
+        {
+            regionDragging = false;
+            SetPlacementMode(enabled: false);
+            current.Use();
+            return;
+        }
+        if (!TryRaycastGround(current.mousePosition, out var hitPos))
+        {
+            if (regionDragging)
+            {
+                ((EditorWindow)sceneView).Repaint();
+            }
+            return;
+        }
+        if ((int)current.type == 0 && current.button == 0)
+        {
+            regionDragging = true;
+            regionDragStart = hitPos;
+            regionDragCurrent = hitPos;
+            current.Use();
+        }
+        else if ((int)current.type == 3 && regionDragging)
+        {
+            regionDragCurrent = hitPos;
+            current.Use();
+        }
+        else if ((int)current.type == 1 && current.button == 0 && regionDragging)
+        {
+            regionDragging = false;
+            PlaceRegionWithFootprint(regionDragStart, regionDragCurrent);
+            current.Use();
+        }
+        Vector3 cornerA = (regionDragging ? regionDragStart : hitPos);
+        Vector3 cornerB = (regionDragging ? regionDragCurrent : (hitPos + new Vector3(1f, 0f, 1f)));
+        DrawRegionFootprintPreview(cornerA, cornerB);
+        ((EditorWindow)sceneView).Repaint();
+    }
+
+    private bool TryRaycastGround(Vector2 mousePosition, out Vector3 hitPos)
+    {
+        Ray val = HandleUtility.GUIPointToWorldRay(mousePosition);
+        RaycastHit val2 = default(RaycastHit);
+        if (Physics.Raycast(val, out val2, 1000f))
+        {
+            hitPos = val2.point;
+            return true;
+        }
+        Plane val3 = default(Plane);
+        val3 = new Plane(Vector3.up, 0f);
+        float num = default(float);
+        if (val3.Raycast(val, out num))
+        {
+            hitPos = val.GetPoint(num);
+            return true;
+        }
+        hitPos = Vector3.zero;
+        return false;
+    }
+
+    private void DrawRegionFootprintPreview(Vector3 cornerA, Vector3 cornerB)
+    {
+        GetRegionFootprint(cornerA, cornerB, out var center, out var size);
+        Vector3 val = center + new Vector3(0f, size.y * 0.5f, 0f);
+        Handles.color = ValidPreviewColor;
+        if ((int)regionShapeInput == 1)
+        {
+            float num = Mathf.Max(size.x, size.z) * 0.5f;
+            Handles.DrawWireDisc(center, Vector3.up, num);
+            Handles.DrawWireDisc(center + Vector3.up * size.y, Vector3.up, num);
+            Handles.Label(center + Vector3.up * (size.y + 0.4f), $"{regionNameInput}  半径{num:0.#}");
+        }
+        else
+        {
+            Handles.DrawWireCube(val, size);
+            Handles.Label(center + Vector3.up * (size.y + 0.4f), $"{regionNameInput}  {size.x:0.#}×{size.z:0.#}");
+        }
+    }
+
+    private void GetRegionFootprint(Vector3 cornerA, Vector3 cornerB, out Vector3 center, out Vector3 size)
+    {
+        float num = Mathf.Min(cornerA.x, cornerB.x);
+        float num2 = Mathf.Max(cornerA.x, cornerB.x);
+        float num3 = Mathf.Min(cornerA.z, cornerB.z);
+        float num4 = Mathf.Max(cornerA.z, cornerB.z);
+        float num5 = Mathf.Max(0.5f, num2 - num);
+        float num6 = Mathf.Max(0.5f, num4 - num3);
+        float num7 = Mathf.Max(0.5f, regionSizeInput.y);
+        center = new Vector3((num + num2) * 0.5f, Mathf.Min(cornerA.y, cornerB.y), (num3 + num4) * 0.5f);
+        size = new Vector3(num5, num7, num6);
+    }
+
+    private void PlaceRegionWithFootprint(Vector3 cornerA, Vector3 cornerB)
+    {
+        if (!string.IsNullOrWhiteSpace(regionNameInput))
+        {
+            GetRegionFootprint(cornerA, cornerB, out var center, out var size);
+            if ((int)regionShapeInput == 1)
+            {
+                float num = Mathf.Max(size.x, size.z);
+                size = new Vector3(num, size.y, num);
+            }
+            Transform orCreateParent = GetOrCreateParent("WorldRoot/RegionRoot");
+            GameObject val = new GameObject("Region_" + regionNameInput);
+            Undo.RegisterCreatedObjectUndo(val, "Place Region");
+            val.transform.SetParent(orCreateParent, false);
+            val.transform.position = center;
+            BoxCollider obj = val.AddComponent<BoxCollider>();
+            ((Collider)obj).isTrigger = true;
+            obj.size = size;
+            obj.center = new Vector3(0f, size.y * 0.5f, 0f);
+            SkyPrisonSceneRegionMarker obj2 = val.AddComponent<SkyPrisonSceneRegionMarker>();
+            obj2.SetRegionName(regionNameInput);
+            obj2.SetShape(regionShapeInput);
+            EditorUtility.SetDirty(val);
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(val.scene);
+            PlayEditorSound("Assets/_Project/Audio/SE/Editor/Editor_Setting_01.wav");
+            RefreshPlacedRegionCache();
+            ((EditorWindow)this).Repaint();
+        }
+    }
+
+    private void DrawRegionPlacedPage()
+    {
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.BeginHorizontal(Array.Empty<GUILayoutOption>());
+        EditorGUILayout.LabelField("已摆放区域", EditorStyles.boldLabel);
+        if (GUILayout.Button("刷新", (GUILayoutOption[])(object)new GUILayoutOption[1] { GUILayout.Width(60f) }))
+        {
+            RefreshPlacedRegionCache();
+        }
+        EditorGUILayout.EndHorizontal();
+        placedRegionSearch = EditorGUILayout.TextField("搜索", placedRegionSearch);
+        EditorGUILayout.HelpBox("点击定位，Delete 删除。支持 Ctrl 多选。区域大小/位置直接改场景里物体的 BoxCollider。", (MessageType)1);
+        EditorGUILayout.EndVertical();
+        if (placedRegionCache.Count == 0)
+        {
+            RefreshPlacedRegionCache();
+        }
+        List<SkyPrisonSceneRegionMarker> filteredPlacedRegions = GetFilteredPlacedRegions();
+        Rect rect = GUILayoutUtility.GetRect(0f, 100000f, 220f, 100000f, (GUILayoutOption[])(object)new GUILayoutOption[2]
+        {
+            GUILayout.ExpandWidth(true),
+            GUILayout.ExpandHeight(true)
+        });
+        EditorGUI.DrawRect(rect, panelBg);
+        Rect val = default(Rect);
+        val = new Rect(rect.x + 6f, rect.y + 6f, rect.width - 12f, rect.height - 12f);
+        float num = Mathf.Max(val.height, (float)filteredPlacedRegions.Count * 72f + 8f);
+        Rect val2 = default(Rect);
+        val2 = new Rect(0f, 0f, Mathf.Max(10f, val.width - 14f), num);
+        placedRegionScroll = GUI.BeginScrollView(val, placedRegionScroll, val2, false, true);
+        float num2 = 0f;
+        Rect rect2 = default(Rect);
+        foreach (SkyPrisonSceneRegionMarker item in filteredPlacedRegions)
+        {
+            rect2 = new Rect(0f, num2, val2.width, 68f);
+            DrawPlacedRegionRow(rect2, item);
+            num2 += 72f;
+        }
+        GUI.EndScrollView();
+        EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+        int count = placedRegionSelectionIds.Count;
+        using (new EditorGUI.DisabledScope(count <= 0))
+        {
+            if (GUILayout.Button($"删除已选({count})", EditorStyles.toolbarButton, GUILayout.Width(100f)) && EditorUtility.DisplayDialog("删除确认", $"删除 {count} 个已选区域？", "删除", "取消"))
+            {
+                List<SkyPrisonSceneRegionMarker> list = new List<SkyPrisonSceneRegionMarker>();
+                foreach (SkyPrisonSceneRegionMarker item2 in placedRegionCache)
+                {
+                    if (item2 != null && placedRegionSelectionIds.Contains(item2.gameObject.GetInstanceID()))
+                    {
+                        list.Add(item2);
+                    }
+                }
+                foreach (SkyPrisonSceneRegionMarker item3 in list)
+                {
+                    if (item3 != null && item3.gameObject != null)
+                    {
+                        Undo.DestroyObjectImmediate(item3.gameObject);
+                    }
+                }
+                placedRegionSelectionIds.Clear();
+                RefreshPlacedRegionCache();
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+    }
+
+    private void DrawPlacedRegionRow(Rect rect, SkyPrisonSceneRegionMarker marker)
+    {
+        if (marker == null)
+        {
+            return;
+        }
+        int instanceID = marker.gameObject.GetInstanceID();
+        bool flag = placedRegionSelectionIds.Contains(instanceID);
+        bool flag2 = rect.Contains(Event.current.mousePosition);
+        if (flag)
+        {
+            EditorGUI.DrawRect(rect, new Color(0.28f, 0.14f, 0.1f, 1f));
+            EditorGUI.DrawRect(new Rect(rect.x, rect.y, 4f, rect.height), accent);
+        }
+        else if (flag2)
+        {
+            EditorGUI.DrawRect(rect, new Color(1f, 1f, 1f, 0.04f));
+        }
+        Rect val = default(Rect);
+        val = new Rect(rect.x + 8f, rect.y + 6f, Mathf.Max(80f, rect.width - 160f), 58f);
+        GUI.Label(new Rect(val.x, val.y, val.width, 20f), marker.RegionName, EditorStyles.boldLabel);
+        Vector3 val2 = ((marker.BoxCollider != null) ? marker.BoxCollider.size : Vector3.zero);
+        string text = (((int)marker.Shape == 1) ? "圆柱" : "方块");
+        GUI.Label(new Rect(val.x, val.y + 20f, val.width, 18f), $"{text}  {val2.x:0.#} × {val2.y:0.#} × {val2.z:0.#}", EditorStyles.miniLabel);
+        Vector3 position = marker.transform.position;
+        GUI.Label(new Rect(val.x, val.y + 38f, val.width, 18f), $"位置 X {position.x:0.##} / Y {position.y:0.##} / Z {position.z:0.##}", EditorStyles.miniLabel);
+        float num = rect.y + 8f;
+        float num2 = rect.xMax - 8f;
+        if (GUI.Button(new Rect(num2 - 126f, num, 54f, 22f), "选中"))
+        {
+            SelectRegionRow(marker, instanceID);
+            EditorGUIUtility.PingObject(marker.gameObject);
+        }
+        if (GUI.Button(new Rect(num2 - 68f, num, 60f, 22f), "定位"))
+        {
+            SelectRegionRow(marker, instanceID);
+            FocusSceneView();
+            SceneView lastActiveSceneView = SceneView.lastActiveSceneView;
+            if (lastActiveSceneView != null)
+            {
+                lastActiveSceneView.FrameSelected();
+            }
+        }
+        GUI.backgroundColor = new Color(0.85f, 0.22f, 0.12f, 1f);
+        if (GUI.Button(new Rect(num2 - 68f, num + 28f, 60f, 22f), "删除"))
+        {
+            DeletePlacedRegionWithConfirm(marker);
+        }
+        GUI.backgroundColor = Color.white;
+        if (flag && (int)Event.current.type == 4 && (int)Event.current.keyCode == 127)
+        {
+            DeletePlacedRegionWithConfirm(marker);
+            Event.current.Use();
+        }
+    }
+
+    private void SelectRegionRow(SkyPrisonSceneRegionMarker marker, int id)
+    {
+        placedRegionSelectionIds.Clear();
+        placedRegionSelectionIds.Add(id);
+        Selection.activeGameObject = marker.gameObject;
+        ((EditorWindow)this).Repaint();
+    }
+
+    private void DeletePlacedRegionWithConfirm(SkyPrisonSceneRegionMarker marker)
+    {
+        if (!(marker == null) && !(marker.gameObject == null) && EditorUtility.DisplayDialog("删除区域", "确定删除区域：\n" + marker.RegionName, "删除", "取消"))
+        {
+            Undo.DestroyObjectImmediate(marker.gameObject);
+            PlayEditorSound("Assets/_Project/Audio/SE/Editor/Editor_Setting_02.wav");
+            RefreshPlacedRegionCache();
+            ((EditorWindow)this).Repaint();
+            GUIUtility.ExitGUI();
+        }
+    }
+
+    private void RefreshPlacedRegionCache()
+    {
+        placedRegionCache.Clear();
+        placedRegionCache.AddRange(UnityEngine.Object.FindObjectsOfType<SkyPrisonSceneRegionMarker>(true));
+        placedRegionCache.Sort((SkyPrisonSceneRegionMarker a, SkyPrisonSceneRegionMarker b) => string.Compare(a.RegionName, b.RegionName, StringComparison.OrdinalIgnoreCase));
+        placedRegionSelectionIds.RemoveWhere((int id) => !placedRegionCache.Exists((SkyPrisonSceneRegionMarker x) => x != null && x.gameObject.GetInstanceID() == id));
+    }
+
+    private List<SkyPrisonSceneRegionMarker> GetFilteredPlacedRegions()
+    {
+        string value = placedRegionSearch.Trim().ToLower();
+        if (string.IsNullOrEmpty(value))
+        {
+            return placedRegionCache;
+        }
+        List<SkyPrisonSceneRegionMarker> list = new List<SkyPrisonSceneRegionMarker>();
+        foreach (SkyPrisonSceneRegionMarker item in placedRegionCache)
+        {
+            if (item != null && item.RegionName.ToLower().Contains(value))
+            {
+                list.Add(item);
+            }
+        }
+        return list;
+    }
+
 
     private void RebuildItemPreview()
     {
