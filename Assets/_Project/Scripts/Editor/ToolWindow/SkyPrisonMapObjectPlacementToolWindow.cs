@@ -3291,6 +3291,57 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         }
     }
 
+    /// <summary>
+    /// 按笔刷形状算该点的权重轮廓。normalized 是点在笔刷内的归一化距离（0=中心，1=边缘）。
+    ///
+    /// 原来三处笔刷（高度/洞/地表材质）各自内联同一段衰减代码，且只看硬度滑条、
+    /// 完全不看形状——HardCircle 和 SoftCircle 算出来一模一样，UI 上 10 个形状图标
+    /// 实际只有 4 种行为。这是"换什么形状刷出来都一样"的原因之一。
+    /// </summary>
+    /// <param name="edgeFeather">
+    /// 边缘羽化宽度，用归一化距离表示（= 一个控制像素的世界尺寸 ÷ 笔刷半径）。
+    ///
+    /// 形状测试是硬的 0/1 判定：一个像素要么在形状内要么在外，边界上没有部分覆盖，
+    /// 硬边笔刷画出来必然是像素级阶梯。给最外一个像素一段线性过渡就能消掉锯齿，
+    /// 而过渡只有一个像素宽，视觉上仍是硬边。传 0 表示不羽化。
+    /// </param>
+    private float EvaluateGroundBrushProfile(float normalized, float edgeFeather = 0f)
+    {
+        normalized = Mathf.Clamp01(normalized);
+
+        switch (groundBrushShape)
+        {
+            // 明确的硬边：范围内满权重，只在最外一个像素做抗锯齿过渡
+            case GroundBrushShape.HardCircle:
+            case GroundBrushShape.Square:
+            case GroundBrushShape.Diamond:
+            case GroundBrushShape.Hexagon:
+            case GroundBrushShape.Star:
+                if (edgeFeather <= 0.0001f)
+                    return 1f;
+                return Mathf.Clamp01((1f - normalized) / edgeFeather);
+
+            // 明确的软边：从中心线性衰减到边缘 0
+            case GroundBrushShape.SoftCircle:
+            case GroundBrushShape.SoftSquare:
+            case GroundBrushShape.SoftNoise:
+                return 1f - normalized;
+
+            // 其余（Circle / Ring / Splatter / Stripes）沿用硬度滑条。
+            // 注：Ring / Splatter / Stripes 的形状本身仍未实现，
+            // TryEvaluateGroundBrushShape 里它们走的还是普通圆。
+            default:
+            {
+                float hardness = Mathf.Clamp01(groundBrushHardness);
+                // 硬度接近 1 时衰减带会窄于一个像素，同样产生阶梯——用羽化宽度兜底。
+                float falloff = Mathf.Max(1f - hardness, edgeFeather);
+                if (falloff <= 0.0001f)
+                    return 1f;
+                return Mathf.Clamp01((1f - normalized) / falloff);
+            }
+        }
+    }
+
     private bool TryEvaluateGroundBrushShape(float nx, float nz, out float normalizedDistance)
     {
         nx = Mathf.Abs(nx);
@@ -3734,7 +3785,8 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 
         float[,] heights = data.GetHeights(minX, minY, width, height);
         Vector3 localCenter = worldPosition - terrain.transform.position;
-        float innerRadius = radiusWorld * Mathf.Clamp01(groundBrushHardness);
+        // 一个采样像素占多少归一化半径——用来把边界的 0/1 硬判定羽化成一像素宽的过渡。
+        float edgeFeather = (data.size.x / Mathf.Max(1, res)) / Mathf.Max(0.0001f, radiusWorld);
         float strength01 = Mathf.Max(0.0001f, terrainDefaultToolStrength) / Mathf.Max(0.001f, data.size.y);
         float flattenTarget01 = Mathf.Clamp01(terrainFlattenWorldHeight / Mathf.Max(0.001f, data.size.y));
 
@@ -3754,14 +3806,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
                 if (!TryEvaluateGroundBrushShape(nx, nz, out float normalized))
                     continue;
 
-                float distanceWorld = normalized * radiusWorld;
-                float brushWeight;
-                if (radiusWorld <= innerRadius + 0.0001f)
-                    brushWeight = 1f;
-                else if (distanceWorld <= innerRadius)
-                    brushWeight = 1f;
-                else
-                    brushWeight = 1f - Mathf.Clamp01((distanceWorld - innerRadius) / Mathf.Max(0.0001f, radiusWorld - innerRadius));
+                float brushWeight = EvaluateGroundBrushProfile(normalized, edgeFeather);
 
                 if (brushWeight <= 0f)
                     continue;
@@ -3814,7 +3859,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 
         bool[,] holes = data.GetHoles(minX, minY, width, height);
         Vector3 localCenter = worldPosition - terrain.transform.position;
-        float innerRadius = radiusWorld * Mathf.Clamp01(groundBrushHardness);
+        float edgeFeather = (data.size.x / Mathf.Max(1, res)) / Mathf.Max(0.0001f, radiusWorld);
         float edgeThreshold = Mathf.Lerp(0.05f, 0.95f, Mathf.Clamp01(terrainDefaultToolStrength / 5f));
 
         for (int y = 0; y < height; y++)
@@ -3833,14 +3878,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
                 if (!TryEvaluateGroundBrushShape(nx, nz, out float normalized))
                     continue;
 
-                float distanceWorld = normalized * radiusWorld;
-                float brushWeight;
-                if (radiusWorld <= innerRadius + 0.0001f)
-                    brushWeight = 1f;
-                else if (distanceWorld <= innerRadius)
-                    brushWeight = 1f;
-                else
-                    brushWeight = 1f - Mathf.Clamp01((distanceWorld - innerRadius) / Mathf.Max(0.0001f, radiusWorld - innerRadius));
+                float brushWeight = EvaluateGroundBrushProfile(normalized, edgeFeather);
 
                 if (brushWeight < edgeThreshold)
                     continue;
@@ -3919,7 +3957,8 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 
         float[,,] alphamaps = data.GetAlphamaps(minX, minY, width, height);
         Vector3 localCenter = worldPosition - terrain.transform.position;
-        float innerRadius = radiusWorld * Mathf.Clamp01(groundBrushHardness);
+        // 一个控制像素占多少归一化半径，用于边缘羽化，消掉硬边的像素级阶梯。
+        float edgeFeather = (data.size.x / Mathf.Max(1, alphaWidth)) / Mathf.Max(0.0001f, radiusWorld);
         float opacity = Mathf.Clamp01(terrainSurfaceBrushOpacity);
 
         for (int y = 0; y < height; y++)
@@ -3938,21 +3977,25 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
                 if (!TryEvaluateGroundBrushShape(nx, nz, out float normalized))
                     continue;
 
-                float distanceWorld = normalized * radiusWorld;
-                float brushWeight;
-                if (radiusWorld <= innerRadius + 0.0001f)
-                    brushWeight = 1f;
-                else if (distanceWorld <= innerRadius)
-                    brushWeight = 1f;
-                else
-                    brushWeight = 1f - Mathf.Clamp01((distanceWorld - innerRadius) / Mathf.Max(0.0001f, radiusWorld - innerRadius));
+                float brushWeight = EvaluateGroundBrushProfile(normalized, edgeFeather);
 
                 float strength = Mathf.Clamp01(brushWeight * opacity);
                 if (strength <= 0f)
                     continue;
 
                 float currentTarget = alphamaps[y, x, targetLayer];
-                float newTarget = Mathf.Clamp01(currentTarget + (1f - currentTarget) * strength);
+                // 刷子只能把权重推到自己的 strength，不能越过。
+                //
+                // 原来是 current + (1-current) * strength——每帧都往 1 逼近且没有上限。
+                // 配合"连续涂刷"，60fps 下不管不透明度设多少，按住半秒全部到 1：
+                //   不透明度 0.5 → 0.5, 0.75, 0.875, 0.94 ...
+                //   不透明度 0.2 → 0.2, 0.36, 0.49, 0.59 ...
+                // 于是不透明度只影响"多快到 1"、不影响最终值，硬度同理——软边缘停在
+                // 原地也会逐帧变硬。表现就是"参数怎么调都一个样"。
+                //
+                // 取 Max 之后：硬度决定边缘轮廓、不透明度决定最高覆盖，都是可重复的，
+                // 反复涂抹同一处也不会继续变浓。
+                float newTarget = Mathf.Max(currentTarget, strength);
                 float oldOtherTotal = 0f;
                 for (int l = 0; l < layers; l++)
                 {
