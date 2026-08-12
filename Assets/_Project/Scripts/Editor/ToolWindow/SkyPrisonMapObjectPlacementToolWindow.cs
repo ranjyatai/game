@@ -5145,7 +5145,16 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         visualRoot.localPosition = Vector3.zero;
         visualRoot.localRotation = Quaternion.Euler(visualEuler);
         visualRoot.localScale = result.finalScale;
-        SetLayerRecursively(visualRoot.gameObject, LayerMask.NameToLayer("World3D"));
+        // editorOnlyVisual（空气墙这类）的视觉必须留在 Default(0) 层——
+        // 项目四台相机的 cullingMask 都不含第 0 位，所以它在游戏里一帧都不渲染，
+        // 但 Scene 视图照常看得见。刷成 World3D 就等于游戏里也能看到。
+        //
+        // Builder 和 RuntimeApplier 里已经各有一处同样的判断；这里是第三处，
+        // 放置时就要定对，否则从放下去到下一次 Apply 之间它是可见的。
+        bool editorOnlyVisual = selectedDefinition != null && selectedDefinition.editorOnlyVisual;
+        SetLayerRecursively(
+            visualRoot.gameObject,
+            editorOnlyVisual ? 0 : LayerMask.NameToLayer("World3D"));
 
         // 运行时模板只提供标准容器和手动代理结构；具体视觉仍然按本次抽到的 Variant PF 重建。
         // 这不会断开 root 对 PF_TD_* 的 Prefab 连接，只会形成当前实例的 VisualRoot override。
@@ -5160,7 +5169,11 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             visual.transform.localRotation = Quaternion.identity;
             visual.transform.localScale = Vector3.one;
             StripTerrainDecorationComponentsFromVisual(visual);
-            SetLayerRecursively(visual, LayerMask.NameToLayer("World3D"));
+            // 同上：editorOnlyVisual 的视觉留在 Default(0)。这一处才是真正作用到
+            // 视觉预制体实例的——上面那次 SetLayerRecursively 跑在实例化之前，覆盖不到它。
+            SetLayerRecursively(
+                visual,
+                editorOnlyVisual ? 0 : LayerMask.NameToLayer("World3D"));
             ApplyMaterialChoicesDirect(visualRoot, visual.transform, result.materialChoices);
         }
 
@@ -8941,6 +8954,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 
         instance.name = spawnerPrefab.name;
         instance.transform.position = position;
+        SkyPrisonSpawnerVisualOrientation.Apply(instance.transform);
         Undo.RegisterCreatedObjectUndo(instance, "Place Unit Spawner");
 
         Selection.activeGameObject = instance;
