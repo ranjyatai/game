@@ -328,7 +328,14 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 
     private BaseGroundBlock activeGroundBlock;
     private Terrain activeGroundTerrain;
-    private float terrainSurfaceBrushOpacity = 0.35f;
+    // 默认满覆盖：刷上去就是贴图本身的颜色。
+    //
+    // 这个值原来是 0.35，是配着旧的累积公式 current + (1-current)*strength 调的——
+    // 那时候不透明度只决定"多快涂到 1"，0.35 的意思是"按住半秒到满"。
+    // 改成 Max(current, strength) 之后它变成了"最多只能涂到 35%"，剩下 65% permanently
+    // 留给底图层，表现为"刷上去的颜色被冲淡、像蒙了一层"。低不透明度现在是主动选择的
+    // 混合行为，不该是默认值。
+    private float terrainSurfaceBrushOpacity = 1f;
     private bool terrainBrushStrokeUndoActive = false;
     private int terrainBrushStrokeUndoGroup = -1;
 
@@ -4248,7 +4255,12 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 
         Texture2D diffuse = GetTerrainLayerDiffuseTexture(material, key);
         if (diffuse != null)
+        {
+            // GSM 可以引用任意目录的贴图，绕过 Ground/Surface 的导入标准。
+            // TerrainLayer 是平铺的，Clamp 会让第一格之外整片变成边缘拉出来的条纹。
+            SkyPrisonGroundSurfaceTexturePostprocessor.EnsureTerrainSurfaceTextureTiling(diffuse);
             layer.diffuseTexture = diffuse;
+        }
         layer.tileSize = new Vector2(4f, 4f);
         layer.tileOffset = Vector2.zero;
         layer.specular = Color.black;

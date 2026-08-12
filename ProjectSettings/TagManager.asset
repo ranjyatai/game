@@ -36,7 +36,7 @@ TagManager:
   - StaticObstacle
   - DecorationTrigger
   - GroundVisual
-  - 
+  - WalkableProbe
   - 
   - 
   - 

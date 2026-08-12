@@ -70,11 +70,47 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         BuildCollisionFromDefinition(root, collisionRoot, visualRoot, definitionSO);
         BuildPhysicsStructureFromDefinition(root, visualRoot, collisionRoot, definition);
         BuildOcclusionFromDefinition(root, ruleRoot, visualRoot, definitionSO);
+        BuildWalkableSurfaceMarker(root, definitionSO);
         ApplyStandardLayers(root, definitionSO);
 
         EditorUtility.SetDirty(root);
         if (logResult)
             Debug.Log(BuildResultLog(root, definition, definitionSO), root);
+    }
+
+    /// <summary>
+    /// 按定义的 walkableSurface 在根节点挂 / 收 GroundSurfaceMarker。
+    ///
+    /// 为什么在 Builder 而不是 RuntimeApplier：
+    /// Applier 里确实有一份同样的逻辑（ApplyWalkableSurface），但它只在 ApplyDefinition()
+    /// 里跑，而 ApplyDefinition() 只有右键 ContextMenu 一个入口——OnEnable 明确不调它。
+    /// 于是放置和重建流程走完，碰撞体建好了、marker 却永远是空的，脚步声查不到地表。
+    /// 结构生成唯一归 Builder，marker 是结构的一部分，就该在这里。
+    ///
+    /// 挂在根节点：GroundQueryService 命中碰撞体后是 GetComponentInParent 往上找的，
+    /// 根节点是所有碰撞结构的祖先，Box / Mesh / CustomRoot 三种模式都覆盖得到。
+    /// </summary>
+    private static void BuildWalkableSurfaceMarker(GameObject root, SerializedObject definitionSO)
+    {
+        var surface = GetObject<GroundSurfaceMaterialDefinition>(definitionSO, "walkableSurface", null);
+        GroundSurfaceMarker marker = root.GetComponent<GroundSurfaceMarker>();
+
+        if (surface == null)
+        {
+            // 从「能踩」改回「不能踩」时要收掉，否则残留一个 surfaceDefinition 为空的
+            // marker，会让 GroundQueryService 认为这里有地面却没有材质——比完全没有
+            // marker 更难查。
+            if (marker != null)
+                Undo.DestroyObjectImmediate(marker);
+            return;
+        }
+
+        if (marker == null)
+            marker = Undo.AddComponent<GroundSurfaceMarker>(root);
+
+        marker.surfaceDefinition = surface;
+        marker.surfaceType = surface.surfaceType;
+        EditorUtility.SetDirty(marker);
     }
 
     private static void BuildCollisionFromDefinition(GameObject root, Transform collisionRoot, Transform visualRoot, SerializedObject definitionSO)
@@ -83,6 +119,8 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         bool blockPlayer = GetBool(definitionSO, "blockPlayer", true);
         bool blockEnemy = GetBool(definitionSO, "blockEnemy", true);
         bool blockProjectile = GetBool(definitionSO, "blockProjectile", true);
+        // 填了可站立表面材质 = 这东西是要被踩的，碰撞体只用来给地表查询当靶子。
+        bool walkable = GetObject<GroundSurfaceMaterialDefinition>(definitionSO, "walkableSurface", null) != null;
 
         ClearGeneratedCollisionChildren(collisionRoot);
 
@@ -118,7 +156,7 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
             box.isTrigger = false;
             box.size = AbsSize(size);
             box.center = offset;
-            SetLayerIfExists(boxNode.gameObject, ResolveBlockingLayer(blockPlayer, blockEnemy, blockProjectile));
+            SetLayerIfExists(boxNode.gameObject, ResolveBlockingLayer(blockPlayer, blockEnemy, blockProjectile, walkable));
             return;
         }
 
@@ -126,7 +164,7 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         {
             Transform meshRoot = EnsureChild(collisionRoot, MainCollisionMeshRootName);
             ResetLocalTransform(meshRoot);
-            BuildMeshCollisionProxies(meshRoot, visualRoot, ResolveBlockingLayer(blockPlayer, blockEnemy, blockProjectile));
+            BuildMeshCollisionProxies(meshRoot, visualRoot, ResolveBlockingLayer(blockPlayer, blockEnemy, blockProjectile, walkable));
             return;
         }
 
@@ -1616,10 +1654,25 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         }
     }
 
-    private static string ResolveBlockingLayer(bool blockPlayer, bool blockEnemy, bool blockProjectile)
+    private static string ResolveBlockingLayer(bool blockPlayer, bool blockEnemy, bool blockProjectile, bool walkable)
     {
-        // 暂时统一走 World3D，避免凭空发明不存在的层。
-        // 后续若你有专用 DecorationPhysics / ProjectileBlocker 层，再在这里集中映射。
+        // 「能踩上去、但谁都不挡」——铁轨、地面铁板、低矮台沿。
+        //
+        // 这类装饰物必须有实体碰撞体，否则 GroundQueryService 查不到它是什么地表：
+        // 那个查询是向下射线，而且明确排除 trigger。但实体碰撞体默认会挡人。
+        //
+        // WalkableProbe 层同时满足两边：射线检测只看 layerMask、不看物理碰撞矩阵，
+        // 而这一层不在 UnitMovementController.blockingLayers 和
+        // TerrainGroundMotorV5.bodyBlockMask / groundMask 里。于是射线看得见、移动看不见。
+        //
+        // 条件要求 walkable（定义里填了 walkableSurface），而不是只看三个阻挡开关全关：
+        // 只凭开关判断会一次性改掉一批现有装饰物的阻挡行为，那是关卡设计问题，
+        // 不该由脚步声功能顺手带走。
+        if (walkable && !blockPlayer && !blockEnemy && !blockProjectile)
+            return GroundSurfaceMarker.WalkableProbeLayerName;
+
+        // 其余统一走 World3D。后续若有专用 DecorationPhysics / ProjectileBlocker 层，
+        // 继续在这里集中映射。
         return "World3D";
     }
 

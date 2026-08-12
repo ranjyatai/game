@@ -1200,6 +1200,34 @@ public class SkyPrisonTerrainDecorationDefinitionPage : SkyPrisonEditorPageBase
             PropertyField("阻挡子弹", "blockProjectile");
         }
         PropertyField("阻挡视线", "blockVision");
+
+        EditorGUILayout.Space(6f);
+
+        // walkableSurface 一直没有入口：数据结构里有、TerrainDecorationRuntimeApplier 也在消费，
+        // 但只有批量导入窗口能在导入时设一个统一默认值，导入完就再也改不了。
+        // 结果是 35 个定义没有一个填过，脚步声永远只有基础鞋声。
+        //
+        // 放在「碰撞」段末尾，是因为它和上面那组阻挡开关最容易被混为一谈——
+        // 挡不挡人和踩上去是什么声音是两件独立的事，并排摆着才看得出区别。
+        PropertyField("可站立表面材质", "walkableSurface");
+        if (selectedDefinition != null && selectedDefinition.walkableSurface == null)
+        {
+            EditorGUILayout.HelpBox(
+                "留空：踩上去只有基础鞋声，没有地表音层。\n" +
+                "树、栏杆、墙这类挡人但站不上去的保持留空；站台、楼梯、平台、桥、铁轨填对应地表材质。",
+                MessageType.None);
+        }
+        else if (selectedDefinition != null)
+        {
+            GroundSurfaceMaterialDefinition surface = selectedDefinition.walkableSurface;
+            string audioKey = surface.EffectiveAudioRuntimeLayerKey;
+            bool hasAudio = !string.IsNullOrWhiteSpace(audioKey);
+            EditorGUILayout.HelpBox(
+                hasAudio
+                    ? $"踩上去播放地表音层「{audioKey}」，表面类型 {surface.surfaceType}。"
+                    : $"地表材质「{surface.displayName}」没有配置音声 Key，踩上去仍然只有基础鞋声。",
+                hasAudio ? MessageType.Info : MessageType.Warning);
+        }
     }
 
 

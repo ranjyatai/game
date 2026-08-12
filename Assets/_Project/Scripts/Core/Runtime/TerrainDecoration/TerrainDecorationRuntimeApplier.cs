@@ -194,9 +194,54 @@ public class TerrainDecorationRuntimeApplier : MonoBehaviour
         ApplyShadowSettings(definition);
         ApplyHeightFade(definition);
         ApplyWalkableSurface(definition);
+        ApplyWalkableProbeLayer(definition);
 
         if (applyMaterialSlotsOnApply)
             ApplyMaterialSlots(definition);
+    }
+
+    /// <summary>
+    /// 「能踩上去、但不该挡住任何人」的装饰物（铁轨、地面铁板、低矮台沿）把碰撞体
+    /// 移到 WalkableProbe 层。
+    ///
+    /// 为什么必须有碰撞体：GroundQueryService 靠向下射线找地表，而它明确排除 trigger
+    /// （QueryTriggerInteraction.Ignore 加一道 col.isTrigger 过滤）。没有实体碰撞体，
+    /// 射线打不到，marker 填了也没用。
+    ///
+    /// 为什么不会绊脚：WalkableProbe 不在 UnitMovementController.blockingLayers 和
+    /// TerrainGroundMotorV5.bodyBlockMask 里，水平 CapsuleCast 和穿透修正都看不见它。
+    /// 射线检测不看物理碰撞矩阵、只看 layerMask，所以查询照常命中。
+    ///
+    /// 为什么这里还要再设一次（Builder 的 ResolveBlockingLayer 已经设过）：
+    /// 同一次 Apply 里 ApplyLayerStructure() 会无条件 SetLayerRecursive(collisionRoot, World3D)，
+    /// 把 Builder 生成时定好的层冲掉。这个函数在它之后跑，负责把层重新按住。
+    /// 判定条件必须和 ResolveBlockingLayer 保持一致，否则两边会打架。
+    /// </summary>
+    private void ApplyWalkableProbeLayer(TerrainDecorationDefinition definition)
+    {
+        if (collisionRoot == null)
+            return;
+
+        bool walkableAndNonBlocking =
+            definition.walkableSurface != null &&
+            !definition.blockPlayer &&
+            !definition.blockEnemy &&
+            !definition.blockProjectile;
+
+        if (!walkableAndNonBlocking)
+            return;
+
+        int probeLayer = LayerMask.NameToLayer(GroundSurfaceMarker.WalkableProbeLayerName);
+        if (probeLayer < 0)
+        {
+            Debug.LogWarning(
+                $"[TerrainDecorationRuntimeApplier] {name}: 缺少「{GroundSurfaceMarker.WalkableProbeLayerName}」层，" +
+                $"「{definition.displayName}」的碰撞体仍留在 World3D，会挡住角色。" +
+                $"跑一次 Tools/Sky Prison/Ground/Surface/接入可站立装饰物探测层 建层并修正 mask。", this);
+            return;
+        }
+
+        SetLayerRecursive(collisionRoot, probeLayer);
     }
 
     /// <summary>
