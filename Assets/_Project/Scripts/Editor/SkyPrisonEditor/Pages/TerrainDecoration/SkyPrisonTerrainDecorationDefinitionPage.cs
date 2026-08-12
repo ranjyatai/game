@@ -1195,9 +1195,20 @@ public class SkyPrisonTerrainDecorationDefinitionPage : SkyPrisonEditorPageBase
         }
         using (new EditorGUI.DisabledScope(!hasCollision))
         {
-            PropertyField("阻挡玩家", "blockPlayer");
-            PropertyField("阻挡敌人", "blockEnemy");
+            DrawBlockUnitsToggle();
             PropertyField("阻挡子弹", "blockProjectile");
+        }
+        using (new EditorGUI.DisabledScope(false))
+        {
+            PropertyField("列表排序优先级", "sortPriority");
+            PropertyField("视觉仅编辑器可见", "editorOnlyVisual");
+            if (selectedDefinition != null && selectedDefinition.editorOnlyVisual)
+            {
+                EditorGUILayout.HelpBox(
+                    "空气墙模式：视觉留在 Default 层，游戏里不渲染（四台相机的 cullingMask 都不含第 0 位）。\n" +
+                    "碰撞盒改为自动贴合视觉包围盒，上面的碰撞 Size / Offset 会被忽略。",
+                    MessageType.Info);
+            }
         }
         PropertyField("阻挡视线", "blockVision");
 
@@ -1738,6 +1749,38 @@ public class SkyPrisonTerrainDecorationDefinitionPage : SkyPrisonEditorPageBase
         drawer?.Invoke();
         EditorGUILayout.EndVertical();
         GUILayout.Space(4f);
+    }
+
+    /// <summary>
+    /// 「阻挡单位」一个开关同时写 blockPlayer 和 blockEnemy。
+    ///
+    /// 这两个字段全项目从来没有过不同的值，而拆开需要两个额外的层和逐单位的 mask 配置。
+    /// UI 上收成一个概念，字段留着不动，将来真要拆时数据还在。见
+    /// TerrainDecorationDefinition.BlocksUnits。
+    /// </summary>
+    private void DrawBlockUnitsToggle()
+    {
+        SerializedProperty player = selectedSO.FindProperty("blockPlayer");
+        SerializedProperty enemy = selectedSO.FindProperty("blockEnemy");
+        if (player == null || enemy == null)
+        {
+            EditorGUILayout.LabelField("阻挡单位", "字段不存在");
+            return;
+        }
+
+        // 历史数据万一不同步，按"任一为真即阻挡"读，跟 BlocksUnits 保持一致。
+        bool current = player.boolValue || enemy.boolValue;
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("阻挡单位", GUILayout.Width(150f));
+        EditorGUI.BeginChangeCheck();
+        bool updated = EditorGUILayout.Toggle(current);
+        if (EditorGUI.EndChangeCheck())
+        {
+            player.boolValue = updated;
+            enemy.boolValue = updated;
+        }
+        EditorGUILayout.EndHorizontal();
     }
 
     private void PropertyField(string label, string propertyName, bool multiline = false)

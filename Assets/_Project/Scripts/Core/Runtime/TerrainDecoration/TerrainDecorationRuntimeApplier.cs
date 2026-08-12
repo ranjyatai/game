@@ -190,7 +190,7 @@ public class TerrainDecorationRuntimeApplier : MonoBehaviour
             return;
 
         ApplyVisualRotation(definition);
-        ApplyLayerStructure();
+        ApplyLayerStructure(definition);
         ApplyShadowSettings(definition);
         ApplyHeightFade(definition);
         ApplyWalkableSurface(definition);
@@ -222,26 +222,18 @@ public class TerrainDecorationRuntimeApplier : MonoBehaviour
         if (collisionRoot == null)
             return;
 
-        bool walkableAndNonBlocking =
-            definition.walkableSurface != null &&
-            !definition.blockPlayer &&
-            !definition.blockEnemy &&
-            !definition.blockProjectile;
-
-        if (!walkableAndNonBlocking)
-            return;
-
-        int probeLayer = LayerMask.NameToLayer(GroundSurfaceMarker.WalkableProbeLayerName);
-        if (probeLayer < 0)
+        string layerName = definition.ResolveCollisionLayerName();
+        int layer = LayerMask.NameToLayer(layerName);
+        if (layer < 0)
         {
             Debug.LogWarning(
-                $"[TerrainDecorationRuntimeApplier] {name}: 缺少「{GroundSurfaceMarker.WalkableProbeLayerName}」层，" +
-                $"「{definition.displayName}」的碰撞体仍留在 World3D，会挡住角色。" +
-                $"跑一次 Tools/Sky Prison/Ground/Surface/接入可站立装饰物探测层 建层并修正 mask。", this);
+                $"[TerrainDecorationRuntimeApplier] {name}: 缺少「{layerName}」层，" +
+                $"「{definition.displayName}」的碰撞体留在 World3D，阻挡开关不会生效。" +
+                "跑一次 Tools/Sky Prison/Ground/Surface/接入可站立装饰物探测层 建层并修正 mask。", this);
             return;
         }
 
-        SetLayerRecursive(collisionRoot, probeLayer);
+        SetLayerRecursive(collisionRoot, layer);
     }
 
     /// <summary>
@@ -1681,7 +1673,7 @@ public class TerrainDecorationRuntimeApplier : MonoBehaviour
         return rendererTr;
     }
 
-    private void ApplyLayerStructure()
+    private void ApplyLayerStructure(TerrainDecorationDefinition definition = null)
     {
         int defaultLayer = GetLayer("Default", 0);
         int worldLayer = GetLayer("World3D", defaultLayer);
@@ -1710,7 +1702,10 @@ public class TerrainDecorationRuntimeApplier : MonoBehaviour
         if (stencilWriterRoot == null) stencilWriterRoot = transform.Find("StencilWriterRoot");
         if (editorGizmoRoot == null) editorGizmoRoot = transform.Find("EditorGizmoRoot");
 
-        SetLayerRecursive(visualRoot, worldLayer);
+        // 空气墙这类工具物件的视觉留在 Default(0)：四台相机的 cullingMask 都不含第 0 位，
+        // 游戏里一帧都不渲染，Scene 视图照常可见。和 Builder 的 ApplyStandardLayers 一致。
+        bool editorOnlyVisual = definition != null && definition.editorOnlyVisual;
+        SetLayerRecursive(visualRoot, editorOnlyVisual ? defaultLayer : worldLayer);
         SetLayerRecursive(shadowCasterRoot, worldLayer);
         SetLayerRecursive(mossRoot, worldLayer);
         SetLayerRecursive(fxRoot, worldLayer);

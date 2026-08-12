@@ -41,6 +41,11 @@ public static class SkyPrisonWalkableProbeLayerSetup
     /// </summary>
     public static int RunSetup(bool interactive)
     {
+        // 「挡单位、不挡子弹」的装饰物层。不需要改任何 mask：移动 mask 默认 ~0 已经
+        // 包含它（正是我们要的"挡单位"），而子弹那边是层白名单、本来就不含它。
+        // 只要保证层存在即可。
+        EnsureLayer(TerrainDecorationDefinition.UnitOnlyObstacleLayerName);
+
         int layer = EnsureLayer(GroundSurfaceMarker.WalkableProbeLayerName);
         if (layer < 0)
         {

@@ -37,7 +37,7 @@ TagManager:
   - DecorationTrigger
   - GroundVisual
   - WalkableProbe
-  - 
+  - Obstacle_UnitOnly
   - 
   - 
   m_SortingLayers:

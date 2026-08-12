@@ -65,15 +65,19 @@ MonoBehaviour:
   blockEnemy: 1
   blockVision: 0
   blockProjectile: 0
+  walkableSurface: {fileID: 0}
   lockRuleSpaceFromVisualRandomRotation: 0
   frontBackPlaneMode: 1
   ruleForwardLocal: {x: 0, y: 0, z: 1}
   rulePlaneOriginLocal: {x: 0, y: 0, z: 0}
   planePushOutDistance: 0.05
-  occlusionMode: 0
+  occlusionMode: 1
   fadeWhenBlockingPlayer: 1
   fadeAlpha: 0.45
   fadeDuration: 0.12
+  enableHeightFade: 0
+  heightFadeThreshold: 15
+  heightFadeDistance: 2
   frontBackOcclusionWidthMultiplier: 1
   frontBackOcclusionHeightMultiplier: 1
   frontBackOcclusionDepthMultiplier: 1

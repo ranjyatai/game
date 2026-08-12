@@ -58,13 +58,14 @@ MonoBehaviour:
   visualRandomRotationMin: {x: 0, y: -50, z: 0}
   visualRandomRotationMax: {x: 0, y: 50, z: 0}
   visualRandomRotationAffectsRules: 1
-  collisionMode: 1
+  collisionMode: 2
   collisionSize: {x: 5.447938, y: 3.036243, z: 3.7480037}
   collisionOffset: {x: 0.0021572113, y: 0, z: -1.7850018}
   blockPlayer: 1
   blockEnemy: 1
   blockVision: 1
   blockProjectile: 1
+  walkableSurface: {fileID: 0}
   lockRuleSpaceFromVisualRandomRotation: 1
   frontBackPlaneMode: 1
   ruleForwardLocal: {x: 0, y: 0, z: 1}
@@ -74,6 +75,9 @@ MonoBehaviour:
   fadeWhenBlockingPlayer: 0
   fadeAlpha: 0.45
   fadeDuration: 0.12
+  enableHeightFade: 0
+  heightFadeThreshold: 15
+  heightFadeDistance: 2
   frontBackOcclusionWidthMultiplier: 1
   frontBackOcclusionHeightMultiplier: 1
   frontBackOcclusionDepthMultiplier: 1

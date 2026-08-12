@@ -152,10 +152,78 @@ public class SkyPrisonSwordQiProjectile : MonoBehaviour
     /// 两条检测路径都调这个方法，靠 _hitAlready 去重，不会同一个目标结算两次。
     /// hitPoint 只用来生成命中特效的位置，不影响伤害结算本身。返回 true 表示这次
     /// 命中被处理了（不代表弹幕一定被销毁——destroyOnHit=false 时可以继续飞）。</summary>
+    /// <summary>
+    /// 会挡住弹道的几何体所在层。白名单而不是黑名单——扫掠用的是 Physics.AllLayers，
+    /// 用黑名单的话任何新层默认都会挡子弹，很容易误伤。
+    ///
+    /// 不含 Obstacle_UnitOnly：那一层就是「挡单位、不挡子弹」的装饰物。
+    /// 不含 WalkableProbe：那一层谁都不挡，只用来给地表查询当靶子。
+    /// </summary>
+    private static readonly string[] ProjectileBlockingLayerNames =
+    {
+        "World3D",
+        "StaticObstacle",
+    };
+
+    private static int _projectileBlockMask = -1;
+
+    private static int ProjectileBlockMask
+    {
+        get
+        {
+            if (_projectileBlockMask >= 0)
+                return _projectileBlockMask;
+
+            int mask = 0;
+            for (int i = 0; i < ProjectileBlockingLayerNames.Length; i++)
+            {
+                int layer = LayerMask.NameToLayer(ProjectileBlockingLayerNames[i]);
+                if (layer >= 0)
+                    mask |= 1 << layer;
+            }
+
+            _projectileBlockMask = mask;
+            return _projectileBlockMask;
+        }
+    }
+
+    /// <summary>
+    /// 这个碰撞体是不是"墙"——撞上就该让弹道停下。
+    /// </summary>
+    private static bool BlocksProjectile(Collider other)
+    {
+        // 受击框、前后遮挡代理、视野遮挡盒全是 trigger。它们不是实体，不该挡弹道。
+        if (other.isTrigger)
+            return false;
+
+        // 地面不吃子弹。TerrainCollider 铺满整张图且和墙共用 World3D 层，按层没法分开，
+        // 只能按类型排除。UnitMovementController 的水平 CapsuleCast 出于同样的理由
+        // 也排除了 TerrainCollider（否则角色会被地面当成墙挡住）。
+        if (other is TerrainCollider)
+            return false;
+
+        return (ProjectileBlockMask & (1 << other.gameObject.layer)) != 0;
+    }
+
     private bool TryProcessHit(Collider other, Vector3 hitPoint)
     {
         if (_owner != null && other.transform.IsChildOf(_owner.transform)) return false;
         if (_hitAlready.Contains(other)) return false;
+
+        // 先判几何阻挡：命中墙就地消失，不结算伤害。
+        // 放在敌对判定之前——墙挡子弹跟谁发射的、打不打得到人都没有关系。
+        if (BlocksProjectile(other))
+        {
+            if (_skill.projectile.impactVfx != null)
+            {
+                EffekseerHandle wallImpact = EffekseerSystem.PlayEffect(_skill.projectile.impactVfx, hitPoint);
+                int impactLayer = LayerMask.NameToLayer("World3D");
+                wallImpact.layer = impactLayer < 0 ? 0 : impactLayer;
+            }
+
+            DestroySelf();
+            return true;
+        }
 
         UnitCombatHurtbox hurtbox =
             other.GetComponent<UnitCombatHurtbox>()
@@ -180,7 +248,11 @@ public class SkyPrisonSwordQiProjectile : MonoBehaviour
         if (targetAction != null && targetAction.IsDodging) return false;
 
         _hitAlready.Add(other);
-        _ownerActionModule?.ResolveSkillHit(_skill, other);
+        // ?. 不会走 UnityEngine.Object 的假null检测——弹道飞行期间发射者单位如果中途
+        // 被销毁(destroyOnHit=false时弹道可能比发射者活得久)，?.ResolveSkillHit 会对
+        // 已销毁对象抛 MissingReferenceException。改成显式 != null 判断。
+        if (_ownerActionModule != null)
+            _ownerActionModule.ResolveSkillHit(_skill, other);
 
         if (_skill.projectile.impactVfx != null)
         {

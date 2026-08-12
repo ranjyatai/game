@@ -156,14 +156,74 @@ public class TerrainDecorationDefinition : ScriptableObject
     public Vector3 visualRandomRotationMax = Vector3.zero;
     public bool visualRandomRotationAffectsRules = false;
 
+    [Tooltip("列表排序优先级。数字越小越靠前，相同则按显示名字母序。\n" +
+             "空气墙这类高频摆放的工具类物件设成负数，正常美术资产保持 0。")]
+    public int sortPriority = 0;
+
+    [Tooltip("视觉只在编辑器里可见——空气墙用。\n\n" +
+             "勾上之后 VisualRoot 会留在 Default(0) 层而不是 World3D。本项目四台相机的 " +
+             "cullingMask 都不含第 0 位（Main=World3D+Character2D，GamePlay=UI+FogOfWar，" +
+             "OcclusionMask=OcclusionMask，OverheadUI=OverheadUI），所以游戏里一帧都不会渲染，" +
+             "而 Scene 视图有自己的层显示开关、照常可见。\n\n" +
+             "同时碰撞盒改为贴合视觉的包围盒——视觉存在的意义就是把体积画出来，" +
+             "两者必须一致，所以这里不再读碰撞 Size / Offset。")]
+    public bool editorOnlyVisual = false;
+
     [Header("Collision")]
     public TerrainDecorationCollisionMode collisionMode = TerrainDecorationCollisionMode.Box;
     public Vector3 collisionSize = new Vector3(1f, 1f, 1f);
     public Vector3 collisionOffset = new Vector3(0f, 0.5f, 0f);
+    // blockPlayer / blockEnemy 现在始终同步，由「阻挡单位」一个开关同时写入。
+    //
+    // 拆成两个字段是历史设计，但全部 35 个定义里这两个值从来没有不同过——
+    // 没有一处需要「挡玩家不挡敌人」。而阻挡是按 LayerMask 判定的，真要区分就得给
+    // 「只挡玩家」「只挡敌人」各开一个层，还要给玩家和敌人预制体配不同的 mask，
+    // 为一个零需求的能力占掉两个层槽，不划算。
+    //
+    // 字段保留不动（改序列化要迁移 35 个资产，风险大于收益），读的时候一律走
+    // BlocksUnits。将来真出现需求时数据结构还在，直接拆开即可。
     public bool blockPlayer = true;
     public bool blockEnemy = true;
     public bool blockVision = false;
     public bool blockProjectile = false;
+
+    /// <summary>是否阻挡单位移动。读这个，不要单独读 blockPlayer / blockEnemy。</summary>
+    public bool BlocksUnits => blockPlayer || blockEnemy;
+
+    /// <summary>
+    /// 「挡单位、但不挡子弹」的碰撞体所在层。
+    ///
+    /// 挡两者的留在 World3D，谁都不挡的走 WalkableProbe，只差这一档需要单独的层：
+    /// 子弹的阻挡判定是按层白名单做的，这一层不在名单里，所以子弹穿过去、角色被挡住。
+    /// </summary>
+    public const string UnitOnlyObstacleLayerName = "Obstacle_UnitOnly";
+
+    /// <summary>
+    /// 把「挡不挡单位 / 挡不挡子弹」映射到碰撞体应该在的层。
+    ///
+    ///   挡单位 + 挡子弹   -> World3D（默认，和一切既有几何体一致）
+    ///   挡单位 + 不挡子弹 -> Obstacle_UnitOnly
+    ///   都不挡            -> WalkableProbe（仍能被地表查询射线打中，用来出脚步声）
+    ///
+    /// 「不挡单位但挡子弹」是第四种组合，全项目 0 个定义用到，没有为它单独开层，
+    /// 落到 World3D。真需要时再加，那时候也有具体场景验证设计。
+    ///
+    /// 放在定义上而不是 Builder 里：Builder 在 Editor 程序集、RuntimeApplier 在
+    /// Assembly-CSharp，两边都要用这套映射。各写一份必然漂移——Applier 那边本来就
+    /// 要在 ApplyLayerStructure 之后把层重新按住，判定条件一旦和 Builder 不一致
+    /// 就会互相打架。
+    /// </summary>
+    public string ResolveCollisionLayerName()
+    {
+        if (BlocksUnits)
+            return blockProjectile ? "World3D" : UnitOnlyObstacleLayerName;
+
+        // 不挡单位却要挡子弹：没有对应的层，按两者都挡处理。
+        if (blockProjectile)
+            return "World3D";
+
+        return GroundSurfaceMarker.WalkableProbeLayerName;
+    }
 
     [Tooltip("可站立表面的地表材质。填了才会产生地表脚步声层；留空只有基础鞋声。\n\n" +
              "注意「挡住」和「能站上去」不是一回事——树、栏杆、墙 blockPlayer 也是 true，" +

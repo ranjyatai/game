@@ -187,9 +187,40 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 
     // ── Unit placement ──────────────────────────────────────────
     private const string UnitDefinitionSearchFilter = "t:UnitDefinition";
-    private const string UnitParentPath = "WorldRoot/UnitRoot";
+    // 兜底容器。原来写的是 "WorldRoot/UnitRoot"，但场景的分类树在根级 UnitRoot 下，
+    // GetOrCreateParent 找不到就自己建了个空壳，放下去的单位全落在分类树外面。
+    private const string UnitParentPath = SkyPrisonUnitContainerLayout.UnitRootPath;
+
+    /// <summary>
+    /// 按单位身份分流到场景既有的分类树，而不是全塞进一个容器。
+    ///
+    /// 场景里本来就建好了 PlayerRoot / EnemyRoot(Boss,Elite,Mob) / NPCRoot / NeutralRoot
+    /// / DestructibleRoot / LootRoot 这套结构，但放置工具一直无视它、无条件用
+    /// UnitParentPath。结果是手摆的单位在分类树里、工具放的单位在树外面，
+    /// "这张图摆了哪些怪"没法直接数。
+    ///
+    /// NPCRoot 下还有 Follower / Quest / Vendor 三个子类，CharacterIdentity 区分不出来
+    /// （它们都是 Ally），所以统一进 NPCFriendlyRoot。真要细分得给 UnitDefinition
+    /// 加一个 NPC 角色字段，那是另一件事。
+    /// </summary>
+    private static string ResolveUnitParentPath(UnitDefinition definition)
+        => SkyPrisonUnitContainerLayout.ResolveUnitParentPath(definition);
+
+    /// <summary>
+    /// 孵化器单独归到 EnemySpawnerRoot，不和单位混在一起。
+    /// 它是刷怪配置不是单位，混在 UnitRoot 里会让"场景里到底摆了哪些怪"变得难数。
+    /// 路径不存在时 GetOrCreateParent 会补建。
+    /// </summary>
+    private const string UnitSpawnerParentPath = SkyPrisonUnitContainerLayout.SpawnerParentPath;
     private readonly List<UnitDefinition> unitDefinitions = new List<UnitDefinition>();
     private UnitDefinition selectedUnitDefinition;
+
+    /// <summary>
+    /// 开启后，单位放置模式落下的是「单位孵化器」而不是选中的单位定义。
+    /// 孵化器是工具预制体、不是 UnitDefinition，进不了那个列表，但放置手感应该一致，
+    /// 所以复用同一条 OnUnitPlacementSceneGUI / PlaceUnitAtPosition 链路，只在末端分叉。
+    /// </summary>
+    private bool placeUnitSpawnerMode = false;
 
     private enum UnitPlacementFaction
     {
@@ -1926,7 +1957,9 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
                 canEnable = IsTerrainDefaultToolSelected() || groundBrushMode != GroundBrushMode.SurfaceMaterial || selectedSurfaceMaterial != null;
                 break;
             case PlacementObjectKind.Unit:
-                canEnable = selectedUnitDefinition != null && selectedUnitDefinition.prefab != null;
+                // 孵化器不是 UnitDefinition，走同一条放置链路但不需要选中单位。
+                canEnable = placeUnitSpawnerMode
+                    || (selectedUnitDefinition != null && selectedUnitDefinition.prefab != null);
                 break;
             case PlacementObjectKind.Item:
                 canEnable = selectedItemDefinition != null;
@@ -6997,7 +7030,15 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             if (def != null)
                 definitions.Add(def);
         }
-        definitions.Sort((a, b) => string.Compare(GetDisplayName(a), GetDisplayName(b), StringComparison.OrdinalIgnoreCase));
+        // 先按 sortPriority、再按显示名。空气墙这类高频摆放的工具类物件设成负数就能置顶，
+        // 不用靠给它起个以符号开头的名字来骗字母序。
+        definitions.Sort((a, b) =>
+        {
+            int byPriority = a.sortPriority.CompareTo(b.sortPriority);
+            if (byPriority != 0)
+                return byPriority;
+            return string.Compare(GetDisplayName(a), GetDisplayName(b), StringComparison.OrdinalIgnoreCase);
+        });
         if (selectedDefinition == null && definitions.Count > 0)
             selectedDefinition = definitions[0];
         RefreshSurfaceMaterials();
@@ -8598,6 +8639,56 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         return result;
     }
 
+    private const string UnitSpawnerPrefabPath = "Assets/_Project/Data/Definitions/Core/Spawners/UnitSpawner.prefab";
+
+    /// <summary>
+    /// 单位孵化器固定钉在单位列表最上方。
+    ///
+    /// 它不是 UnitDefinition，是配置刷怪的工具预制体，所以进不了下面那个
+    /// List&lt;UnitDefinition&gt;，只能单独画一行。预制体整棵树都在 Default(0) 层，
+    /// 四台相机的 cullingMask 都不含第 0 位，游戏里看不到。
+    /// </summary>
+    private void DrawUnitSpawnerPinnedRow()
+    {
+        GameObject spawnerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(UnitSpawnerPrefabPath);
+
+        EditorGUILayout.BeginVertical("box");
+        if (spawnerPrefab == null)
+        {
+            EditorGUILayout.HelpBox($"找不到单位孵化器预制体：{UnitSpawnerPrefabPath}", MessageType.Warning);
+            EditorGUILayout.EndVertical();
+            return;
+        }
+
+        bool wasSelected = placeUnitSpawnerMode;
+        Color oldBg = GUI.backgroundColor;
+        if (wasSelected)
+            GUI.backgroundColor = new Color(0.70f, 0.16f, 0.08f, 1f);
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("单位孵化器", EditorStyles.boldLabel, GUILayout.Width(150f));
+        EditorGUILayout.LabelField("工具 / 刷怪配置（游戏中不可见）", EditorStyles.miniLabel);
+        if (GUILayout.Button(wasSelected ? "取消选择" : "选择放置", GUILayout.Width(90f)))
+        {
+            placeUnitSpawnerMode = !wasSelected;
+            // 切到孵化器时清掉单位选择，避免"进入放置"之后不知道会落下哪个。
+            if (placeUnitSpawnerMode)
+                selectedUnitDefinition = null;
+            SetPlacementMode(placeUnitSpawnerMode);
+        }
+        EditorGUILayout.EndHorizontal();
+
+        if (placeUnitSpawnerMode)
+        {
+            EditorGUILayout.HelpBox(
+                "已选中孵化器。在 Scene 里点击落点放置，右键或 Esc 退出。",
+                MessageType.Info);
+        }
+
+        GUI.backgroundColor = oldBg;
+        EditorGUILayout.EndVertical();
+    }
+
     private void DrawUnitPlacePage()
     {
         if (unitDefinitions.Count == 0)
@@ -8607,6 +8698,8 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         EditorGUILayout.LabelField("筛选", EditorStyles.boldLabel);
         unitSearch = EditorGUILayout.TextField("搜索", unitSearch);
         EditorGUILayout.EndVertical();
+
+        DrawUnitSpawnerPinnedRow();
 
         List<UnitDefinition> filtered = GetFilteredUnitDefinitions();
         Rect rect = GUILayoutUtility.GetRect(0f, 100000f, ModuleListFixedHeight, ModuleListFixedHeight, GUILayout.ExpandWidth(true));
@@ -8638,7 +8731,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             EditorGUILayout.LabelField("名称", u.displayName);
             EditorGUILayout.LabelField("类型", $"{u.defineType} / {u.characterIdentity}");
             EditorGUILayout.LabelField("Prefab", u.prefab != null ? u.prefab.name : "⚠ 未配置");
-            EditorGUILayout.LabelField("父节点", UnitParentPath);
+            EditorGUILayout.LabelField("父节点", ResolveUnitParentPath(selectedUnitDefinition));
             unitPlacementFaction = (UnitPlacementFaction)EditorGUILayout.EnumPopup("放置阵营", unitPlacementFaction);
             if (unitPlacementFaction != UnitPlacementFaction.FollowDefinition)
                 EditorGUILayout.HelpBox($"放置后将覆盖运行时身份为「{unitPlacementFaction}」，单位定义本身不受影响。", MessageType.Info);
@@ -8680,6 +8773,8 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         if (GUI.Button(rect, GUIContent.none, GUIStyle.none))
         {
             selectedUnitDefinition = def;
+            // 选了具体单位就退出孵化器模式，否则会出现"选中的是单位、落下去却是孵化器"。
+            placeUnitSpawnerMode = false;
             if (placementMode && currentKind == PlacementObjectKind.Unit)
                 SetPlacementMode(false);
             Repaint();
@@ -8826,9 +8921,35 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         return result;
     }
 
+    /// <summary>
+    /// 落一个单位孵化器。不绑 UnitDefinition、不写阵营覆盖——它不是单位，
+    /// 是一份刷怪配置，具体刷什么由它自己的 Inspector 决定。
+    /// </summary>
+    private void PlaceUnitSpawnerAtPosition(Vector3 position)
+    {
+        GameObject spawnerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(UnitSpawnerPrefabPath);
+        if (spawnerPrefab == null)
+        {
+            Debug.LogWarning($"[MapPlacement] 找不到单位孵化器预制体：{UnitSpawnerPrefabPath}");
+            return;
+        }
+
+        Transform parent = GetOrCreateParent(UnitSpawnerParentPath);
+        GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(spawnerPrefab, parent);
+        if (instance == null)
+            return;
+
+        instance.name = spawnerPrefab.name;
+        instance.transform.position = position;
+        Undo.RegisterCreatedObjectUndo(instance, "Place Unit Spawner");
+
+        Selection.activeGameObject = instance;
+        EditorGUIUtility.PingObject(instance);
+    }
+
     private void OnUnitPlacementSceneGUI(SceneView sceneView)
     {
-        if (selectedUnitDefinition == null || selectedUnitDefinition.prefab == null)
+        if (!placeUnitSpawnerMode && (selectedUnitDefinition == null || selectedUnitDefinition.prefab == null))
             return;
 
         Event e = Event.current;
@@ -8868,7 +8989,8 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         {
             Handles.color = new Color(0.3f, 1f, 0.3f, 0.9f);
             Handles.DrawWireDisc(hitPos, Vector3.up, 0.35f);
-            Handles.Label(hitPos + Vector3.up * 0.6f, selectedUnitDefinition.displayName);
+            Handles.Label(hitPos + Vector3.up * 0.6f,
+                placeUnitSpawnerMode ? "单位孵化器" : selectedUnitDefinition.displayName);
             sceneView.Repaint();
         }
 
@@ -8881,9 +9003,15 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 
     private void PlaceUnitAtPosition(Vector3 position)
     {
+        if (placeUnitSpawnerMode)
+        {
+            PlaceUnitSpawnerAtPosition(position);
+            return;
+        }
+
         if (selectedUnitDefinition == null || selectedUnitDefinition.prefab == null) return;
 
-        Transform parent = GetOrCreateParent(UnitParentPath);
+        Transform parent = GetOrCreateParent(ResolveUnitParentPath(selectedUnitDefinition));
         GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(selectedUnitDefinition.prefab, parent);
         if (instance == null) return;
 

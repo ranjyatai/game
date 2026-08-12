@@ -116,11 +116,9 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
     private static void BuildCollisionFromDefinition(GameObject root, Transform collisionRoot, Transform visualRoot, SerializedObject definitionSO)
     {
         int collisionMode = GetEnumIndex(definitionSO, "collisionMode", CollisionNone);
-        bool blockPlayer = GetBool(definitionSO, "blockPlayer", true);
-        bool blockEnemy = GetBool(definitionSO, "blockEnemy", true);
-        bool blockProjectile = GetBool(definitionSO, "blockProjectile", true);
-        // 填了可站立表面材质 = 这东西是要被踩的，碰撞体只用来给地表查询当靶子。
-        bool walkable = GetObject<GroundSurfaceMaterialDefinition>(definitionSO, "walkableSurface", null) != null;
+        // 层映射统一走 TerrainDecorationDefinition.ResolveCollisionLayerName，
+        // 避免 Builder 和 RuntimeApplier 各写一份判定后漂移。
+        string collisionLayer = ResolveBlockingLayer(definitionSO.targetObject as TerrainDecorationDefinition, root.name);
 
         ClearGeneratedCollisionChildren(collisionRoot);
 
@@ -147,6 +145,17 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         {
             Vector3 size = GetVector3(definitionSO, "collisionSize", Vector3.one);
             Vector3 offset = GetVector3(definitionSO, "collisionOffset", Vector3.zero);
+
+            // 空气墙：碰撞盒直接贴合视觉包围盒。
+            // 视觉存在的唯一意义就是把体积画出来，两者要是能不一致，画出来的体积就是假的，
+            // 摆放时看到的和实际挡人的范围会对不上——比没有可视化更糟。
+            if (GetBool(definitionSO, "editorOnlyVisual", false) &&
+                TryGetLocalVisualBounds(visualRoot, out Bounds visualBounds))
+            {
+                size = visualBounds.size;
+                offset = visualBounds.center;
+            }
+
             if (size.sqrMagnitude <= 0.0001f)
                 size = Vector3.one;
 
@@ -156,7 +165,7 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
             box.isTrigger = false;
             box.size = AbsSize(size);
             box.center = offset;
-            SetLayerIfExists(boxNode.gameObject, ResolveBlockingLayer(blockPlayer, blockEnemy, blockProjectile, walkable));
+            SetLayerIfExists(boxNode.gameObject, collisionLayer);
             return;
         }
 
@@ -164,7 +173,7 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         {
             Transform meshRoot = EnsureChild(collisionRoot, MainCollisionMeshRootName);
             ResetLocalTransform(meshRoot);
-            BuildMeshCollisionProxies(meshRoot, visualRoot, ResolveBlockingLayer(blockPlayer, blockEnemy, blockProjectile, walkable));
+            BuildMeshCollisionProxies(meshRoot, visualRoot, collisionLayer);
             return;
         }
 
@@ -1621,11 +1630,69 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         target.localScale = source.lossyScale;
     }
 
+    /// <summary>
+    /// 取 VisualRoot 下所有 Renderer 的合并包围盒，换算到 CollisionRoot 的本地空间。
+    ///
+    /// 用 Renderer.bounds（世界空间）再逐点变换回来，而不是直接读 mesh.bounds：
+    /// 视觉子树里可能有旋转和缩放，mesh.bounds 是模型空间的，直接拿会算错。
+    /// </summary>
+    private static bool TryGetLocalVisualBounds(Transform visualRoot, out Bounds localBounds)
+    {
+        localBounds = default;
+        if (visualRoot == null)
+            return false;
+
+        Renderer[] renderers = visualRoot.GetComponentsInChildren<Renderer>(true);
+        if (renderers == null || renderers.Length == 0)
+            return false;
+
+        Transform space = visualRoot.parent != null ? visualRoot.parent : visualRoot;
+        bool hasAny = false;
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer r = renderers[i];
+            if (r == null)
+                continue;
+
+            Bounds world = r.bounds;
+            Vector3 min = world.min;
+            Vector3 max = world.max;
+
+            // 世界 AABB 的八个角逐个变换回本地空间，再重新求 AABB。
+            for (int c = 0; c < 8; c++)
+            {
+                Vector3 corner = new Vector3(
+                    (c & 1) == 0 ? min.x : max.x,
+                    (c & 2) == 0 ? min.y : max.y,
+                    (c & 4) == 0 ? min.z : max.z);
+
+                Vector3 local = space.InverseTransformPoint(corner);
+                if (!hasAny)
+                {
+                    localBounds = new Bounds(local, Vector3.zero);
+                    hasAny = true;
+                }
+                else
+                {
+                    localBounds.Encapsulate(local);
+                }
+            }
+        }
+
+        return hasAny;
+    }
+
     private static void ApplyStandardLayers(GameObject root, SerializedObject definitionSO)
     {
         Transform visualRoot = root.transform.Find(VisualRootName);
-        if (visualRoot != null)
-            SetLayerRecursivelyIfExists(visualRoot.gameObject, "World3D");
+        if (visualRoot == null)
+            return;
+
+        // 空气墙这类工具物件的视觉留在 Default(0)：本项目四台相机的 cullingMask 都不含
+        // 第 0 位，所以游戏里一帧都不渲染，而 Scene 视图有自己的层显示开关、照常可见。
+        bool editorOnly = GetBool(definitionSO, "editorOnlyVisual", false);
+        SetLayerRecursivelyIfExists(visualRoot.gameObject, editorOnly ? "Default" : "World3D");
     }
 
     /// <summary>
@@ -1654,26 +1721,33 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         }
     }
 
-    private static string ResolveBlockingLayer(bool blockPlayer, bool blockEnemy, bool blockProjectile, bool walkable)
+    /// <summary>
+    /// 把「挡不挡单位 / 挡不挡子弹」两个开关映射到具体的层。
+    ///
+    ///   挡单位 + 挡子弹  -> World3D（默认，和一切既有几何体一致）
+    ///   挡单位 + 不挡子弹 -> Obstacle_UnitOnly
+    ///   都不挡            -> WalkableProbe（还能被地表查询射线打中，用来出脚步声）
+    ///
+    /// 「不挡单位但挡子弹」是第四种组合，全项目 0 个定义用到，没有为它单独开层——
+    /// 落到 World3D 并打警告。真需要时再加，那时候也有具体场景验证设计。
+    ///
+    /// 为什么谁都不挡的那档还要留实体碰撞体：GroundQueryService 靠向下射线找地表，
+    /// 且明确排除 trigger。射线检测只看 layerMask、不看物理碰撞矩阵，所以只要
+    /// WalkableProbe 不在移动 mask 里，就能做到射线看得见、移动看不见。
+    /// </summary>
+    private static string ResolveBlockingLayer(TerrainDecorationDefinition definition, string fallbackName)
     {
-        // 「能踩上去、但谁都不挡」——铁轨、地面铁板、低矮台沿。
-        //
-        // 这类装饰物必须有实体碰撞体，否则 GroundQueryService 查不到它是什么地表：
-        // 那个查询是向下射线，而且明确排除 trigger。但实体碰撞体默认会挡人。
-        //
-        // WalkableProbe 层同时满足两边：射线检测只看 layerMask、不看物理碰撞矩阵，
-        // 而这一层不在 UnitMovementController.blockingLayers 和
-        // TerrainGroundMotorV5.bodyBlockMask / groundMask 里。于是射线看得见、移动看不见。
-        //
-        // 条件要求 walkable（定义里填了 walkableSurface），而不是只看三个阻挡开关全关：
-        // 只凭开关判断会一次性改掉一批现有装饰物的阻挡行为，那是关卡设计问题，
-        // 不该由脚步声功能顺手带走。
-        if (walkable && !blockPlayer && !blockEnemy && !blockProjectile)
-            return GroundSurfaceMarker.WalkableProbeLayerName;
+        if (definition == null)
+            return "World3D";
 
-        // 其余统一走 World3D。后续若有专用 DecorationPhysics / ProjectileBlocker 层，
-        // 继续在这里集中映射。
-        return "World3D";
+        if (!definition.BlocksUnits && definition.blockProjectile)
+        {
+            Debug.LogWarning(
+                $"[TD Builder] 「{fallbackName}」勾了阻挡子弹但没勾阻挡单位。" +
+                "这个组合还没有专用层，暂时按「两者都挡」处理。");
+        }
+
+        return definition.ResolveCollisionLayerName();
     }
 
     private static Material FindOcclusionMaskMaterial()

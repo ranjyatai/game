@@ -25,7 +25,9 @@ public static class SkyPrisonWalkableSurfaceAutoSync
     private const string LogPrefix = "[SkyPrison WalkableSync]";
 
     // 一次性步骤的版本号。改了一次性逻辑就 +1，让它在所有机器上重跑一次。
-    private const int OneTimeSetupVersion = 1;
+    // v2：新增 Obstacle_UnitOnly 层（挡单位、不挡子弹），需要在所有机器上再跑一次建层。
+    // v3：创建空气墙那一套资产（材质 / 预制体 / 定义）。
+    private const int OneTimeSetupVersion = 3;
     private const string OneTimeSetupPrefKey = "SkyPrison.WalkableProbe.OneTimeSetupVersion";
 
     static SkyPrisonWalkableSurfaceAutoSync()
@@ -54,6 +56,10 @@ public static class SkyPrisonWalkableSurfaceAutoSync
         int fixedMasks = SkyPrisonWalkableProbeLayerSetup.RunSetup(interactive: false);
         if (fixedMasks < 0)
             return; // 没有空闲层槽，别记版本号，下次还要再试。
+
+        // 空气墙是纯工具资产，缺了地图作者就没法摆挡人体积。放在一次性配置里
+        // 自动补齐，避免"菜单没点 = 功能不存在"这种静默失败。
+        SkyPrisonAirWallAssetCreator.CreateOrRepair();
 
         EditorPrefs.SetInt(OneTimeSetupPrefKey, OneTimeSetupVersion);
         Debug.Log($"{LogPrefix} 一次性配置完成（v{OneTimeSetupVersion}），修正 {fixedMasks} 个 mask 字段。");

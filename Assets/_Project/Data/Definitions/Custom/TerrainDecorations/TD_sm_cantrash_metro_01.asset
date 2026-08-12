@@ -10,20 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e2c6299d1deb1db49833f87a48b36ea5, type: 3}
-  m_Name: TD_sm_metroplatform_01
+  m_Name: TD_sm_cantrash_metro_01
   m_EditorClassIdentifier: Assembly-CSharp::TerrainDecorationDefinition
-  decorationId: sm_metroplatform_01
-  displayName: "\u7AD9\u53F0"
-  category: 4
+  decorationId: sm_cantrash_metro_01
+  displayName: "\u7A7A\u74F6\u56DE\u6536\u7BB1"
+  category: 0
   subCategory: Custom
   tags: []
   icon: {fileID: 0}
   note: 
-  isStandard: 1
+  isStandard: 0
   variants:
   - variantId: default
     displayName: "\u9ED8\u8BA4\u7248\u672C"
-    prefab: {fileID: 1030992212, guid: abc00000000005344794262752684217, type: 3}
+    prefab: {fileID: 1031009998, guid: abc00000000014678481472344231955, type: 3}
     weight: 1
     previewIcon: {fileID: 0}
     materialSlots: []
@@ -39,9 +39,9 @@ MonoBehaviour:
   snapToGrid: 1
   placementCollisionMode: 2
   allowVisualOverlap: 1
-  allowCollisionOverlap: 1
+  allowCollisionOverlap: 0
   defaultPlacementRotation: {x: 0, y: 0, z: 0}
-  defaultScale: {x: 1.5, y: 1.5, z: 1.5}
+  defaultScale: {x: 3.3, y: 3.3, z: 3.3}
   footprintSize: {x: 1, y: 1}
   enableRandomScale: 0
   uniformRandomScale: 1
@@ -52,19 +52,19 @@ MonoBehaviour:
   visualRandomRotationMax: {x: 0, y: 0, z: 0}
   visualRandomRotationAffectsRules: 0
   collisionMode: 2
-  collisionSize: {x: 4, y: 1.3159832, z: 9.283528}
-  collisionOffset: {x: -2, y: 0.66227025, z: -0.0000042915344}
+  collisionSize: {x: 0.47955024, y: 1.9005331, z: 0.46127808}
+  collisionOffset: {x: 0.009775147, y: 0.95026654, z: 0.0038491786}
   blockPlayer: 1
   blockEnemy: 1
-  blockVision: 0
-  blockProjectile: 0
+  blockVision: 1
+  blockProjectile: 1
   walkableSurface: {fileID: 0}
   lockRuleSpaceFromVisualRandomRotation: 1
   frontBackPlaneMode: 1
   ruleForwardLocal: {x: 0, y: 0, z: 1}
   rulePlaneOriginLocal: {x: 0, y: 0, z: 0}
   planePushOutDistance: 0.05
-  occlusionMode: 0
+  occlusionMode: 1
   fadeWhenBlockingPlayer: 0
   fadeAlpha: 0.45
   fadeDuration: 0.12
