@@ -35,6 +35,11 @@ public class SkyPrisonSoakTestDriver : MonoBehaviour
 
     private UnitActionController _actionController;
     private float _nextPlayerSearchTime;
+
+    /// <summary>找不到玩家多久之后报错。给场景加载和玩家生成留出时间，避免启动瞬间误报。</summary>
+    private const float NoTargetWarnSeconds = 30f;
+    private float _noTargetWarnTime;
+    private bool _warnedNoTarget;
     private float _nextDecisionTime;
     private Vector2 _currentDirection;
     private bool _currentRunHeld;
@@ -62,6 +67,7 @@ public class SkyPrisonSoakTestDriver : MonoBehaviour
 
         DontDestroyOnLoad(gameObject);
         Debug.Log("[SkyPrisonSoakTestDriver] 浸测机器人已启动——自动喂移动/跳跃/攻击输入，挂后台长时间跑。");
+        _noTargetWarnTime = Time.unscaledTime + NoTargetWarnSeconds;
     }
 
     private bool HasCommandLineArg()
@@ -94,13 +100,47 @@ public class SkyPrisonSoakTestDriver : MonoBehaviour
         _actionController.SubmitMoveIntent(_currentDirection, _currentRunHeld, false);
     }
 
+    /// <summary>
+    /// 找到玩家的 UnitActionController。
+    ///
+    /// 原来只按 Tag "Player" 找。问题是运行时的玩家是 PF_UnitRuntimeShell_Generic
+    /// （通用壳，Untagged），带 Player Tag 的只有 PF_Unit_Player_Axia_01 这个旧预制体。
+    /// 结果机器人永远找不到目标、永远不喂输入，而且一句话都不说——挂了一整晚，
+    /// 日志里 600 组「输入=0.0000 卡住=是」，测的全是一个站着不动的角色。
+    ///
+    /// 现在优先走 SkyPrisonPlayerAuthority——运行时哪个单位是玩家由它维护，
+    /// 换预制体、换角色都不影响。Tag 作为兼容旧场景的兜底保留。
+    /// </summary>
     private void TryFindActionController()
     {
-        GameObject playerGO = GameObject.FindGameObjectWithTag("Player");
-        if (playerGO == null)
-            return;
+        SkyPrisonUnitRuntimeIdentity playerUnit = SkyPrisonPlayerAuthority.CurrentPlayerUnit;
+        if (playerUnit != null)
+            _actionController = playerUnit.GetComponentInChildren<UnitActionController>(true);
 
-        _actionController = playerGO.GetComponentInChildren<UnitActionController>(true);
+        if (_actionController == null)
+        {
+            GameObject playerGO = GameObject.FindGameObjectWithTag("Player");
+            if (playerGO != null)
+                _actionController = playerGO.GetComponentInChildren<UnitActionController>(true);
+        }
+
+        if (_actionController != null)
+        {
+            Debug.Log($"[SkyPrisonSoakTestDriver] 已接管玩家：{_actionController.name}，开始喂输入。");
+            _warnedNoTarget = false;
+            return;
+        }
+
+        // 找不到必须出声。静默重试是这次浪费一整晚的直接原因——
+        // 日志里只有「机器人已启动」，看不出它其实什么都没做。
+        if (!_warnedNoTarget && Time.unscaledTime >= _noTargetWarnTime)
+        {
+            _warnedNoTarget = true;
+            Debug.LogError(
+                "[SkyPrisonSoakTestDriver] 启动 " + NoTargetWarnSeconds + " 秒后仍然找不到玩家" +
+                "（SkyPrisonPlayerAuthority.CurrentPlayerUnit 为空，且没有带 Player Tag 的对象）。" +
+                "机器人不会喂任何输入，这一轮浸测测到的是一个静止角色，数据无效。");
+        }
     }
 
     private void PickNewDecision()
