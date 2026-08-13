@@ -133,9 +133,23 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         if (collisionMode != CollisionCustomRoot)
             DisableCollidersUnder(visualRoot);
 
+        // 探测碰撞体必须生成在 CollisionRoot 下，不能放 VisualRoot。
+        //
+        // SkyPrisonTerrainDecorationFrontOccluderTrigger 的自判定用的是
+        // occluderColliderRoot，而它为空时自动找的是「最近的 CollisionRoot」
+        // （见该类 autoFindNearestCollisionRoot / FindChildInAncestors(transform, "CollisionRoot")）。
+        // 放在 VisualRoot 下它永远找不到 —— 上一版就是这么把探测体建在了错的地方，
+        // 层、数量、开关全对，就是打不到。
+        //
+        // 尺寸仍然按 VisualRoot 的渲染包围盒算，所以传两个根进去。
+        bool hasProbe = BuildOccluderProbeCollider(definitionSO, collisionRoot, visualRoot);
+
         if (collisionMode == CollisionNone)
         {
-            collisionRoot.gameObject.SetActive(false);
+            // 有探测体时不能关掉 CollisionRoot：节点是关的，底下的碰撞体不参与射线，
+            // 等于没生成。这类装饰物「没有实体碰撞」体现在探测体所在的
+            // OccluderProbe 层被排除在所有移动 mask 之外，而不是靠关节点。
+            collisionRoot.gameObject.SetActive(hasProbe);
             return;
         }
 
@@ -1703,6 +1717,81 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
     /// 一个普通属性 override，可逆、也能在 Inspector 里一眼看出来。
     /// 触发器不动——那些是别的系统在用（遮挡、区域判定），不是地面碰撞。
     /// </summary>
+    private const string OccluderProbeObjectName = "OccluderProbe_Box";
+
+    /// <summary>
+    /// 给「碰撞模式=无、但要参与前后遮挡」的装饰物生成一个只用于遮挡判定的碰撞体。
+    ///
+    /// 为什么需要：前后遮挡判定是「从相机向角色采样点射线，看有没有先命中遮挡物
+    /// 自己 VisualRoot 下的碰撞体」。草丛这类 collisionMode=None 的装饰物身上一个
+    /// 碰撞体都没有，射线唯一能打到的是地形——而那属于 OtherHit，
+    /// debugGlobalOtherHitOnly 明确规定不作为遮挡依据。三条判定路径全空，
+    /// 结果就是角色永远画在草前面。
+    ///
+    /// 为什么不会挡住移动：碰撞体放在 OccluderProbe 层，那一层不出现在
+    /// UnitMovementController.blockingLayers / TerrainGroundMotorV5.bodyBlockMask 里。
+    /// 射线检测只看 layerMask、不看物理碰撞矩阵，所以遮挡判定照样命中。
+    /// 「能遮挡」和「能穿过去」本来就是两件事，只是原实现把它们绑在同一个碰撞体上了。
+    ///
+    /// 形状用贴合视觉包围盒的 Box 就够——射线只需要一个靶子，不需要还原叶片轮廓。
+    /// </summary>
+    /// <summary>
+    /// 生成遮挡探测碰撞体，返回是否真的存在一个。
+    /// 父节点是 collisionRoot（触发器只在那里找），尺寸按 visualRoot 的渲染包围盒算。
+    /// </summary>
+    private static bool BuildOccluderProbeCollider(SerializedObject definitionSO, Transform collisionRoot, Transform visualRoot)
+    {
+        if (collisionRoot == null || visualRoot == null)
+            return false;
+
+        // 上一版建在 VisualRoot 下，这里要把残留的收掉，否则同时存在两个。
+        Transform legacy = visualRoot.Find(OccluderProbeObjectName);
+        if (legacy != null)
+            Undo.DestroyObjectImmediate(legacy.gameObject);
+
+        Transform existing = collisionRoot.Find(OccluderProbeObjectName);
+        bool wanted = GetBool(definitionSO, "generateOccluderProbeCollider", false);
+
+        if (!wanted)
+        {
+            // 关掉之后要收干净，否则残留一个碰撞体继续参与遮挡判定，
+            // 而定义上已经看不出它的存在了。
+            if (existing != null)
+                Undo.DestroyObjectImmediate(existing.gameObject);
+            return false;
+        }
+
+        if (!TryGetLocalVisualBounds(visualRoot, out Bounds localBounds))
+        {
+            Debug.LogWarning(
+                $"[TD_Builder] {visualRoot.parent?.name}：开启了遮挡探测碰撞体，" +
+                "但 VisualRoot 下取不到 Renderer 包围盒，没有生成。", visualRoot);
+            return false;
+        }
+
+        Transform probe = existing != null
+            ? existing
+            : new GameObject(OccluderProbeObjectName).transform;
+
+        if (existing == null)
+        {
+            Undo.RegisterCreatedObjectUndo(probe.gameObject, "Create Occluder Probe");
+            probe.SetParent(collisionRoot, false);
+        }
+
+        probe.localPosition = Vector3.zero;
+        probe.localRotation = Quaternion.identity;
+        probe.localScale = Vector3.one;
+        SetLayerIfExists(probe.gameObject, TerrainDecorationDefinition.OccluderProbeLayerName);
+
+        BoxCollider box = EnsureComponent<BoxCollider>(probe.gameObject);
+        box.isTrigger = false;   // 触发器明确排除 Trigger，这里必须是实体
+        box.enabled = true;
+        box.center = localBounds.center;
+        box.size = localBounds.size;
+        return true;
+    }
+
     private static void DisableCollidersUnder(Transform visualRoot)
     {
         if (visualRoot == null)
@@ -1831,9 +1920,25 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         int layer = LayerMask.NameToLayer(layerName);
         if (layer < 0)
             return;
+
+        int probeLayer = LayerMask.NameToLayer(TerrainDecorationDefinition.OccluderProbeLayerName);
+
         Transform[] children = go.GetComponentsInChildren<Transform>(true);
         for (int i = 0; i < children.Length; i++)
+        {
+            // 遮挡探测碰撞体必须留在 OccluderProbe 层，不能被刷成 World3D。
+            //
+            // 它挂在 VisualRoot 底下，而这里是把 VisualRoot 整棵子树刷成同一层，
+            // 又排在 BuildOccluderProbeCollider 之后 —— 上一版就是这么把探测体刷到
+            // World3D 的，结果 World3D 在 blockingLayers 里，草直接变成了障碍物。
+            if (probeLayer >= 0 && children[i].name == OccluderProbeObjectName)
+            {
+                children[i].gameObject.layer = probeLayer;
+                continue;
+            }
+
             children[i].gameObject.layer = layer;
+        }
     }
 
     private static string BuildResultLog(GameObject root, TerrainDecorationDefinition definition, SerializedObject definitionSO)

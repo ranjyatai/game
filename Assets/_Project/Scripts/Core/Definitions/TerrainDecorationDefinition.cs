@@ -269,6 +269,22 @@ public class TerrainDecorationDefinition : ScriptableObject
     public float frontBackOcclusionDepthOffset = 0f;
 
     [Header("Front Occluder Proxy")]
+    /// <summary>
+    /// 「能穿过去、但能挡住角色」的装饰物（草丛、灌木、纱帘）专用层。
+    /// 遮挡判定是射线，射线只看 layerMask 不看物理碰撞矩阵，所以这一层只要不出现在
+    /// 移动用的 mask 里，就能同时做到「遮挡判定看得见、角色穿得过」。
+    /// </summary>
+    public const string OccluderProbeLayerName = "OccluderProbe";
+
+    [Tooltip("生成一个只给遮挡判定用的碰撞体，不挡移动。\n\n" +
+             "碰撞模式=无 的装饰物（草丛这类）身上一个碰撞体都没有，而前后遮挡判定是" +
+             "「从相机向角色射线、看有没有先打到遮挡物自己的碰撞体」——没有靶子就永远" +
+             "判定成不遮挡，角色会画在草的前面。\n\n" +
+             "开启后会在 VisualRoot 下生成一个贴合视觉包围盒的 Box，放在 OccluderProbe 层。" +
+             "那一层被排除在移动碰撞之外，所以照样能穿过去。\n\n" +
+             "碰撞模式不是「无」的装饰物不需要开——它们本来就有碰撞体可以当靶子。")]
+    public bool generateOccluderProbeCollider = false;
+
     public TerrainDecorationFrontOccluderProxyMode frontOccluderProxyMode = TerrainDecorationFrontOccluderProxyMode.ModelProxy;
     public Material frontOccluderProxyMaterial;
     [Range(0f, 1f)] public float frontOccluderAlphaCutoff = 0.35f;

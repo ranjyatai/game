@@ -700,6 +700,17 @@ public sealed class SkyPrisonTerrainDecorationFrontOccluderTrigger : MonoBehavio
 
     private void LateUpdate()
     {
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+        // 自诊断：Profiler 显示每帧都有且只有一个实例吃掉 42~55ms，其余 20 个 ≤1.3ms，
+        // 差 40 倍。配置完全相同，所以差异来自运行时状态。这里按实例累计耗时，
+        // 30 秒后打印最贵的几个及其状态，找出那个异常实例是谁、大在哪。
+        //
+        // 纯静态、无序列化字段、到点自动关 —— 上一次留下的 debugLogs 是序列化的，
+        // 被存进场景还进了 Build，白测了十小时，这次不重蹈覆辙。
+        long __t0 = OccluderSelfProfiler.Active ? System.Diagnostics.Stopwatch.GetTimestamp() : 0L;
+        try
+        {
+#endif
         if (ShouldResolveRootsInLateUpdate())
             ResolveRoots();
 
@@ -723,6 +734,14 @@ public sealed class SkyPrisonTerrainDecorationFrontOccluderTrigger : MonoBehavio
 
         if (hasCandidates || lastFrontOccluderVisibility || startupSyncActive || !useIdleSleepOptimization)
             ApplyVisibility();
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+        }
+        finally
+        {
+            if (OccluderSelfProfiler.Active)
+                OccluderSelfProfiler.Record(this, System.Diagnostics.Stopwatch.GetTimestamp() - __t0, candidateStates.Count);
+        }
+#endif
     }
 
     private void OnDisable()
@@ -1346,8 +1365,42 @@ public sealed class SkyPrisonTerrainDecorationFrontOccluderTrigger : MonoBehavio
             }
         }
 
+        // 兜底：同一个装饰物根底下的一切都算自己。
+        //
+        // 上面几条都是按具体节点判断的（VisualRoot / occluderColliderRoot / RuleRoot），
+        // 任何一个引用没解析到就会漏。实测贩卖机的
+        //   CollisionRoot/Main_Collision_MeshRoot/__PhysicsMeshCollider_00_SM_VendingMachine_01_LOD0
+        // 就漏成了「其它物体的遮挡命中」——它和 VisualRoot 是兄弟节点，不在
+        // occluderContentRoot 的子树里，而 occluderColliderRoot 没解析到。
+        // 结果遮挡体认为自己被别人挡住，角色站在旁边也被判成被遮挡，
+        // 而且分界线正好落在自身碰撞代理的轮廓上。
+        //
+        // 装饰物根（挂 TerrainDecorationRuntimeBinder 的那个节点）是所有分支的共同祖先，
+        // 不依赖节点命名，也不依赖那几个引用是否解析成功。
+        Transform decorationRoot = ResolveOwnDecorationRoot();
+        if (decorationRoot != null && t.IsChildOf(decorationRoot))
+            return true;
+
         return false;
     }
+
+    /// <summary>自身所属的装饰物根。每帧对每个碰撞体都要判一次，所以缓存。</summary>
+    private Transform ResolveOwnDecorationRoot()
+    {
+        if (cachedOwnDecorationRoot != null)
+            return cachedOwnDecorationRoot;
+
+        if (ownDecorationRootResolved)
+            return null;
+
+        ownDecorationRootResolved = true;
+        var binder = GetComponentInParent<TerrainDecorationRuntimeBinder>();
+        cachedOwnDecorationRoot = binder != null ? binder.transform : null;
+        return cachedOwnDecorationRoot;
+    }
+
+    private Transform cachedOwnDecorationRoot;
+    private bool ownDecorationRootResolved;
 
     private void AddOrRefreshCandidate(Collider sourceCollider)
     {

@@ -46,6 +46,11 @@ public static class SkyPrisonWalkableProbeLayerSetup
         // 只要保证层存在即可。
         EnsureLayer(TerrainDecorationDefinition.UnitOnlyObstacleLayerName);
 
+        // 「能穿过去、但要挡住角色」的装饰物（草丛这类）用的探测层。
+        // 遮挡判定是射线，只看 layerMask；移动是 CapsuleCast/穿透修正，看的是另外
+        // 几个 mask。把这一层从移动 mask 里剔掉，两件事就互不干扰了。
+        int occluderProbe = EnsureLayer(TerrainDecorationDefinition.OccluderProbeLayerName);
+
         int layer = EnsureLayer(GroundSurfaceMarker.WalkableProbeLayerName);
         if (layer < 0)
         {
@@ -72,6 +77,24 @@ public static class SkyPrisonWalkableProbeLayerSetup
         // 真正能站上去的平台/楼梯走的是它们自己的实体碰撞体，不经过这一层。
         fixedMasks += ApplyToAllInstances<TerrainGroundMotorV5>(
             layer, new[] { "bodyBlockMask", "groundMask" }, include: false);
+
+        if (occluderProbe >= 0)
+        {
+            // 移动侧全部排除——这一层只给遮挡射线用。
+            fixedMasks += ApplyToAllInstances<UnitMovementController>(
+                occluderProbe, new[] { "blockingLayers" }, include: false);
+            fixedMasks += ApplyToAllInstances<TerrainGroundMotorV5>(
+                occluderProbe, new[] { "bodyBlockMask", "groundMask" }, include: false);
+
+            // 遮挡射线侧必须包含，否则射线打不到探测碰撞体，等于没生成。
+            //
+            // 只加 raycastLayers，不要加 targetLayers——后者是「扫描候选单位」用的，
+            // 把探测层加进去会让探测碰撞体自己被当成一个单位候选。
+            // 两个字段默认都是 ~0，所以这一步对默认实例是空操作；它是给
+            // mask 被收窄过的实例兜底的。
+            fixedMasks += ApplyToAllInstances<SkyPrisonTerrainDecorationFrontOccluderTrigger>(
+                occluderProbe, new[] { "raycastLayers" }, include: true);
+        }
 
         AssetDatabase.SaveAssets();
 

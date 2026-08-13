@@ -1374,6 +1374,25 @@ public class SkyPrisonTerrainDecorationDefinitionPage : SkyPrisonEditorPageBase
 
         TerrainDecorationOcclusionMode occlusionMode = GetEnumValue("occlusionMode", TerrainDecorationOcclusionMode.None);
         bool hasOcclusion = occlusionMode != TerrainDecorationOcclusionMode.None;
+
+        // 碰撞模式=无 + 要遮挡 = 遮挡判定没有靶子。这个组合不给提示的话，
+        // 表现是「配置全都对，就是不遮挡」，很难查——所以在这里直接说破。
+        TerrainDecorationCollisionMode collisionModeForOccluder =
+            GetEnumValue("collisionMode", TerrainDecorationCollisionMode.None);
+        if (hasOcclusion && collisionModeForOccluder == TerrainDecorationCollisionMode.None)
+        {
+            bool hasProbe = selectedDefinition != null && selectedDefinition.generateOccluderProbeCollider;
+            if (!hasProbe)
+            {
+                EditorGUILayout.HelpBox(
+                    "碰撞模式是「无」，遮挡判定没有可命中的碰撞体，角色会被画在这个装饰物前面。\n" +
+                    "草丛这类「能穿过去但要挡住角色」的，请勾选下面的「生成遮挡探测碰撞体」。",
+                    MessageType.Warning);
+            }
+        }
+
+        using (new EditorGUI.DisabledScope(!hasOcclusion))
+            PropertyField("生成遮挡探测碰撞体", "generateOccluderProbeCollider");
         bool hasFade = occlusionMode == TerrainDecorationOcclusionMode.FadeWhenBlockingPlayer ||
                        occlusionMode == TerrainDecorationOcclusionMode.FrontBackAndFade;
 
