@@ -481,7 +481,8 @@ public class UnitOcclusionMaterialReceiver : MonoBehaviour, IOcclusionStateRecei
         activeOccluderRefs.Clear();
         activeOccluderRootRefs.Clear();
         activeOccluderCount = 0;
-        currentOccluded = false;
+        // 同上：GPU 模式下没有「不被遮挡」这个材质状态，合成材质常驻。
+        currentOccluded = SkyPrisonOcclusionMode.UseGpuDepthOcclusion;
         activeOccluderDebugList = "";
         lastSetOccluderName = "";
         lastSetOccluderPath = "";
@@ -513,7 +514,17 @@ public class UnitOcclusionMaterialReceiver : MonoBehaviour, IOcclusionStateRecei
         }
 
         activeOccluderCount = activeOccluders.Count;
-        currentOccluded = activeOccluderCount > 0;
+        // GPU 深度路径下合成材质必须常驻，不能等 CPU 授权。
+        //
+        // activeOccluders 唯一的填充者是 SkyPrisonTerrainDecorationFrontOccluderTrigger，
+        // 而 GPU 模式下那个触发器已经整体 early return 了 —— 它同时承担着「逐三角面求交」
+        // 和「把合成材质换上角色」两件事，砍掉求交时把材质切换也一起砍没了。
+        // 结果是合成着色器根本没被绑定过，里面那套逐像素深度判定写得再对也没在运行
+        // （诊断模式 4 一片空白就是这么来的；「帧率变得非常流畅」也是因为什么都没算）。
+        //
+        // 深度路径的判定已经完全下放到逐像素，本来就不需要 CPU 先判断「有没有被挡」，
+        // 材质常驻即可，被挡与否由着色器自己决定。
+        currentOccluded = SkyPrisonOcclusionMode.UseGpuDepthOcclusion || activeOccluderCount > 0;
         activeOccluderDebugList = BuildActiveOccluderDebugList();
     }
 

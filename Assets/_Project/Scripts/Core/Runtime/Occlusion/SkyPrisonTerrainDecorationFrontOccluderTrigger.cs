@@ -711,6 +711,23 @@ public sealed class SkyPrisonTerrainDecorationFrontOccluderTrigger : MonoBehavio
         try
         {
 #endif
+        // 遮挡判定已经交给 GPU：角色着色器直接采样 _CameraDepthTexture 逐像素比较深度，
+        // 被挡的像素 discard，露出的就是真实遮挡物。这个触发器的三项输出全都没有消费方了：
+        //
+        //   算 hidden               着色器自己算，不读 _OcclusionTex
+        //   开关 FrontOccluderRoot  不需要——discard 之后没有东西要被盖住
+        //   驱动 RT 管线合成         深度路径不经过它
+        //
+        // 而它的开销随地图复杂度线性增长。实测（F7 伸缩性基准，复制叉车）：
+        //   10 个遮挡物 1846ms/帧、50 个 4078ms/帧、100 个 7770ms/帧，斜率约 78ms/个。
+        // 场景里现在 21 个，地图内容再翻几倍就直接不可玩。
+        //
+        // 先只停判定循环，不动组件和 FrontOccluderRoot 结构——万一深度路径有没想到的
+        // 边界情况，把这个开关改回 false 就能立刻恢复，不用回滚结构改动。
+        // 观察确认无异常后再删结构和 RT 管线，那一步是不可逆的。
+        if (SkyPrisonOcclusionMode.UseGpuDepthOcclusion)
+            return;
+
         if (ShouldResolveRootsInLateUpdate())
             ResolveRoots();
 
@@ -1095,9 +1112,16 @@ public sealed class SkyPrisonTerrainDecorationFrontOccluderTrigger : MonoBehavio
                 continue;
             currentOccluderRenderers.Add(r);
 
+            // 注册给落地深度 pass。放在这里是因为这段收集逻辑在 OnEnable /
+            // 结构重建时执行，不在 LateUpdate 里——GPU 模式下 LateUpdate 整体
+            // early return，但注册依然需要正确建立。
+            SkyPrisonOccluderRenderingLayer.Mark(r);
+            SkyPrisonOccluderRegistry.Register(r);
+
             if (useSelfVisualMeshTriangleRayDepth)
                 BuildMeshRayCacheForRenderer(r);
         }
+
     }
 
     private void BuildMeshRayCacheForRenderer(Renderer renderer)

@@ -39,8 +39,28 @@ Shader "Spine/SpineOcclusionComposite"
         _SkyPrison_SceneDepthBias ("Scene Depth Bias", Range(0,2)) = 0.05
         // 判定的软过渡宽度，避免遮挡边界出现硬锯齿。
         _SkyPrison_SceneDepthSoftness ("Scene Depth Softness", Range(0.001,2)) = 0.15
-        // 脚到头的深度补偿：角色是竖直 billboard，但实际站在地上，脚比头离相机近。
-        _SkyPrison_SceneDepthFootScale ("Scene Depth Foot Scale", Range(0,2)) = 0.7
+        // 脚到头的深度补偿。深度路径下必须是 0——这一项是从 CPU 路径照搬来的，
+        // 但两条路径的输入不同：CPU 路径从参考点发射线，射线不知道像素在角色身上多高，
+        // 必须手工补偿；深度路径拿到的是像素真实的 worldPos，高度已经在里面，
+        // 视矩阵会自动把「更高＝离俯视相机更近」算进去。再减一次就是同一个修正做两遍。
+        //
+        // 初版留了 0.7，后果是整个上半身的 charEye 被压到场景前面，diff 恒负，
+        // 全场遮挡物一起失效——当时误以为是阈值或草的问题，其实和遮挡物毫无关系。
+        // 诊断模式 4 下表现为「脚黑、越往上越红」，梯度形状就是这一项本身。
+        _SkyPrison_SceneDepthFootScale ("Scene Depth Foot Scale", Range(0,2)) = 0
+
+        // 深度诊断可视化。切到深度路径后场景里所有遮挡物一起失效，
+        // 这种「全灭」不是参数没调好，是某个输入根本不对。靠读代码推理定位不了，
+        // 直接把着色器实际读到的数画到屏幕上：
+        //   1 = 场景深度（_CameraDepthTexture 采样并线性化）
+        //   2 = 角色自身深度
+        //   3 = 两者之差   绿=角色更远（应判定为被挡） 红=角色更近 黑=差值≈0
+        // 若模式 1 全黑或全白，说明深度图压根没绑上，问题在管线不在阈值。
+        _SkyPrison_SceneDepthDebug ("Scene Depth Debug View", Float) = 0
+
+        // 整张精灵图共用脚底深度，而不是逐像素用自己的 worldPos。
+        // 关掉会退回「billboard 几何体参与深度比较」，角色会被遮挡物从中间切开。
+        [Toggle] _SkyPrison_UseRootAnchorDepth ("Use Root Anchor Depth", Float) = 1
 
         _SkyPrison_HiddenOutlineColor ("Hidden Outline Color", Color) = (1,0.83,0,1)
         _SkyPrison_EnableHiddenOutline ("Enable Hidden Outline", Float) = 1
@@ -447,6 +467,8 @@ Shader "Spine/SpineOcclusionComposite"
         float _SkyPrison_SceneDepthBias;
         float _SkyPrison_SceneDepthSoftness;
         float _SkyPrison_SceneDepthFootScale;
+        float _SkyPrison_SceneDepthDebug;
+        float _SkyPrison_UseRootAnchorDepth;
 
         /// 把深度缓冲的原始值换算成「离相机多远」。
         /// 正交和透视的换算完全不同，必须分开——LinearEyeDepth 只对透视成立，
@@ -477,9 +499,57 @@ Shader "Spine/SpineOcclusionComposite"
         /// 头部像素会被判定成比实际更靠前，站在矮物件后面时头会穿出来。
         /// 这套补偿项目里本来就有（_SkyPrison_UseFootDepthCompensation 那一组），
         /// 这里复用同样的思路。
+        /// 角色的判定深度 —— 只取脚底那一个点，整张精灵图共用。
+        ///
+        /// Spine 为了不被压缩必须垂直于视线（45 度对齐），于是 billboard 在世界里是一个
+        /// 有延展的平面，会和叉车这类立体几何相交。一旦拿每个像素自己的 worldPos 去比深度，
+        /// 交线以近的部分被挡、以远的不被挡，角色就从中间被切开 —— 表现为「脚在外面、
+        /// 头插进模型里」。这是「用几何深度比较」在 2.5D 下的固有结果，调参数救不了。
+        ///
+        /// 2.5D 的排序语义本来就是「谁的脚在前面」，不是「谁的表面离相机近」。
+        /// 所以判定深度只取脚底：unity_ObjectToWorld 的平移部分就是 Spine 根节点的世界
+        /// 坐标，不需要 CPU 每帧传任何东西。整张图共用一个深度值，精灵图在深度上退化成
+        /// 一个点，不再与任何几何体相交。
+        float3 SkyPrisonRootWorldPos()
+        {
+            return float3(unity_ObjectToWorld._m03, unity_ObjectToWorld._m13, unity_ObjectToWorld._m23);
+        }
+
+        // 注意用 CG 风格声明，不能用 URP 的 TEXTURE2D_X / SAMPLER。
+        // 这个着色器整体是 CG（UnityCG.cginc、tex2D、UNITY_DECLARE_DEPTH_TEXTURE），
+        // 混进 URP ShaderLibrary 的宏会直接报 unrecognized identifier。
+        sampler2D _SkyPrison_OccluderFootprintDepth;
+
+        /// 用「落地深度图」判定，而不是 _CameraDepthTexture。
+        ///
+        /// _CameraDepthTexture 里是几何表面深度。45 度俯视下高的物体顶部会朝相机
+        /// 倾过来——叉车顶棚的表面深度可以比站在叉车前面的角色脚底还小，于是同一台
+        /// 叉车「顶部判在前、底部判在后」，角色被从中间切开（实测：头绿身红）。
+        ///
+        /// 落地深度图里每个遮挡物是一个平坦的常数（它自己根节点的深度），
+        /// 比较的是落地点，符合 2.5D「谁的脚在前面」的排序语义。
+        ///
+        /// 没有遮挡物覆盖的像素保持清空值（极大），一定判为不遮挡——
+        /// 所以角色露在遮挡物轮廓外面的部分正常显示，遮挡依然是逐像素的。
+        float GetHiddenFactorFromFootprint(float2 screenUV)
+        {
+            float charEye = SkyPrisonFragmentEyeDepth(SkyPrisonRootWorldPos());
+
+            float occluderEye = tex2D(_SkyPrison_OccluderFootprintDepth, screenUV).r;
+
+            float diff = charEye - occluderEye;
+            float bias = max(_SkyPrison_SceneDepthBias, 0.0);
+            float softness = max(_SkyPrison_SceneDepthSoftness, 0.0001);
+            return smoothstep(bias, bias + softness, diff);
+        }
+
         float GetHiddenFactorFromSceneDepth(float2 screenUV, float3 worldPos, float relativeY)
         {
-            float charEye = SkyPrisonFragmentEyeDepth(worldPos)
+            float3 anchorPos = _SkyPrison_UseRootAnchorDepth > 0.5
+                ? SkyPrisonRootWorldPos()
+                : worldPos;
+
+            float charEye = SkyPrisonFragmentEyeDepth(anchorPos)
                           - relativeY * _SkyPrison_SceneDepthFootScale;
 
             float rawDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, screenUV);
@@ -490,6 +560,50 @@ Shader "Spine/SpineOcclusionComposite"
             float bias = max(_SkyPrison_SceneDepthBias, 0.0);
             float softness = max(_SkyPrison_SceneDepthSoftness, 0.0001);
             return smoothstep(bias, bias + softness, diff);
+        }
+
+        /// 深度诊断可视化，只在 _SkyPrison_SceneDepthDebug > 0 时被调用。
+        ///
+        /// 存在的理由：判定「全灭」时，阈值、深度图绑定、正交换算、脚部补偿
+        /// 这四者都可能是元凶，而它们在最终画面上的表现完全一样（都是不遮挡）。
+        /// 把中间量画出来能一眼分开：深度图没绑 → 模式 1 全黑/全白；
+        /// 换算错 → 模式 1 有图但灰度分布荒谬；纯阈值 → 模式 3 有绿色但画面没遮挡。
+        float3 SkyPrisonSceneDepthDebugColor(float2 screenUV, float3 worldPos, float relativeY)
+        {
+            // 诊断必须和实际判定读同一份数据，否则画面会指向错误的结论。
+            // 判定已经改用落地深度图，这里也跟着改——不再看 _CameraDepthTexture。
+            float rawDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, screenUV);
+            float sceneEye = tex2D(_SkyPrison_OccluderFootprintDepth, screenUV).r;
+            float charEye = SkyPrisonFragmentEyeDepth(SkyPrisonRootWorldPos());
+
+            // 模式 1：深度图的原始采样值，不做任何换算。
+            //
+            // 这个模式是判定「深度图到底有没有内容」的唯一可信依据。经过线性化的
+            // 模式 2/3 一旦归一化常数选错就会整片饱和，看起来和「没绑定」一模一样——
+            // 上一版除以 50 就踩了这个坑，纯白既可能是没绑也可能只是相机远。
+            // 原始值不受这个影响：均匀一致 = 没内容，有明暗变化 = 有内容。
+            if (_SkyPrison_SceneDepthDebug < 1.5)
+                return rawDepth.xxx;
+
+            // 模式 2/3：对数刻度。相机到场景的实际距离未知（正交 size 12 只决定
+            // 视野大小，不决定相机站多远），任何固定除数都可能整片饱和。
+            // log 刻度在 1~1000 全程都有分辨力，不需要预先知道量级。
+            if (_SkyPrison_SceneDepthDebug < 2.5)
+                return saturate(log2(max(sceneEye, 1.0)) / 10.0).xxx;
+
+            if (_SkyPrison_SceneDepthDebug < 3.5)
+                return saturate(log2(max(charEye, 1.0)) / 10.0).xxx;
+
+            // 模式 4：判定结果本身。阈值多大不重要，先看符号对不对——
+            // 绿=角色比场景远（应被遮挡），红=角色在前面，越亮差值越大。
+            // 用 log 压缩而不是线性放大后 saturate。
+            //
+            // 之前是 saturate(diff * 0.2)，只要 |diff| ≥ 5 就饱和 —— 于是「落地深度图是空的
+            // （diff ≈ -1e9）」和「叉车只比角色远 10 个单位」画出来一模一样的纯红，
+            // 看着像证据其实什么都没区分。和当初 /50 归一化整片全白是同一个错误。
+            float diff = charEye - sceneEye;
+            float mag = saturate(log2(abs(diff) + 1.0) / 10.0);
+            return diff > 0.0 ? float3(0.0, mag, 0.0) : float3(mag, 0.0, 0.0);
         }
 
         float GetHiddenFactor(float2 screenUV)
@@ -852,8 +966,13 @@ Shader "Spine/SpineOcclusionComposite"
                 float hidden = _SkyPrison_UseSceneDepthOcclusion > 0.5
                     ? (_SkyPrison_EnableBodyClip < 0.5
                         ? 0.0
-                        : GetHiddenFactorFromSceneDepth(screenUV, i.worldPos, i.relativeY))
+                        : GetHiddenFactorFromFootprint(screenUV))
                     : GetHiddenFactor(screenUV);
+
+                // 深度诊断优先于一切后续处理返回：后面被挡的像素会 discard，
+                // 而「什么都没被挡」正是要诊断的现象，放在后面就永远看不到。
+                if (_SkyPrison_SceneDepthDebug > 0.5)
+                    return float4(SkyPrisonSceneDepthDebugColor(screenUV, i.worldPos, i.relativeY), 1.0);
 
                 // Body-local debug. The full-screen debug view is handled by the RendererFeature.
                 // 1 = show hidden area on the actual Spine mesh.

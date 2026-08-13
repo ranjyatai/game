@@ -29,13 +29,33 @@ public sealed class OcclusionPathCompareHUD : MonoBehaviour
     private static readonly int BiasId = Shader.PropertyToID("_SkyPrison_SceneDepthBias");
     private static readonly int SoftnessId = Shader.PropertyToID("_SkyPrison_SceneDepthSoftness");
     private static readonly int FootScaleId = Shader.PropertyToID("_SkyPrison_SceneDepthFootScale");
+    private static readonly int DebugViewId = Shader.PropertyToID("_SkyPrison_SceneDepthDebug");
 
-    // 默认就是场景深度——它现在是正式路径，F9 只是用来临时切回旧路径做对比。
-    private bool useSceneDepth = true;
+    private const KeyCode DebugKey = KeyCode.F10;
+    private static readonly string[] DebugNames =
+    {
+        "关闭",
+        "1 深度图原始值（均匀=没内容）",
+        "2 场景深度 log",
+        "3 角色深度 log",
+        "4 判定结果（绿=应被挡 / 红=在前）",
+    };
+
+    private int debugView;
+
+    // 跟随全局开关，不要写死。
+    //
+    // 之前这里硬编码 true，而 Rescan/Apply 每秒执行一次，等于每秒把所有渲染体
+    // 强行按回深度路径。SkyPrisonOcclusionMode 改回 CPU 之后，CPU 触发器恢复计算、
+    // 着色器却仍被 HUD 摁在深度路径上，结果是「算了没人用」——和当初切 GPU 时
+    // 「用了没人算」正好对称的同一类 bug。开关必须只有一个来源。
+    private bool useSceneDepth = SkyPrisonOcclusionMode.UseGpuDepthOcclusion;
     private bool showPanel = true;
     private float bias = 0.05f;
     private float softness = 0.15f;
-    private float footScale = 0.7f;
+    // 0：深度路径下 worldPos 已含高度，视矩阵会自己算出「头比脚离相机近」，
+    // 再补一次就是重复扣减，会让整个上半身恒判为「在场景前面」。
+    private float footScale = 0f;
 
     private readonly List<Renderer> targets = new List<Renderer>();
     private MaterialPropertyBlock block;
@@ -50,6 +70,22 @@ public sealed class OcclusionPathCompareHUD : MonoBehaviour
         go.AddComponent<OcclusionPathCompareHUD>();
     }
 
+    /// <summary>
+    /// 销毁时把诊断视图清零，绝不能把渲染体留在诊断状态里。
+    ///
+    /// MaterialPropertyBlock 是写在 Renderer 上的，不随这个 HUD 一起消失。
+    /// 而这个 HUD 只在场景加载时通过 RuntimeInitializeOnLoadMethod 创建一次——
+    /// 编译触发的 Domain Reload 会销毁它却不会重建，于是没有任何人再去写这些属性，
+    /// 角色就被永久钉死在最后一次写入的诊断模式上（表现为纯黑剪影，看起来像
+    /// 「遮挡坏了」，其实是调试残留）。加诊断时没考虑退出路径，这里补上。
+    /// </summary>
+    private void OnDestroy()
+    {
+        debugView = 0;
+        Rescan();
+        Apply();
+    }
+
     private void Update()
     {
         if (Input.GetKeyDown(ToggleKey))
@@ -60,6 +96,12 @@ public sealed class OcclusionPathCompareHUD : MonoBehaviour
 
         if (Input.GetKeyDown(PanelKey))
             showPanel = !showPanel;
+
+        if (Input.GetKeyDown(DebugKey))
+        {
+            debugView = (debugView + 1) % DebugNames.Length;
+            Apply();
+        }
 
         // 角色的渲染体是运行时生成的（换装/重建都会换），定期重扫才跟得上。
         if (Time.unscaledTime >= nextScanTime)
@@ -139,6 +181,7 @@ public sealed class OcclusionPathCompareHUD : MonoBehaviour
             block.SetFloat(BiasId, bias);
             block.SetFloat(SoftnessId, softness);
             block.SetFloat(FootScaleId, footScale);
+            block.SetFloat(DebugViewId, debugView);
             r.SetPropertyBlock(block);
         }
     }
@@ -149,7 +192,7 @@ public sealed class OcclusionPathCompareHUD : MonoBehaviour
             return;
 
         const float w = 380f;
-        GUILayout.BeginArea(new Rect(12, 12, w, 210), GUI.skin.box);
+        GUILayout.BeginArea(new Rect(12, 12, w, 240), GUI.skin.box);
 
         GUI.color = useSceneDepth ? Color.green : Color.yellow;
         GUILayout.Label(useSceneDepth
@@ -158,6 +201,10 @@ public sealed class OcclusionPathCompareHUD : MonoBehaviour
         GUI.color = Color.white;
 
         GUILayout.Label($"F9 切换路径    F8 隐藏面板    命中 {targets.Count} 个渲染体");
+
+        GUI.color = debugView > 0 ? Color.cyan : Color.white;
+        GUILayout.Label($"F10 深度诊断：{DebugNames[debugView]}");
+        GUI.color = Color.white;
         GUILayout.Space(6);
 
         if (!useSceneDepth)
@@ -175,7 +222,7 @@ public sealed class OcclusionPathCompareHUD : MonoBehaviour
         GUILayout.Label($"软过渡 Softness  {softness:F3}   （太小→遮挡边界锯齿）");
         softness = GUILayout.HorizontalSlider(softness, 0.001f, 1f);
 
-        GUILayout.Label($"脚部补偿 FootScale  {footScale:F2}   （太小→头穿出矮物件）");
+        GUILayout.Label($"脚部补偿 FootScale  {footScale:F2}   （深度路径下应为 0，非 0 会重复扣减）");
         footScale = GUILayout.HorizontalSlider(footScale, 0f, 2f);
 
         if (!Mathf.Approximately(oldBias, bias)

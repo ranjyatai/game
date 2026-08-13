@@ -47,7 +47,7 @@ MonoBehaviour:
     stencilWriterShader: {fileID: 0}
     stencilWriterShaderName: Hidden/SkyPrison/ShadowOccluderStencilWriter
     debugLogs: 0
-    lastStatus: SKIP camera=OverheadUICamera, type=Game
+    lastStatus: SKIP camera=SceneCamera, type=SceneView
 --- !u!114 &-7712744575805377286
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -336,7 +336,8 @@ MonoBehaviour:
   - {fileID: -6298840550029654937}
   - {fileID: -6394802454394906081}
   - {fileID: 4170064773752753920}
-  m_RendererFeatureMap: d613843334d5b96c9c403b378e74f553f320bf91a69d4b2f4d76ad0e546a01da6c9e4a623e9af683022cb08049a6b4e587969772f7f6b01957be6bcbb39dc1a934037fadf87ade80c5969bb5730899b06704a876e40596a81fdafe800c1941a7000fe759d10bdf39
+  - {fileID: 129449282084084999}
+  m_RendererFeatureMap: d613843334d5b96c9c403b378e74f553f320bf91a69d4b2f4d76ad0e546a01da6c9e4a623e9af683022cb08049a6b4e587969772f7f6b01957be6bcbb39dc1a934037fadf87ade80c5969bb5730899b06704a876e40596a81fdafe800c1941a7000fe759d10bdf39071d0dab6fe5cb01
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -358,13 +359,30 @@ MonoBehaviour:
     failOperation: 0
     zFailOperation: 0
   m_ShadowTransparentReceive: 1
-  m_RenderingMode: 0
+  m_RenderingMode: 2
   m_DepthPrimingMode: 0
   m_CopyDepthMode: 1
   m_DepthAttachmentFormat: 0
   m_DepthTextureFormat: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 1
+--- !u!114 &129449282084084999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 394422ea6f3354747a739c2d2c3e88d5, type: 3}
+  m_Name: SkyPrison Occluder Footprint Depth
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonOccluderFootprintDepthFeature
+  m_Active: 1
+  settings:
+    enabled: 1
+    footprintShader: {fileID: 4800000, guid: 3b0814fe0eba5d146b75f2e63c9cac37, type: 3}
+    targetCameraName: Main Camera
 --- !u!114 &1851250989489165959
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -527,9 +545,9 @@ MonoBehaviour:
     applyToSceneView: 0
     targetMode: 1
     afterOverlayCameraName: GamePlayCamera
-    maskMode: 3
-    focusDistance: 8
-    blurRange: 40
+    maskMode: 0
+    focusDistance: 70
+    blurRange: 45
     screenBlurStartY: 0.231
     screenBlurEndY: 0.3
     screenFocusY: 0.48
