@@ -30,7 +30,8 @@ public sealed class OcclusionPathCompareHUD : MonoBehaviour
     private static readonly int SoftnessId = Shader.PropertyToID("_SkyPrison_SceneDepthSoftness");
     private static readonly int FootScaleId = Shader.PropertyToID("_SkyPrison_SceneDepthFootScale");
 
-    private bool useSceneDepth;
+    // 默认就是场景深度——它现在是正式路径，F9 只是用来临时切回旧路径做对比。
+    private bool useSceneDepth = true;
     private bool showPanel = true;
     private float bias = 0.05f;
     private float softness = 0.15f;
@@ -69,9 +70,37 @@ public sealed class OcclusionPathCompareHUD : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 按 UnitOcclusionMaterialReceiver 找渲染体，而不是按「当前挂着合成材质」找。
+    ///
+    /// 合成材质只在角色被遮挡时才被换上去，没被遮挡时挂的是普通 Spine 材质。
+    /// 按材质扫的话，扫描那一刻角色只要没被挡住就一个都找不到——面板显示
+    /// 「命中 0 个渲染体」，F9 按了也没反应。
+    ///
+    /// MaterialPropertyBlock 是挂在 Renderer 上的，跨材质切换依然保留，
+    /// 所以提前写好、等合成材质被换上来时自然生效。
+    /// </summary>
     private void Rescan()
     {
         targets.Clear();
+
+        foreach (UnitOcclusionMaterialReceiver receiver in
+                 FindObjectsByType<UnitOcclusionMaterialReceiver>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (receiver == null)
+                continue;
+
+            foreach (Renderer r in receiver.GetComponentsInChildren<Renderer>(true))
+            {
+                if (r != null && !targets.Contains(r))
+                    targets.Add(r);
+            }
+        }
+
+        // 兜底：没有 receiver 的场合（或结构变了）仍按当前材质匹配一次。
+        if (targets.Count > 0)
+            return;
+
         foreach (Renderer r in FindObjectsByType<Renderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
             if (r == null)

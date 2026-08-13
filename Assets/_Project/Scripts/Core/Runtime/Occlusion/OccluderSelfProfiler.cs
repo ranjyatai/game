@@ -42,7 +42,35 @@ public static class OccluderSelfProfiler
     private static bool reported;
 
     /// <summary>关掉之后调用点连时间戳都不取，开销归零。</summary>
-    public static bool Active { get; private set; }
+    public static bool Active => selfActive || ExternalSampling;
+
+    private static bool selfActive;
+
+    // ---- 供 OcclusionScalingBenchmark 驱动的外部采样 ----
+    //
+    // 基准测试要的是「这一段时间里所有遮挡触发器一共花了多少毫秒」，
+    // 而不是逐实例排名。两者共用同一个计时钩子，避免在触发器里插第二处计时。
+
+    /// <summary>外部采样开关。开着时 Record 会往 externalTicks 累加。</summary>
+    public static bool ExternalSampling { get; private set; }
+
+    private static long externalTicks;
+    private static int externalCalls;
+
+    public static void BeginExternalSample()
+    {
+        externalTicks = 0;
+        externalCalls = 0;
+        ExternalSampling = true;
+    }
+
+    /// <summary>返回这一段采样里遮挡判定的总耗时（毫秒）和调用次数。</summary>
+    public static void EndExternalSample(out double totalMs, out int calls)
+    {
+        ExternalSampling = false;
+        totalMs = externalTicks * (1000.0 / Stopwatch.Frequency);
+        calls = externalCalls;
+    }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Boot()
@@ -50,7 +78,7 @@ public static class OccluderSelfProfiler
         stats.Clear();
         reported = false;
         startTime = -1f;
-        Active = false;
+        selfActive = false;
 
         var go = new GameObject("~OccluderSelfProfiler");
         Object.DontDestroyOnLoad(go);
@@ -60,7 +88,16 @@ public static class OccluderSelfProfiler
 
     public static void Record(SkyPrisonTerrainDecorationFrontOccluderTrigger t, long ticks, int candidates)
     {
-        if (!Active || t == null)
+        if (t == null)
+            return;
+
+        if (ExternalSampling)
+        {
+            externalTicks += ticks;
+            externalCalls++;
+        }
+
+        if (!selfActive)
             return;
 
         int id = t.GetInstanceID();
@@ -108,7 +145,7 @@ public static class OccluderSelfProfiler
             {
                 if (Time.unscaledTime >= startTime)
                 {
-                    Active = true;
+                    selfActive = true;
                     Debug.Log($"[OccluderSelfProfiler] 开始统计，{DurationSeconds} 秒后自动输出并关闭。");
                 }
                 return;
@@ -117,7 +154,7 @@ public static class OccluderSelfProfiler
             if (Time.unscaledTime < startTime + DurationSeconds)
                 return;
 
-            Active = false;
+            selfActive = false;
             reported = true;
             Report();
             Destroy(gameObject);

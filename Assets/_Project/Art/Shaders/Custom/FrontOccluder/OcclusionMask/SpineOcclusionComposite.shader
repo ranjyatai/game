@@ -26,8 +26,15 @@ Shader "Spine/SpineOcclusionComposite"
         _SampleBothY ("Sample Both Y Directions", Float) = 0
         _SkyPrison_EnableBodyClip ("Sky Prison Enable Body Clip", Float) = 1
 
-        // ---- 基于场景深度的遮挡判定（阶段一，默认关闭，与旧路径 A/B 对比用）----
-        [Toggle] _SkyPrison_UseSceneDepthOcclusion ("Use Scene Depth Occlusion", Float) = 0
+        // ---- 基于场景深度的遮挡判定 ----
+        //
+        // 现在是默认路径。开销与场景里有多少遮挡物完全无关，逐像素判定，
+        // 而且不需要 CPU 侧的三角面射线求交，也不需要 RT 管线那套
+        // 「每角色 2 次额外相机渲染 + 3 张全屏 RT + 若干 Blit」。
+        //
+        // 旧的 CPU 三角面路径保留在代码里，F9 可以临时切回去做对比，
+        // 但不再是默认——它的开销随地图复杂度线性增长，扛不住内容量继续增加。
+        [Toggle] _SkyPrison_UseSceneDepthOcclusion ("Use Scene Depth Occlusion", Float) = 1
         // 深度差要超过这个值才算被挡住。太小会让贴地的装饰物把角色脚部误判成遮挡。
         _SkyPrison_SceneDepthBias ("Scene Depth Bias", Range(0,2)) = 0.05
         // 判定的软过渡宽度，避免遮挡边界出现硬锯齿。
