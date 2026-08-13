@@ -247,10 +247,11 @@ Material:
     - _OutlineColor: {r: 1, g: 1, b: 0, a: 1}
     - _SP_DepthRevealColor: {r: 1, g: 0.83, b: 0, a: 1}
     - _SkyPrison_DissolveEdgeColor: {r: 0.5, g: 0.04, b: 0.02, a: 1}
-    - _SkyPrison_EnvTint: {r: 0.78, g: 0.88, b: 0.82, a: 1}
+    - _SkyPrison_EnvTint: {r: 1, g: 0.41479012, b: 0, a: 1}
     - _SkyPrison_FootWorldPos: {r: 0, g: 0, b: 0, a: 1}
     - _SkyPrison_HiddenOutlineColor: {r: 1, g: 0.83, b: 0, a: 1}
     - _SkyPrison_HologramFillColor: {r: 1, g: 0.92, b: 0.55, a: 0.8}
+    - _SkyPrison_LightTint: {r: 1, g: 1, b: 1, a: 1}
     - _SkyPrison_StatusFlashColor: {r: 1, g: 1, b: 1, a: 1}
     - _SkyPrison_StatusOutlineColor: {r: 2.2, g: 0.7, b: 0.05, a: 1}
     - _TintColor: {r: 1, g: 1, b: 1, a: 1}

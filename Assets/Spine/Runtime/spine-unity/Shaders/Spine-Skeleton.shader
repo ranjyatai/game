@@ -89,7 +89,17 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
     }
 
     SubShader {
-        Tags { "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" "PreviewType"="Plane" }
+        // Queue 必须和 SpineOcclusionComposite 一致（那边是 Transparent+40）。
+        //
+        // 高度雾是一个 Queue=Transparent(3000) 的全屏透明覆盖层（Height Fog Global，
+        // Cull Front + ZTest Always），谁画在它之前谁被盖上雾。
+        // 原来这里是 Transparent(3000)，和雾同队列，先后完全由距离排序决定——
+        // 角色一移动就在"被雾盖"和"不被盖"之间跳；而遮挡时换成的合成材质是 +40，
+        // 永远在雾之后、永远不被盖。同一个角色两种状态吃雾行为不同，色差就是这么来的。
+        //
+        // 统一到 +40 之后两者都确定性地排在雾之后（都不吃覆盖层的雾），
+        // 雾改由两个着色器各自在片元里算一次，值相同，切换材质不再跳色。
+        Tags { "Queue"="Transparent+40" "IgnoreProjector"="True" "RenderType"="Transparent" "PreviewType"="Plane" }
 
         Fog { Mode Off }
         Cull Off
@@ -120,6 +130,17 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
             #pragma fragment frag
             #include "UnityCG.cginc"
             #include "CGIncludes/Spine-Common.cginc"
+            // 高度雾：场景几何（URP Lit）本来就吃这套雾，角色不吃的话，角色永远是
+            // 未加雾的原色、场景是加了雾的冷色，两者贴在一起的边缘就有明显色差。
+            // 注意路径——插件注释里写的是 Core/Library/，实际文件在 Core/Includes/。
+            //
+            // 雾的 include 是给 URP 着色器库写的，里面用了 _TimeParameters（URP 的时间
+            // 变量）。Spine 走的是内置管线的 CGPROGRAM，只有 UnityCG.cginc，没有这个
+            // 变量，直接 include 会报 undeclared identifier。
+            // 内置管线里 _Time.y 就是秒数，按 URP 的分量约定桥接过去。
+            // 这一行必须排在 include 之前。
+            #define _TimeParameters float4(_Time.y, sin(_Time.y), cos(_Time.y), unity_DeltaTime.x)
+            #include "Assets/BOXOPHOBIC/Atmospheric Height Fog/Core/Includes/AtmosphericHeightFog.cginc"
 
             sampler2D _MainTex;
 
@@ -177,7 +198,8 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
                 float4 pos : SV_POSITION;
                 float2 uv : TEXCOORD0;
                 float4 vertexColor : COLOR;
-                float2 worldPosXY : TEXCOORD1;
+                // 从 float2 扩成 float3：高度雾按世界 Y 算衰减，只有 XY 不够。
+                float3 worldPos : TEXCOORD1;
                 float4 screenPos : TEXCOORD2;
             };
 
@@ -186,7 +208,7 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
                 o.pos = UnityObjectToClipPos(v.vertex);
                 o.uv = v.uv;
                 o.vertexColor = PMAGammaToTargetSpace(v.vertexColor);
-                o.worldPosXY = mul(unity_ObjectToWorld, v.vertex).xy;
+                o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
                 o.screenPos = ComputeScreenPos(o.pos);
                 return o;
             }
@@ -271,6 +293,11 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
                 float shadowStrength = saturate(_SkyPrison_ShadowMaskStrength) * edgeKeep;
                 straightRgb *= lerp(1.0, shadowMask, shadowStrength);
 
+                // 高度雾。放在这里而不是最后：状态描边/闪烁/溶解边缘那些是叠加的发光，
+                // 属于可读性元素，被雾冲淡会影响判读。雾只作用于身体本色。
+                float4 skyPrisonFog = GetAtmosphericHeightFog(i.worldPos);
+                straightRgb = ApplyAtmosphericHeightFog(straightRgb, skyPrisonFog);
+
                 float occlusionAlpha = saturate(_SkyPrison_OcclusionAlpha);
                 float occlusionTintStrength = saturate(_SkyPrison_OcclusionTintStrength);
                 straightRgb = lerp(straightRgb, straightRgb * _SkyPrison_OcclusionTint.rgb, occlusionTintStrength);
@@ -285,7 +312,7 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
                     // 不再调制取样宽度——极细的发光线在Bloom降采样链路里会直接丢失、
                     // 怎么调Intensity都不发光，之前的"宽度也跟着变"就是这么把Bloom搞没的。
                     // 取样宽度固定用配置值，保证线一直够粗、Bloom稳定能抓住。
-                    float2 flowUV = i.worldPosXY * _SkyPrison_StatusOutlineNoiseScale + float2(0, _Time.y * _SkyPrison_StatusOutlineFlowSpeed);
+                    float2 flowUV = i.worldPos.xy * _SkyPrison_StatusOutlineNoiseScale + float2(0, _Time.y * _SkyPrison_StatusOutlineFlowSpeed);
                     float flowNoise = tex2D(_SkyPrison_DissolveNoiseTex, flowUV).r;
 
                     float edge = GetStatusOutlineSilhouetteEdge(screenUV, _SkyPrison_StatusOutlineWidthPixels);
@@ -322,7 +349,7 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
                 // 死亡溶解第二阶段：世界空间噪波逐像素阈值裁剪 + 阈值附近发光描边。
                 float dissolveAmount = saturate(_SkyPrison_DissolveAmount);
                 if (dissolveAmount > 0.0001) {
-                    float noiseValue = tex2D(_SkyPrison_DissolveNoiseTex, i.worldPosXY * _SkyPrison_DissolveNoiseScale).r;
+                    float noiseValue = tex2D(_SkyPrison_DissolveNoiseTex, i.worldPos.xy * _SkyPrison_DissolveNoiseScale).r;
                     clip(noiseValue - dissolveAmount);
                     float edgeWidth = max(_SkyPrison_DissolveEdgeWidth, 0.001);
                     float edgeGlow = 1.0 - saturate((noiseValue - dissolveAmount) / edgeWidth);

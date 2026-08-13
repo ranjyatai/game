@@ -26,6 +26,15 @@ Shader "Spine/SpineOcclusionComposite"
         _SampleBothY ("Sample Both Y Directions", Float) = 0
         _SkyPrison_EnableBodyClip ("Sky Prison Enable Body Clip", Float) = 1
 
+        // ---- 基于场景深度的遮挡判定（阶段一，默认关闭，与旧路径 A/B 对比用）----
+        [Toggle] _SkyPrison_UseSceneDepthOcclusion ("Use Scene Depth Occlusion", Float) = 0
+        // 深度差要超过这个值才算被挡住。太小会让贴地的装饰物把角色脚部误判成遮挡。
+        _SkyPrison_SceneDepthBias ("Scene Depth Bias", Range(0,2)) = 0.05
+        // 判定的软过渡宽度，避免遮挡边界出现硬锯齿。
+        _SkyPrison_SceneDepthSoftness ("Scene Depth Softness", Range(0.001,2)) = 0.15
+        // 脚到头的深度补偿：角色是竖直 billboard，但实际站在地上，脚比头离相机近。
+        _SkyPrison_SceneDepthFootScale ("Scene Depth Foot Scale", Range(0,2)) = 0.7
+
         _SkyPrison_HiddenOutlineColor ("Hidden Outline Color", Color) = (1,0.83,0,1)
         _SkyPrison_EnableHiddenOutline ("Enable Hidden Outline", Float) = 1
         _SkyPrison_HiddenOutlineWidthPixels ("Hidden Outline Width Pixels", Range(1,12)) = 2
@@ -144,6 +153,14 @@ Shader "Spine/SpineOcclusionComposite"
 
         CGINCLUDE
         #include "UnityCG.cginc"
+        // 高度雾。必须和 Spine-Skeleton 接同一套，否则角色被遮挡换成这个材质的瞬间
+        // 雾没了、色调就跳。注意路径是 Core/Includes/，不是插件注释里写的 Core/Library/。
+        //
+        // 雾的 include 用了 URP 的 _TimeParameters，而这里是内置管线的 CGPROGRAM，
+        // 只有 UnityCG.cginc，不桥接会报 undeclared identifier。
+        // 内置管线里 _Time.y 是秒数。必须排在 include 之前。
+        #define _TimeParameters float4(_Time.y, sin(_Time.y), cos(_Time.y), unity_DeltaTime.x)
+        #include "Assets/BOXOPHOBIC/Atmospheric Height Fog/Core/Includes/AtmosphericHeightFog.cginc"
 
         sampler2D _MainTex;
         sampler2D _OcclusionTex;
@@ -401,6 +418,71 @@ Shader "Spine/SpineOcclusionComposite"
                 hidden = max(hidden, MaxRGBA(tex2D(_OcclusionTex, uv2)));
             }
             return saturate(hidden);
+        }
+
+        // ================= 基于场景深度的遮挡判定（阶段一：与旧路径并存）=================
+        //
+        // 旧路径：CPU 每帧对每个遮挡物做逐三角面射线求交，决定哪些「授权」，再由
+        // ScreenSpaceOutlineRTManager 把授权的渲染进 RT，求交得到 _OcclusionTex。
+        // 开销 = 渲染体数 × 三角面数 × 采样点 × 每帧，随地图复杂度线性增长。
+        // 实测一台叉车（6 个渲染体、包围盒 10.7x5.7x4.7）单帧吃掉 15.9ms，
+        // 占 21 个遮挡物总开销的 90%。
+        //
+        // 新路径：直接采样 URP 已经在生成的 _CameraDepthTexture（项目 URP 资产里
+        // m_RequireDepthTexture: 1），把「这个像素后面有没有更近的不透明几何体」交给
+        // 深度比较。开销与场景里有多少遮挡物完全无关，而且是逐像素，比三角面更准。
+        //
+        // Spine 在透明队列（Transparent+40）不写深度，所以深度图里只有不透明几何体，
+        // 不含角色自己——正是我们要比较的对象。
+        UNITY_DECLARE_DEPTH_TEXTURE(_CameraDepthTexture);
+
+        float _SkyPrison_UseSceneDepthOcclusion;
+        float _SkyPrison_SceneDepthBias;
+        float _SkyPrison_SceneDepthSoftness;
+        float _SkyPrison_SceneDepthFootScale;
+
+        /// 把深度缓冲的原始值换算成「离相机多远」。
+        /// 正交和透视的换算完全不同，必须分开——LinearEyeDepth 只对透视成立，
+        /// 本项目相机是正交（orthographic size 12），用错会得到完全无意义的距离。
+        float SkyPrisonSceneEyeDepth(float rawDepth)
+        {
+        #if defined(UNITY_REVERSED_Z)
+            float d01 = 1.0 - rawDepth;
+        #else
+            float d01 = rawDepth;
+        #endif
+            float ortho = lerp(_ProjectionParams.y, _ProjectionParams.z, d01);
+            float persp = LinearEyeDepth(rawDepth);
+            return lerp(persp, ortho, unity_OrthoParams.w);
+        }
+
+        /// worldPos 处的片元离相机多远。视空间 z 取负即为眼深度，正交/透视都成立。
+        float SkyPrisonFragmentEyeDepth(float3 worldPos)
+        {
+            float3 viewPos = mul(UNITY_MATRIX_V, float4(worldPos, 1.0)).xyz;
+            return -viewPos.z;
+        }
+
+        /// 与旧 GetHiddenFactor 输出同语义的 [0,1] 软值，便于 A/B 对比。
+        ///
+        /// relativeY 是当前像素相对角色脚底的高度。2.5D 里角色是竖直的 billboard，
+        /// 但在世界里它是「站在地上」的——脚比头离相机更近。不做补偿的话，
+        /// 头部像素会被判定成比实际更靠前，站在矮物件后面时头会穿出来。
+        /// 这套补偿项目里本来就有（_SkyPrison_UseFootDepthCompensation 那一组），
+        /// 这里复用同样的思路。
+        float GetHiddenFactorFromSceneDepth(float2 screenUV, float3 worldPos, float relativeY)
+        {
+            float charEye = SkyPrisonFragmentEyeDepth(worldPos)
+                          - relativeY * _SkyPrison_SceneDepthFootScale;
+
+            float rawDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, screenUV);
+            float sceneEye = SkyPrisonSceneEyeDepth(rawDepth);
+
+            // sceneEye 明显小于 charEye ＝ 前面有不透明几何体挡着。
+            float diff = charEye - sceneEye;
+            float bias = max(_SkyPrison_SceneDepthBias, 0.0);
+            float softness = max(_SkyPrison_SceneDepthSoftness, 0.0001);
+            return smoothstep(bias, bias + softness, diff);
         }
 
         float GetHiddenFactor(float2 screenUV)
@@ -747,10 +829,24 @@ Shader "Spine/SpineOcclusionComposite"
                 float shadowMaskValue = tex2D(_SkyPrison_ShadowMask, i.uv).r;
                 straightRgb *= lerp(1.0, shadowMaskValue, saturate(_SkyPrison_ShadowMaskStrength) * alpha);
 
+                // 高度雾。位置和 Spine-Skeleton 里那一处对齐：接在环境色调+阴影遮罩
+                // 之后、乘回 alpha 之前，只作用于身体本色，不碰后面叠加的发光。
+                // 两个着色器的雾必须在同一个位置用同一份参数，否则换材质的瞬间会跳色。
+                float4 skyPrisonFog = GetAtmosphericHeightFog(i.worldPos);
+                straightRgb = ApplyAtmosphericHeightFog(straightRgb, skyPrisonFog);
+
                 c.rgb = straightRgb * alpha;
 
                 float2 screenUV = i.screenPos.xy / max(i.screenPos.w, 0.00001);
-                float hidden = GetHiddenFactor(screenUV);
+
+                // 阶段一：两条路径并存，靠 _SkyPrison_UseSceneDepthOcclusion 切换。
+                // 新路径逐像素比较场景深度，开销与遮挡物数量无关；旧路径靠 CPU
+                // 逐三角面求交产出的 _OcclusionTex。两者输出同为 [0,1] 软值，可直接对比。
+                float hidden = _SkyPrison_UseSceneDepthOcclusion > 0.5
+                    ? (_SkyPrison_EnableBodyClip < 0.5
+                        ? 0.0
+                        : GetHiddenFactorFromSceneDepth(screenUV, i.worldPos, i.relativeY))
+                    : GetHiddenFactor(screenUV);
 
                 // Body-local debug. The full-screen debug view is handled by the RendererFeature.
                 // 1 = show hidden area on the actual Spine mesh.
