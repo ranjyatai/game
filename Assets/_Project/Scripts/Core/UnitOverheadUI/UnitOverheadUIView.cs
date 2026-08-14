@@ -371,8 +371,23 @@ public class UnitOverheadUIView : MonoBehaviour
         // "名字再往上挪一点"也一并折算进来——nameOffset现在清零，不再让名字的最终
         // 位置依赖两套独立坐标系统叠加(稳定的世界锚点 + 每帧跟着摄像机旋转的Canvas
         // 内偏移)，全部并成这一个已验证稳定的计算。
-        float headroom = maxLocalTop * 0.32f;
-        overheadAnchor.localPosition = new Vector3(0f, maxLocalTop + headroom, 0f);
+        // 0.32 是当初配合"世界空间竖直偏移"调出来的系数——现在偏移轴换成了
+        // VisualRoot的本地上轴（45度倾斜方向），同样的系数在这个方向上投影出来的
+        // 视觉高度比原来更远，才会显得"离头顶太远"。先调小到接近发际线的量，
+        // 具体数值进Play目视确认后可能还要微调。
+        float headroom = maxLocalTop * 0.04f;
+        float height = maxLocalTop + headroom;
+
+        // 2026-08-14：改回 localPosition，用户明确指出这条line应该沿billboard自己
+        // 的"上"轴走，不是世界竖直方向——这正是最初"把人物和HUD一起billboard"这个
+        // 思路本身：HUD要摆在角色billboard自己的那条线上，而这条线只有在父节点是
+        // VisualRoot（会转向相机）时，本地Y轴才等于"billboard的上"。改成世界
+        // Vector3.up是把这条线又拽回世界竖直方向，表现正是用户说的"各自45度"——
+        // 角色的billboard轴和HUD的位置轴不再是同一条线，两者视觉上各转各的。
+        //
+        // "太高了"这个反馈针对的是height这个标量本身，不是它该沿哪个轴走——
+        // 量级问题应该调headroom/maxLocalTop这个数值，不该把轴改回世界空间。
+        overheadAnchor.localPosition = new Vector3(0f, height, 0f);
     }
 
     /// <summary>找到真正的根因：这个场景的Main Camera挂了CinemachineBrain，
@@ -395,8 +410,53 @@ public class UnitOverheadUIView : MonoBehaviour
         if (cam == null || renderingCam != cam)
             return;
 
-        runtimeUiRoot.rotation = cam.transform.rotation;
+        // 2026-08-14：之前这里每帧手动把 runtimeUiRoot.rotation 设成 cam.transform.rotation，
+        // 用来让HUD面向相机。现在 overheadAnchor 已经挂到 VisualRoot 下面（见
+        // EnsureStructure），朝向直接继承父节点——VisualRoot 转到哪，这里就跟着到哪，
+        // 完全不需要在这个单独的、时机还和角色本体不一样的回调里再算一遍。
+        //
+        // 只有找不到 VisualRoot（anchorSharesVisualRootRotation=false，走了退化到
+        // 逻辑根节点的兜底路径）才需要这段手动朝向——那种情况下 overheadAnchor 没有
+        // 可继承的旋转来源，之前的行为（好歹自己转向相机）比完全不转要好。
+        if (!anchorSharesVisualRootRotation)
+            runtimeUiRoot.rotation = cam.transform.rotation;
+
+        // 诊断：之前两次都以为改对了，用户实测还是45+45。与其继续猜前提成不成立，
+        // 直接把关键状态打出来——一次性判断到底是"没找到VisualRoot走了兜底"，
+        // 还是"找到了但VisualRoot本身没有被CameraFacingBillboard转到位"，
+        // 还是"两个旋转其实一致，问题出在别的地方（比如runtimeUiRoot下面某个
+        // 子节点又带了自己的旋转)"。每5秒打一次，够定位又不刷屏。
+        if (Time.frameCount % 300 == 0)
+        {
+            Transform visualRoot = transform.Find("VisualRoot");
+            var billboard = visualRoot != null ? visualRoot.GetComponent<CameraFacingBillboard>() : null;
+            Debug.Log($"[OverheadBillboardDiag] {name} " +
+                      $"anchorSharesVisualRootRotation={anchorSharesVisualRootRotation} " +
+                      $"VisualRoot找到={visualRoot != null} " +
+                      $"VisualRoot上有CameraFacingBillboard={billboard != null}" +
+                      (billboard != null ? $"(enabled={billboard.enabled})" : "") +
+                      $"\n  VisualRoot.rotation.eulerAngles={(visualRoot != null ? visualRoot.rotation.eulerAngles.ToString("F1") : "n/a")}" +
+                      $"\n  overheadAnchor.rotation.eulerAngles={(overheadAnchor != null ? overheadAnchor.rotation.eulerAngles.ToString("F1") : "n/a")}" +
+                      $"\n  overheadAnchor.localRotation.eulerAngles={(overheadAnchor != null ? overheadAnchor.localRotation.eulerAngles.ToString("F1") : "n/a")}" +
+                      $"\n  runtimeUiRoot.rotation.eulerAngles={runtimeUiRoot.rotation.eulerAngles:F1}" +
+                      $"\n  runtimeUiRoot.localRotation.eulerAngles={runtimeUiRoot.localRotation.eulerAngles:F1}" +
+                      $"\n  cam.transform.rotation.eulerAngles={cam.transform.rotation.eulerAngles:F1}", this);
+
+            // runtimeUiRoot.localRotation 的值跟 cam.transform.rotation 完全相等——
+            // 这不是我写的那段代码干的（anchorSharesVisualRootRotation=True 时那段
+            // 代码根本不会执行），说明另有一个脚本直接把相机的世界旋转当成本地旋转
+            // 写了进去。列出这个物体上挂的所有组件，把元凶揪出来。
+            var comps = runtimeUiRoot.GetComponents<Component>();
+            var compNames = new System.Text.StringBuilder("[OverheadBillboardDiag] runtimeUiRoot上的组件：");
+            foreach (var c in comps)
+                compNames.Append(c != null ? c.GetType().Name : "NULL").Append(", ");
+            Debug.Log(compNames.ToString(), this);
+        }
     }
+
+    // EnsureStructure 里记录：overheadAnchor 是否成功挂到了 VisualRoot 下面共享朝向，
+    // 还是退化到了逻辑根节点（没有 VisualRoot 时的兜底）。
+    private bool anchorSharesVisualRootRotation;
 
     // 场景里明确存在一个专属的"OverheadUICamera"(Overlay类型，只渲染头顶UI所在的
     // 层，叠加合成在主摄像机画面上面)——之前这里一直用Camera.main，间接依赖
@@ -551,10 +611,20 @@ public class UnitOverheadUIView : MonoBehaviour
         ApplyBarStyle(style);
         ApplyStatusAreaStyle(style);
         ApplyNameVisibilityFromDefinition();
-        // 这里是"应用样式"这个一次性/编辑器预览路径，不是每帧持续跑的逐相机回调——
-        // 直接现取一次摄像机转向，保证样式刚应用/编辑器没进Play模式时也能立刻摆正，
-        // 不用等第一次beginCameraRendering回调。
-        if (faceCameraEveryFrame && runtimeUiRoot != null)
+        // 2026-08-14：这是"45+45=90"真正的元凶——之前只查了每帧跑的
+        // HandleBeforeCameraRenders，漏了这条"应用样式"时跑的一次性路径。
+        //
+        // 这里直接把 runtimeUiRoot 的世界旋转设成当前相机旋转，保证样式刚应用/
+        // 编辑器没进Play模式时也能立刻摆正。问题是它执行时机早于
+        // CameraFacingBillboard第一次转动VisualRoot——那一刻父节点世界旋转还是0，
+        // 这行代码算出的本地旋转就被烘焙成了"45度"(=相机自己的倾角)。之后
+        // VisualRoot才被转到45度，这份烘焙值没人再更新（因为anchorSharesVisualRootRotation
+        // 为真时，每帧那条路径被跳过），于是45(烘焙的本地值)+45(父节点后来转到的)=90。
+        //
+        // 现在挂到VisualRoot下面共享朝向时，这条一次性路径也要跳过——
+        // runtimeUiRoot的本地旋转应该保持EnsureSingleRuntimeRoot里设的identity，
+        // 完全靠继承，不需要（也不能）在这里再手动摆一次。
+        if (!anchorSharesVisualRootRotation && faceCameraEveryFrame && runtimeUiRoot != null)
         {
             Camera camForStyle = ResolveOverheadCamera();
             if (camForStyle != null)
@@ -601,7 +671,45 @@ public class UnitOverheadUIView : MonoBehaviour
         if (GetComponent<UnitOverheadQuestMarker>() == null)
             gameObject.AddComponent<UnitOverheadQuestMarker>();
 
-        overheadAnchor = EnsureTransformChild(transform, "OverheadAnchor");
+        // 2026-08-14：挂到 VisualRoot 下面，不再挂在逻辑根节点(transform)下面。
+        //
+        // 角色本体的 billboard 朝向由 CameraFacingBillboard 只旋转 VisualRoot 完成
+        // （45度贴合相机视线那套），逻辑根节点(transform)本身不转——之前 overheadAnchor
+        // 挂在 transform 下，跟角色朝向完全是两套独立的东西：角色转、锚点不转，
+        // 于是头顶UI需要自己单独算一套朝向/位置去追角色，两边各自为政，任何一点
+        // 时机差（LateUpdate vs beginCameraRendering）或计算方式差异（世界空间偏移
+        // vs 相机空间偏移）都会表现成"HUD跟角色不同步"——之前两次修复(反投影/相机up轴)
+        // 想解决的都是这个"追"的过程，但只要还是两套独立系统，就永远追不干净。
+        //
+        // 挂到 VisualRoot 下面之后，overheadAnchor 的朝向直接继承父节点的旋转——
+        // 角色朝哪转，锚点跟着转到哪，不需要写任何同步代码，两者不可能不一致，
+        // 因为它们现在共用同一次旋转计算，不是两次独立计算出来的两个结果。
+        Transform visualRootForAnchor = transform.Find("VisualRoot");
+        anchorSharesVisualRootRotation = visualRootForAnchor != null;
+        overheadAnchor = EnsureTransformChild(
+            visualRootForAnchor != null ? visualRootForAnchor : transform,
+            "OverheadAnchor");
+
+        // EnsureTransformChild是按名字找、找到了就直接复用——如果这个预制体里
+        // 早就存在一个OverheadAnchor（老系统年代，挂在不转的父节点下时，可能被
+        // 手动摆过角度去补偿看起来"不够斜"），复用时会带着那份旧旋转一起过来。
+        // 现在父节点(VisualRoot)自己就有45度的billboard旋转，这份历史遗留的本地
+        // 旋转会跟父节点的旋转叠加——45+45=90度，表现正好是"翻倍了"。
+        // 挂到VisualRoot下之后，朝向完全交给父节点继承，本地旋转必须清零，
+        // 不管这个anchor是刚建的还是找到的旧对象。
+        if (anchorSharesVisualRootRotation)
+            overheadAnchor.localRotation = Quaternion.identity;
+
+        // 挂载点从 transform 迁到 VisualRoot 之后，已经存过的场景/预制体里
+        // 可能还留着挂在 transform 下的旧 OverheadAnchor——EnsureTransformChild
+        // 只会在新父节点下找不到就新建，老的那份不会自动清掉，会变成孤儿一直
+        // 留在层级里。这里顺手清掉，只在它确实不是刚才拿到手的那个时才删。
+        if (visualRootForAnchor != null)
+        {
+            Transform staleAnchor = transform.Find("OverheadAnchor");
+            if (staleAnchor != null && staleAnchor != overheadAnchor)
+                SafeDestroy(staleAnchor.gameObject);
+        }
 
         // 改回挂在单位身上的World Space Canvas(跟着单位在地图里到处跑)，不再是
         // 屏幕投影——之前的ScreenSpaceOverlay在Canvas层面有个死结：Canvas自己的
@@ -690,11 +798,22 @@ public class UnitOverheadUIView : MonoBehaviour
         }
 
         if (keep != null)
+        {
+            // 复用已存在节点时原样返回，从不touch它的旋转——如果这个节点带着
+            // 历史遗留的本地旋转(比如老层级下手动摆过的45度)，会一直原样保留下去，
+            // 现在挂到VisualRoot下面(父节点自己会动态转向相机)，这份残留旋转就是
+            // 多余的、错误的。这个节点自己的本地旋转必须是0，朝向完全交给
+            // HandleBeforeCameraRenders每帧动态设置的世界旋转决定。
+            keep.localRotation = Quaternion.identity;
             return keep;
+        }
 
         GameObject go = new GameObject(RuntimeRootName, typeof(RectTransform));
         go.transform.SetParent(parent, false);
         RectTransform freshRoot = go.GetComponent<RectTransform>();
+        // SetParent(parent, false)已经会给新节点0本地旋转，这里显式写一遍，
+        // 不依赖隐式默认值——避免以后有人在这附近加代码时误以为需要自己处理旋转。
+        freshRoot.localRotation = Quaternion.identity;
 
         // 只在这里、只对"刚创建出来、以前从来不存在"的节点给一个初始缩放——
         // 血条/字号这些数值(150、24这种)是照着"缩小过的Canvas"这个假设配的，
@@ -769,7 +888,7 @@ public class UnitOverheadUIView : MonoBehaviour
             if (style.nameFontAsset != null)
                 nameText.font = style.nameFontAsset;
 
-            nameText.fontSize = Mathf.Max(8, style.nameFontSize);
+            nameText.fontSize = Mathf.Max(8, style.nameFontSize) * 1.2f;
             nameText.color = style.nameColor;
             // SetRectCenter内部会把Y取负(历史上是给"配置值越大越往下"这种约定用的)，
             // 名字这里要的是"配置值越大越往上"，先取负抵消掉，不然调大nameOffset.y

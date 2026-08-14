@@ -167,7 +167,32 @@ namespace SkyPrison.Runtime.UI
         {
             if (_displayRoot != null) return;
 
-            _stableParent = (RectTransform)transform;
+            // 细线放进一个铺满窗口面板的裁剪容器里，而不是直接挂在面板下。
+            //
+            // 切换标签时线是匀速滑过去的（这是有意的演出），但滑动路径不受窗口边界
+            // 约束——开窗那一下它会从窗口外滑进来，在面板外面露出一截绿色。
+            // 位置计算本身是对的（实测线的世界角点与标签完全重合），所以不该去改
+            // 定位逻辑，只需要让窗口成为它的可视边界。
+            //
+            // 容器 StretchFull 铺满面板，加 RectMask2D 做矩形裁剪。用 RectMask2D 而不是
+            // Mask：它不需要图形和模板缓冲，开销更低，也不会和窗口里其它用了 Mask 的
+            // 元素（负重条、HP 条那些 FillMaskRoot）争用模板位。
+            //
+            // _stableParent 指向这个容器而不是面板本身：定位全程走
+            // InverseTransformPoint，换成任何父节点都成立，而容器与面板矩形完全重合，
+            // 原有坐标换算的结果一模一样。
+            var maskGo = new GameObject("TabUnderlineMask", typeof(RectTransform));
+            var maskRt = maskGo.GetComponent<RectTransform>();
+            maskRt.SetParent((RectTransform)transform, false);
+            maskRt.anchorMin = Vector2.zero;
+            maskRt.anchorMax = Vector2.one;
+            maskRt.offsetMin = Vector2.zero;
+            maskRt.offsetMax = Vector2.zero;
+            maskRt.pivot = new Vector2(0.5f, 0.5f);
+            maskGo.AddComponent<LayoutElement>().ignoreLayout = true;
+            maskGo.AddComponent<RectMask2D>();
+
+            _stableParent = maskRt;
 
             var rootGo = new GameObject("TabUnderline", typeof(RectTransform));
             _displayRoot = rootGo.GetComponent<RectTransform>();
@@ -197,7 +222,12 @@ namespace SkyPrison.Runtime.UI
 
         private void OnDestroy()
         {
-            if (_displayRoot != null) Destroy(_displayRoot.gameObject);
+            // 销毁遮罩容器即可，_displayRoot 是它的子节点会一起走。
+            // 只销毁 _displayRoot 会把空容器留在面板上，反复开关窗口就会堆积。
+            if (_stableParent != null && _stableParent != (RectTransform)transform)
+                Destroy(_stableParent.gameObject);
+            else if (_displayRoot != null)
+                Destroy(_displayRoot.gameObject);
         }
     }
 }

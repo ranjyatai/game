@@ -19,7 +19,7 @@ public class UnitOverheadQuestMarker : MonoBehaviour
     [Tooltip("图标边长（像素）。")]
     // 18 -> 23.4（放大 1.3 倍）。按实际画面调的：世界空间 UI 在 2.5D 正交视角下
     // 离相机固定距离，18 在名字旁边偏小。
-    [SerializeField] private float iconSize = 23.4f;
+    [SerializeField] private float iconSize = 28.1f; // 23.4 * 1.2，改这个记得同步 SkyPrisonQuestMarkerSizeSync 的版本号
 
     [Tooltip("图标右边缘和名字左边缘之间的间距。")]
     [SerializeField] private float gap = 4f;

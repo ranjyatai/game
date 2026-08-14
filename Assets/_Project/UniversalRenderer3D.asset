@@ -543,18 +543,18 @@ MonoBehaviour:
     enabled: 1
     shader: {fileID: 4800000, guid: 0e3fe1b73db49d742b63745bea3b692f, type: 3}
     applyToSceneView: 0
-    targetMode: 1
+    targetMode: 0
     afterOverlayCameraName: GamePlayCamera
     maskMode: 0
     focusDistance: 70
     blurRange: 45
-    screenBlurStartY: 0.231
-    screenBlurEndY: 0.3
+    screenBlurStartY: 0.62
+    screenBlurEndY: 1
     screenFocusY: 0.48
     screenClearHalfHeight: 0.18
     screenFocusFadeRange: 0.28
-    maxRadius: 11.8
-    intensity: 0.449
+    maxRadius: 20
+    intensity: 1
     halfBlurRadiusScale: 1
     quarterBlurRadiusScale: 1.25
     debugShowBlurMask: 0

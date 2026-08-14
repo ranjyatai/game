@@ -38,6 +38,66 @@ public sealed class SkyPrisonRuntimeAudioBootstrap : MonoBehaviour
     // 因为它是引擎每帧自己判断自己打的。用户明确说了不是频率问题，就是不想看到它，
     // 那唯一办法就是在日志层拦截：包一层 ILogHandler，凡是内容匹配这条警告的直接吃掉
     // 不转发给默认输出，其它日志/警告原样放行，不会连累别的诊断信息一起消失。
+    /// <summary>
+    /// 找出 FindObjectsByType 看不见的那些 AudioListener。
+    ///
+    /// 现状矛盾：Unity 引擎报「场景里有 1126 个」且每帧 +1，而本类的 [ListenerHunt]
+    /// 和独立的 SkyPrisonAudioListenerLeakProbe 两套扫描都只数到 1 个
+    /// （AudioListenerRoot 上那个）。两套 FindObjectsByType 一致看不见，说明泄漏出来的
+    /// 那些对它不可见——典型情况是挂在 HideFlags.HideAndDontSave 的对象上，
+    /// 或者存在于预览场景（prefab 缩略图 / PreviewRenderUtility）里。
+    /// Resources.FindObjectsOfTypeAll 两者都能看到。
+    ///
+    /// 放在 bootstrap 而不是探针里：探针靠 RuntimeInitializeOnLoadMethod 创建，
+    /// Play 期间一旦触发重编译，Domain Reload 会销毁它且不再重建，观测就此失明——
+    /// 这正是「只数到 1 个」这个假象的来源，探针自己的注释还警告过这件事。
+    /// bootstrap 是场景里的真实对象，每帧都在跑，不会这样失明。
+    ///
+    /// 定性用，每 120 次调用报一次，且只在数量变化时输出。
+    /// </summary>
+    private static int _invisibleReportTick;
+    private static int _lastInvisibleTotal = -1;
+
+    private static void ReportInvisibleListeners(int visibleCount)
+    {
+        if (++_invisibleReportTick % 120 != 0)
+            return;
+
+        var all = Resources.FindObjectsOfTypeAll<AudioListener>();
+        if (all.Length == _lastInvisibleTotal)
+            return;
+        _lastInvisibleTotal = all.Length;
+
+        var byScene = new System.Collections.Generic.Dictionary<string, int>();
+        var sampleHidden = new System.Collections.Generic.List<string>();
+
+        foreach (AudioListener l in all)
+        {
+            if (l == null) continue;
+
+            GameObject go = l.gameObject;
+            string key = go.scene.IsValid()
+                ? $"场景:{go.scene.name}"
+                : "(无场景／资产或预览场景)";
+            key += $" hideFlags={go.hideFlags}";
+
+            byScene.TryGetValue(key, out int n);
+            byScene[key] = n + 1;
+
+            if (go.hideFlags != HideFlags.None && sampleHidden.Count < 5)
+                sampleHidden.Add(GetHierarchyPath(go.transform));
+        }
+
+        var sb = new System.Text.StringBuilder();
+        sb.Append($"[ListenerAll] FindObjectsByType 可见={visibleCount}，全量={all.Length}。分布：");
+        foreach (var kv in byScene)
+            sb.Append($"\n  {kv.Key} = {kv.Value}");
+        if (sampleHidden.Count > 0)
+            sb.Append($"\n  隐藏对象样例：{string.Join(" | ", sampleHidden)}");
+
+        Debug.LogWarning(sb.ToString());
+    }
+
     private static bool _filterInstalled;
     private static void InstallListenerWarningFilter()
     {
@@ -138,10 +198,47 @@ public sealed class SkyPrisonRuntimeAudioBootstrap : MonoBehaviour
     // 的话，去重这件事完全交给它一个人做，这里只保留"一个都没有"时的兜底创建。
     private void EnsureAudioListener()
     {
-        AudioListener[] listeners = FindObjectsOfType<AudioListener>(true);
+        // 用 Resources.FindObjectsOfTypeAll 而不是 FindObjectsOfType：后者看不见带
+        // HideFlags.DontSave 的对象，而「创建守卫看不见自己创建的东西」正是本文件
+        // 造成 1126 个 listener 泄漏的机制。即使现在已经不再设 DontSave，扫描这一侧
+        // 也要能看见，否则将来任何人再设一次就会静默重现同样的泄漏。
+        //
+        // 代价是它还会返回 prefab 资产里的组件，所以下面要过滤掉没有有效场景的对象，
+        // 只处理真正存在于场景中的 listener。
+        var allListeners = Resources.FindObjectsOfTypeAll<AudioListener>();
+        var sceneListeners = new System.Collections.Generic.List<AudioListener>(allListeners.Length);
+        for (int i = 0; i < allListeners.Length; i++)
+        {
+            AudioListener l = allListeners[i];
+            if (l != null && l.gameObject.scene.IsValid())
+                sceneListeners.Add(l);
+        }
+        AudioListener[] listeners = sceneListeners.ToArray();
         int enabledCount = 0;
         AudioListener firstEnabled = null;
         bool anchorPresent = FindObjectOfType<SkyPrisonPlayerAudioListenerAnchor>() != null;
+
+        // 清掉历史遗留的 fallback listener。上面那个顺序 bug 会每帧新建一个，
+        // 存档或场景里可能已经积累了成百上千个，光修顺序不会让它们消失。
+        // 按名字识别，只清自己建的那种，不碰任何别的 listener。
+        int fallbackCount = 0;
+        for (int i = 0; i < listeners.Length; i++)
+        {
+            if (listeners[i] == null) continue;
+            if (listeners[i].gameObject.name != FallbackListenerObjectName) continue;
+
+            fallbackCount++;
+            if (fallbackCount > 1 || anchorPresent)
+            {
+                Destroy(listeners[i].gameObject);
+                listeners[i] = null;
+            }
+        }
+
+        if (fallbackCount > 1)
+            Debug.Log($"[SkyPrisonRuntimeAudioBootstrap] 清理了 {fallbackCount - (anchorPresent ? 0 : 1)} 个多余的 fallback AudioListener。");
+
+        ReportInvisibleListeners(listeners.Length);
 
         for (int i = 0; i < listeners.Length; i++)
         {
@@ -162,20 +259,36 @@ public sealed class SkyPrisonRuntimeAudioBootstrap : MonoBehaviour
             }
         }
 
+        // 锚点存在时完全不插手，连"没有启用的 listener"这种情况也不补。
+        //
+        // 这个判断原来排在下面的创建分支之后，等于没起作用，两个系统会每帧互相拆台：
+        //   Bootstrap 发现没有启用的 listener → 新建一个 fallback（启用）
+        //   → Anchor 的 DisableOtherListenersIfNeeded 判定它是"其它"，禁用它
+        //   → 下一帧 Bootstrap 又发现 enabledCount==0，再建一个
+        // 每帧泄漏一个，实测累积到 1060 个。listener 数量一多，Unity 会随机挑一个用，
+        // 3D 音效方位随机漂移，而且每个都参与音频计算，帧率也被拖下去。
+        //
+        // 注意 EnsureAudioListener 是在 Update 里每帧调用的，这里任何"补一个"的行为
+        // 都必须先确认没有别的系统在管，否则就是每帧新建。
+        if (anchorPresent)
+            return;
+
         if (enabledCount <= 0)
         {
             GameObject listenerGo = new GameObject(FallbackListenerObjectName);
             DontDestroyOnLoad(listenerGo);
-            listenerGo.hideFlags = HideFlags.DontSave;
+            // 这里绝对不能设 HideFlags.DontSave —— 那是 1126 个 listener 泄漏的根因。
+            //
+            // FindObjectsOfType/FindObjectsByType 不返回带 DontSave 的对象，于是上面
+            // 那次扫描看不见自己上一帧刚创建的这个 fallback，判定 enabledCount==0，
+            // 每帧再建一个，无限循环。同一个盲区也让 [ListenerHunt] 和独立探针都只
+            // 数到 1 个，两套诊断结论一致反而让人确信「没有泄漏」。
+            //
+            // DontSave 还会让对象在退出 Play 时不被销毁，跨会话累积（实测残留 1125 个
+            // 无场景的孤儿）。运行时对象已经有 DontDestroyOnLoad 保证跨场景存活，
+            // DontSave 在这里没有任何好处。
             listenerGo.transform.position = Vector3.zero;
             listenerGo.AddComponent<AudioListener>();
-            return;
-        }
-
-        if (anchorPresent)
-        {
-            // 场景里已经有专门的锚点组件在管这件事，这里完全不插手（连"禁用多余的"
-            // 都不做），避免跟它打架。
             return;
         }
 

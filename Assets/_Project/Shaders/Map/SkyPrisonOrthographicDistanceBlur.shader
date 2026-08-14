@@ -37,10 +37,32 @@ Shader "Hidden/SkyPrison/OrthographicDistanceBlur"
             return SAMPLE_TEXTURE2D_X(_BlitTexture, sampler_LinearClamp, uv);
         }
 
+        /// 深度缓冲值 → 「离相机多远」。正交和透视的换算完全不同，必须分开。
+        ///
+        /// 原来直接用 LinearEyeDepth(rawDepth, _ZBufferParams) —— 那是透视投影的公式。
+        /// 本项目相机是正交的（这个 Feature 名字里就写着 Orthographic），透视公式在正交下
+        /// 算出来的是无意义的值，遮罩近乎常数，表现就是「怎么调参数都没有景深」。
+        ///
+        /// 正交下深度在 near..far 之间是线性的，直接按 d01 插值即可。
+        /// unity_OrthoParams.w 正交时为 1、透视时为 0，两条路径都保留，切相机也不会坏。
+        float SkyPrisonSceneEyeDepth(float rawDepth)
+        {
+        #if defined(UNITY_REVERSED_Z)
+            float d01 = 1.0 - rawDepth;
+        #else
+            float d01 = rawDepth;
+        #endif
+            float ortho = lerp(_ProjectionParams.y, _ProjectionParams.z, d01);
+            float persp = LinearEyeDepth(rawDepth, _ZBufferParams);
+            return lerp(persp, ortho, unity_OrthoParams.w);
+        }
+
+        /// 只虚后景，不虚前景 —— 比对焦面近的一律保持清晰。
+        /// 这是按参考画面定的：那种观感里近处几乎没有虚化，虚的是远景。
         float GetDepthBlurMask(float2 uv)
         {
             float rawDepth = SampleSceneDepth(uv);
-            float eyeDepth = LinearEyeDepth(rawDepth, _ZBufferParams);
+            float eyeDepth = SkyPrisonSceneEyeDepth(rawDepth);
             return saturate((eyeDepth - _SkyPrisonFocusDistance) / max(0.0001, _SkyPrisonBlurRange));
         }
 
@@ -217,12 +239,33 @@ Shader "Hidden/SkyPrison/OrthographicDistanceBlur"
                 float4 halfBlur = SAMPLE_TEXTURE2D_X(_SkyPrisonBlurHalfTex, sampler_LinearClamp, uv);
                 float4 quarterBlur = SAMPLE_TEXTURE2D_X(_SkyPrisonBlurQuarterTex, sampler_LinearClamp, uv);
 
-                // Softly transition between half-res and quarter-res buffers. The heavy blur
-                // is only used where the mask is high, preventing the "flat oily" look.
-                float heavy = smoothstep(0.45, 1.0, m);
-                float4 blur = lerp(halfBlur, quarterBlur, heavy);
+                // 三段连续过渡：清晰 → 半分辨率模糊 → 四分之一分辨率模糊。
+                //
+                // 原来是 lerp(original, blur, m)，即「清晰图和模糊图按比例混合」。
+                // 混合不等于模糊：清晰图始终有一份权重叠在上面，出来的是发灰、带重影的
+                // 「蒙了一层」的观感，而不是散焦。m 又被 intensity 卡在 0.449，
+                // 意味着最远处仍保留 55% 的清晰图，所以怎么调都不像真正的景深。
+                //
+                // 现在改成沿模糊程度串联：m 从 0 到 0.5 是「清晰 → 半分辨率」，
+                // 0.5 到 1 是「半分辨率 → 四分之一分辨率」。任意时刻都只在相邻两级之间
+                // 插值，清晰图在 m 超过 0.5 后完全退出，远处是真的被模糊图取代。
+                float4 result = m < 0.5
+                    ? lerp(original, halfBlur, saturate(m * 2.0))
+                    : lerp(halfBlur, quarterBlur, saturate(m * 2.0 - 1.0));
 
-                float4 result = lerp(original, blur, m);
+                // 抖动，打散 8-bit 量化台阶。
+                //
+                // 中间纹理（半/四分之一分辨率）直接继承屏幕颜色格式，通常是 8-bit。
+                // 模糊本身会抹掉正常画面里遮盖量化台阶的高频细节/噪点，于是原本被盖住的
+                // 色阶台阶在低对比度渐变区域（阴天天空、雾气墙面这类大面积同色渐变）
+                // 会暴露成一圈圈色带——用户反馈的"颗粒感、网格感"就是这个，不是采样网格
+                // 或核函数错了（核函数是标准 13-tap 高斯，权重和为 1，没问题）。
+                //
+                // 加一点点抖动噪声，量级远小于一个量化台阶（1/255 ≈ 0.004），
+                // 视觉上不可见，但能让台阶边界随机化，肉眼看起来重新变得连续。
+                float dither = (InterleavedGradientNoise(input.positionCS.xy, 0) - 0.5) * (1.0 / 255.0);
+                result.rgb += dither * m;
+
                 result.a = original.a;
                 return result;
             }

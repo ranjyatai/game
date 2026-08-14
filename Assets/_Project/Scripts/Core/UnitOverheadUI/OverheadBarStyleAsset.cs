@@ -73,6 +73,13 @@ public class OverheadBarStyleAsset : ScriptableObject
     public bool enableDamageNumbers = true;
     public TMP_FontAsset damageNumberFontAsset;
 
+    [Header("视距淡出")]
+    [Tooltip("离玩家超过这个距离，头顶UI(名字+血条+括号+状态图标，整体一起)开始淡出。" +
+             "0或负数=不启用这个功能，永远显示。")]
+    public float visibilityFadeStartDistance = 11f;
+    [Tooltip("再远这么多距离就完全淡到看不见——实际完全消失的距离 = 起始距离 + 这个值。")]
+    public float visibilityFadeRange = 4f;
+
 #if UNITY_EDITOR
     private void OnValidate()
     {

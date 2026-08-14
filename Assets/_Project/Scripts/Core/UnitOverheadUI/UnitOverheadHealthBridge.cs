@@ -60,6 +60,11 @@ public class UnitOverheadHealthBridge : MonoBehaviour
             AutoSetup();
 
         OverheadBarStyleAsset.OnStyleChanged += HandleStyleChanged;
+        // EnsureDefinitionAndStyle已经在读GetLocalizedDisplayName()，但只有LateUpdate
+        // 里健康值真的变化时才会被SyncAllNow间接调用——切语言不动血量，头顶名字
+        // 因此一直卡在切之前那个语言，直到下次受伤/回血才会顺带刷新回来。订阅切语言
+        // 事件，直接强制重新走一次名字/样式应用，不用等血量变化这个不相关的触发点。
+        LocalizationRuntime.OnLanguageChanged += HandleLanguageChanged;
         BindEvents();
         RefreshNow();
     }
@@ -67,6 +72,7 @@ public class UnitOverheadHealthBridge : MonoBehaviour
     private void OnDisable()
     {
         OverheadBarStyleAsset.OnStyleChanged -= HandleStyleChanged;
+        LocalizationRuntime.OnLanguageChanged -= HandleLanguageChanged;
         UnbindEvents();
 
         if (overheadView != null)
@@ -155,7 +161,10 @@ public class UnitOverheadHealthBridge : MonoBehaviour
             overheadView.ApplyStyleFromDefinition();
         }
 
-        overheadView.SetDisplayName(string.IsNullOrWhiteSpace(ud.displayName) ? ud.name : ud.displayName);
+        // 之前直接读ud.displayName原始字段，切日文/英文头顶名字还是显示中文——
+        // 改成走GetLocalizedDisplayName()，跟对话窗口标题名字同一套走法。
+        string localizedName = ud.GetLocalizedDisplayName();
+        overheadView.SetDisplayName(string.IsNullOrWhiteSpace(localizedName) ? ud.name : localizedName);
         overheadView.SetNameVisible(ud.autoOverheadNameVisibility ? (ud.characterIdentity == CharacterIdentity.Ally) : ud.manualShowOverheadName);
     }
 
@@ -191,7 +200,11 @@ public class UnitOverheadHealthBridge : MonoBehaviour
         if (ud != null)
             showName = ud.autoOverheadNameVisibility ? (ud.characterIdentity == CharacterIdentity.Ally) : ud.manualShowOverheadName;
 
-        if (overheadView.nameRoot != null)
+        // 名字如果已经切到"靠近淡入/远离淡出"模式(NPCDialogueInteractable)，这里就
+        // 别再抢着SetActive了——死亡还是要强制隐藏(deadLike优先)，正常情况下的显隐
+        // 交给 SetNameFadeTarget() 自己的alpha淡出去处理，不然两边打架，淡出淡了一半
+        // 又被这里瞬间拉回原样。
+        if (overheadView.nameRoot != null && (deadLike || !overheadView.IsNameProximityFadeMode))
             overheadView.nameRoot.gameObject.SetActive(!deadLike && showName);
 
         CanvasGroup cg = overheadView.slotRoot01 != null ? overheadView.slotRoot01.GetComponent<CanvasGroup>() : null;
@@ -305,6 +318,11 @@ public class UnitOverheadHealthBridge : MonoBehaviour
             return;
 
         RefreshNow();
+    }
+
+    private void HandleLanguageChanged(string _)
+    {
+        EnsureDefinitionAndStyle();
     }
 
     private void BindEvents()
