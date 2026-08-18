@@ -34,6 +34,10 @@ public class UnitDefinitionRuntimeBinder : MonoBehaviour
     [SerializeField] private string spineRootName = "SpineRoot";
     [SerializeField] private string spineSourceNameContains = "Spine GameObject";
 
+    [Header("3D 通道 Source Binding")]
+    [SerializeField] private bool autoBindModel3D = true;
+    [SerializeField] private string model3DRootName = "Model3DRoot";
+
     [Header("Occluded Proxy Binding - Required Current Baseline")]
     [SerializeField] private bool bindOccludedOutlineProxies = true;
     [SerializeField] private bool createMissingOccludedProxyComponents = true;
@@ -57,7 +61,7 @@ public class UnitDefinitionRuntimeBinder : MonoBehaviour
         if (applyDefinitionOnAwake)
             ApplyDefinitionIfPossible();
         else
-            RefreshSpine43RendererBindingsIfPossible();
+            RefreshVisualChannelBindingsIfPossible();
     }
 
     private void OnEnable()
@@ -68,7 +72,7 @@ public class UnitDefinitionRuntimeBinder : MonoBehaviour
         if (applyDefinitionOnEnable)
             ApplyDefinitionIfPossible();
         else
-            RefreshSpine43RendererBindingsIfPossible();
+            RefreshVisualChannelBindingsIfPossible();
 
         if (Application.isPlaying)
             SkyPrisonVisionManager.Instance?.RegisterUnit(this);
@@ -87,7 +91,7 @@ public class UnitDefinitionRuntimeBinder : MonoBehaviour
         EnsureRuntimeIdentityForCurrentDefinition();
 
         if (!Application.isPlaying)
-            RefreshSpine43RendererBindingsIfPossible();
+            RefreshVisualChannelBindingsIfPossible();
     }
 #endif
 
@@ -101,7 +105,7 @@ public class UnitDefinitionRuntimeBinder : MonoBehaviour
             if (debugLogs)
                 Debug.LogWarning($"[UnitDefinitionRuntimeBinder] {name}: UnitDefinition is null.", this);
 
-            RefreshSpine43RendererBindingsIfPossible();
+            RefreshVisualChannelBindingsIfPossible();
             return;
         }
 
@@ -119,7 +123,245 @@ public class UnitDefinitionRuntimeBinder : MonoBehaviour
         }
 
         EnsureRuntimeIdentityForCurrentDefinition();
+        RefreshVisualChannelBindingsIfPossible();
+    }
+
+    /// <summary>两条视觉通道（Spine / 3D）各自的绑定刷新入口都从这里统一分发——
+    /// 调用方（Awake/OnEnable/OnValidate/ApplyDefinitionIfPossible）不用关心当前
+    /// UnitDefinition 选的是哪条通道，两个刷新方法各自会在"不是自己的通道/没有
+    /// 对应资源"时静默跳过，不冲突。</summary>
+    private void RefreshVisualChannelBindingsIfPossible()
+    {
         RefreshSpine43RendererBindingsIfPossible();
+        RefreshModel3DBindingsIfPossible();
+    }
+
+    [ContextMenu("Refresh 3D Channel Source Binding")]
+    public void RefreshModel3DBindingsIfPossible()
+    {
+        if (!autoBindModel3D || unitDefinitionAsset == null)
+            return;
+
+        if (unitDefinitionAsset.visualChannel != UnitVisualChannel.Model3D)
+            return;
+
+        Transform model3DRoot = FindDeepChild(transform, model3DRootName);
+        if (model3DRoot == null)
+        {
+            if (debugLogs)
+                Debug.Log($"[UnitDefinitionRuntimeBinder] {name}: No {model3DRootName} found. Skip 3D channel binding.", this);
+            return;
+        }
+
+        GameObject sourcePrefab = unitDefinitionAsset.model3DPrefab;
+        if (sourcePrefab == null)
+        {
+            if (debugLogs)
+                Debug.Log($"[UnitDefinitionRuntimeBinder] {name}: UnitDefinition.model3DPrefab is null. Skip 3D channel binding.", this);
+            return;
+        }
+
+        SkyPrisonModel3DVisualInstanceMarker existingMarker =
+            model3DRoot.GetComponentInChildren<SkyPrisonModel3DVisualInstanceMarker>(true);
+
+        // 已经实例化过同一份来源就不重建——Awake/OnEnable/OnValidate 都会调用这里，
+        // 不加这道判断每次都会删了重建，编辑器里连续跳一遍就是一堆没必要的销毁/实例化。
+        if (existingMarker == null || existingMarker.SourcePrefab != sourcePrefab)
+        {
+            for (int i = model3DRoot.childCount - 1; i >= 0; i--)
+                DestroyModel3DChild(model3DRoot.GetChild(i).gameObject);
+
+            GameObject instance = InstantiateModel3DSource(sourcePrefab, model3DRoot);
+            instance.transform.localPosition = Vector3.zero;
+            instance.transform.localRotation = Quaternion.identity;
+            instance.transform.localScale = Vector3.one;
+            instance.name = sourcePrefab.name;
+
+            // 来源资产（美术FBX）自带的层一般是Default——相机剔除遮罩/遮挡合成管线不
+            // 处理Default层，不显式改成World3D这个模型渲染不出来（跟箱子Visual子节点
+            // 之前踩的是同一个坑）。
+            int world3DLayer = LayerMask.NameToLayer("World3D");
+            if (world3DLayer >= 0)
+                SetLayerRecursively(instance, world3DLayer);
+
+            SkyPrisonModel3DVisualInstanceMarker newMarker = instance.AddComponent<SkyPrisonModel3DVisualInstanceMarker>();
+            newMarker.SourcePrefab = sourcePrefab;
+
+            MarkDirty(instance);
+
+            if (debugLogs)
+                Debug.Log($"[UnitDefinitionRuntimeBinder] {name}: 3D channel instantiated '{sourcePrefab.name}' under {model3DRootName}.", this);
+
+            // RebuildRendererCache()（强制按 currentOccluded 重新套一次材质）只能放在
+            // "刚实例化网格"这个一次性分支里调一次——它每被调一次就会强制在"正常/合成"
+            // 材质之间重新判定一次。如果放到分支外面、每次刷新绑定都调一遍，材质会跟着
+            // 反复横跳，被遮挡效果表现为忽正常忽合成的闪烁（今天实测踩过，日志里能看到
+            // 同一个渲染器在几十帧内来回切换）。真正的材质切换交给
+            // UnitOcclusionMaterialReceiver 自己的 OnEnable/LateUpdate 稳定做一次，
+            // 这里只在网格刚生成、它还没机会扫到这个新渲染器时，强制补一次。
+            UnitOcclusionMaterialReceiver newMeshOcclusionReceiver = GetComponent<UnitOcclusionMaterialReceiver>();
+            if (newMeshOcclusionReceiver != null)
+                newMeshOcclusionReceiver.RebuildRendererCache();
+        }
+
+        // 命中碰撞体、渲染器扫描、全息配色这几步不能只放在"刚实例化网格"这个一次性
+        // 分支里——已经在编辑器里放置过一次的场景实例，网格/marker 早就存在了，之后
+        // 代码怎么改，下次刷新都会因为 marker 匹配直接跳过上面整个 if 块，改了也白改。
+        // 这几步跟"网格是不是新造的"无关，每次都应该重新跑一遍；但只能用
+        // RescanRenderersOnly()（只重新扫渲染器列表，不强制切材质状态），不能再调
+        // RebuildRendererCache()——原因同上面的注释，会闪烁。
+        Transform meshInstanceTransform = model3DRoot.childCount > 0 ? model3DRoot.GetChild(0) : null;
+        if (meshInstanceTransform != null)
+        {
+            EnsureModel3DHitCollider(meshInstanceTransform.gameObject);
+            EnsureModel3DSolidBlocker(meshInstanceTransform.gameObject);
+        }
+
+        UnitOcclusionMaterialReceiver occlusionReceiver = GetComponent<UnitOcclusionMaterialReceiver>();
+        if (occlusionReceiver != null)
+        {
+            occlusionReceiver.RescanRenderersOnly();
+
+            // 之前这里是事后调 ApplyXxx 方法去改"已经存在的"合成材质实例，跟
+            // "合成材质到底什么时候真正创建/切换出来"之间是一场时序竞争，实测过：
+            // 这个调用经常发生在材质还没真正切成合成状态的时候，全部落空——材质真正
+            // 稳定下来时用的是一份全新实例，从来没被这几行改过，穿模问题的真正根因
+            // 就在这。改成设置持久化的标记/颜色（SetIs3DPropMode/
+            // SetHologramFillColorOverride），由 UnitOcclusionMaterialReceiver 自己在
+            // 每次真正创建/刷新合成材质默认值的那一刻（EnsureCompositeDefaults）读取
+            // 并烧进去，不管材质创建时机是什么时候都保证生效，不用赌时序。
+            occlusionReceiver.SetIs3DPropMode(true);
+
+            // ApplyHiddenOutlineColorForFaction（真正定阵营全息色的地方）只在
+            // defineType==Character 时才跑——3D 通道场景物没有这条自动配色路径，
+            // 不补的话全息色会停在运行时兜底材质的写死默认值（浅蓝），跟"可破坏物品
+            // 应该是白色全息"这个项目既有约定（OutlineGroup.Item→白色）对不上。
+            Color hologramColor = UnitDefinitionRuntimeApplier.ResolveHologramFillColorForGroup(unitDefinitionAsset.ResolvedOutlineGroup);
+            occlusionReceiver.SetHologramFillColorOverride(hologramColor);
+
+            // 万一当前已经存在一份合成材质实例（比如上一次调用时机凑巧对了），顺手
+            // 也直接补一次——不依赖这次调用是否命中，只是不浪费已经命中的情况。
+            // 注意：不调 ApplyHologramFillColor——那是直接写入方法，会把
+            // EnsureCompositeDefaults 里设置的状态覆盖掉（2026-08-17 实测踩过）。
+            occlusionReceiver.ApplyForceOpaqueAlpha(true);
+            occlusionReceiver.ApplyOpaqueGeometryRenderState(true);
+        }
+
+        float scale = unitDefinitionAsset.model3DVisualScale;
+        if (scale <= 0f)
+            scale = 1f;
+        model3DRoot.localScale = Vector3.one * scale;
+
+        MarkDirty(model3DRoot.gameObject);
+    }
+
+    // 2026-08-19：受击框的层之前写死成 UnitBody，注释里说"跟所有角色的受击层保持
+    // 一致"——查证后这句话是错的。真正角色的 Hurtbox/Hitbox（见
+    // UnitDefinitionRuntimeApplier.EnsureCombatRuntimeForDefinition）从来没有显式
+    // 设置过 layer，两边都停在 Unity 新建物体的默认层 Default(0)。物理层碰撞矩阵里
+    // UnitBody × Default 是 ignore=true（互相无视），受击框被强行放到 UnitBody 后
+    // physics 引擎从来没让它跟玩家攻击判定框的触发器互相看见过——这是箱子从接入
+    // 战斗系统那天起就一直打不中的根因，不是判定形状/阵营逻辑的问题。改成不设置
+    // layer，跟角色的 Hurtbox 用完全同一套约定（Default）。
+    //
+    // 网格数据是这个节点局部空间下的顶点，得挂在 meshFilter 所在节点下面（不是笼统
+    // 挂在 instance 根上）——FBX 内部经常还有一层子节点包着实际网格，挂错节点会导致
+    // 碰撞体位置/朝向跟视觉对不上，靠父子关系继承 Model3DRoot 的缩放，不用另外同步。
+    private void EnsureModel3DHitCollider(GameObject instance)
+    {
+        UnitCombatHurtbox existingHurtbox = instance.GetComponentInChildren<UnitCombatHurtbox>(true);
+        if (existingHurtbox != null)
+        {
+            // 已经存在的受击框（比如 Prefab 里手动/历史脚本存死过 UnitBody 层）也要
+            // 纠正——早退在这上面会导致代码改了、Prefab 里旧数据却永远追不上。
+            existingHurtbox.gameObject.layer = 0;
+            return;
+        }
+
+        MeshFilter meshFilter = instance.GetComponentInChildren<MeshFilter>(true);
+        if (meshFilter == null || meshFilter.sharedMesh == null)
+            return;
+
+        GameObject hurtboxGo = new GameObject("CombatHurtbox");
+        hurtboxGo.transform.SetParent(meshFilter.transform, false);
+
+        MeshCollider meshCollider = hurtboxGo.AddComponent<MeshCollider>();
+        meshCollider.sharedMesh = meshFilter.sharedMesh;
+        meshCollider.convex = true;
+        meshCollider.isTrigger = true;
+
+        UnitCombatHurtbox hurtbox = hurtboxGo.AddComponent<UnitCombatHurtbox>();
+        UnitHealthController health = GetComponent<UnitHealthController>();
+        if (health != null)
+            hurtbox.SetHealthController(health);
+    }
+
+    // 2026-08-19：CombatHurtbox 是 isTrigger=true，只负责"武器判定打没打中"，本来就不
+    // 会挡人——3D 通道单位（可破坏箱子这类）角色能直接穿过去，是因为从来没有一个真正
+    // 阻挡移动的实体碰撞体。跟 CombatHurtbox 分开单独挂一个，不复用同一个碰撞体，
+    // 避免以后谁把 isTrigger 改成 false 时误伤受击判定（受击判定必须保持 Trigger，
+    // 否则会跟真实物理体一起参与位移解算）。
+    //
+    // 不挂 Rigidbody、不用 SkyPrisonPushablePropRuntime 那套推动/击倒物理——这里只要
+    // "人物走不进去"，静态的非 Trigger MeshCollider 已经够了，不需要凸包
+    // （convex=false）：Unity 的物理引擎允许静态、非 Trigger 的凹网格碰撞体，只有会
+    // 移动的 Rigidbody 才要求 convex=true。层用 World3D，跟其他能挡人的场景几何体
+    // 一致——UnitMovementController 的 blockingLayers 默认 ~0（减去 PushableProp），
+    // World3D 已经在里面，不用额外配置。
+    private void EnsureModel3DSolidBlocker(GameObject instance)
+    {
+        if (instance.transform.Find("SolidBlocker") != null)
+            return;
+
+        MeshFilter meshFilter = instance.GetComponentInChildren<MeshFilter>(true);
+        if (meshFilter == null || meshFilter.sharedMesh == null)
+            return;
+
+        GameObject blockerGo = new GameObject("SolidBlocker");
+        blockerGo.transform.SetParent(meshFilter.transform, false);
+
+        int world3DLayer = LayerMask.NameToLayer("World3D");
+        blockerGo.layer = world3DLayer >= 0 ? world3DLayer : instance.layer;
+
+        MeshCollider blockerCollider = blockerGo.AddComponent<MeshCollider>();
+        blockerCollider.sharedMesh = meshFilter.sharedMesh;
+        blockerCollider.convex = false;
+        blockerCollider.isTrigger = false;
+    }
+
+    private static GameObject InstantiateModel3DSource(GameObject sourcePrefab, Transform parent)
+    {
+#if UNITY_EDITOR
+        if (!Application.isPlaying)
+        {
+            GameObject editorInstance = (GameObject)PrefabUtility.InstantiatePrefab(sourcePrefab, parent);
+            return editorInstance;
+        }
+#endif
+        GameObject runtimeInstance = UnityEngine.Object.Instantiate(sourcePrefab, parent);
+        return runtimeInstance;
+    }
+
+    private static void SetLayerRecursively(GameObject go, int layer)
+    {
+        go.layer = layer;
+        foreach (Transform child in go.transform)
+            SetLayerRecursively(child.gameObject, layer);
+    }
+
+    private static void DestroyModel3DChild(GameObject go)
+    {
+        if (go == null)
+            return;
+
+#if UNITY_EDITOR
+        if (!Application.isPlaying)
+        {
+            UnityEngine.Object.DestroyImmediate(go);
+            return;
+        }
+#endif
+        UnityEngine.Object.Destroy(go);
     }
 
     [ContextMenu("Refresh Spine 4.3 Source Binding")]
@@ -157,6 +399,11 @@ public class UnitDefinitionRuntimeBinder : MonoBehaviour
         }
 
         BindSourceSpineObject(sourceObject, sourceAnimation, sourceRenderer, sourceDataAsset, sourceMaterials);
+        ApplySpineVisualScale();
+        // 头顶锚点高度不再在这里算一次性的——SkeletonData.Height是Spine文件里
+        // 声明的参考尺寸，不一定跟实际渲染出来的模型大小一致(踩过一次坑：漏乘
+        // scale直接把UI摆到天上)。改成 UnitOverheadUIView 每帧用真实渲染出来的
+        // Renderer.bounds 动态测量，量的是眼见为实的实际大小，不用再猜任何换算关系。
 
         int boundOccludedProxyCount = RefreshRequiredOccludedProxyBindings(sourceAnimation, sourceDataAsset, sourceMaterials);
 
@@ -178,7 +425,7 @@ public class UnitDefinitionRuntimeBinder : MonoBehaviour
         if (applyNow)
             ApplyDefinitionIfPossible();
         else
-            RefreshSpine43RendererBindingsIfPossible();
+            RefreshVisualChannelBindingsIfPossible();
 
         EnsureRuntimeIdentityForCurrentDefinition();
     }
@@ -363,6 +610,25 @@ public class UnitDefinitionRuntimeBinder : MonoBehaviour
         return true;
     }
 
+
+    /// <summary>运行时预制体壳现在是多个单位共用的，不同UnitDefinition换上去的骨架
+    /// 导出比例可能不一样——缩放只作用在SpineRoot(纯视觉)上，不碰碰撞体/描边代理这些
+    /// 独立于SpineRoot之外的节点，换骨架大小不对时不用另外做一份专属预制体去调。</summary>
+    private void ApplySpineVisualScale()
+    {
+        if (unitDefinitionAsset == null)
+            return;
+
+        Transform spineRoot = FindDeepChild(transform, spineRootName);
+        if (spineRoot == null)
+            return;
+
+        float scale = unitDefinitionAsset.spineVisualScale;
+        if (scale <= 0f)
+            scale = 1f;
+
+        spineRoot.localScale = Vector3.one * scale;
+    }
 
     private SkeletonAnimation FindMainSpineAnimation()
     {

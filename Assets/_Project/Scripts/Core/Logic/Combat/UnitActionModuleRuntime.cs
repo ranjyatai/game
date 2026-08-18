@@ -1059,8 +1059,20 @@ public class UnitActionModuleRuntime : MonoBehaviour
     {
         if (e == null) return;
 
-        Debug.Log($"[ActionModule] 诊断：Spine事件={e.Data.Name}，_currentSkill={_currentSkill?.skillKey ?? "NULL"}，" +
-                  $"isChargeSkill={(_currentSkill != null ? _currentSkill.isChargeSkill.ToString() : "N/A")}", this);
+        // 这条原来没有任何守卫，无条件执行。
+        //
+        // HandleSpineEvent 是 Spine 动画事件回调——每个脚步、每次攻击、每个
+        // hit_start/hit_end 都会触发。奔跑时脚步频率最高，于是每帧都在做字符串插值
+        // （两次 ?. 加一个三元）和 Debug.Log 的完整堆栈提取。实测奔跑掉到 17 帧。
+        //
+        // 而且因为它不看 debugLogs 字段，「关闭所有逐帧调试日志开关」那个清理工具
+        // 永远抓不到它——清理器改的是序列化字段，这行压根不读字段。
+        // 同一个类第 51 行就有 debugLogs，套上即可。
+        if (debugLogs)
+        {
+            Debug.Log($"[ActionModule] 诊断：Spine事件={e.Data.Name}，_currentSkill={_currentSkill?.skillKey ?? "NULL"}，" +
+                      $"isChargeSkill={(_currentSkill != null ? _currentSkill.isChargeSkill.ToString() : "N/A")}", this);
+        }
 
         if (e.Data.Name == hitStartEventKey)
         {
@@ -1074,9 +1086,18 @@ public class UnitActionModuleRuntime : MonoBehaviour
             // 跟动作差出一整个蓄力时长。现在改成绑hit_start，判定框什么时候真正
             // 打开，音效就什么时候响，轻攻击/重攻击/蓄力技/弹幕技统一都准。
             if (_currentSkill != null)
+            {
                 PlaySkillSE(ResolveSE(_currentSkill.swingSE, _currentModule?.swingSE),
                     ResolveVolume(_currentSkill, _currentModule) * Mathf.Max(0f, _currentSkill.swingSEVolume),
                     transform.position);
+
+                // 发技语音——播的是攻击者自己的语音（吼声/喊招），不是目标的，
+                // 跟上面的挥砍 SE 绑同一个时机（判定框真正打开那一刻）。
+                UnitDefinitionRuntimeBinder selfBinder = GetComponent<UnitDefinitionRuntimeBinder>()
+                                                       ?? GetComponentInParent<UnitDefinitionRuntimeBinder>(true);
+                if (selfBinder?.UnitDefinitionAsset != null)
+                    UnitVoicePlayback.Play(selfBinder.UnitDefinitionAsset.skillCastVoiceLines, transform.position);
+            }
 
             if (_currentSkill != null && _currentSkill.isProjectileSkill)
             {
@@ -1354,25 +1375,42 @@ public class UnitActionModuleRuntime : MonoBehaviour
 
         _hitLandedThisActive = true;
 
-        // 命中 SE（3D 空间音效，从受击位置发出）
-        PlaySkillSE(ResolveSE(skill.hitSE, _currentModule?.hitSE), ResolveVolume(skill, _currentModule), targetHealth.transform.position);
+        UnitDefinitionRuntimeBinder targetBinder =
+            targetHealth.GetComponent<UnitDefinitionRuntimeBinder>()
+         ?? targetHealth.GetComponentInParent<UnitDefinitionRuntimeBinder>(true);
+        UnitDefinition targetDefinition = targetBinder != null ? targetBinder.UnitDefinitionAsset : null;
+
+        // 2026-08-19：道具/可破坏物品（箱子这类）打中时不该播武器的"命中SE"（金属
+        // 磕碰/挥砍音）——那是给"打中一个活物"设计的反馈。这类单位改成播它自己的
+        // 语音（下面 hurtVoiceLines/死亡时 UnitDeathController 里的 deathVoiceLines），
+        // 没配语音就安静地不出声，不强行退回武器 SE。
+        bool isItemOrDestructible = targetDefinition != null &&
+            (targetDefinition.defineType == UnitDefineType.Item || targetDefinition.defineType == UnitDefineType.Destructible);
+
+        if (!isItemOrDestructible)
+        {
+            // 命中 SE（3D 空间音效，从受击位置发出）
+            PlaySkillSE(ResolveSE(skill.hitSE, _currentModule?.hitSE), ResolveVolume(skill, _currentModule), targetHealth.transform.position);
+        }
 
         // 血液飞溅特效：类型和颜色来自被打单位的 UnitDefinition
         {
             UnitBloodVFXType targetBloodType = UnitBloodVFXType.Normal;
             Color targetBloodColor = new Color(0.72f, 0.02f, 0.02f, 1f);
-            UnitDefinitionRuntimeBinder targetBinder =
-                targetHealth.GetComponent<UnitDefinitionRuntimeBinder>()
-             ?? targetHealth.GetComponentInParent<UnitDefinitionRuntimeBinder>(true);
-            if (targetBinder?.UnitDefinitionAsset != null)
+            if (targetDefinition != null)
             {
-                targetBloodType  = targetBinder.UnitDefinitionAsset.bloodVFXType;
-                targetBloodColor = targetBinder.UnitDefinitionAsset.bloodColor;
+                targetBloodType  = targetDefinition.bloodVFXType;
+                targetBloodColor = targetDefinition.bloodColor;
             }
             BloodVFXManager.Instance?.SpawnSplash(targetHealth.gameObject, transform.position, targetBloodColor, targetBloodType);
         }
 
         targetHealth.ApplyDamage(physicalDamage);
+
+        // 受击语音——只在这一下没有直接打死目标时播（打死了的话 UnitDeathController.
+        // Kill() 会播死亡语音，同一下命中不该同时听到"受击闷哼"又听到"死亡惨叫"）。
+        if (targetDefinition != null && !targetHealth.IsDead)
+            UnitVoicePlayback.Play(targetDefinition.hurtVoiceLines, targetHealth.transform.position);
 
         // 属性伤害（斩击/打击物理之外，灼热/电磁/腐蚀/冻结这些）：每一种都独立结算一次伤害、
         // 独立累计一次异常，互不影响——一把武器可以同时挂好几种属性。伤害倍率=0 的属性条目

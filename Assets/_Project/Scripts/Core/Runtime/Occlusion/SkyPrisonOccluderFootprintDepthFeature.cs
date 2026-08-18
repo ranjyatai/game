@@ -122,15 +122,31 @@ public class SkyPrisonOccluderFootprintDepthFeature : ScriptableRendererFeature
 
             float charEye = float.NaN;
             string charName = "(未找到)";
+            UnitOcclusionMaterialReceiver fallback = null;
             foreach (var receiver in Object.FindObjectsByType<UnitOcclusionMaterialReceiver>(
                          FindObjectsInactive.Exclude, FindObjectsSortMode.None))
             {
                 if (receiver == null)
                     continue;
 
-                charName = receiver.name;
-                charEye = -worldToCamera.MultiplyPoint3x4(receiver.transform.position).z;
-                break;
+                if (fallback == null)
+                    fallback = receiver;
+
+                // 2026-08-17：定位箱子全息不触发的问题，直接锁定这个实例，
+                // 不用"随便找到的第一个"（大概率是 Player，不是我们要查的箱子）。
+                if (receiver.name.IndexOf("WoodBox", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    charName = receiver.name;
+                    charEye = -worldToCamera.MultiplyPoint3x4(receiver.transform.position).z;
+                    fallback = null;
+                    break;
+                }
+            }
+
+            if (fallback != null)
+            {
+                charName = fallback.name;
+                charEye = -worldToCamera.MultiplyPoint3x4(fallback.transform.position).z;
             }
 
             var list = SkyPrisonOccluderRegistry.Renderers;
@@ -229,16 +245,29 @@ public class SkyPrisonOccluderFootprintDepthFeature : ScriptableRendererFeature
             pendingCharScreenUV = new Vector2(-1f, -1f);
             pendingCharEye = float.NaN;
 
+            UnitOcclusionMaterialReceiver fallbackReceiver = null;
             foreach (var receiver in Object.FindObjectsByType<UnitOcclusionMaterialReceiver>(
                          FindObjectsInactive.Exclude, FindObjectsSortMode.None))
             {
                 if (receiver == null)
                     continue;
 
-                Vector3 sp = cam.WorldToScreenPoint(receiver.transform.position);
+                if (fallbackReceiver == null)
+                    fallbackReceiver = receiver;
+
+                // 2026-08-17：同 LogAnchorDepths，锁定箱子而不是随便找到的第一个。
+                if (receiver.name.IndexOf("WoodBox", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    fallbackReceiver = receiver;
+                    break;
+                }
+            }
+
+            if (fallbackReceiver != null)
+            {
+                Vector3 sp = cam.WorldToScreenPoint(fallbackReceiver.transform.position);
                 pendingCharScreenUV = new Vector2(sp.x / Screen.width, sp.y / Screen.height);
-                pendingCharEye = -cam.worldToCameraMatrix.MultiplyPoint3x4(receiver.transform.position).z;
-                break;
+                pendingCharEye = -cam.worldToCameraMatrix.MultiplyPoint3x4(fallbackReceiver.transform.position).z;
             }
 
             if (!loggedRegistryNames)

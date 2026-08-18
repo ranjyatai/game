@@ -14,7 +14,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - Debris
   - World3D
   - Character2D
   - ForegroundOccluder
@@ -38,7 +38,7 @@ TagManager:
   - GroundVisual
   - WalkableProbe
   - Obstacle_UnitOnly
-  - 
+  - OccluderProbe
   - 
   m_SortingLayers:
   - name: Default

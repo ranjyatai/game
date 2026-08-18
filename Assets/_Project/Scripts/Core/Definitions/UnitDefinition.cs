@@ -228,6 +228,14 @@ public class UnitParameterValue
     public float value = 0f;
 }
 
+[Serializable]
+public class UnitPortraitExpression
+{
+    [Tooltip("表情标识，比如\"normal\"\"happy\"\"angry\"——留空或填\"default\"表示默认表情。")]
+    public string expressionKey = "default";
+    public Sprite sprite;
+}
+
 [CreateAssetMenu(menuName = "Game/Units/Unit Definition", fileName = "UD_NewUnit")]
 public class UnitDefinition : ScriptableObject
 {
@@ -244,6 +252,23 @@ public class UnitDefinition : ScriptableObject
 
     [Header("多语言描述")]
     public List<LocalizedTextEntry> localizedDescriptions = new List<LocalizedTextEntry>();
+
+    // 跟 ItemDefinition.GetLocalizedDisplayName 同一套走法——之前好几处(NPC头顶
+    // 悬浮名字、部分UI)直接读displayName原始字段，localizedNames填了也没人读，
+    // 切语言头顶名字/描述不跟着变。统一走这两个方法，不要再各自直接读原始字段。
+    public string GetLocalizedDisplayName()
+    {
+        if (LocalizationRuntime.Instance != null)
+            return LocalizationRuntime.Instance.GetText(localizedNames, displayName);
+        return displayName;
+    }
+
+    public string GetLocalizedDescription()
+    {
+        if (LocalizationRuntime.Instance != null)
+            return LocalizationRuntime.Instance.GetText(localizedDescriptions, description);
+        return description;
+    }
 
     [Header("定义类型")]
     public UnitDefineType defineType = UnitDefineType.Character;
@@ -264,18 +289,65 @@ public class UnitDefinition : ScriptableObject
     [Header("Spine 通道")]
     public ScriptableObject spinePrefab;
 
+    [Tooltip("单位运行时预制体现在是多个NPC共用的通用壳，不同骨架资源导出比例可能不一样，" +
+             "换了骨架之后单独在这里调大小，不用为了缩放单独做一份专属预制体。1=不缩放。")]
+    public float spineVisualScale = 1f;
+
     [Header("3D 通道")]
     public GameObject model3DPrefab;
+
+    [Tooltip("3D 通道实例化出来的模型缩放，作用在 Model3DRoot 上（跟 spineVisualScale 同一个" +
+             "思路：不同来源的模型比例不一致时在这里调，不用为了缩放单独做一份专属预制体）。1=不缩放。")]
+    public float model3DVisualScale = 1f;
 
 
     [Header("基础显示")]
     public Sprite icon;
+
+    [Header("立绘")]
+    [Tooltip("表情差分——整张立绘替换(不是分层叠加)，每个表情一张完整图。" +
+             "expressionKey留空或填\"default\"的那张作为找不到指定表情时的兜底。" +
+             "商店/对话等需要显示NPC头像的界面从这里取图，不是从icon(那是小图标)取。")]
+    public List<UnitPortraitExpression> portraits = new List<UnitPortraitExpression>();
+
+    /// <summary>按表情key取立绘，找不到就退回default/第一张，都没有则返回null。</summary>
+    public Sprite GetPortrait(string expressionKey = "default")
+    {
+        if (portraits == null || portraits.Count == 0) return null;
+
+        if (!string.IsNullOrEmpty(expressionKey))
+        {
+            foreach (var p in portraits)
+                if (p != null && p.expressionKey == expressionKey) return p.sprite;
+        }
+
+        foreach (var p in portraits)
+            if (p != null && (string.IsNullOrEmpty(p.expressionKey) || p.expressionKey == "default"))
+                return p.sprite;
+
+        return portraits[0]?.sprite;
+    }
 
     [Header("控制方式")]
     public UnitControlMode controlMode = UnitControlMode.AIControlled;
 
     [Header("AI 行为包")]
     public AIBehaviorPackage aiBehaviorPackage;
+
+    [Header("无敌")]
+    [Tooltip("勾上之后 UnitHealthController.ApplyDamage() 从入口处直接拦截，不管伤害" +
+             "从哪条路径来的(正常战斗Hitbox、触发器脚本的\"造成伤害\"动作、以后任何新增" +
+             "的范围伤害逻辑)统统免疫——用户明确要求NPC要能确保不被玩家/技能误伤，" +
+             "不能只指望战斗管线自己的阵营判定(那套只覆盖了标准Hitbox碰撞，触发器" +
+             "脚本可以绕过去直接扣血)。")]
+    public bool isInvincible = false;
+
+    [Header("NPC 对话")]
+    [Tooltip("留空=这个单位没有对话交互(普通敌人/道具等)。配了的话，生成单位时" +
+             "UnitDefinitionRuntimeApplier 会自动挂 NPCDialogueInteractable 并把这份" +
+             "资产喂进去，不用在地图上手动拖组件。对话内容本身(选项/句子)在这份资产" +
+             "自己的编辑器里配，不是这里。")]
+    public NPCDialogueDefinition dialogue;
 
     [Header("视野")]
     public bool enableVision = true;
@@ -331,6 +403,26 @@ public class UnitDefinition : ScriptableObject
     [Header("单位音声")]
     [Tooltip("单位没有鞋子装备，或怪物/机械等不走鞋子装备逻辑时使用的默认脚步声包。Player 可设为裸足；敌人/怪物应按单位类型设置 claw / robotic / heavy creature 等专属包。")]
     public SkyPrisonAudioPackage defaultFootstepAudioPackage;
+
+    // 2026-08-19：单位语音——跟战斗 SE（SkillDefinition.hitSE 那一套）是两回事，SE 是
+    // "打击本身的声音"（挥空/命中/挥砍这些不分语言），语音是"这个单位自己发出的声音"
+    // （死亡惨叫、受击闷哼、发技吼声这类角色专属反馈），要跟着 LocalizationRuntime.
+    // CurrentVoiceCode 走多语言，结构照抄 DialogueSentenceLibrary.SentenceEntry.voices
+    // 那一套（List<LocalizedVoiceEntry>）。放在 UnitDefinition 上而不是单独建一套语音库
+    // 资产——Character、Item、Destructible 这些不同 defineType 的单位共用同一套接口，
+    // 箱子这类道具死亡时也走这里，不用另起一套机制（2026-08-19 这次接入战斗系统时
+    // 定的方向）。
+    //
+    // 这次只把死亡语音接进 UnitDeathController.Kill() 真正播放；受击/发技这两个先把
+    // 数据结构和统一播放接口（UnitVoicePlayback.Play）建好、也接了调用点，方便以后
+    // 随时补语音资产，不用再改代码结构。
+    [Header("单位语音（死亡/受击/发技，多语言）")]
+    [Tooltip("死亡时随机播放一条。")]
+    public List<UnitVoiceLine> deathVoiceLines = new List<UnitVoiceLine>();
+    [Tooltip("受击时随机播放一条。")]
+    public List<UnitVoiceLine> hurtVoiceLines = new List<UnitVoiceLine>();
+    [Tooltip("发动技能（挥击开始那一刻）时随机播放一条。")]
+    public List<UnitVoiceLine> skillCastVoiceLines = new List<UnitVoiceLine>();
 
     [Header("单位UI")]
     public bool lockShadowProjectorTransform = true;
@@ -444,8 +536,8 @@ public class UnitDefinition : ScriptableObject
                 case UnitDefineType.Character:
                     return ResolveCharacterOutline(characterIdentity);
                 case UnitDefineType.Item:
-                    return OutlineGroup.Item;
                 case UnitDefineType.Destructible:
+                    return OutlineGroup.Item;
                 case UnitDefineType.VFX:
                 case UnitDefineType.SFX:
                 default:

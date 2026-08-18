@@ -114,6 +114,13 @@ public class UnitOcclusionMaterialReceiver : MonoBehaviour, IOcclusionStateRecei
     private static readonly int EnableHiddenOutlineId = Shader.PropertyToID("_SkyPrison_EnableHiddenOutline");
     private static readonly int UseHologramFillDefaultId = Shader.PropertyToID("_SkyPrison_UseHologramFill");
     private static readonly int HologramSilhouetteAlphaId = Shader.PropertyToID("_SkyPrison_HologramSilhouetteAlpha");
+    private static readonly int HologramFillColorId = Shader.PropertyToID("_SkyPrison_HologramFillColor");
+    private static readonly int Force3DPropOpaqueAlphaId = Shader.PropertyToID("_SkyPrison_Force3DPropOpaqueAlpha");
+    private static readonly int CullModeId = Shader.PropertyToID("_SkyPrison_CullMode");
+    private static readonly int ZWriteModeId = Shader.PropertyToID("_SkyPrison_ZWriteMode");
+    private static readonly int ZTestModeId = Shader.PropertyToID("_SkyPrison_ZTestMode");
+    private static readonly int UseRootAnchorDepthId = Shader.PropertyToID("_SkyPrison_UseRootAnchorDepth");
+    private static readonly int SceneDepthDebugId = Shader.PropertyToID("_SkyPrison_SceneDepthDebug");
 
     private readonly HashSet<int> activeOccluders = new HashSet<int>();
     private readonly Dictionary<int, MonoBehaviour> activeOccluderRefs = new Dictionary<int, MonoBehaviour>();
@@ -135,6 +142,16 @@ public class UnitOcclusionMaterialReceiver : MonoBehaviour, IOcclusionStateRecei
     public int ResolvedRendererCount => resolvedRendererCount;
     public bool CurrentOccluded => currentOccluded;
     public int ActiveOccluderCount => activeOccluderCount;
+    public IReadOnlyList<Renderer> ResolvedRenderers => resolvedRenderers;
+
+    // 2026-08-18：3D 通道场景物专用注册表，供 SkyPrisonModel3DHologramOverlayFeature
+    // 用。HologramOverlay3D 这条 Pass 跟 NormalBody 共用 LightMode="UniversalForward"，
+    // URP 标准前向渲染每个物体每个 LightMode 只会挑一条 Pass 画，不会像内置管线那样
+    // 自动把同 LightMode 的多条 Pass 都跑一遍——这条 Pass 从写出来那天起就没被调度过，
+    // 材质本身、判定逻辑都是对的，纯粹是没人显式用 DrawRenderer(..., passIndex) 去点它。
+    // 这里维护一份活跃的 3D 通道 receiver 列表，Feature 里按 pass 名找到具体索引，
+    // 显式点名绘制。
+    public static readonly List<UnitOcclusionMaterialReceiver> Active3DPropReceivers = new List<UnitOcclusionMaterialReceiver>();
 
     /// <summary>
     /// Unit-level occlusion ledger access for MaskRT render filters.
@@ -284,6 +301,26 @@ public class UnitOcclusionMaterialReceiver : MonoBehaviour, IOcclusionStateRecei
         // currently visible material array no longer matches the expected state.
         if (enforceEveryLateUpdate || repairExternalMaterialOverwriteInLateUpdate)
             ApplyMaterialStateIfNeeded(false);
+
+        // 一次性诊断——只在第300帧打一次，直接读渲染器"这一刻实际挂着"的材质实例和
+        // 它身上_SkyPrison_SceneDepthDebug的实时值。EnsureCompositeDefaults创建时确实
+        // 写过4（有日志为证），但箱子画面完全没反应——需要确认到渲染这一刻，materials
+        // 是不是还是同一份、值是不是还是4，排除"后来被换了材质/被别的地方重置"。
+        if (_is3DPropMode && Time.frameCount == 300 && resolvedRenderers.Count > 0)
+        {
+            Renderer r = resolvedRenderers[0];
+            if (r != null)
+            {
+                Material[] live = r.sharedMaterials;
+                for (int i = 0; i < live.Length; i++)
+                {
+                    Material m = live[i];
+                    if (m == null) continue;
+                    float dbgVal = m.HasProperty(SceneDepthDebugId) ? m.GetFloat(SceneDepthDebugId) : -999f;
+                    Debug.Log($"[UnitOcclusionMaterialReceiver] LiveMaterialCheck -> {name} slot={i} mat={m.name}#{m.GetInstanceID()} sceneDepthDebug={dbgVal} shader={m.shader.name}", this);
+                }
+            }
+        }
     }
 
     private void OnDisable()
@@ -292,6 +329,8 @@ public class UnitOcclusionMaterialReceiver : MonoBehaviour, IOcclusionStateRecei
         materialStateKnown = false;
         // Do not restore normal materials here. Spine/Authority initialization order may disable
         // and re-enable receivers during startup; restoring Skeleton here is the exact first-frame hijack.
+
+        Active3DPropReceivers.Remove(this);
     }
 
     /// <summary>
@@ -323,6 +362,20 @@ public class UnitOcclusionMaterialReceiver : MonoBehaviour, IOcclusionStateRecei
     public void RebuildRendererCache()
     {
         RebuildRendererCacheInternal(true);
+    }
+
+    /// <summary>
+    /// 只重新扫一遍渲染器列表（比如 3D 通道单位运行时才实例化出网格，扫描当时那个
+    /// 节点下还是空的，得补扫一次），不强制按 currentOccluded 重新套材质。
+    /// RebuildRendererCache()（reapply=true）每次调用都会强制走一次"正常/合成"材质
+    /// 二选一——如果调用方（比如 UnitDefinitionRuntimeBinder 每次刷新绑定都会调）
+    /// 反复调这个，材质就会跟着反复横跳，被遮挡效果表现为一会儿正常一会儿合成的
+    /// 闪烁。正常的材质切换应该交给这个组件自己的 OnEnable/LateUpdate 稳定地做一次，
+    /// 外部只需要保证渲染器列表是最新的。
+    /// </summary>
+    public void RescanRenderersOnly()
+    {
+        RebuildRendererCacheInternal(false);
     }
 
     [ContextMenu("Clear Occlusion Receiver State")]
@@ -569,6 +622,105 @@ public class UnitOcclusionMaterialReceiver : MonoBehaviour, IOcclusionStateRecei
             ApplyOcclusionCompositeMaterials(true);
         else
             ApplyNormalMaterials(true);
+    }
+
+    /// <summary>
+    /// 给非 Character 类型（走 3D 通道的场景物）用——UnitDefinitionRuntimeApplier 里
+    /// 自动套阵营全息色的那条路径（ApplyHiddenOutlineColorForFaction）只在
+    /// defineType==Character 时才跑，场景物这类单位需要自己在绑定完渲染器之后调这个
+    /// 方法把颜色补上，不然全息色会一直停在运行时兜底材质的写死默认值（浅蓝）。
+    /// 直接改当前实际挂在渲染器上的材质实例（不是 occlusionCompositeMaterials 那个
+    /// 序列化字段——3D通道走的是运行时生成的合成材质，两者不是同一份）。
+    /// </summary>
+    public void ApplyHologramFillColor(Color color)
+    {
+        for (int i = 0; i < resolvedRenderers.Count; i++)
+        {
+            Renderer renderer = resolvedRenderers[i];
+            if (renderer == null)
+                continue;
+
+            Material[] mats = renderer.sharedMaterials;
+            for (int m = 0; m < mats.Length; m++)
+            {
+                Material mat = mats[m];
+                if (mat == null)
+                    continue;
+
+                if (mat.HasProperty(UseHologramFillDefaultId))
+                    mat.SetFloat(UseHologramFillDefaultId, 1f);
+                if (mat.HasProperty(HologramFillColorId))
+                    mat.SetColor(HologramFillColorId, color);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 同样是给非 Character 类型（3D 通道场景物）用——这类道具的贴图alpha从来不是
+    /// 透明度语义，套 SpineOcclusionComposite 的镂空clip逻辑会把alpha低的区域裁成
+    /// 黑洞（贴图上莫名其妙的透明块）。强制着色器把alpha当成恒定1处理，绕开整条
+    /// 镂空判定——3D道具本来就该是完全不透明的。
+    /// </summary>
+    public void ApplyForceOpaqueAlpha(bool force)
+    {
+        for (int i = 0; i < resolvedRenderers.Count; i++)
+        {
+            Renderer renderer = resolvedRenderers[i];
+            if (renderer == null)
+                continue;
+
+            Material[] mats = renderer.sharedMaterials;
+            for (int m = 0; m < mats.Length; m++)
+            {
+                Material mat = mats[m];
+                if (mat != null && mat.HasProperty(Force3DPropOpaqueAlphaId))
+                    mat.SetFloat(Force3DPropOpaqueAlphaId, force ? 1f : 0f);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 3D通道道具是有体积的实体几何体，不是没有厚度的Spine精灵——NormalBody这条Pass
+    /// 原本"永远不裁背面/永远不测深度"这套状态对精灵没有副作用（精灵是没有厚度的
+    /// 平面），套在实体网格上会导致自身内部结构（比如箱子的斜向撑木）没法正确前后
+    /// 排序，表现为穿模。3D道具切成背面剔除+正常深度测试+写深度，恢复成实体几何体
+    /// 该有的排序方式；被真实遮挡物挡住的部分交给 shader 里新增的
+    /// HologramOverlay3D 那条 Pass 单独补上全息，两条Pass分工，不冲突。
+    /// </summary>
+    public void ApplyOpaqueGeometryRenderState(bool enable)
+    {
+        const float cullBack = 2f;   // UnityEngine.Rendering.CullMode.Back
+        const float cullOff = 0f;    // UnityEngine.Rendering.CullMode.Off
+        const float zWriteOn = 1f;
+        const float zWriteOff = 0f;
+        const float zTestLEqual = 4f; // UnityEngine.Rendering.CompareFunction.LEqual
+        const float zTestAlways = 8f; // UnityEngine.Rendering.CompareFunction.Always
+
+        for (int i = 0; i < resolvedRenderers.Count; i++)
+        {
+            Renderer renderer = resolvedRenderers[i];
+            if (renderer == null)
+                continue;
+
+            Material[] mats = renderer.sharedMaterials;
+            for (int m = 0; m < mats.Length; m++)
+            {
+                Material mat = mats[m];
+                if (mat == null)
+                    continue;
+
+                bool hasCull = mat.HasProperty(CullModeId);
+                bool hasZWrite = mat.HasProperty(ZWriteModeId);
+                bool hasZTest = mat.HasProperty(ZTestModeId);
+
+                if (hasCull)
+                    mat.SetFloat(CullModeId, enable ? cullBack : cullOff);
+                if (hasZWrite)
+                    mat.SetFloat(ZWriteModeId, enable ? zWriteOn : zWriteOff);
+                if (hasZTest)
+                    mat.SetFloat(ZTestModeId, enable ? zTestLEqual : zTestAlways);
+            }
+        }
     }
 
     [ContextMenu("Auto Find Renderer")]
@@ -1191,7 +1343,20 @@ public class UnitOcclusionMaterialReceiver : MonoBehaviour, IOcclusionStateRecei
             return;
 
         if (src.HasProperty(MainTexId) && dst.HasProperty(MainTexId))
+        {
             dst.SetTexture(MainTexId, src.GetTexture(MainTexId));
+        }
+        else if (dst.HasProperty(MainTexId))
+        {
+            // src 不是走 _MainTex 的老式着色器（比如 URP/Lit 用 _BaseMap）时，
+            // Material.mainTexture 是 Unity 按着色器自己声明的"主贴图"槽位解析的，
+            // 不管具体属性名叫什么都能拿到——不加这个兜底，3D 通道的道具（用
+            // URP/Lit，没有 _MainTex）套上这套遮挡合成材质就会因为贴图没拷贝过去，
+            // 直接用着色器默认的白贴图渲染成一整块白色。
+            Texture mainTex = src.mainTexture;
+            if (mainTex != null)
+                dst.SetTexture(MainTexId, mainTex);
+        }
 
         if (src.HasProperty(TintColorId) && dst.HasProperty(TintColorId))
             dst.SetColor(TintColorId, src.GetColor(TintColorId));
@@ -1200,10 +1365,113 @@ public class UnitOcclusionMaterialReceiver : MonoBehaviour, IOcclusionStateRecei
             dst.SetFloat(StraightAlphaInputId, src.GetFloat(StraightAlphaInputId));
     }
 
-    private static void EnsureCompositeDefaults(Material mat)
+    // 3D 通道场景物的这几个属性覆盖——之前是靠外部（UnitDefinitionRuntimeBinder）
+    // 调用 ApplyXxx 方法事后去改已经存在的材质实例，跟"合成材质到底什么时候真正
+    // 创建/切换出来"之间是一场时序竞争：外部调用早于材质真正切到合成状态的话，
+    // 属性设置会全部落空（改的是当时还在用的正常材质，合成材质创建出来时又是一份
+    // 全新的、没被改过的实例）。实测过——箱子最终稳定用的合成材质，属性确实全是
+    // 着色器默认值，没有一次外部调用生效过。改成在这里（合成材质真正被创建/刷新
+    // 默认值的这一刻）直接烧进去，不管创建时机是什么时候，材质一出生就带着正确的
+    // 值，不用赌时序。
+    private bool _is3DPropMode;
+    private bool _hasHologramFillColorOverride;
+    private Color _hologramFillColorOverride;
+    private float? _debugSceneDepthMode;
+
+    public void SetIs3DPropMode(bool value)
+    {
+        _is3DPropMode = value;
+        if (value)
+        {
+            if (!Active3DPropReceivers.Contains(this))
+                Active3DPropReceivers.Add(this);
+        }
+        else
+        {
+            Active3DPropReceivers.Remove(this);
+        }
+    }
+
+    /// <summary>一次性诊断用——4=判定结果本身（绿=判为被挡，红=判为在前，越亮
+    /// |diff|越大），确认完记得清掉调用方那一行。</summary>
+    public void SetDebugSceneDepthMode(float mode) => _debugSceneDepthMode = mode;
+
+    public void SetHologramFillColorOverride(Color color)
+    {
+        _hologramFillColorOverride = color;
+        _hasHologramFillColorOverride = true;
+    }
+
+    private bool _loggedEnsureCompositeDefaultsOnce;
+
+    private void EnsureCompositeDefaults(Material mat)
     {
         if (mat == null)
             return;
+
+        // 一次性诊断——只打一次（不是每帧），确认这个函数到底有没有真的在这份材质上
+        // 跑过，以及跑的时候 _debugSceneDepthMode/_is3DPropMode 是什么值。今天已经
+        // 反复踩过"以为写进去了、其实这条路径没被调用/调用时机比材质创建晚"这个坑。
+        if (!_loggedEnsureCompositeDefaultsOnce)
+        {
+            _loggedEnsureCompositeDefaultsOnce = true;
+            Debug.Log($"[UnitOcclusionMaterialReceiver] EnsureCompositeDefaults ran -> {name}, mat={mat.name}#{mat.GetInstanceID()}, " +
+                      $"is3DPropMode={_is3DPropMode}, debugSceneDepthMode={(_debugSceneDepthMode.HasValue ? _debugSceneDepthMode.Value.ToString() : "null")}, " +
+                      $"hasSceneDepthDebugProp={mat.HasProperty(SceneDepthDebugId)}, frame={Time.frameCount}", this);
+
+            // 2026-08-17：确认 HologramOverlay3D 那条 Pass 到底有没有被这份材质实例真正
+            // 拥有——如果 shader 编译时这条 Pass 出错（比如 target 3.0 在某些变体上失败），
+            // Unity 有可能整条 Pass 直接从 passCount 里消失，material.FindPass 找不到，
+            // 而不会报一个显眼的、能中断编译的错误。直接枚举实际 passCount 和每条
+            // Pass 的名字，不用 Frame Debugger 肉眼找。
+            int passCount = mat.passCount;
+            var passNames = new System.Text.StringBuilder();
+            for (int p = 0; p < passCount; p++)
+            {
+                if (p > 0) passNames.Append(" | ");
+                passNames.Append(p).Append(':').Append(mat.GetPassName(p));
+            }
+            int overlayPassIndex = mat.FindPass("HologramOverlay3D");
+            bool overlayEnabled = overlayPassIndex >= 0 && mat.GetShaderPassEnabled("HologramOverlay3D");
+            Debug.Log($"[UnitOcclusionMaterialReceiver] PassAudit -> {name}, shader={mat.shader.name}, " +
+                      $"passCount={passCount}, passes=[{passNames}], " +
+                      $"HologramOverlay3D index={overlayPassIndex}, enabled={overlayEnabled}", this);
+        }
+
+        if (_is3DPropMode)
+        {
+            if (mat.HasProperty(Force3DPropOpaqueAlphaId))
+                mat.SetFloat(Force3DPropOpaqueAlphaId, 1f);
+            if (mat.HasProperty(CullModeId))
+                mat.SetFloat(CullModeId, 2f); // UnityEngine.Rendering.CullMode.Back
+            if (mat.HasProperty(ZWriteModeId))
+                mat.SetFloat(ZWriteModeId, 1f); // On
+            if (mat.HasProperty(ZTestModeId))
+                mat.SetFloat(ZTestModeId, 4f); // UnityEngine.Rendering.CompareFunction.LEqual
+
+            // 2026-08-17：改回单点根节点锚点，跟角色完全同一套判定。
+            //
+            // 之前关掉这个开关、改用每个像素自己的世界坐标，是为了解决"高箱子顶部
+            // 穿出遮挡物"的问题——但代价是箱子朝相机这一面的表面像素天生比根节点离
+            // 相机更近，跟落地深度图里"遮挡物拍扁成单点"的语义对不上：实测箱子根节点
+            // 深度差有 +6.39（远超阈值，应该判定为完全遮挡），但用逐像素表面坐标算出
+            // 来的差值被这个"表面比根节点近多少"的偏移吃掉，导致真正被挡住时全息完全
+            // 不触发（"接着前面的事件"这次排查到的就是这个）。
+            //
+            // 这个项目里 3D 单位要的效果本来就是"整体一起显示/隐藏，跟角色一样"，不是
+            // 逐像素分区域遮挡——用回单点根节点锚点正好是这个语义，跟角色一致，不用
+            // 单独再调一套阈值。
+            if (mat.HasProperty(UseRootAnchorDepthId))
+                mat.SetFloat(UseRootAnchorDepthId, 1f);
+        }
+
+        if (_hasHologramFillColorOverride)
+        {
+            if (mat.HasProperty(UseHologramFillDefaultId))
+                mat.SetFloat(UseHologramFillDefaultId, 1f);
+            if (mat.HasProperty(HologramFillColorId))
+                mat.SetColor(HologramFillColorId, _hologramFillColorOverride);
+        }
 
         // V28: alpha hybrid needs the compensation layer to be visible.
         // Older beta/depth-only receivers forced this to 0, which made the composite pass invisible.
@@ -1256,6 +1524,9 @@ public class UnitOcclusionMaterialReceiver : MonoBehaviour, IOcclusionStateRecei
             mat.SetFloat(UseHologramFillDefaultId, 1f);
         if (mat.HasProperty(HologramSilhouetteAlphaId))
             mat.SetFloat(HologramSilhouetteAlphaId, 0f);
+
+        if (_debugSceneDepthMode.HasValue && mat.HasProperty(SceneDepthDebugId))
+            mat.SetFloat(SceneDepthDebugId, _debugSceneDepthMode.Value);
     }
 
     private void ApplyMaterialSet(Renderer renderer, Material[] targetSet, bool force, string label)
@@ -1291,8 +1562,12 @@ public class UnitOcclusionMaterialReceiver : MonoBehaviour, IOcclusionStateRecei
         string shaderName = targetSet.Length > 0 && targetSet[0] != null && targetSet[0].shader != null ? targetSet[0].shader.name : "NULL";
         lastApply = $"Apply {label} -> {GetPath(renderer.transform)}, mat0={matName}, shader={shaderName}";
 
+        // 诊断阶段这里改成过无条件 Debug.Log（不受debugLogs控制）——场景里所有 Spine
+        // 单位的这套"检测材质被覆盖、自动修复"逻辑每帧都可能触发一次，无条件打印
+        // 几分钟下来能把 Editor.log 刷到几个GB，实测已经把C盘写满过一次。诊断已经
+        // 用完，改回受debugLogs控制。
         if (debugLogs)
-            Debug.Log("[UnitOcclusionMaterialReceiver] " + lastApply, this);
+            Debug.Log($"[UnitOcclusionMaterialReceiver] {lastApply} | force={force} | frame={Time.frameCount}", this);
     }
 
     private static Material[] CloneMaterials(Material[] source)

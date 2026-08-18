@@ -312,6 +312,12 @@ public class UnitDeathController : MonoBehaviour
 
         OnDeathStarted?.Invoke(this);
 
+        // 死亡语音——所有单位类型（Character/Item/Destructible）共用同一套接口，
+        // 箱子这类道具死亡时也走这里，见 UnitDefinition.deathVoiceLines 上的注释。
+        UnitDefinition unitDefinition = runtimeBinder != null ? runtimeBinder.UnitDefinitionAsset : null;
+        if (unitDefinition != null)
+            UnitVoicePlayback.Play(unitDefinition.deathVoiceLines, transform.position);
+
         // 非玩家单位死亡：通知统计系统
         if (!treatAsRespawnablePlayer)
             OnAnyEnemyDied?.Invoke(this);

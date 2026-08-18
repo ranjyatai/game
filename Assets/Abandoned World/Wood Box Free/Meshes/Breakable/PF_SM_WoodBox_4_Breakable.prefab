@@ -1,0 +1,406 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7976241089749611548
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7372234883080499947}
+  - component: {fileID: 7602741657295383664}
+  - component: {fileID: 7019705617622088743}
+  - component: {fileID: 5566035684015187533}
+  - component: {fileID: 5874191236496229213}
+  - component: {fileID: 6356103797660079593}
+  m_Layer: 22
+  m_Name: PF_SM_WoodBox_4_Breakable
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7372234883080499947
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7976241089749611548}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3927958004019133455}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7602741657295383664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7976241089749611548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48b897c01d4f55645b60916c8ae7076c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnitHealthController
+  runtimeBinder: {fileID: 0}
+  deathController: {fileID: 0}
+  overrideDefaultHealth: 1
+  maxHealth: 1
+  currentHealth: 1
+  regainPool: 0
+  regainDecayDelay: 2
+  regainDecayPerSecond: 8
+  regainDelayTimer: 0
+  enableRegainDecay: 1
+  autoFullHealOnAwake: 1
+  clampHealth: 1
+  ignoreDamageWhenDead: 1
+  ignoreHealWhenDead: 1
+  debugLogs: 0
+--- !u!114 &7019705617622088743
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7976241089749611548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7174c556840a9874c94d7a979fa802de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnitDeathController
+  autoFindOnAwake: 1
+  runtimeBinder: {fileID: 0}
+  animator: {fileID: 0}
+  playDeathAnimation: 1
+  deathTriggerName: Die
+  disableMovementOnDeath: 1
+  disableCollidersOnDeath: 1
+  freezeRigidbodyOnDeath: 1
+  useCorpseDecay: 1
+  corpseDecaySeconds: 8
+  corpseCleanupMode: 1
+  useDeathDissolve: 1
+  deathDissolveSeconds: 1.2
+  deathDissolveEdgeColor: {r: 0.5, g: 0.04, b: 0.02, a: 1}
+  deathDissolveEdgeWidth: 0.12
+  deathDissolveNoiseTexture: {fileID: 0}
+  deathDissolveNoiseScale: 0.6
+  deathDissolveDarkenFraction: 0.35
+  treatAsRespawnablePlayer: 0
+  debugLogs: 0
+  currentState: 0
+  runtimeDeathTimer: 0
+--- !u!114 &5566035684015187533
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7976241089749611548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af33ce3cd0185394e9ac8644b8be78d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonBreakableCrateEffect
+  debrisCount: 8
+  debrisMinRadius: 0.08
+  debrisMaxRadius: 0.48
+  thicknessRatioRange: {x: 0.2, y: 0.38}
+  triangleChance: 0.5
+  radialLaunchSpeedRange: {x: 1.2, y: 2.4}
+  upwardLaunchBoost: 0.6
+  spinTorque: 1.5
+  smokeEffectPrefab: {fileID: 3218155618683331708, guid: 1fd298aad49b9354ab98b82abaa0980b, type: 3}
+  smokeEffectDestroyDelay: 3
+  debrisLifetime: 4
+  destroyOriginalDelay: 0.05
+--- !u!114 &5874191236496229213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7976241089749611548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 763ac35d3408ee546872fad837cb13fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnitDefinitionRuntimeBinder
+  unitDefinitionAsset: {fileID: 11400000, guid: e009ad2c75ffb724da743960afceccc4, type: 2}
+  applyDefinitionOnAwake: 1
+  applyDefinitionOnEnable: 0
+  debugLogs: 0
+  autoEnsureRuntimeIdentityForCharacterUnits: 1
+  autoBindSpine43Renderers: 1
+  spineRootName: SpineRoot
+  spineSourceNameContains: Spine GameObject
+  autoBindModel3D: 1
+  model3DRootName: Model3DRoot
+  bindOccludedOutlineProxies: 1
+  createMissingOccludedProxyComponents: 1
+  outlineProxyRootName: OutlineProxyRoot
+--- !u!114 &6356103797660079593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7976241089749611548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af394951288ed7048b65997409bdd5c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnitOcclusionMaterialReceiver
+  scriptVersion: V30 - 2026-06-06 - explicit front root ledger
+  compileTouchVersion: 2026060602
+  targetRenderer: {fileID: 2308749450604707987}
+  extraTargetRenderers: []
+  autoFindRenderer: 1
+  autoFindAllRenderers: 0
+  normalMaterials: []
+  occlusionCompositeMaterials: []
+  createRuntimeCompositeFallback: 1
+  runtimeCompositeMaterialSuffix: _RuntimeComposite
+  enforceEveryLateUpdate: 0
+  repairExternalMaterialOverwriteInLateUpdate: 1
+  debugLogs: 0
+  isolateRendererSearchPerReceiver: 1
+  rejectRenderersOwnedByOtherReceiver: 1
+  rejectRendererOnReceiverRoot: 1
+  usePerUnitOccluderMask: 0
+  forceDisableReceiverManagedPerUnitMask: 1
+  useRuntimeAuthorityMaskBinding: 1
+  forceDisableLegacyPerUnitMaskAtRuntime: 1
+  perUnitMaskCameraTemplate: {fileID: 0}
+  perUnitMaskWidth: 1024
+  perUnitMaskHeight: 1024
+  perUnitMaskTempLayer: 31
+  perUnitMaskTextureProperty: _OcclusionTex
+  setLegacyMaskTextureProperties: 1
+  activeOccluderCount: 0
+  currentOccluded: 0
+  resolvedRendererCount: 1
+  rejectedRendererCount: 0
+  receiverRootPath: PF_SM_WoodBox_4_Breakable
+  lastRejectedRenderer: 
+  lastApply: Apply Normal -> PF_SM_WoodBox_4_Breakable/Model3DRoot/SM_WoodBox_4,
+    mat0=M_Box_Wood_3, shader=Shader Graphs/SH_AW_PBR_ORM
+  lastWarning: 
+  lastSetOccluderName: 
+  lastSetOccluderPath: 
+  lastSetOccluderIsOccluded: 0
+  lastSetOccluderFrame: -1
+  activeOccluderDebugList: 
+  perUnitMaskStatus: 'not occluded: no authorized roots rendered'
+  perUnitMaskOccluderRoots: 
+  runtimeAuthorityMaskTexture: {fileID: 0}
+--- !u!1 &8251863404288182427
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3927958004019133455}
+  m_Layer: 0
+  m_Name: Model3DRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3927958004019133455
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8251863404288182427}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.7, y: 1.7, z: 1.7}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3477200816408099836}
+  m_Father: {fileID: 7372234883080499947}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8734664222092310715
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3852473543124191999}
+  - component: {fileID: 8314876200269796590}
+  - component: {fileID: 2088086557642419003}
+  m_Layer: 0
+  m_Name: CombatHurtbox
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3852473543124191999
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8734664222092310715}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3477200816408099836}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!64 &8314876200269796590
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8734664222092310715}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -7129177091995595102, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+--- !u!114 &2088086557642419003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8734664222092310715}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9558266e1c4ae2644b01f26919b3e85c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnitCombatHurtbox
+  healthController: {fileID: 7602741657295383664}
+  actionController: {fileID: 0}
+  skeletonAnimation: {fileID: 0}
+  hitStunDuration: 0.4
+  hurtAnimationKey: Hurt
+--- !u!1001 &4020525643045182487
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 3927958004019133455}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+      propertyPath: m_Name
+      value: SM_WoodBox_4
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3852473543124191999}
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2205656879995231874}
+  m_SourcePrefab: {fileID: 100100000, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+--- !u!23 &2308749450604707987 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+  m_PrefabInstance: {fileID: 4020525643045182487}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &3477200816408099836 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+  m_PrefabInstance: {fileID: 4020525643045182487}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &4254405301257871686 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
+  m_PrefabInstance: {fileID: 4020525643045182487}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2205656879995231874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4254405301257871686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14d048299ab49c34d9b7b171d2942d2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonModel3DVisualInstanceMarker
+  SourcePrefab: {fileID: 919132149155446097, guid: 3a29fedfce659f34a945bfc8631500f2, type: 3}
