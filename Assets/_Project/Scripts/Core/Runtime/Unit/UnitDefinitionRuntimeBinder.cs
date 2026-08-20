@@ -117,9 +117,18 @@ public class UnitDefinitionRuntimeBinder : MonoBehaviour
             if (debugLogs)
                 Debug.Log($"[UnitDefinitionRuntimeBinder] {name}: Applied '{unitDefinitionAsset.name}'.", this);
         }
-        else if (debugLogs)
+        else
         {
-            Debug.LogWarning($"[UnitDefinitionRuntimeBinder] {name}: No UnitDefinitionRuntimeApplier found.", this);
+            if (debugLogs)
+                Debug.LogWarning($"[UnitDefinitionRuntimeBinder] {name}: No UnitDefinitionRuntimeApplier found.", this);
+
+            // 2026-08-19：没有 Applier 的单位（3D 通道场景物/可破坏物品，比如箱子）从
+            // 走 Binder 这条路开始，UnitDefinition 上配的 dropProfiles 就从来没人读过——
+            // 掉落池这段逻辑之前只写在 UnitDefinitionRuntimeApplier.ApplyDefinition()
+            // 里，Binder 找不到 Applier 组件时直接整段跳过。这里补一份最小的等价逻辑，
+            // 不拉全套 Applier（那套是给 Character 单位准备的，里面一堆 Spine
+            // 判定框/听觉视野这些对一个静态3D道具没有意义，硬挂上去风险更大）。
+            EnsureDropProfilesApplied();
         }
 
         EnsureRuntimeIdentityForCurrentDefinition();
@@ -327,6 +336,21 @@ public class UnitDefinitionRuntimeBinder : MonoBehaviour
         blockerCollider.sharedMesh = meshFilter.sharedMesh;
         blockerCollider.convex = false;
         blockerCollider.isTrigger = false;
+    }
+
+    // 2026-08-19：等价于 UnitDefinitionRuntimeApplier.ApplyDefinition() 里那一小段
+    // dropProfiles 处理——没有 Applier 的单位（3D 通道场景物）需要自己补这一份，
+    // 否则 UnitDefinition 上配的掉落池永远不会真正生效。
+    private void EnsureDropProfilesApplied()
+    {
+        if (unitDefinitionAsset.dropProfiles == null || unitDefinitionAsset.dropProfiles.Count == 0)
+            return;
+
+        UnitDeathDropController dropController = GetComponent<UnitDeathDropController>();
+        if (dropController == null)
+            dropController = gameObject.AddComponent<UnitDeathDropController>();
+
+        dropController.SetDropProfiles(unitDefinitionAsset.dropProfiles);
     }
 
     private static GameObject InstantiateModel3DSource(GameObject sourcePrefab, Transform parent)

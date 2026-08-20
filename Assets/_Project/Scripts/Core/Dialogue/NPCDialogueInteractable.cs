@@ -59,16 +59,19 @@ public sealed class NPCDialogueInteractable : MonoBehaviour, IInteractable
 
     private string ResolveNpcDisplayName()
     {
+        // 这个提示条用的是旧版 UnityEngine.UI.Text，接不上 TMP 的注音预处理器——
+        // 名字字段里可能带 {A|B} 这种给注音用的内部标记，不去掉的话玩家会直接
+        // 看到原始花括号语法。这里不需要真的标出注音，只要干净文本。
         if (dialogue != null)
         {
             string name = dialogue.GetLocalizedName("");
-            if (!string.IsNullOrEmpty(name)) return name;
+            if (!string.IsNullOrEmpty(name)) return SkyPrisonRubyTextProcessor.StripToPlainText(name);
         }
 
         if (npcUnitDefinition != null)
         {
             string name = npcUnitDefinition.GetLocalizedDisplayName();
-            if (!string.IsNullOrEmpty(name)) return name;
+            if (!string.IsNullOrEmpty(name)) return SkyPrisonRubyTextProcessor.StripToPlainText(name);
         }
 
         return "";

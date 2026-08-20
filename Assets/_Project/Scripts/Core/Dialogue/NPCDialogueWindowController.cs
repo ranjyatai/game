@@ -16,7 +16,11 @@ using SkyPrison.Runtime.UI;
 public class NPCDialogueWindowController : SkyPrisonBaseWindowController
 {
     [Header("内容")]
-    [SerializeField] private Text headerText; // 面板顶部NPC名字，冷绿
+    // 2026-08-19：改成 TMP——之前是旧版 UnityEngine.UI.Text，接不上 TMP 的
+    // ITextPreprocessor，NPC 名字里的 {A|B} 注音标记会原样露出来。这里是玩家会
+    // 持续看到、且明确想要注音效果的地方，跟"只是路过一下"的交互提示不一样，
+    // 值得真的换成 TMP 而不是退化成"只去标记不标注"。
+    [SerializeField] private TMPro.TextMeshProUGUI headerText; // 面板顶部NPC名字，冷绿
     [SerializeField] private Image headerBackground; // 名字背景：半透明黑，左侧干净、向右暗淡淡出
     [SerializeField] private Text sentenceText; // 仅用于任务列表浏览态文字，对话台词改走 DialogueSubtitleHUD
     [SerializeField] private RectTransform optionsContainer;
@@ -28,7 +32,7 @@ public class NPCDialogueWindowController : SkyPrisonBaseWindowController
 
     // 选项聚焦视觉：鼠标悬停优先，没悬停时默认聚焦第一项。
     private const float FocusLerpSpeed = 14f;
-    private const float OptionRowHeight = 60f;
+    private const float OptionRowHeight = 72f; // 原来 60，选项行(含高亮背景)调高
     private static readonly Vector3 FocusedOptionScale = new Vector3(1.12f, 1.12f, 1f);
     private int _hoveredOptionIndex = -1;
 
@@ -37,6 +41,7 @@ public class NPCDialogueWindowController : SkyPrisonBaseWindowController
     private string _currentGreetingSentenceId; // 本次对话随机选中的那一句，进对话时定一次，不会中途重新随机
     private UnitDefinition _npcUnitDefinition;
     private bool _inQuestListMode;
+    private bool _skipSubtitleHideOnClose; // 离场台词(closeAfterShow)自己计时淡出，OnWindowClose这次不强制打断它
 
     // 多层选项分支——点了带子选项的选项，就换成显示它的subOptions而不是回到这一层
     // 原来的选项；"返回"弹栈回上一层。_currentOptions永远指向"现在应该显示的那一
@@ -115,7 +120,10 @@ public class NPCDialogueWindowController : SkyPrisonBaseWindowController
 
     protected override void OnWindowClose()
     {
-        DialogueSubtitleHUD.Instance?.Hide();
+        if (_skipSubtitleHideOnClose)
+            _skipSubtitleHideOnClose = false; // 离场台词自己收尾，这次关窗不强制打断它
+        else
+            DialogueSubtitleHUD.Instance?.Hide();
 
         ClearOptions();
         _dialogue = null;
@@ -176,7 +184,7 @@ public class NPCDialogueWindowController : SkyPrisonBaseWindowController
         return "";
     }
 
-    private void ShowSentence(string sentenceId)
+    private void ShowSentence(string sentenceId, bool persistent = true)
     {
         _idleTimer = 0f;
         string text = _dialogue.GetSentenceText(sentenceId, "");
@@ -188,8 +196,10 @@ public class NPCDialogueWindowController : SkyPrisonBaseWindowController
         // 台词用触发器演出那套"血条上方字幕"(DialogueSubtitleHUD)显示，跟剧情演出
         // 是同一套形式，不再用窗口自己那份占位Text——persistent=true 是因为下面这层
         // 一直挂着选项列表，字幕不能自己按计时器/按键淡出，得等玩家选完/关窗口。
+        // closeAfterShow(这句就是离场台词，说完窗口马上关)传 persistent:false，让它走
+        // 自己的计时/按键淡出，不依赖 OnWindowClose 里那次会立刻把它打断的 Hide()。
         if (DialogueSubtitleHUD.Instance != null && _dialogue.sentenceLibrary != null)
-            DialogueSubtitleHUD.Instance.ShowLine(_dialogue.sentenceLibrary, sentenceId, persistent: true);
+            DialogueSubtitleHUD.Instance.ShowLine(_dialogue.sentenceLibrary, sentenceId, persistent: persistent);
     }
 
     private void Update()
@@ -536,11 +546,20 @@ public class NPCDialogueWindowController : SkyPrisonBaseWindowController
         switch (option.actionType)
         {
             case DialogueOptionActionType.ShowSentence:
-                ShowSentence(option.PickTargetSentenceId());
                 if (option.closeAfterShow)
+                {
+                    // 离场台词：不能 persistent:true 再指望 Close() 帮它兜底——
+                    // Close() 会立刻 Hide() 打断。让它自己算时长/等按键自然淡出，
+                    // 关窗口这一步只跳过强制 Hide()，字幕继续按自己的节奏走。
+                    ShowSentence(option.PickTargetSentenceId(), persistent: false);
+                    _skipSubtitleHideOnClose = true;
                     Close();
+                }
                 else
+                {
+                    ShowSentence(option.PickTargetSentenceId());
                     EnterOptionsFor(option); // 有子选项就下钻，没有就照旧刷新当前这层
+                }
                 break;
 
             case DialogueOptionActionType.OpenWindow:

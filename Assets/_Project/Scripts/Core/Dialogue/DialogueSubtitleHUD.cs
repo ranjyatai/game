@@ -52,6 +52,23 @@ public class DialogueSubtitleHUD : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void AutoCreate()
     {
+        // 2026-08-19：Play 模式下热重编译触发的 Domain Reload 会把这个静态 Instance
+        // 字段重置成 null，但场景里已经创建好的物体不会被一起销毁——之前只检查
+        // Instance==null 就直接新建，每次热重编译都会在场景里多出一个没人引用、
+        // 没人销毁的孤儿实例，它还活着、还在画自己最后一次收到的台词，表现为
+        // "字幕文字乱码堆积"（不是真的乱码，是好几个孤儿实例的文字重叠在了同一个
+        // 屏幕位置）。改成先在场景里找有没有已经存在的实例，有就复用、顺手清掉
+        // 多余的，确认真的一个都没有才新建。
+        var existing = FindObjectsByType<DialogueSubtitleHUD>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        if (existing.Length > 0)
+        {
+            Instance = existing[0];
+            for (int i = 1; i < existing.Length; i++)
+                if (existing[i] != null) Destroy(existing[i].gameObject);
+            return;
+        }
+
         if (Instance != null) return;
         var go = new GameObject("[DialogueSubtitleHUD]") { hideFlags = HideFlags.HideAndDontSave };
         Instance = go.AddComponent<DialogueSubtitleHUD>();

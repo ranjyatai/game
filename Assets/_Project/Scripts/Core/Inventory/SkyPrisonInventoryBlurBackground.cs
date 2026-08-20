@@ -210,7 +210,24 @@ namespace SkyPrison.Runtime.UI
             _blurCam.enabled = true;
 
             var urp = _blurCam.GetUniversalAdditionalCameraData();
-            if (urp != null) { urp.renderType = CameraRenderType.Base; urp.renderShadows = false; }
+            if (urp != null)
+            {
+                urp.renderType = CameraRenderType.Base;
+                urp.renderShadows = false;
+                // 2026-08-19：必须开——DefaultVolumeProfile 里 Lens Distortion 的 scale=1.62
+                // 会把真实画面整体放大 62% 来盖掉畸变留下的黑边。这台相机独立于相机栈之外，
+                // 之前完全没走后处理，捕到的是"没放大"的原始取景，比真实画面小一圈，磨砂图
+                // 跟窗口外露出的真实场景对不上、显得小。开后处理让它吃到同一份 Volume（包括
+                // 这个缩放），取景结果才会跟玩家实际看到的画面一致。
+                urp.renderPostProcessing = true;
+                urp.antialiasing = AntialiasingMode.None;
+
+                // CopyFrom 只复制原生 Camera 字段，volumeLayerMask 是 URP 附加数据自己的属性，
+                // 不会跟着一起复制——不显式对齐的话，新相机默认的 volumeLayerMask 未必跟主
+                // 相机一样，可能根本吃不到场景里那个 Volume，等于白开 renderPostProcessing。
+                var mainUrp = mainCam.GetUniversalAdditionalCameraData();
+                if (mainUrp != null) urp.volumeLayerMask = mainUrp.volumeLayerMask;
+            }
 
             StartCoroutine(SyncLoop(mainCam));
         }

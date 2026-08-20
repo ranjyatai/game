@@ -2019,6 +2019,13 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 
     private void OnSceneGUI(SceneView sceneView)
     {
+        // 2026-08-19：所有放置模式的预览（绿色圆盘/装饰物幽灵/笔刷）共用同一个毛病——
+        // SceneView 默认不把没按键的纯鼠标移动当事件发给 OnSceneGUI，预览只能等
+        // 点击/拖拽/滚轮这些"真事件"才刷新一次位置，表现为跟不上鼠标、很迟钝。
+        // 在这个统一入口开一次，比每个 OnXxxPlacementSceneGUI 分别开更不容易漏。
+        if (placementMode && !sceneView.wantsMouseMove)
+            sceneView.wantsMouseMove = true;
+
         if (currentKind == PlacementObjectKind.GroundSurfaceMaterial)
         {
             if (placementMode)
@@ -2067,6 +2074,14 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         UpdatePreviewPosition(e.mousePosition);
         DrawSceneOverlay();
 
+        // 2026-08-19：之前这里刻意不在 hover 阶段调 sceneView.Repaint()（怕拖累
+        // 性能），指望"预览物体的 Transform 变了，Unity 自己会重绘 SceneView"——
+        // 但这不可靠，实测就是预览跟不上鼠标、必须等下一次点击/滚轮才"跳"过去。
+        // wantsMouseMove 保证了事件会及时送到这里，还得配上这一行才能保证画面
+        // 跟着重绘，两者缺一都会看起来"迟钝"。
+        if (e.type == EventType.MouseMove || e.type == EventType.MouseDrag)
+            sceneView.Repaint();
+
         if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape)
         {
             SetPlacementMode(false);
@@ -2096,9 +2111,6 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
                 e.Use();
             }
         }
-
-        // 不在 hover / repaint 阶段强制刷新预览对象。
-        // 预览位置变化、放置、旋转、缩放等真实输入处会主动刷新。
     }
 
 
@@ -2142,6 +2154,10 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             DrawTerrainRectFillPreview();
         else
             DrawTerrainBrushPreview();
+
+        // 同地形装饰物预览那个问题——鼠标移动/拖拽时主动重绘，笔刷位置才能跟手。
+        if (e.type == EventType.MouseMove || e.type == EventType.MouseDrag)
+            sceneView.Repaint();
 
         if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape)
         {
@@ -8803,7 +8819,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             RefreshPlacedUnitCache();
         EditorGUILayout.EndHorizontal();
         placedUnitSearch = EditorGUILayout.TextField("搜索", placedUnitSearch);
-        EditorGUILayout.HelpBox("点击定位，Delete 删除。支持 Ctrl 多选。", MessageType.Info);
+        EditorGUILayout.HelpBox("点击定位，Delete 删除。支持 Ctrl 离散多选、Shift 连续多选。", MessageType.Info);
         EditorGUILayout.EndVertical();
 
         List<UnitDefinitionRuntimeBinder> filtered = GetFilteredPlacedUnits();
@@ -8829,20 +8845,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         using (new EditorGUI.DisabledScope(selCount <= 0))
         {
             if (GUILayout.Button($"删除已选({selCount})", EditorStyles.toolbarButton, GUILayout.Width(100f)))
-            {
-                if (EditorUtility.DisplayDialog("删除确认", $"删除 {selCount} 个已选单位？", "删除", "取消"))
-                {
-                    List<UnitDefinitionRuntimeBinder> toDelete = new List<UnitDefinitionRuntimeBinder>();
-                    foreach (UnitDefinitionRuntimeBinder b in placedUnitCache)
-                        if (placedUnitSelectionIds.Contains(b.gameObject.GetInstanceID()))
-                            toDelete.Add(b);
-                    foreach (UnitDefinitionRuntimeBinder b in toDelete)
-                        if (b != null && b.gameObject != null)
-                            Undo.DestroyObjectImmediate(b.gameObject);
-                    placedUnitSelectionIds.Clear();
-                    RefreshPlacedUnitCache();
-                }
-            }
+                DeleteSelectedPlacedUnitsWithConfirm();
             if (GUILayout.Button("清空选择", EditorStyles.toolbarButton, GUILayout.Width(72f)))
                 placedUnitSelectionIds.Clear();
         }
@@ -8894,7 +8897,14 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         }
         if (GUI.Button(delRect, "删除"))
         {
-            Undo.DestroyObjectImmediate(binder.gameObject);
+            // 2026-08-19：多选之后点任意一个已选行的"删除"，应该删掉整个已选集合——
+            // 之前这里不管有没有多选，永远只删自己这一行，跟地形装饰物列表的行为
+            // （selected && CountCurrentPlacedSelection > 1 时走批量删除）不一致，
+            // 表现为"批量选了一堆，点删除却只删了一个"。
+            if (selected && placedUnitSelectionIds.Count > 1)
+                DeleteSelectedPlacedUnitsWithConfirm();
+            else
+                Undo.DestroyObjectImmediate(binder.gameObject);
             RefreshPlacedUnitCache();
             return;
         }
@@ -8902,21 +8912,67 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         if (Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition))
         {
             bool ctrl = Event.current.control || Event.current.command;
-            if (ctrl)
+            // 2026-08-19：Shift 连续多选——照抄地形装饰物列表 HandlePlacedRowSelection
+            // 那套逻辑（placedUnitLastClickedIndex 这个字段之前就存在、也在维护，
+            // 却从没被读过做区间选择，单位列表实际上只支持了 Ctrl 离散多选）。
+            if (Event.current.shift && placedUnitLastClickedIndex >= 0)
+            {
+                int a = Mathf.Clamp(Mathf.Min(placedUnitLastClickedIndex, index), 0, list.Count - 1);
+                int b = Mathf.Clamp(Mathf.Max(placedUnitLastClickedIndex, index), 0, list.Count - 1);
+                if (!ctrl)
+                    placedUnitSelectionIds.Clear();
+                for (int i = a; i <= b; i++)
+                {
+                    UnitDefinitionRuntimeBinder rangeBinder = list[i];
+                    if (rangeBinder != null && rangeBinder.gameObject != null)
+                        placedUnitSelectionIds.Add(rangeBinder.gameObject.GetInstanceID());
+                }
+            }
+            else if (ctrl)
             {
                 if (selected) placedUnitSelectionIds.Remove(id);
                 else placedUnitSelectionIds.Add(id);
+                placedUnitLastClickedIndex = index;
             }
             else
             {
                 placedUnitSelectionIds.Clear();
                 placedUnitSelectionIds.Add(id);
                 Selection.activeGameObject = binder.gameObject;
+                placedUnitLastClickedIndex = index;
             }
-            placedUnitLastClickedIndex = index;
+
+            Selection.objects = placedUnitSelectionIds
+                .Select(EditorUtility.InstanceIDToObject)
+                .Where(o => o != null)
+                .ToArray();
+            if (Selection.activeGameObject == null || !placedUnitSelectionIds.Contains(Selection.activeGameObject.GetInstanceID()))
+                Selection.activeGameObject = binder.gameObject;
+
             Repaint();
             Event.current.Use();
         }
+    }
+
+    private void DeleteSelectedPlacedUnitsWithConfirm()
+    {
+        int selCount = placedUnitSelectionIds.Count;
+        if (selCount <= 0)
+            return;
+
+        if (!EditorUtility.DisplayDialog("删除确认", $"删除 {selCount} 个已选单位？", "删除", "取消"))
+            return;
+
+        List<UnitDefinitionRuntimeBinder> toDelete = new List<UnitDefinitionRuntimeBinder>();
+        foreach (UnitDefinitionRuntimeBinder b in placedUnitCache)
+            if (b != null && b.gameObject != null && placedUnitSelectionIds.Contains(b.gameObject.GetInstanceID()))
+                toDelete.Add(b);
+        foreach (UnitDefinitionRuntimeBinder b in toDelete)
+            if (b != null && b.gameObject != null)
+                Undo.DestroyObjectImmediate(b.gameObject);
+
+        placedUnitSelectionIds.Clear();
+        RefreshPlacedUnitCache();
     }
 
     private List<UnitDefinitionRuntimeBinder> GetFilteredPlacedUnits()

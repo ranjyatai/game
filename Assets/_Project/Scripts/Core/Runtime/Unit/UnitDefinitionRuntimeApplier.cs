@@ -747,6 +747,34 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
         terrainGroundMotor.preferCollisionRootCollider = true;
         terrainGroundMotor.ignoreTriggerBodyColliders = true;
 
+        // WalkableProbe/OccluderProbe 两个探测层必须从 bodyBlockMask/groundMask 里剔除——
+        // SkyPrisonWalkableProbeLayerSetup 这个编辑器工具本该负责这件事，但它只扫描场景
+        // 文件/预制体资产里已经序列化好的组件，而 TerrainGroundMotorV5 是纯运行时
+        // AddComponent 加上去的（就在上面几行），从来不会出现在它能扫到的地方，
+        // 所以对所有运行时生成的单位这个排除从来没真正生效过，bodyBlockMask 一直卡在
+        // 组件的原始默认值 ~0（全部层）上。表现是：装饰物明明配了「不阻挡单位」
+        // （blockPlayer/blockEnemy=false，碰撞体正确落在 WalkableProbe 层），但只要
+        // 这个碰撞体是带真实高度起伏的精确网格（比如铁轨的轨道/枕木），
+        // TerrainGroundMotorV5 自己的台阶限高判定依然会把它当成候选地面来扫描，
+        // 被网格本身的凹凸反复判定「这一步太高迈不上去」，单位就卡死在原地——
+        // 跟「阻挡」这个概念完全无关，是这条独立判定链路里的排除动作漏掉了运行时实例。
+        // 这里补上，跟该工具对预制体/场景实例做的事保持一致。
+        int walkableProbeLayer = LayerMask.NameToLayer(GroundSurfaceMarker.WalkableProbeLayerName);
+        if (walkableProbeLayer >= 0)
+        {
+            int bit = ~(1 << walkableProbeLayer);
+            terrainGroundMotor.bodyBlockMask &= bit;
+            terrainGroundMotor.groundMask &= bit;
+        }
+
+        int occluderProbeLayer = LayerMask.NameToLayer(TerrainDecorationDefinition.OccluderProbeLayerName);
+        if (occluderProbeLayer >= 0)
+        {
+            int bit = ~(1 << occluderProbeLayer);
+            terrainGroundMotor.bodyBlockMask &= bit;
+            terrainGroundMotor.groundMask &= bit;
+        }
+
         if (configureTerrainGroundMotorBodyCollider)
         {
             Collider bodyCollider = FindMovementBodyCollider();

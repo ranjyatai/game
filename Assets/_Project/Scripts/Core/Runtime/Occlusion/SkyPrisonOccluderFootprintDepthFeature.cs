@@ -6,22 +6,35 @@ using UnityEngine.Rendering.RenderGraphModule;
 #endif
 
 /// <summary>
-/// 遮挡物落地深度图。把每个遮挡物「根节点」的眼深度画进一张全屏 RFloat 纹理，
-/// 角色着色器逐像素采样它来决定要不要藏。
+/// 遮挡物落地深度图。逐顶点把「这个顶点正下方的地面点」的眼深度画进一张全屏
+/// RFloat 纹理，角色着色器逐像素采样它来决定要不要藏。
 ///
 /// 解决的问题：2.5D 的遮挡语义是「谁的脚在前面」，不是「谁的表面离相机近」。
 /// 45 度俯视下高的物体顶部会朝相机倾过来——叉车顶棚的几何深度可以比站在叉车
 /// 前面的角色脚底还小。直接拿 _CameraDepthTexture 比较，同一台叉车会出现
 /// 「顶部判在前、底部判在后」，角色被从中间切开（实测：头绿身红）。
 ///
-/// 这张图里每个物体是一个平坦的常数值（它自己的落地深度），所以一个遮挡物对
-/// 角色只有「挡」或「不挡」两种结果，不会把角色切开。
+/// 2026-08-19 之前的版本：整个遮挡物共用一个常数值（物体根节点的落地深度）。
+/// 对紧凑物体（箱子、叉车）成立，但对横跨很宽、中间镂空的门/桥/护栏类结构
+/// （比如两根柱子架一根横梁的电线架）不成立——两根柱子实际落地深度差很远，
+/// 共用一个常数深度会让玩家走到结构中点时，近柱、远柱、横梁同时整体从
+/// 「遮挡」翻转成「不遮挡」。
 ///
-/// 关键：这张图只决定「挡不挡」，不决定「藏哪些像素」。角色露在遮挡物轮廓外面的
-/// 像素采样到的是清空值（远平面），不会被藏，正常显示——遮挡依然是逐像素的。
+/// 现在改成逐顶点算：顶点自己的世界坐标 X/Z 保留，Y 清零投影到地面，用这个
+/// 投影点的眼深度当这个顶点的落地深度——不再是整个物体共用一个值，近柱的
+/// 顶点自然对应近柱的深度，远柱的顶点自然对应远柱的深度，横梁沿途每个点也
+/// 各自对应自己正下方的地面位置，不需要为宽结构额外配置锚点。
+/// 这一步不会把叉车的老问题带回来：老问题是直接用顶点的原始三维深度（连
+/// 高度一起算），45°视角下抬高的顶棚显得比脚底还近；这里先把 Y 清零再算深度，
+/// 高度这个干扰量已经被去掉了，比的还是「这一点正下方的地面在哪」。
+///
+/// 这张图里的值仍然只决定「挡不挡」，不决定「藏哪些像素」。角色露在遮挡物轮廓
+/// 外面的像素采样到的是清空值（远平面），不会被藏，正常显示——遮挡依然是
+/// 逐像素的。
 ///
 /// CPU 侧只提供「哪些 Renderer 算遮挡物」这一个列表（注册发生在 OnEnable /
-/// 结构重建，不是每帧扫场景），判定全在 GPU，不做任何回读。
+/// 结构重建，不是每帧扫场景），判定全在 GPU，不做任何回读，也不再需要每次
+/// DrawRenderer 之前额外传一个根节点坐标——地面投影全在顶点着色器里现算。
 /// </summary>
 public class SkyPrisonOccluderFootprintDepthFeature : ScriptableRendererFeature
 {
@@ -47,10 +60,6 @@ public class SkyPrisonOccluderFootprintDepthFeature : ScriptableRendererFeature
 
     public static readonly int FootprintTextureId =
         Shader.PropertyToID("_SkyPrison_OccluderFootprintDepth");
-
-    /// <summary>每个遮挡物的落地世界坐标，DrawRenderer 之前逐个写入。</summary>
-    public static readonly int FootprintRootId =
-        Shader.PropertyToID("_SkyPrison_FootprintRootWS");
 
     public override void Create()
     {
@@ -439,14 +448,12 @@ public class SkyPrisonOccluderFootprintDepthFeature : ScriptableRendererFeature
                         if (r == null || !r.enabled || !r.gameObject.activeInHierarchy)
                             continue;
 
-                        // 每画一个之前先写它的落地坐标。命令缓冲顺序执行，
-                        // 「设值 → 画这一个」是可靠配对。不能依赖着色器里的
-                        // unity_ObjectToWorld——静态合批会把它退化成单位阵，
-                        // 实测叉车就是因此写出了错误的深度（纹理里 0 个像素匹配）。
-                        Vector3 root = r.transform.position;
-                        context.cmd.SetGlobalVector(FootprintRootId,
-                            new Vector4(root.x, root.y, root.z, 1f));
-
+                        // 落地深度现在逐顶点在 shader 里现算（世界坐标 X/Z 保留、Y 清零），
+                        // 不再需要 CPU 每次 DrawRenderer 之前额外传一个根节点坐标。
+                        // TransformObjectToWorld 在静态合批下依然正确：合批把顶点烘进世界
+                        // 空间、把 unity_ObjectToWorld 退化成单位阵，此时该函数等价于原样
+                        // 返回已经是世界坐标的顶点——跟"从矩阵平移列直接取物体根节点位置"
+                        // 是两回事，后者才是叉车那次真正会被合批坑到的操作。
                         int subMeshCount = Mathf.Max(1, r.sharedMaterials != null ? r.sharedMaterials.Length : 1);
                         for (int sub = 0; sub < subMeshCount; sub++)
                             context.cmd.DrawRenderer(r, data.material, sub, 0);

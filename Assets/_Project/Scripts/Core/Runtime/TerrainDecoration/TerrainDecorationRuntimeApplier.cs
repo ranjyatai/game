@@ -357,7 +357,6 @@ public class TerrainDecorationRuntimeApplier : MonoBehaviour
         }
     }
 
-
     [ContextMenu("Ensure Standard Structure")]
     public void EnsureStandardStructureMenu()
     {
