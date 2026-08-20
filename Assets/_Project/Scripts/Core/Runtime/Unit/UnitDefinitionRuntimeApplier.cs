@@ -1014,6 +1014,18 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
         UnitMovementController dodgeMc = GetComponent<UnitMovementController>();
         if (dodgeMc != null)
             dodgeVFXBridge.Configure(dodgeMc);
+
+        // 自动添加闪避/突刺残影发射器，同样轮询 UnitMovementController（IsDodging /
+        // IsChargeDashing），不需要闪避、突刺各自的代码反过来关心"要不要生成残影"。
+        SkyPrisonAfterimageEmitter afterimageEmitter = GetComponent<SkyPrisonAfterimageEmitter>();
+        if (afterimageEmitter == null)
+        {
+            afterimageEmitter = gameObject.AddComponent<SkyPrisonAfterimageEmitter>();
+            if (debugLogs)
+                Debug.Log($"[UnitDefinitionRuntimeApplier] {name}: Auto added SkyPrisonAfterimageEmitter.", this);
+        }
+        if (dodgeMc != null)
+            afterimageEmitter.Configure(dodgeMc, FindBestFootstepSkeletonAnimation());
     }
 
     private void EnsureFootstepRelayBindingAfterVisualRefresh(UnitDefinition ud)

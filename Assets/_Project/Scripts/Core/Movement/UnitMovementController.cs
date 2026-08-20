@@ -502,6 +502,10 @@ public class UnitMovementController : MonoBehaviour
     public bool IsSneakHeld => inputMode == MovementInputMode.PlayerInput ? GetPlayerActionHeld(SkyPrisonInputAction.Sneak, KeyCode.LeftControl) : externalSneakHeld;
     public bool IsJumping => jumpState != JumpRuntimeState.None;
     public bool IsDodging => dodgeState != DodgeRuntimeState.None;
+    /// <summary>蓄力攻击释放/闪避接突刺那段冲刺位移是否正在进行。跟 IsDodging 是完全独立
+    /// 的两套状态（见 chargeDashActive 字段声明处的说明），残影这类"位移期间要触发"的
+    /// 效果需要同时看这两个才不会漏掉突刺那一段。</summary>
+    public bool IsChargeDashing => chargeDashActive;
     public bool IsActionLocked => IsJumping || IsDodging || Time.time < oneShotAnimationLockedUntil;
     public bool ShouldPlayMoveAnimation => movementType != UnitMovementType.Immobile && input.sqrMagnitude > 0.0001f;
     public Rigidbody CachedRigidbody => rb;
