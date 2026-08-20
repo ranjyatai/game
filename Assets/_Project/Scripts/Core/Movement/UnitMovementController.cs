@@ -559,6 +559,7 @@ public class UnitMovementController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        ExcludeProbeLayersFromBlockingLayers();
         AutoFindAnimationTargets();
         AutoFindGroundShadowRoot();
         AutoFindGroundQueryService();
@@ -576,6 +577,24 @@ public class UnitMovementController : MonoBehaviour
         CacheCapsuleOffsetFromRoot();
         EnsureTerrainGroundRuntimeDefaults();
         AutoSwitchToExternalTerrainMotorIfAvailable();
+    }
+
+    // WalkableProbe/OccluderProbe 两个探测层必须永远从 blockingLayers 里剔除，不管这个
+    // 组件是被谁、用什么方式创建/配置的。跟 TerrainGroundMotorV5.bodyBlockMask 是同一类
+    // 坑——SkyPrisonWalkableProbeLayerSetup 这个编辑器工具本该负责这件事，但它只扫描
+    // 场景文件/预制体资产里已经序列化好的组件，UnitMovementController 是纯运行时
+    // AddComponent 加上去的，从来不会出现在它能扫到的地方。玩家和 AI 必须走完全一样
+    // 的碰撞判定逻辑，不能靠某个外部调用方"记得"来保证一致——放在组件自己的 Awake
+    // 里自我纠正，不存在遗漏的调用方，也不会因为谁的初始化顺序不同就产生分歧。
+    private void ExcludeProbeLayersFromBlockingLayers()
+    {
+        int walkableProbeLayer = LayerMask.NameToLayer(GroundSurfaceMarker.WalkableProbeLayerName);
+        if (walkableProbeLayer >= 0)
+            blockingLayers &= ~(1 << walkableProbeLayer);
+
+        int occluderProbeLayer = LayerMask.NameToLayer(TerrainDecorationDefinition.OccluderProbeLayerName);
+        if (occluderProbeLayer >= 0)
+            blockingLayers &= ~(1 << occluderProbeLayer);
     }
 
     private void OnEnable()
@@ -778,7 +797,13 @@ public class UnitMovementController : MonoBehaviour
     {
         Vector2 baseDir = input.sqrMagnitude > 0.0001f ? input.normalized : FacingInput;
         if (baseDir.sqrMagnitude <= 0.0001f)
-            baseDir = Vector2.right;
+        {
+            // 跟 SkyPrisonPlayerInputRouter.ResolveCurrentFacingInput 是同一个坑的第二处：
+            // 刚出生、从没输入过方向、也没有速度时，这里独立兜底成 Vector2.right——
+            // 项目约定角色出生默认朝向是左，这里跟那边保持一致，否则玩家一进游戏不按
+            // 方向键直接点闪避，还是会出现"位移/动画按右算，人却是朝左站着"的错位。
+            baseDir = Vector2.left;
+        }
 
         RequestDodge(forward ? baseDir : -baseDir, forward ? DodgeRuntimeState.Forward : DodgeRuntimeState.Back);
     }

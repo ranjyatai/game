@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 151431748441588134}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.2, y: 0, z: 0}
+  m_LocalPosition: {x: -0.2, y: 4.217166, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4033,6 +4033,8 @@ MonoBehaviour:
   autoBindSpine43Renderers: 1
   spineRootName: SpineRoot
   spineSourceNameContains: Spine GameObject
+  autoBindModel3D: 1
+  model3DRootName: Model3DRoot
   bindOccludedOutlineProxies: 1
   createMissingOccludedProxyComponents: 1
   outlineProxyRootName: OutlineProxyRoot
@@ -4316,6 +4318,8 @@ MonoBehaviour:
   damageReferenceImage: {fileID: 7652931076185401624}
   fillMaskRoot: {fileID: 7254374768023932430}
   fillImage: {fileID: 836380422321253581}
+  bracketLeftText: {fileID: 0}
+  bracketRightText: {fileID: 0}
   debugLogs: 0
   faceCameraEveryFrame: 1
   targetCamera: {fileID: 0}
@@ -4397,7 +4401,7 @@ MonoBehaviour:
   waitForRuntimeBootCoordinator: 1
   disableLocalTickDriverWhenBootCoordinatorExists: 1
   scriptVersion: V4 - 2026-06-09 - delayed apply with single tick owner
-  debugLogs: 1
+  debugLogs: 0
   runtimeDiagnostic: '-'
   runtimeSinceEnable: 0
   runtimeAutoApplyDone: 0
@@ -4509,7 +4513,7 @@ MonoBehaviour:
   sprintReleasedAfterLastTap: 1
   suppressRunUntil: -999
   lastInputEvent: 
-  lastKnownFacingInput: {x: 1, y: 0}
+  lastKnownFacingInput: {x: -1, y: 0}
   weaponCycleCooldown: 0.18
 --- !u!114 &5000382181859709138
 MonoBehaviour:

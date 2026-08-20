@@ -328,6 +328,10 @@ public class TerrainGroundMotorV5 : MonoBehaviour
     private string lastSweepHitName = "";
     /// 归因日志已输出行数，到上限自动关闭，见 LogHorizontalAttribution。
     private int debugAttributionLineCount;
+
+    /// 临时诊断用：重新勾上 debugHorizontalAttribution 前必须先清零这个计数器，
+    /// 否则上限判定 (debugAttributionLineCount > Max) 永远成立，重新打开等于白打开。
+    public void ResetHorizontalAttributionDebugBudget() => debugAttributionLineCount = 0;
     /// 本帧退穿透是否真的产生了修正——即角色确实嵌在几何里，而不只是被扫掠挡住。
     /// 卡死救援只在真嵌进去时才该介入，见 ApplyCommercialStuckRescue。
     private bool depenetratedThisFrame;
@@ -367,6 +371,7 @@ public class TerrainGroundMotorV5 : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         InitializeDefaultUnitSeparationMaskIfNeeded();
+        ExcludeProbeLayersFromBlockingMasks();
         ResolveBodyCollider();
 
         if (rb != null)
@@ -374,6 +379,33 @@ public class TerrainGroundMotorV5 : MonoBehaviour
             rb.useGravity = false;
             rb.isKinematic = true;
             rb.freezeRotation = true;
+        }
+    }
+
+    // WalkableProbe/OccluderProbe 两个探测层必须永远从 bodyBlockMask/groundMask 里剔除，
+    // 不管这个组件是被谁、用什么方式创建/配置的（AddComponent、预制体自带、编辑器工具后配）。
+    //
+    // 之前这段逻辑写在 UnitDefinitionRuntimeApplier.EnsureTerrainGroundMotorForDefinition
+    // 里——玩家能正确排除，AI 敌人却没有（bodyBlockMask 实测两者不一致），说明 AI 的
+    // 初始化没有稳定走到那个方法。玩家和 AI 本来就该共用完全一样的移动/碰撞判定，
+    // 不该靠某个外部调用方"记得"来保证一致——放在这个组件自己的 Awake 里，
+    // 不管谁用什么路径创建它，第一次真正跑起来的时候都会自我纠正，不存在遗漏的调用方。
+    private void ExcludeProbeLayersFromBlockingMasks()
+    {
+        int walkableProbeLayer = LayerMask.NameToLayer(GroundSurfaceMarker.WalkableProbeLayerName);
+        if (walkableProbeLayer >= 0)
+        {
+            int bit = ~(1 << walkableProbeLayer);
+            bodyBlockMask &= bit;
+            groundMask &= bit;
+        }
+
+        int occluderProbeLayer = LayerMask.NameToLayer(TerrainDecorationDefinition.OccluderProbeLayerName);
+        if (occluderProbeLayer >= 0)
+        {
+            int bit = ~(1 << occluderProbeLayer);
+            bodyBlockMask &= bit;
+            groundMask &= bit;
         }
     }
 
@@ -1573,6 +1605,12 @@ public class TerrainGroundMotorV5 : MonoBehaviour
             $"撞的是={(string.IsNullOrEmpty(lastSweepHitName) ? "无" : lastSweepHitName)}", this);
     }
 
+    // 地板块之间的高度差容差——同一片地面拼接出来的相邻碰撞体，中心高度差应该很小
+    // （厘米级的拼接缝隙、坡度起伏）；墙面/天花板这类明显不是地面的兄弟碰撞体，
+    // 因为纵向跨度大（从地板一路到车顶），碰撞体中心会比真正的地板高出一大截。
+    // 1.2 米足够覆盖正常的拼接高差，又能把随便一面墙（通常 2 米以上高）排除掉。
+    private const float SiblingGroundHeightTolerance = 1.2f;
+
     private bool IsCurrentGroundCollider(Collider col)
     {
         if (col == null || currentGroundCollider == null)
@@ -1581,8 +1619,19 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         if (col == currentGroundCollider)
             return true;
 
+        // 之前这里只看"是不是同一个父物体底下的兄弟碰撞体"，不管这个兄弟实际是什么
+        // 形状——同一个装饰物的地板和墙壁往往拆成一堆碰撞体代理挂在同一个
+        // CollisionRoot/Main_Collision_MeshRoot 下（比如一整节火车车厢），站上地板的
+        // 任意一块，墙壁也被一起当成"脚下的地面"排除出阻挡判定，表现为贴着这类
+        // 装饰物走就能直接穿墙。加一道高度校验：只有碰撞体中心高度跟当前脚下地面
+        // 差不多的兄弟碰撞体（真的是同一片地面拼接出来的），才继续算作地面；
+        // 明显更高的（墙、天花板）不再被连带豁免。
         Transform groundRoot = currentGroundCollider.transform.parent;
-        return groundRoot != null && col.transform.IsChildOf(groundRoot);
+        if (groundRoot == null || !col.transform.IsChildOf(groundRoot))
+            return false;
+
+        float heightDelta = Mathf.Abs(col.bounds.center.y - currentGroundCollider.bounds.center.y);
+        return heightDelta <= SiblingGroundHeightTolerance;
     }
 
     private bool IsUnitCollider(Collider col)
@@ -1736,9 +1785,17 @@ public class TerrainGroundMotorV5 : MonoBehaviour
                 // 上一版用它做「有没有压向墙面」的点积判断，点积恒为 -1，于是任何方向
                 // 都被判成压墙、一律返回 0——等于没修。
                 //
-                // 脱离重叠的唯一手段就是移动，重叠时冻结必然锁死，所以这里无条件放行，
-                // 由退穿透和下一帧重新投射收尾。
-                safeTravel = distance;
+                // 脱离重叠的唯一手段就是移动，重叠时冻结必然锁死，所以这里放行——但绝不能
+                // 放行"整步"。真实穿墙实测：贴墙推进时 hit.distance 每帧近似减半
+                // （0.04→0.02→0.01→0.005→0.0025→…），是 safeTravel = hit.distance - skin
+                // 自身的几何收敛，跟墙有没有拦住无关；收敛到 ≤0.0001 触发这条分支的那一帧，
+                // 如果放行"整步"，等于把墙的整个厚度一次性跨过去——AI 笔直地怼着墙走、
+                // 方向纹丝不动，稳定触发这个收敛；玩家的输入有抖动，方向一直在变，
+                // 收敛序列被打断，从来撞不到底，这才是"AI 穿墙玩家不穿"的真正原因。
+                //
+                // 放行幅度用 maxBodyDepenetrationPerStep 封顶——跟真·退穿透用的是同一把尺子，
+                // 保证一步之内绝不可能越过比它厚的墙体，同时仍然够把角色推出退化的零距离态。
+                safeTravel = Mathf.Min(distance, Mathf.Max(0.001f, maxBodyDepenetrationPerStep));
             }
             else
             {
@@ -2165,6 +2222,7 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         for (int i = 0; i < hitCount; i++)
         {
             RaycastHit h = bodyCastBuffer[i];
+
             if (ShouldIgnoreAsBodyBlock(h.collider))
                 continue;
 
@@ -2202,9 +2260,11 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         if (ShouldIgnoreAsBodyBlock(hit.collider))
             return false;
 
-        // 地面、可行走斜坡、Terrain 表面不应该成为“水平墙体”。
-        // 只把接近垂直的侧面 / 物体边缘当作身体阻挡。
-        if (hit.normal.y > maxBodyBlockNormalY)
+        // 坡度豁免只对「明确标记为可踩」的斜坡/桥/楼梯生效（挂了 GroundSurfaceMarker）。
+        // 装饰物的 CollisionRoot 实体碰撞体（比如电车车厢）从来不会挂这个标记——它们
+        // 是纯粹的硬阻挡，不该因为车头/车顶过渡处法线偏平就被当成"斜坡"放行穿过去。
+        // 之前这条对任何碰撞体一视同仁，等于给所有法线接近水平的墙面拐角开了口子。
+        if (hit.normal.y > maxBodyBlockNormalY && hit.collider.GetComponentInParent<GroundSurfaceMarker>() != null)
             return false;
 
         return true;

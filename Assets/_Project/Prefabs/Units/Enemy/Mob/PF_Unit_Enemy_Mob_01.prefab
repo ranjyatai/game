@@ -240,7 +240,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 0
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 150
   m_TargetDisplay: 0
 --- !u!114 &6414854192099384440
 MonoBehaviour:
@@ -589,7 +589,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -0}
+  m_AnchoredPosition: {x: 0, y: -26}
   m_SizeDelta: {x: 240, y: 24}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1672735412133252931
@@ -837,9 +837,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.6
-  m_Height: 1.2
+  m_Height: 3.8059225
   m_Direction: 1
-  m_Center: {x: 0, y: 0.7, z: 0}
+  m_Center: {x: 0, y: 1.9029612, z: 0}
 --- !u!1 &2467433194515957673
 GameObject:
   m_ObjectHideFlags: 0
@@ -1309,8 +1309,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: enemy_mob_01
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 54f5d27af22dd8d4caa986ef0611781b, type: 2}
+  m_sharedMaterial: {fileID: 0}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1334,8 +1334,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 13
-  m_fontSizeBase: 13
+  m_fontSize: 56
+  m_fontSizeBase: 56
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -3948,6 +3948,8 @@ MonoBehaviour:
   autoBindSpine43Renderers: 1
   spineRootName: SpineRoot
   spineSourceNameContains: Spine GameObject
+  autoBindModel3D: 1
+  model3DRootName: Model3DRoot
   bindOccludedOutlineProxies: 1
   createMissingOccludedProxyComponents: 1
   outlineProxyRootName: OutlineProxyRoot
@@ -4195,6 +4197,8 @@ MonoBehaviour:
   damageReferenceImage: {fileID: 1017315393843152765}
   fillMaskRoot: {fileID: 7439785402397817810}
   fillImage: {fileID: 4507933202267442620}
+  bracketLeftText: {fileID: 0}
+  bracketRightText: {fileID: 0}
   debugLogs: 0
   faceCameraEveryFrame: 1
   targetCamera: {fileID: 0}

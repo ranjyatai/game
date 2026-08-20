@@ -107,11 +107,11 @@ public class SpineAnimationDriver_Current : MonoBehaviour
         "更柔和。")]
     [SerializeField] private float attackToNormalMixDuration = 0.12f;
 
-    // 上一次看到的 UnitActionModuleRuntime.AttackRequestSequence——连招里如果两下刚好
+    // 上一次看到的 UnitActionController.EnterAttackGeneration——连招里如果两下刚好
     // 用了同一个动画名字，PlayByKey"同名不重复播放"这个给站立/走路设计的优化会误伤
-    // 攻击，音效/连段逻辑正常但动画卡在原地不重播。序号变了就说明是全新的一次攻击
+    // 攻击，音效/连段逻辑正常但动画卡在原地不重播。代数变了就说明是全新的一次攻击
     // 请求，强制这次调用带 force=true，不管动画名字是否重复都从头重新播放。
-    private int _lastSeenAttackRequestSequence = -1;
+    private int _lastSeenEnterAttackGeneration = -1;
 
     // 重攻击(蓄力)专用的"上半身"叠加轨道。Track0是唯一的"身体轨道"，站立/走/跑/闪避/
     // 受击/死亡这些状态本来就要全身一起变，继续独占Track0；但重攻击蓄力期间用户明确
@@ -385,7 +385,14 @@ public class SpineAnimationDriver_Current : MonoBehaviour
         // 变成"转身之后又原地不动"这种奇怪表现）。闪避开始/结束前后一瞬间的时序竞争
         // 已经在攻击取消后撤步那条专属路径上验证过、有独立的 SetFacingHold 处理，
         // 这里只是给"所有闪避"补一条通用规则，两边不冲突。
-        if (movement.IsDodging)
+        //
+        // 但闪避刚触发的这一帧必须放行一次：前/后闪的判定（SkyPrisonPlayerInputRouter.
+        // RequestDodgeFromCurrentInput）用的是"这一帧的输入方向"当场算 dot 决定动画，
+        // 跟这里冻结朝向几乎同一帧发生。如果这一帧也冻住，出生后从没翻转过朝向时
+        // （角色默认朝左），第一次"按方向+闪避"会出现判定按新方向算成"前闪"、
+        // 视觉朝向却还停在出生默认朝向、没来得及翻这一次的错位——表现就是"用了前闪
+        // 动画但脸还朝着反方向"。放行这一帧让翻转赶上判定，之后的帧再正常冻结。
+        if (movement.IsDodging && movement.CurrentDodgeElapsedSeconds > 0.0001f)
             return;
 
         Vector2 input = movement.FacingInput;
@@ -424,14 +431,29 @@ public class SpineAnimationDriver_Current : MonoBehaviour
             && actionModuleRuntime != null && actionModuleRuntime.CurrentSkill != null
             && actionModuleRuntime.CurrentSkill.isChargeSkill;
 
-        if (!force && actionController != null && actionController.CurrentState == UnitActionController.UnitActionState.Attack
-            && actionModuleRuntime != null && actionModuleRuntime.AttackRequestSequence != _lastSeenAttackRequestSequence)
+        bool isCurrentlyAttacking = actionController != null
+            && actionController.CurrentState == UnitActionController.UnitActionState.Attack;
+
+        // 用 UnitActionController.EnterAttackGeneration 判断"这是不是一次全新的攻击"——
+        // 之前用 UnitActionModuleRuntime.AttackRequestSequence，但那个序号只有AI专用的
+        // RequestLightAttack/RequestHeavyAttack 会自增，玩家真正在用的
+        // TryPlayerRequestLightAttack 完全不碰它，导致玩家的连击（尤其是同一把武器只有
+        // 一段连击、前后两次攻击动画名字完全相同时）永远走不到 force=true 这条分支，
+        // "同名不重复播放"的优化会把新的一次攻击请求直接吞掉，Complete 回调也没机会
+        // 重新挂上去，角色卡死在攻击硬直里出不来。EnterAttackGeneration 是玩家和AI两条
+        // 路径最终都必经的 EnterAttack() 里自增的，不会有这个漏判。
+        if (!force && isCurrentlyAttacking && actionController.EnterAttackGeneration != _lastSeenEnterAttackGeneration)
         {
             force = true;
         }
 
-        if (actionModuleRuntime != null)
-            _lastSeenAttackRequestSequence = actionModuleRuntime.AttackRequestSequence;
+        // 只在真正处于 Attack 状态的这一帧才把代数标记成"已看到"，理由同上一版注释：
+        // 避免"代数已经变了、但 CurrentState 还没来得及变成 Attack"的那一帧把变化提前
+        // 消费掉。EnterAttackGeneration 在 EnterAttack() 里自增，跟 currentState 切换是
+        // 同一行代码前后紧挨着完成的，理论上不会再有这个时序缝隙，但这里仍然保留同样的
+        // 保守写法，不依赖"两行代码在同一帧内一定不会被分开观察到"这个假设。
+        if (isCurrentlyAttacking)
+            _lastSeenEnterAttackGeneration = actionController.EnterAttackGeneration;
 
         if (isHeavyAttack)
         {

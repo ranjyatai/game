@@ -37,10 +37,15 @@ MonoBehaviour:
   prefab: {fileID: 6792121149318721521, guid: e50f7445e5ee2f9459702ad8ec3e27f1, type: 3}
   visualChannel: 0
   spinePrefab: {fileID: 11400000, guid: 41dc9191bbf45e249ae17016cc6180b6, type: 2}
+  spineVisualScale: 1
   model3DPrefab: {fileID: 0}
+  model3DVisualScale: 1
   icon: {fileID: 0}
+  portraits: []
   controlMode: 1
   aiBehaviorPackage: {fileID: 11400000, guid: 1514717ca3f4d5e439616ea9e08bec6c, type: 2}
+  isInvincible: 0
+  dialogue: {fileID: 0}
   enableVision: 1
   visionRadius: 19
   visionHeight: 2.2
@@ -67,6 +72,9 @@ MonoBehaviour:
   freezeRotationZ: 1
   allowPhysicalPush: 0
   defaultFootstepAudioPackage: {fileID: 11400000, guid: b7d72b61e1683894b95be202871fa99c, type: 2}
+  deathVoiceLines: []
+  hurtVoiceLines: []
+  skillCastVoiceLines: []
   lockShadowProjectorTransform: 1
   shadowLocalPosition: {x: 0, y: -0.02, z: 0}
   shadowLocalEuler: {x: 0, y: 0, z: 0}
@@ -76,7 +84,7 @@ MonoBehaviour:
   autoOverheadNameVisibility: 1
   manualShowOverheadName: 0
   overheadHpBarStyle: {fileID: 11400000, guid: 5359b53c975f08f4bb8a7d16dbe9d995, type: 2}
-  overrideCollisionShape: 1
+  overrideCollisionShape: 0
   collisionLocalCenter: {x: 0, y: 0.7, z: 0}
   collisionRadius: 0.6
   collisionHeight: 1.2

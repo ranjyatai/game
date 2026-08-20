@@ -66,7 +66,11 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
     [SerializeField] private bool sprintReleasedAfterLastTap = true;
     [SerializeField] private float suppressRunUntil = -999f;
     [SerializeField] private string lastInputEvent = "";
-    [SerializeField] private Vector2 lastKnownFacingInput = Vector2.right;
+    // 字段初始值本身就是"记住的朝向"的出厂默认值——项目约定角色出生默认朝左，
+    // 这里之前写死 Vector2.right，导致 ResolveCurrentFacingInput 里"用记住的旧值"
+    // 那个分支从游戏一开局就命中（因为这个值天生非零），根本轮不到后面任何一层
+    // 兜底修正，是这次闪避方向 bug 真正生效的那一处。
+    [SerializeField] private Vector2 lastKnownFacingInput = Vector2.left;
 
     [Header("武器切换滚轮")]
     [Tooltip("两次切换武器之间的最短间隔——鼠标滚轮快速连续滚动时，Input.mouseScrollDelta\n" +
@@ -173,7 +177,8 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
             // 背包叠加打开在上面）。背包键也要尊重这个标记，跟 Esc 键一样。
             // 但角色面板是"可以互相切换"的悬浮窗口（跟设置/暂停菜单那种真·模态不是一类），
             // 面板开着时按背包键应该照样能切过去，不该被面板自己造成的 ExternalBlock 挡住。
-            bool blockedByRealModal = SkyPrison.Runtime.UI.SkyPrisonWindowManager_V1.ExternalBlock && !CharacterPanelController.IsOpen;
+            bool blockedByRealModal = SkyPrison.Runtime.UI.SkyPrisonWindowManager_V1.ExternalBlock
+                && !CharacterPanelController.IsOpen && !QuestLogController.IsOpen;
             // 商店这类"真模态"prefab窗口(metadata.lockGameplayInput=true)开着的时候，
             // 背包/角色面板这些快捷键不该还能把别的窗口叠开在它上面——用户明确要求
             // "商店界面不应该允许按B打开背包，其他任何呼出的窗口都应该冻结"。这个跟
@@ -195,12 +200,27 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
             // 只有设置/暂停菜单这种真·模态开着时才真正挡住 C 键。
             if (settingsEarly.GetActionDown(SkyPrisonInputAction.CharacterPanel) && !blockedByRealModal && !blockedByLockingWindow)
             {
-                // 同理，按 C 是"切换到角色面板"，背包开着的话先关掉背包再开面板。
+                // 同理，按 C 是"切换到角色面板"，背包/任务日志开着的话先关掉再开面板。
                 if (!CharacterPanelController.IsOpen && windowManager != null && windowManager.IsOpen("inventory"))
                     windowManager.Close("inventory");
+                if (!CharacterPanelController.IsOpen && QuestLogController.IsOpen)
+                    QuestLogController.Hide();
 
                 CharacterPanelController.Toggle();
                 lastInputEvent = "CharacterPanel";
+            }
+
+            // 任务日志跟角色面板同一类"纯代码悬浮窗"，同一套 blockedByRealModal 放行逻辑
+            // （自己造成的 ExternalBlock 不该挡住自己的关闭键）。
+            if (settingsEarly.GetActionDown(SkyPrisonInputAction.QuestLog) && !blockedByRealModal && !blockedByLockingWindow)
+            {
+                if (!QuestLogController.IsOpen && windowManager != null && windowManager.IsOpen("inventory"))
+                    windowManager.Close("inventory");
+                if (!QuestLogController.IsOpen && CharacterPanelController.IsOpen)
+                    CharacterPanelController.Hide();
+
+                QuestLogController.Toggle();
+                lastInputEvent = "QuestLog";
             }
 
             // 致命报错弹窗（SkyPrisonErrorReporter.ShowFatalDialog）打开时也会把 ExternalBlock
@@ -218,10 +238,23 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
                 // 恢复了部分状态，就是之前商店按钮点击失灵那个bug的根源）。改成通用判断，
                 // 只要还有窗口开着就先关（正常情况下同一时间只会有一个），全部关掉之后
                 // 再按才轮到暂停菜单。
+                // 角色面板/任务日志是不走 windowManager 的"纯代码悬浮窗"，上面那个
+                // HasAnyWindowOpen() 完全看不到它们——之前漏了这两个，导致按C/L打开
+                // 面板后再按Esc，windowManager视角里"没有窗口开着"，直接跳去开暂停菜单，
+                // 变成面板叠在暂停菜单背后关不掉。跟 prefab 窗口一样，Esc 优先关自己，
+                // 全部关掉之后再按才轮到暂停菜单。
                 if (windowManager != null && windowManager.HasAnyWindowOpen())
                 {
                     foreach (string key in windowManager.OpenedWindowKeys)
                         windowManager.Close(key);
+                }
+                else if (CharacterPanelController.IsOpen)
+                {
+                    CharacterPanelController.Hide();
+                }
+                else if (QuestLogController.IsOpen)
+                {
+                    QuestLogController.Hide();
                 }
                 else
                 {
@@ -375,15 +408,11 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
             }
             else if (!windowBlocking && lightAttackDown)
             {
-                bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestLightAttack();
-                if (canAttack) actionController.RequestLightAttack();
-                lastInputEvent = "LightAttack";
+                RequestLightAttackWithBuffering();
             }
             else if (!windowBlocking && heavyAttackDown)
             {
-                bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestHeavyAttack();
-                if (canAttack) actionController.RequestHeavyAttack();
-                lastInputEvent = "HeavyAttack";
+                RequestHeavyAttackWithBuffering();
             }
 
             // 空中攻击输入缓冲补发：独立于上面那条 if/else-if 链，每帧都检查一次——
@@ -415,9 +444,7 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
                     _sharedAttackKeyPending = false;
                     if (!windowBlocking)
                     {
-                        bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestLightAttack();
-                        if (canAttack) actionController.RequestLightAttack();
-                        lastInputEvent = "LightAttack";
+                        RequestLightAttackWithBuffering();
                     }
                 }
                 else if (windowBlocking)
@@ -428,9 +455,7 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
                 else if (Time.time - _sharedAttackKeyPressTime >= sharedAttackKeyHoldThreshold)
                 {
                     _sharedAttackKeyPending = false;
-                    bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestHeavyAttack();
-                    if (canAttack) actionController.RequestHeavyAttack();
-                    lastInputEvent = "HeavyAttack";
+                    RequestHeavyAttackWithBuffering();
                 }
             }
 
@@ -513,11 +538,14 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
         }
         else
         {
-            // 按快捷键切换是"换到这个窗口"，不是叠加——角色面板开着的话先关掉再开背包。
-            // 从角色面板里点装备槽打开背包（CharacterPanelController.OpenInventoryToEquip）
-            // 走的是完全独立的另一条路径，不受这里影响，那边就是要两个一起开着。
+            // 按快捷键切换是"换到这个窗口"，不是叠加——角色面板/任务日志开着的话先关掉
+            // 再开背包。从角色面板里点装备槽打开背包（CharacterPanelController.
+            // OpenInventoryToEquip）走的是完全独立的另一条路径，不受这里影响，那边就是
+            // 要两个一起开着。
             if (CharacterPanelController.IsOpen)
                 CharacterPanelController.Hide();
+            if (QuestLogController.IsOpen)
+                QuestLogController.Hide();
 
             SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Open);
             windowManager.Open(inventoryPrefab);
@@ -568,16 +596,12 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
 
         if (!windowBlockingFallback && Input.GetKeyDown(fallbackLightAttackKey))
         {
-            bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestLightAttack();
-            if (canAttack) actionController.RequestLightAttack();
-            lastInputEvent = "LightAttack";
+            RequestLightAttackWithBuffering();
         }
 
         if (!windowBlockingFallback && Input.GetKeyDown(fallbackHeavyAttackKey))
         {
-            bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestHeavyAttack();
-            if (canAttack) actionController.RequestHeavyAttack();
-            lastInputEvent = "HeavyAttack";
+            RequestHeavyAttackWithBuffering();
         }
 
         if (Input.GetKeyUp(fallbackHeavyAttackKey))
@@ -641,6 +665,54 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
         lastSprintTapTime = Time.time;
         sprintReleasedAfterLastTap = false;
         lastInputEvent = "SprintDown";
+    }
+
+    /// <summary>
+    /// 连点攻击时，硬直期间按下的键之前会在这里直接判 canAttack=false 就什么也不做——
+    /// UnitActionController.RequestAttack() 里现成的"硬直期间缓冲、硬直结束自动补发"
+    /// 机制从来没被触发过，因为触发它的调用（actionController.RequestLightAttack()）
+    /// 在 canAttack=false 时被跳过了。玩家的直观感受就是"连续攻击有一下按了没反应"。
+    ///
+    /// 修法：先单独查 CanEnterAttackPublic()。硬直中就不再调
+    /// TryPlayerRequestLightAttack()（反正会因为同一个原因失败），直接调
+    /// actionController.RequestLightAttack()，让它自己的缓冲机制接住这次输入；硬直
+    /// 结束后由 UnitActionModuleRuntime.HandleBufferedAttackReady 重新走一遍
+    /// TryPlayerRequestLightAttack() 补选技能/扣LP，不会跳过选定逻辑。
+    /// 不在硬直中时行为不变。
+    /// </summary>
+    private void RequestLightAttackWithBuffering()
+    {
+        if (actionController == null)
+            return;
+
+        if (!actionController.CanEnterAttackPublic())
+        {
+            actionController.RequestLightAttack();
+            lastInputEvent = "LightAttack(Buffered)";
+            return;
+        }
+
+        bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestLightAttack();
+        if (canAttack) actionController.RequestLightAttack();
+        lastInputEvent = "LightAttack";
+    }
+
+    /// <summary>重攻击版本，理由同 RequestLightAttackWithBuffering。</summary>
+    private void RequestHeavyAttackWithBuffering()
+    {
+        if (actionController == null)
+            return;
+
+        if (!actionController.CanEnterAttackPublic())
+        {
+            actionController.RequestHeavyAttack();
+            lastInputEvent = "HeavyAttack(Buffered)";
+            return;
+        }
+
+        bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestHeavyAttack();
+        if (canAttack) actionController.RequestHeavyAttack();
+        lastInputEvent = "HeavyAttack";
     }
 
     private void RequestDodgeFromCurrentInput(string source, bool noMoveForward)
@@ -731,7 +803,13 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
         if (lastKnownFacingInput.sqrMagnitude > 0.0001f)
             return lastKnownFacingInput.normalized;
 
-        return Vector2.right;
+        // 刚进游戏、从没输入过方向时，上面全部落空，最后落到这里。之前直接写死
+        // Vector2.right——但项目约定角色出生时默认朝向是"左"，这个假朝向跟约定正好
+        // 反了：闪避的前/后判定用它算 dot，方向语义算反，播放的动画和玩家按键方向对
+        // 不上（位移本身不受这个假朝向影响，因为位移始终跟随原始输入，见
+        // RequestDodgeFromCurrentInput 里"位移方向仍然尊重玩家输入"那条注释）——
+        // 表现正是"刚进游戏第一次闪避，动画放的是前闪，人却往后挪"。
+        return Vector2.left;
     }
 
     private void ResetSprintTapState()

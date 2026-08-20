@@ -334,6 +334,7 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
         EnsureCombatRuntimeForDefinition(ud);
         EnsureUnitAudioForDefinition(ud);
         EnsureAIBehaviorRuntimeForDefinition(ud);
+        EnsureNPCDialogueInteractableForDefinition(ud);
         EnsurePerceptionRuntimeForDefinition(ud);
         EnsureVisualRuntimeUtilityComponentsForDefinition(ud);
 
@@ -359,6 +360,22 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
                                  && ud.characterIdentity != CharacterIdentity.Player;
         if (isNonPlayerCharacter && GetComponent<UnitLODSleepController>() == null)
             gameObject.AddComponent<UnitLODSleepController>();
+
+        // 角色环境受光接收器——所有角色单位自动挂。
+        //
+        // Spine 角色的着色器完全不采样光照(2D手绘精灵图走法线光照会毁掉手绘的明暗
+        // 关系)，所以角色明暗只能靠这个组件把场景光照喂给 shader 的
+        // _SkyPrison_EnvTint/_SkyPrison_EnvDarken 接口。不挂的话，环境调得再暗
+        // 角色都是死白的，地下场景直接崩。
+        //
+        // 之所以做成自动挂而不是让人往预制体上拖：这套东西(shader接口 + 组件)
+        // 2026-07-18 就写完了，但因为从来没人挂过，整整两个月一次都没生效过。
+        // 靠"记得挂"的机制迟早会漏，尤其是以后加新单位的时候。
+        if (ud.defineType == UnitDefineType.Character
+            && GetComponent<SkyPrisonCharacterEnvironmentLightReceiver>() == null)
+        {
+            gameObject.AddComponent<SkyPrisonCharacterEnvironmentLightReceiver>();
+        }
 
         lastAppliedDefinition = ud;
         hasAppliedOnce = true;
@@ -908,6 +925,10 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
             GameObject go = new GameObject(string.IsNullOrWhiteSpace(unitAudioRootName) ? "AudioRoot" : unitAudioRootName);
             UndoSafeSetParent(go.transform, transform);
             ResetLocalTransform(go.transform);
+            // new GameObject(...) 默认落在 Default 层——这个项目的摄像机/渲染管线不处理
+            // Default 层，任何新建子物体不显式继承单位本体的层都等于"隐形"，这是反复踩的坑，
+            // 这里必须跟着 unit 根节点的层走，不能让它停在 Unity 的默认值。
+            go.layer = gameObject.layer;
             unitAudioRoot = go.transform;
 
             if (debugLogs)
@@ -926,6 +947,7 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
             GameObject go = new GameObject(string.IsNullOrWhiteSpace(footstepAudioPointName) ? "FootstepAudioPoint" : footstepAudioPointName);
             UndoSafeSetParent(go.transform, parent);
             ResetLocalTransform(go.transform);
+            go.layer = parent.gameObject.layer;
             footstepAudioPoint = go.transform;
 
             if (debugLogs)
@@ -1321,6 +1343,50 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
             movementController.SetInputMode(UnitMovementController.MovementInputMode.External);
     }
 
+    // NPCDialogueDefinition配了的话自动挂 NPCDialogueInteractable 并把资产喂进去——
+    // 用户明确要求"不希望在地图上一个个手动挂组件"，对话能力跟着单位定义走，
+    // 跟AI行为包(EnsureAIBehaviorRuntimeForDefinition)是完全同一个套路。
+    //
+    // 用户明确要求"确保只有友军身份才能对话"——防呆：万一手滑在敌人/BOSS这类
+    // 单位上配了dialogue字段，不该让敌人也能被玩家"交谈"。身份判定复用
+    // UnitDefinition.ResolveCharacterOutline() 已有的Ally分组(Ally/中立无敌意/生物)，
+    // 不用另起一套身份枚举映射。
+    private static bool IsFriendlyIdentity(CharacterIdentity identity) => identity switch
+    {
+        CharacterIdentity.Ally => true,
+        CharacterIdentity.NeutralPassive => true,
+        CharacterIdentity.Creature => true,
+        _ => false,
+    };
+
+    private void EnsureNPCDialogueInteractableForDefinition(UnitDefinition ud)
+    {
+        if (ud == null) return;
+
+        var dialogueInteractable = GetComponent<NPCDialogueInteractable>();
+        bool isFriendly = ud.defineType == UnitDefineType.Character && IsFriendlyIdentity(ud.characterIdentity);
+        bool shouldHaveDialogue = ud.dialogue != null && isFriendly;
+
+        if (ud.dialogue != null && !isFriendly)
+            Debug.LogWarning($"[UnitDefinitionRuntimeApplier] {name}: UnitDefinition '{ud.name}' 配了 dialogue 但身份不是友军" +
+                $"(characterIdentity={ud.characterIdentity})，已忽略，不会挂 NPCDialogueInteractable。", this);
+
+        if (dialogueInteractable == null && shouldHaveDialogue)
+        {
+            dialogueInteractable = gameObject.AddComponent<NPCDialogueInteractable>();
+            if (debugLogs)
+                Debug.Log($"[UnitDefinitionRuntimeApplier] {name}: Auto added NPCDialogueInteractable.", this);
+        }
+
+        if (dialogueInteractable == null) return;
+
+        if (shouldHaveDialogue)
+        {
+            dialogueInteractable.SetDialogue(ud.dialogue);
+            dialogueInteractable.SetNpcUnitDefinition(ud);
+        }
+    }
+
     private void ApplyToOverheadUI(UnitDefinition ud)
     {
         if (overheadView == null)
@@ -1328,6 +1394,11 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
 
         if (overheadView != null)
         {
+            // 有些老预制体这个组件在prefab里被禁用(不知道什么年代的历史遗留)，
+            // 禁用的组件Unity不会跑LateUpdate，头顶UI的朝向/高度这些每帧逻辑就
+            // 全部失效——不依赖prefab里那个勾选框到底是不是对的，绑定单位定义
+            // 的时候直接强制打开，一次性解决"到底改没改对"这个问题。
+            overheadView.enabled = true;
             overheadView.unitDefinition = ud;
             overheadView.ApplyStyleFromDefinition();
         }
@@ -1455,7 +1526,11 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
     // 填充式效果只需要"是否被遮挡"这一个信号，不需要找边缘，天生没有这个问题。
     // 颜色沿用同一套阵营配色，跟掉落物本来就有的全息效果（LootDropHologram.shader）
     // 风格统一。
-    private static Color ResolveHologramFillColorForGroup(OutlineGroup group)
+    // 公开出来给 UnitDefinitionRuntimeBinder.RefreshModel3DBindingsIfPossible 复用——
+    // 3D 通道单位（Destructible/Item 类型场景物）不走 Character 才会跑的
+    // ApplyToOcclusionReceiver 那条自动配色路径，但阵营配色表不该另开一份，同一份
+    // 颜色两处各写一次迟早会跑偏。
+    public static Color ResolveHologramFillColorForGroup(OutlineGroup group)
     {
         switch (group)
         {
@@ -1967,6 +2042,13 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
         return objectName;
     }
 
+    // 这里必须是真正按材质实例(new Material(...))逐个复制，不能只复制数组容器——
+    // 之前只 new 了外层数组、每个元素还是同一个 Material 对象引用，多个共用同一份
+    // Spine骨骼/贴图的单位(比如玩家Axia和NPC琪亚拉，两者视觉资产完全共用)会被
+    // FindBestOcclusionCompositeMaterial 按贴图匹配扫到同一个材质资产文件，
+    // ApplyHiddenOutlineColorForFaction 再给其中一个上阵营色时，等于连带把另一个
+    // 单位、乃至磁盘上这份材质资产本身都改了颜色——这正是"玩家颜色又变了"反复
+    // 出现的根本原因，不是阵营判定逻辑的问题，是材质实例没有真正独立。
     private static Material[] CloneMaterials(Material[] source)
     {
         if (source == null)
@@ -1974,7 +2056,7 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
 
         Material[] clone = new Material[source.Length];
         for (int i = 0; i < source.Length; i++)
-            clone[i] = source[i];
+            clone[i] = source[i] != null ? new Material(source[i]) : null;
         return clone;
     }
 
@@ -2075,7 +2157,15 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
 
         if (!ud.overrideCollisionShape)
         {
-            ApplyDefaultCapsuleShape();
+            // 关掉手动 override 就是明确要交给"按 Spine 可见包围盒自动量取"来定形状——
+            // 这里不能先套一个写死的兜底胶囊（1.8 高 / 0.35 半径）再等自动量取纠正。
+            // ApplyDefinition 在生成流程里会被调用不止一次，每次都重新走到这里；
+            // 只要有任何一次重置发生在"自动量取协程完成"之后、"下一次重新调度"之前，
+            // 写死的兜底值就会成为最终定型——不是自动量取没跑，是它跑完之后又被这行
+            // 覆盖回去了。真正的兜底交给 ShouldAutoCalibrateCapsule 内部判断：量不到
+            // Spine 包围盒时它自己会保留调用前的胶囊状态，不需要这里先垫一个假值。
+            if (!ShouldAutoCalibrateCapsule(ud))
+                ApplyDefaultCapsuleShape();
             return;
         }
 
@@ -2268,35 +2358,59 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
     private bool TryGetRealVisualWorldBounds(out Bounds result)
     {
         result = default(Bounds);
-
-        Transform visualRoot = FindVisualRootForOcclusion();
-        if (visualRoot == null)
-            return false;
-
-        Renderer[] renderers = visualRoot.GetComponentsInChildren<Renderer>(true);
         bool hasAny = false;
 
-        for (int i = 0; i < renderers.Length; i++)
+        // 角色的 Spine 渲染在运行时会把材质换成遮挡合成着色器（见 CLAUDE.md：自定义遮挡
+        // 合成着色器），IsRealUnitVisualRenderer 按材质/着色器名字过滤，专门排除掉名字
+        // 里带 occlusioncomposite 的东西——本意是排除"遮挡描边代理"那类附加渲染，结果连
+        // 角色本体的 SkeletonAnimation 主渲染器也被换了材质之后一起排除掉了。表现就是
+        // 胶囊体量出来的包围盒只剩下没被这条规则误伤的零星小渲染器，胶囊比人矮一大截。
+        // 真正的骨骼渲染器身份已经有 FindRealSkeletonAnimation() 精确定位（专门排掉
+        // OutlineProxy），不需要靠材质名字猜——直接拿它的网格包围盒，不经过材质过滤。
+        SkeletonAnimation realSkeleton = FindRealSkeletonAnimation();
+        if (realSkeleton != null)
         {
-            Renderer r = renderers[i];
-            if (r == null || !r.enabled)
-                continue;
-
-            if (!IsRealUnitVisualRenderer(r))
-                continue;
-
-            Bounds b = r.bounds;
-            if (b.size.sqrMagnitude <= 0.000001f)
-                continue;
-
-            if (!hasAny)
+            var skeletonRenderer = realSkeleton.GetComponent<Renderer>();
+            if (skeletonRenderer != null && skeletonRenderer.enabled)
             {
-                result = b;
-                hasAny = true;
+                Bounds skB = skeletonRenderer.bounds;
+                if (skB.size.sqrMagnitude > 0.000001f)
+                {
+                    result = skB;
+                    hasAny = true;
+                }
             }
-            else
+        }
+
+        Transform visualRoot = FindVisualRootForOcclusion();
+        if (visualRoot != null)
+        {
+            Renderer[] renderers = visualRoot.GetComponentsInChildren<Renderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
             {
-                result.Encapsulate(b);
+                Renderer r = renderers[i];
+                if (r == null || !r.enabled)
+                    continue;
+
+                if (realSkeleton != null && r.transform == realSkeleton.transform)
+                    continue; // 已经用未过滤的方式量过了，不要再被材质过滤规则挡掉。
+
+                if (!IsRealUnitVisualRenderer(r))
+                    continue;
+
+                Bounds b = r.bounds;
+                if (b.size.sqrMagnitude <= 0.000001f)
+                    continue;
+
+                if (!hasAny)
+                {
+                    result = b;
+                    hasAny = true;
+                }
+                else
+                {
+                    result.Encapsulate(b);
+                }
             }
         }
 

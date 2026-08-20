@@ -147,7 +147,12 @@ public class UnitActionController : MonoBehaviour
         "攻击。不这样做的话，玩家没能精确卡在硬直结束那一瞬间点击，这次输入就白按了，" +
         "连点攻击会感觉像是反复吞键位/按键失灵。这个数值是缓冲的最长有效期（太久之前" +
         "点的就不再补发了，防止隔了很久突然冒出一次奇怪的攻击）。")]
-    [SerializeField] private float attackInputBufferSeconds = 0.6f;
+    // 消费缓冲时按"这次按键离硬直真正解锁还有多久"来判定，不是"离按键过了多久"——
+    // TryConsumeBufferedAttack 在解锁那一刻才会跑，Time.time 已经等于解锁时刻，所以
+    // 这个数字实际圈定的是"硬直结束前的最后这一小段窗口"。原来给的 0.6 秒相对一次
+    // 0.9~1.5 秒的挥砍来说太宽——挥砍大半程按的都会被记住补发，玩家点一下就想走，
+    // 却因为半程里蹭到的一次输入被迫又多打一下。收窄到只有快结束那一小段才算数。
+    [SerializeField] private float attackInputBufferSeconds = 0.2f;
     private AttackRequestKind _bufferedAttackKind = AttackRequestKind.None;
     private float _bufferedAttackRequestTime = -999f;
 
@@ -573,10 +578,19 @@ public class UnitActionController : MonoBehaviour
         EnterAttack(kind);
     }
 
+    /// <summary>每次真正进入攻击状态（EnterAttack）就自增——玩家和AI两条攻击路径最终
+    /// 都必经这里，不像 UnitActionModuleRuntime.AttackRequestSequence 只有AI专用的
+    /// RequestLightAttack/RequestHeavyAttack 会碰到，玩家常用的
+    /// TryPlayerRequestLightAttack 完全不会让那个序号变化。SpineAnimationDriver 用这个
+    /// 序号判断"这是不是一次全新的攻击"，比对比动画名字字符串可靠——同一把只有一段连击
+    /// 的武器，新旧两次攻击动画名字完全相同，光比名字分不出来。</summary>
+    public int EnterAttackGeneration { get; private set; }
+
     private void EnterAttack(AttackRequestKind kind)
     {
         currentState = UnitActionState.Attack;
         currentAttackKind = kind;
+        EnterAttackGeneration++;
         // 锁到动画播完为止，由 SpineAnimationDriver 的 TrackEntry.Complete 事件调用 NotifyAttackAnimationComplete 解锁。
         // lightAttackLockSeconds/heavyAttackLockSeconds 这两个配置值不能当真实动画时长
         // 来用——不同武器/攻击动作时长本来就不统一，写死成这两个固定数字，要么比真实
