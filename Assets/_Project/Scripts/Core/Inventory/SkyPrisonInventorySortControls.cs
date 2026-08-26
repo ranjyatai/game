@@ -133,7 +133,7 @@ namespace SkyPrison.Runtime.UI
             _font = FindUsableFont();
 
             // 下拉框：加文字标签 + 点击弹列表
-            _dropdownLabel = EnsureLabel(sortDropdown, "Label", 18);
+            _dropdownLabel = EnsureLabel(sortDropdown, "Label", 22);
             Button ddBtn = sortDropdown.GetComponent<Button>() ?? sortDropdown.gameObject.AddComponent<Button>();
             ddBtn.transition = Selectable.Transition.None;
             ddBtn.onClick.RemoveAllListeners();

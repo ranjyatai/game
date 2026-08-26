@@ -57,9 +57,14 @@ public class InventoryItemEntry
         if (def?.equipment != null && def.equipment.maxDurability > 0)
             currentDurability = def.equipment.maxDurability;
 
-        // 热武器掉落/生成时默认满弹匣
+        // 2026-08-25：之前这里是"掉落/生成时默认满弹匣"——每次捡到/拿到一把吃弹药的
+        // 热武器，不管背包里有没有对应口径的备用弹药，都会凭空多出一整弹匣的弹药，
+        // 跟"弹匣弹药也是背包弹药总量一部分"的设计矛盾（凭空多出来的这部分从没真正
+        // 从背包扣过）。改成 0（参与弹匣系统但初始是空的），弹药只能靠玩家实际按
+        // 换弹键、从背包已有的备用弹药里真正装填进来——跟 UpdateReloadCompletion
+        // 换弹逻辑本来就有的"从背包扣、填进弹匣"这条路完全一致，不再有例外的免费入口。
         if (def?.equipment != null && def.equipment.usesAmmo && def.equipment.magazineSize > 0)
-            currentMagazineAmmo = def.equipment.magazineSize;
+            currentMagazineAmmo = 0;
 
         // 装备掉落时从配色方案列表里随机抽一套初始化；没配方案的话给中性白
         // （乘法叠色下=不改变原图）
@@ -77,7 +82,10 @@ public class InventoryItemEntry
     public bool IsEmpty    => definition == null || count <= 0;
     public bool IsStackFull => definition != null && count >= definition.maxStackCount;
     public int  StackRoom  => definition != null ? definition.maxStackCount - count : 0;
-    public bool CanDiscard => definition != null && definition.canDiscard && !definition.isKeyItem;
+    // 任务物品/重要物品按分类强制不可丢弃，不看资产上那个默认为true的手动
+    // 勾选框(见 ItemDefinition.CanBeDiscarded)。丢弃的几条入口(背包右键菜单、
+    // 仓库右键菜单、InventoryRuntime.Discard)都收敛到这一个属性上。
+    public bool CanDiscard => definition != null && definition.CanBeDiscarded;
 
     // ── 改装槽便捷查询 ────────────────────────────────────────────────────
 

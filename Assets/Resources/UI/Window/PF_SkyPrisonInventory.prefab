@@ -1027,7 +1027,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 572b17f3644bc2744bb45bf6b05dab2b, type: 3}
-    m_FontSize: 22
+    m_FontSize: 26
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -5145,7 +5145,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 202, y: 0}
+  m_AnchoredPosition: {x: 226, y: 0}
   m_SizeDelta: {x: 36, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!222 &8153931946419935071
@@ -5202,6 +5202,9 @@ MonoBehaviour:
   flashColor: {r: 0.62, g: 1, b: 0.82, a: 1}
   flashDuration: 0.35
   minAlphaToTint: 0.04
+  enableHoverTint: 1
+  playClickSE: 1
+  _targets: []
 --- !u!1 &1600140383071595721
 GameObject:
   m_ObjectHideFlags: 0
@@ -5532,7 +5535,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 52}
+  m_SizeDelta: {x: 0, y: 60}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!222 &6010942846382568566
 CanvasRenderer:
@@ -6558,7 +6561,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 12, y: 0}
-  m_SizeDelta: {x: 40, y: 0}
+  m_SizeDelta: {x: 64, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!222 &3250750490527247237
 CanvasRenderer:
@@ -6590,7 +6593,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 572b17f3644bc2744bb45bf6b05dab2b, type: 3}
-    m_FontSize: 19
+    m_FontSize: 23
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -8538,7 +8541,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 572b17f3644bc2744bb45bf6b05dab2b, type: 3}
-    m_FontSize: 20
+    m_FontSize: 24
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -12657,7 +12660,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 572b17f3644bc2744bb45bf6b05dab2b, type: 3}
-    m_FontSize: 21
+    m_FontSize: 25
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -13843,8 +13846,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
-  m_fontSizeBase: 18
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -14536,7 +14539,7 @@ MonoBehaviour:
   closeButton: {fileID: 4007629791921071899}
   tabFont: {fileID: 11400000, guid: 0ee3015215d94984bb4290c4d1a6005d, type: 2}
   selectedTabIndex: 0
-  tabFontSize: 18
+  tabFontSize: 22
   selectedFaceColor: {r: 1, g: 1, b: 1, a: 1}
   normalColor: {r: 0.66, g: 0.66, b: 0.68, a: 1}
   glowColor: {r: 0.42, g: 0.92, b: 0.68, a: 1}
@@ -16163,6 +16166,9 @@ MonoBehaviour:
   flashColor: {r: 0.62, g: 1, b: 0.82, a: 1}
   flashDuration: 0.35
   minAlphaToTint: 0.04
+  enableHoverTint: 1
+  playClickSE: 1
+  _targets: []
 --- !u!114 &517754011812456175
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16931,8 +16937,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
-  m_fontSizeBase: 18
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -17068,8 +17074,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
-  m_fontSizeBase: 18
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -17707,7 +17713,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 54, y: 0}
+  m_AnchoredPosition: {x: 78, y: 0}
   m_SizeDelta: {x: 140, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!222 &6122440207451148588
@@ -17764,6 +17770,9 @@ MonoBehaviour:
   flashColor: {r: 0.62, g: 1, b: 0.82, a: 1}
   flashDuration: 0.35
   minAlphaToTint: 0.04
+  enableHoverTint: 1
+  playClickSE: 1
+  _targets: []
 --- !u!1 &4987034402916933448
 GameObject:
   m_ObjectHideFlags: 0
@@ -20679,7 +20688,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 14, y: 0}
-  m_SizeDelta: {x: 46, y: 0}
+  m_SizeDelta: {x: 70, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!222 &2729327600027690739
 CanvasRenderer:
@@ -20711,7 +20720,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 572b17f3644bc2744bb45bf6b05dab2b, type: 3}
-    m_FontSize: 22
+    m_FontSize: 26
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -20817,6 +20826,9 @@ MonoBehaviour:
   flashColor: {r: 0.62, g: 1, b: 0.82, a: 1}
   flashDuration: 0.35
   minAlphaToTint: 0.04
+  enableHoverTint: 1
+  playClickSE: 1
+  _targets: []
 --- !u!114 &4007629791921071899
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21409,8 +21421,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
-  m_fontSizeBase: 18
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -24431,8 +24443,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
-  m_fontSizeBase: 18
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -29247,8 +29259,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
-  m_fontSizeBase: 18
+  m_fontSize: 22
+  m_fontSizeBase: 22
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18

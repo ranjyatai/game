@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec1499d3abecbed4e8e3a37f4bf24732, type: 3}
+  m_Name: AM_NewModule 1
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponCombatModule
+  moduleKey: gun
+  displayName: "\u53CC\u67AA"
+  description: 
+  lightAttackCombo:
+  - {fileID: 11400000, guid: fe88541e7d5a4fe3a61a8e0a8ec9c98e, type: 2}
+  heavyAttack: {fileID: 0}
+  dodgeThrustAttack: {fileID: 0}
+  dodgeThrustOpenAfterFraction: 0.6
+  allowAttackCancelDodgeBack: 0
+  aerialAttack: {fileID: 0}
+  swingSE:
+  - clip: {fileID: 8300000, guid: d8aefc88fe45b2f4899e2f6ba329ff16, type: 3}
+    volume: 1
+  - clip: {fileID: 8300000, guid: 2429d73b8dbd77d4ca50e701e64a506c, type: 3}
+    volume: 1
+  - clip: {fileID: 8300000, guid: 74ce73f298a28504aba6bc6276c2bcd5, type: 3}
+    volume: 1
+  - clip: {fileID: 8300000, guid: 6995f6ae335d613449a6a9aa4d496330, type: 3}
+    volume: 1
+  hitSE: []
+  whiffSE: []
+  reloadSE:
+  - clip: {fileID: 8300000, guid: 6bdfbc51a11a422392e78daed072f9cc, type: 3}
+    volume: 1
+  dryFireSE:
+  - clip: {fileID: 8300000, guid: 40a4776ebdc64902ac33e7bd31d29039, type: 3}
+    volume: 1
+  seVolume: 1
+  blockAttackWhileSprintOrSneak: 1
+  autoFireLightAttackWhileHeld: 1
+  handPoseAnimationKey: Hand/Hand_Gun
+  magazineDropPrefab: {fileID: 0}
+  magazineDropSpawnOffset: {x: 0.3, y: 1.1}
+  magazineDropLandOffset: {x: 0.15, y: -0.9}
+  locomotionOverride:
+    idle:
+    walk:
+    run: Run/Run_Gun
+    jump:
+    land:
+    crouch:
+  weaponTipSlotNames:
+  - '{fx_tip}gun_kyougokuType05_L'
+  - '{fx_tip}gun_kyougokuType05_R'
+  muzzleFlashPrefab: {fileID: 7869721410366167709, guid: 3396c683ef4b7044c9d311dd66efc725, type: 3}
+  muzzleFlashScale: 8
+  shellEjectPrefab: {fileID: 6299801420339933890, guid: cd59c147a85deb34f87dfd853e568d9c, type: 3}
+  shellEjectScale: 5

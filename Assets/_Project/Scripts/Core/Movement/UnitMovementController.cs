@@ -498,8 +498,8 @@ public class UnitMovementController : MonoBehaviour
     public MovementInputMode InputMode => inputMode;
     public MovementApplyMode ApplyMode => movementApplyMode;
     public bool IsUsingExternalTerrainMotor => movementApplyMode == MovementApplyMode.ExternalTerrainMotor;
-    public bool IsRunHeld => inputMode == MovementInputMode.PlayerInput ? GetPlayerActionHeld(SkyPrisonInputAction.Sprint, KeyCode.LeftShift) : externalRunHeld;
-    public bool IsSneakHeld => inputMode == MovementInputMode.PlayerInput ? GetPlayerActionHeld(SkyPrisonInputAction.Sneak, KeyCode.LeftControl) : externalSneakHeld;
+    public bool IsRunHeld => Time.time < sprintSneakCancelUntil ? false : (inputMode == MovementInputMode.PlayerInput ? GetPlayerActionHeld(SkyPrisonInputAction.Sprint, KeyCode.LeftShift) : externalRunHeld);
+    public bool IsSneakHeld => Time.time < sprintSneakCancelUntil ? false : (inputMode == MovementInputMode.PlayerInput ? GetPlayerActionHeld(SkyPrisonInputAction.Sneak, KeyCode.LeftControl) : externalSneakHeld);
     public bool IsJumping => jumpState != JumpRuntimeState.None;
     public bool IsDodging => dodgeState != DodgeRuntimeState.None;
     /// <summary>蓄力攻击释放/闪避接突刺那段冲刺位移是否正在进行。跟 IsDodging 是完全独立
@@ -731,10 +731,33 @@ public class UnitMovementController : MonoBehaviour
         if (moveInput.sqrMagnitude > 1f)
             moveInput.Normalize();
 
+        // 射击覆盖奔跑/潜行期间：外部(InputRouter)每帧还是会把当前真实按键状态传进来，
+        // 这里强制按false收，不能只在IsRunHeld/IsSneakHeld的读取端拦——不然这个方法
+        // 存的externalRunHeld/externalSneakHeld本身还是true，下一帧没了suppress窗口
+        // 保护就立刻弹回奔跑/潜行，看起来像没生效。
+        if (Time.time < sprintSneakCancelUntil)
+        {
+            runHeld = false;
+            sneakHeld = false;
+        }
+
         input = moveInput;
         currentInput = input;
         externalRunHeld = runHeld;
         externalSneakHeld = sneakHeld;
+    }
+
+    private float sprintSneakCancelUntil = -999f;
+
+    /// <summary>射击优先级覆盖奔跑/潜行——武器模组勾了blockAttackWhileSprintOrSneak时，
+    /// 攻击不再是"按键无反应"的硬拦截，而是直接把奔跑/潜行状态取消掉、正常出招，见
+    /// UnitActionModuleRuntime.TryPlayerRequestLightAttack/HeavyAttack。用一个短暂的
+    /// 时间窗口而不是单帧清零，是因为潜行/奔跑键这一帧可能还按着，下一帧
+    /// PushMovementIntent又会读到原始按键状态重新把它们置回true，不加窗口的话取消
+    /// 效果只会存在一帧就被盖掉。</summary>
+    public void CancelSprintAndSneak(float suppressSeconds = 0.35f)
+    {
+        sprintSneakCancelUntil = Time.time + Mathf.Max(0f, suppressSeconds);
     }
 
     public void SetExternalMoveInput(Vector2 moveInput, bool runHeld = false)
@@ -3187,7 +3210,12 @@ public class UnitMovementController : MonoBehaviour
                 Mathf.Max(0f, heavyBurdenJumpHeightMultiplier),
                 t);
             data.canRun = true;
-            data.canDodge = false;
+            // 2026-08-26：闪避只应该在真正"超重"（下面 Overweight 档）才禁用——重负荷档
+            // 本来就已经在扣走路/跑步速度惩罚了，不该在这里再顺手把闪避也关掉。之前
+            // 这行(canDodge=false)混进重负荷档，实测排查过好几轮才确认：负重卡在
+            // 60%~85%之间时闪避完全打不出来，玩家一开始根本想不到是负重的锅，会
+            // 误以为是别的系统(切武器/攻击状态)在捣鬼。
+            data.canDodge = true;
             data.canJump = true;
             return data;
         }

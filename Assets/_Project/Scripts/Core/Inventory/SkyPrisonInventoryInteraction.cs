@@ -912,13 +912,50 @@ namespace SkyPrison.Runtime.UI
             if (entry?.definition == null) return;
             if (!entry.CanDiscard) return; // 重要 / 不可丢弃物品直接拦截
 
+            ItemDefinition def = entry.definition;
+
+            // 弹药按"总拥有量"（背包散装 + 所有该口径武器弹匣里已装填的部分）走单独
+            // 一条丢弃路径——点开某一格弹药丢弃时，允许请求的数量不再被"这一格里有
+            // 多少发"卡住，超出这一格/超出全部散装库存的部分会继续从弹匣里扣，弹药
+            // 才是真正按总量丢弃，而不是"背包扣完了、枪里还留着"。
+            bool isAmmo = def.category == ItemCategory.Material
+                       && def.materialSubCategory == MaterialSubCategory.Ammunition
+                       && def.ammo != null;
+
+            if (isAmmo)
+            {
+                AmmoCaliberType caliber = def.ammo.caliber;
+                int owned = inv.GetOwnedAmmoTotal(caliber);
+                ShowAmountPopup(L("ui_discard_title", "丢弃"), def.GetLocalizedDisplayName(), owned, owned,
+                    L("ui_discard_confirm", "确认"), amt =>
+                    {
+                        int discarded = inv.DiscardAmmoTotal(caliber, amt);
+                        if (discarded <= 0) return;
+                        Vector3 dropPos = GetPlayerDropPosition();
+                        var     dropped = LootDropWorldObject.SpawnDrop(def, discarded, dropPos);
+                        if (dropped != null)
+                        {
+                            GameObject unit = SkyPrisonPlayerAuthority.CurrentPlayerUnit?.gameObject;
+                            Vector3    tossOrigin = unit != null
+                                ? unit.transform.position + Vector3.up * 0.9f
+                                : dropPos + Vector3.up * 0.9f;
+                            LootDropTossEffect.Apply(dropped.gameObject, tossOrigin, dropped.transform.position);
+                        }
+                        SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.DropToGround);
+                    });
+                return;
+            }
+
             ShowAmountPopup(L("ui_discard_title", "丢弃"), entry.definition.GetLocalizedDisplayName(), entry.count, entry.count,
                 L("ui_discard_confirm", "确认"), amt =>
                 {
-                    ItemDefinition def = entry.definition;
+                    // 先打快照再丢——DiscardSlot 只改 entry.count，不动耐久/弹匣弹药/
+                    // 染色/改装件这些字段，顺序其实不影响正确性，但先快照更直观：
+                    // "丢弃"这个动作本来就该是"把这个实例原样扔出去"。
+                    var dropSource = entry;
                     inv.DiscardSlot(index, amt);
                     Vector3 dropPos  = GetPlayerDropPosition();
-                    var     dropped  = LootDropWorldObject.SpawnDrop(def, amt, dropPos);
+                    var     dropped  = LootDropWorldObject.SpawnDropFromEntry(dropSource, amt, dropPos);
                     if (dropped != null)
                     {
                         // 从角色腰部高度抛向落点

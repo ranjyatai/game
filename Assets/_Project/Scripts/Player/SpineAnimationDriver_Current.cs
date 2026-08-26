@@ -50,6 +50,7 @@ public class SpineAnimationDriver_Current : MonoBehaviour
     [SerializeField] private string attackAnimation = "attack";
     [SerializeField] private string hitAnimation = "hit";
     [SerializeField] private string deathAnimation = "die";
+    [SerializeField] private string reloadAnimation = "Reload";
     [SerializeField] private string blinkAnimation = "Eye";
 
     [Header("移动动画速度匹配")]
@@ -112,6 +113,7 @@ public class SpineAnimationDriver_Current : MonoBehaviour
     // 攻击，音效/连段逻辑正常但动画卡在原地不重播。代数变了就说明是全新的一次攻击
     // 请求，强制这次调用带 force=true，不管动画名字是否重复都从头重新播放。
     private int _lastSeenEnterAttackGeneration = -1;
+    private bool _wasDodgingLastFrame = false;
 
     // 重攻击(蓄力)专用的"上半身"叠加轨道。Track0是唯一的"身体轨道"，站立/走/跑/闪避/
     // 受击/死亡这些状态本来就要全身一起变，继续独占Track0；但重攻击蓄力期间用户明确
@@ -123,6 +125,35 @@ public class SpineAnimationDriver_Current : MonoBehaviour
     private const int HeavyAttackOverlayTrack = 2;
     private bool _heavyAttackOverlayActive = false;
     private string _lastHeavyOverlayAnimation = "";
+
+    // 诊断用只读入口，问题定位后可以删掉。
+    public bool IsHeavyAttackOverlayActive => _heavyAttackOverlayActive;
+    public float HeavyAttackOverlayTrackTimeScale
+    {
+        get
+        {
+            if (skeletonAnimation == null || skeletonAnimation.AnimationState == null) return -999f;
+            TrackEntry e = skeletonAnimation.AnimationState.GetTrack(HeavyAttackOverlayTrack);
+            return e != null ? e.TimeScale : -999f;
+        }
+    }
+    public float HeavyAttackOverlayTrackTime
+    {
+        get
+        {
+            if (skeletonAnimation == null || skeletonAnimation.AnimationState == null) return -999f;
+            TrackEntry e = skeletonAnimation.AnimationState.GetTrack(HeavyAttackOverlayTrack);
+            return e != null ? e.TrackTime : -999f;
+        }
+    }
+
+    // 手部姿势叠加轨道：Track0=身体，Track1=眨眼，Track2=重攻击叠加，这里用一条新的
+    // Track3，专门播 WeaponCombatModule.handPoseAnimationKey 指定的 Hand_xxx 动画
+    // （比如 Hand_Sword/Hand_Gun），跟身体动画同时播、互不冲突——前提同样是身体动画
+    // 不能碰手指骨骼，原理跟重攻击叠加轨道完全一样。不循环播放，摆到位就定格在那，
+    // 不需要每帧重播。
+    private const int HandPoseOverlayTrack = 3;
+    private string _lastHandPoseAnimation = "";
 
     [Header("Runtime Debug")]
     [SerializeField] private string currentBodyAnimation = "";
@@ -234,6 +265,31 @@ public class SpineAnimationDriver_Current : MonoBehaviour
 
         UpdateFacing();
         UpdateBodyAnimationFromActionState();
+        UpdateHandPoseOverlay();
+    }
+
+    /// <summary>
+    /// 按当前武器模组配置的 handPoseAnimationKey，把对应的 Hand_xxx 姿势动画播到独立的
+    /// 手部叠加轨道上——跟身体动画同时播，只要身体动画不碰手指骨骼就不会打架。名字没变
+    /// 就不重复调 SetAnimation（不循环播放的动画本来就会定格在最后一帧，不用每帧重播）。
+    /// </summary>
+    private void UpdateHandPoseOverlay()
+    {
+        if (actionModuleRuntime == null || skeletonAnimation == null || skeletonAnimation.AnimationState == null)
+            return;
+
+        string key = actionModuleRuntime.CurrentHandPoseAnimationKey;
+        if (string.IsNullOrWhiteSpace(key))
+            return;
+
+        if (IsSameAnimationName(_lastHandPoseAnimation, key))
+            return;
+
+        if (!HasAnimation(key))
+            return;
+
+        skeletonAnimation.AnimationState.SetAnimation(HandPoseOverlayTrack, key, false);
+        _lastHandPoseAnimation = key;
     }
 
     private void LateUpdate()
@@ -283,6 +339,7 @@ public class SpineAnimationDriver_Current : MonoBehaviour
         attackAnimation = NonEmpty(animationKeys.attackKey, attackAnimation);
         hitAnimation = NonEmpty(animationKeys.hitKey, hitAnimation);
         deathAnimation = NonEmpty(animationKeys.deathKey, deathAnimation);
+        reloadAnimation = NonEmpty(animationKeys.reloadKey, reloadAnimation);
 
         currentBodyAnimation = string.Empty;
         if (isActiveAndEnabled && skeletonAnimation != null && skeletonAnimation.AnimationState != null)
@@ -365,8 +422,36 @@ public class SpineAnimationDriver_Current : MonoBehaviour
 
     private void SetTrack0TimeScale(float scale)
     {
+        if (scale < 0f)
+        {
+            ApplyTrack0ReversePlayback(-scale);
+            return;
+        }
+
         TrackEntry t = GetTrack0();
         if (t != null) t.TimeScale = scale;
+    }
+
+    /// <summary>手动倒放Track0——之前直接给TrackEntry.TimeScale塞负数，实测这个Spine
+    /// 运行时版本不支持负TimeScale倒放，表现是脚步彻底停住不动(不是慢放，是完全冻结)：
+    /// Spine自己内部推进TrackTime用的应该是"trackTime += delta*timeScale"再对duration取
+    /// 模，负delta算出来的时间大概率落在取模规则处理不了的负区间，没能正确绕回
+    /// [0,duration)，直接卡死。改成自己接管：把Spine自己的自动推进冻结(TimeScale=0)，
+    /// 每帧手动把TrackTime往回减，环绕用((t%d)+d)%d这种能正确处理负数的写法自己算，
+    /// 不依赖Spine内部对负数的处理。</summary>
+    private void ApplyTrack0ReversePlayback(float speed)
+    {
+        TrackEntry t = GetTrack0();
+        if (t == null) return;
+
+        t.TimeScale = 0f;
+
+        float duration = t.Animation != null ? t.Animation.Duration : 0f;
+        if (duration <= 0.0001f) return;
+
+        float newTime = t.TrackTime - Time.deltaTime * Mathf.Max(0f, speed);
+        newTime = ((newTime % duration) + duration) % duration;
+        t.TrackTime = newTime;
     }
 
     // ── 朝向 ──────────────────────────────────────────────────────────────────
@@ -393,6 +478,19 @@ public class SpineAnimationDriver_Current : MonoBehaviour
         // 视觉朝向却还停在出生默认朝向、没来得及翻这一次的错位——表现就是"用了前闪
         // 动画但脸还朝着反方向"。放行这一帧让翻转赶上判定，之后的帧再正常冻结。
         if (movement.IsDodging && movement.CurrentDodgeElapsedSeconds > 0.0001f)
+            return;
+
+        // 2026-08-26：机枪式连发(loopWhileHeld，比如双枪)开火期间冻结朝向——这类武器
+        // Track0本来就允许真实走/跑(见UpdateHeavyAttackOverlay)，玩家可以边走边开枪，
+        // 但朝向如果还是照常跟着movement.FacingInput(移动方向)走，往后退着走的瞬间
+        // 朝向会跟着转成"背对着打"，等于没法一边后撤一边保持对着敌人开火。只冻结这一类
+        // 武器——近战攻击不受影响，近战本来就没有"边走边打"这个场景，朝向跟手感受输入
+        // 转向是预期内的。
+        bool isFiringLoopWhileHeldSkill = actionController != null
+            && actionController.CurrentState == UnitActionController.UnitActionState.Attack
+            && actionModuleRuntime != null && actionModuleRuntime.CurrentSkill != null
+            && actionModuleRuntime.CurrentSkill.loopWhileHeld;
+        if (isFiringLoopWhileHeldSkill)
             return;
 
         Vector2 input = movement.FacingInput;
@@ -429,10 +527,18 @@ public class SpineAnimationDriver_Current : MonoBehaviour
         bool isHeavyAttack = actionController != null
             && actionController.CurrentState == UnitActionController.UnitActionState.Attack
             && actionModuleRuntime != null && actionModuleRuntime.CurrentSkill != null
-            && actionModuleRuntime.CurrentSkill.isChargeSkill;
+            && (actionModuleRuntime.CurrentSkill.isChargeSkill || actionModuleRuntime.CurrentSkill.playOnUpperBodyOverlay);
 
         bool isCurrentlyAttacking = actionController != null
             && actionController.CurrentState == UnitActionController.UnitActionState.Attack;
+
+        // 2026-08-25：换弹之前是Track0整段播"Reload"这一条全身动画，不管玩家有没有在
+        // 移动都锁死腿部——UnitActionController那边其实早就允许换弹期间走动
+        // (currentState==Reload不锁locomotion)，只是动画这边没跟上，导致"允许走但脚
+        // 不动"。改成跟重攻击蓄力同一套上半身覆盖轨道方案：Track0继续播真实的站立/
+        // 走/跑，"Reload"动作单独播在HeavyAttackOverlayTrack上。
+        bool isReloading = actionController != null
+            && actionController.CurrentState == UnitActionController.UnitActionState.Reload;
 
         // 用 UnitActionController.EnterAttackGeneration 判断"这是不是一次全新的攻击"——
         // 之前用 UnitActionModuleRuntime.AttackRequestSequence，但那个序号只有AI专用的
@@ -447,6 +553,22 @@ public class SpineAnimationDriver_Current : MonoBehaviour
             force = true;
         }
 
+        // 2026-08-25：同一个坑，闪避这边也踩了一次——PlayByKey 有"跟currentBodyAnimation
+        // 同名就直接return、不重新SetAnimation"的优化(避免每帧重复setAnimation)。连续
+        // 两次前闪的动画Key是同一个字符串，如果上一次闪避(哪怕是很久以前的)恰好也是
+        // 同一个key、且期间没有被别的动画名字"冲掉"currentBodyAnimation缓存，这次新的
+        // 闪避请求会被当成"animation没变"直接吞掉——SetAnimation都没调用，后面
+        // ExtendDodgeLockDuration那段(在PlayByKey内，SetAnimation成功之后才会跑到)
+        // 自然也不会执行，闪避就卡在TryStartDodge给的那个50毫秒兜底时长上收不回真实
+        // 动画时长，表现就是"闪避变得极短"。用跟攻击那边一样的思路：闪避真正从
+        // "没在闪避"变成"正在闪避"的这一帧强制force=true，不依赖同名检测。
+        bool isDodgingNow = movement != null && movement.IsDodging;
+        if (!force && isDodgingNow && !_wasDodgingLastFrame)
+        {
+            force = true;
+        }
+        _wasDodgingLastFrame = isDodgingNow;
+
         // 只在真正处于 Attack 状态的这一帧才把代数标记成"已看到"，理由同上一版注释：
         // 避免"代数已经变了、但 CurrentState 还没来得及变成 Attack"的那一帧把变化提前
         // 消费掉。EnterAttackGeneration 在 EnterAttack() 里自增，跟 currentState 切换是
@@ -458,6 +580,12 @@ public class SpineAnimationDriver_Current : MonoBehaviour
         if (isHeavyAttack)
         {
             UpdateHeavyAttackOverlay(force);
+            return;
+        }
+
+        if (isReloading)
+        {
+            UpdateReloadOverlay(force);
             return;
         }
 
@@ -485,10 +613,18 @@ public class SpineAnimationDriver_Current : MonoBehaviour
         if (movement == null)
             return;
 
+        // 2026-08-26：射击期间朝向会被冻结(见UpdateFacing)，玩家可以按着"后退"方向键
+        // 边后撤边开火——这时候实际位移方向跟视觉朝向是背着的，腿部动画如果还是正向
+        // 播放(照"往前走"的跨步顺序播)，视觉上就是脚在原地打滑/moonwalk，跟身体真实
+        // 往后挪完全对不上。用实际水平速度方向跟当前朝向的点积判断，背向时把Track0
+        // 倒放(负TimeScale)，脚步顺序自然跟"往后挪"对上。朝向没被冻结的正常情况下，
+        // 移动方向本来就会带着朝向一起转，不会走到这个分支。
+        float directionSign = ResolveLocomotionDirectionSign();
+
         // 只对潜行生效——走/跑不套用这套速度匹配，见上面字段注释。
         if (lastResolvedLocomotion != UnitActionController.UnitLocomotionMode.Sneak)
         {
-            SetTrack0TimeScale(1f);
+            SetTrack0TimeScale(1f * directionSign);
             return;
         }
 
@@ -497,14 +633,28 @@ public class SpineAnimationDriver_Current : MonoBehaviour
 
         if (referenceSpeed <= 0.01f || targetSpeed <= 0.01f)
         {
-            SetTrack0TimeScale(1f);
+            SetTrack0TimeScale(1f * directionSign);
             return;
         }
 
         // 用目标(稳定)速度而不是CurrentVelocity的瞬时值——见上面CurrentEffectiveSneakSpeed
         // 的注释，瞬时值在起步/急停的过渡帧会先经过接近0，拿去缩放会让动画跟着抽一下。
         float scale = Mathf.Clamp(targetSpeed / referenceSpeed, locomotionTimeScaleClamp.x, locomotionTimeScaleClamp.y);
-        SetTrack0TimeScale(scale);
+        SetTrack0TimeScale(scale * directionSign);
+    }
+
+    /// <summary>实际水平位移方向跟当前视觉朝向背离时返回-1(倒放腿部动画)，否则返回1
+    /// (正常正向播放)。facing==-1对应世界+X方向，是这个项目里反复验证过的映射，
+    /// 别改。</summary>
+    private float ResolveLocomotionDirectionSign()
+    {
+        Vector3 vel = movement.CurrentVelocity;
+        Vector2 vel2D = new Vector2(vel.x, vel.z);
+        if (vel2D.sqrMagnitude < 0.0001f)
+            return 1f;
+
+        float facingWorldX = facing == -1 ? 1f : -1f;
+        return (vel2D.x * facingWorldX) < 0f ? -1f : 1f;
     }
 
     /// <summary>重攻击(蓄力)期间：Track0继续按真实移动状态播放站立/走路(腿部来源)，
@@ -534,12 +684,198 @@ public class SpineAnimationDriver_Current : MonoBehaviour
         if (!needsRestart || !HasAnimation(overlayKey))
             return;
 
-        TrackEntry entry = skeletonAnimation.AnimationState.SetAnimation(HeavyAttackOverlayTrack, overlayKey, false);
+        SkillDefinition skill = actionModuleRuntime?.CurrentSkill;
+        bool loopWhileHeld = skill != null && skill.loopWhileHeld;
+
+        // 每次真正重新开始一轮循环(不管是全新按下攻击键，还是同名技能重新触发)，
+        // 之前"正在收尾"的标记都失效了——不然上一轮松开攻击键触发的收尾还没播完，
+        // 玩家又立刻重新按下开火，会被_heavyAttackOverlayStopping误挡住。
+        _heavyAttackOverlayStopping = false;
+
+        // 机枪式连发：不是播完一遍就结束，按住攻击键期间只在[0, loopWindowSeconds]这段
+        // 区间内反复循环——AnimationEnd裁剪掉后段的收枪后摇，不用在Spine里另外剪一份
+        // 短动画。Complete不挂NotifyAttackAnimationComplete，因为循环时每转一圈都会
+        // fire一次Complete，挂上去攻击状态会在第一圈结束就被提前收掉；结束时机改成
+        // 松开攻击键时由InputRouter调UnitActionModuleRuntime.ReleaseHeldLightAttack()
+        // 主动触发，见StopHeavyAttackOverlayLoop()。
+        TrackEntry entry = skeletonAnimation.AnimationState.SetAnimation(HeavyAttackOverlayTrack, overlayKey, loopWhileHeld);
         if (entry != null)
-            entry.Complete += _ => actionController.NotifyAttackAnimationComplete();
+        {
+            if (loopWhileHeld)
+            {
+                if (skill.loopWindowSeconds > 0f)
+                    entry.AnimationEnd = skill.loopWindowSeconds;
+            }
+            else
+            {
+                entry.Complete += _ => actionController.NotifyAttackAnimationComplete();
+            }
+        }
 
         _lastHeavyOverlayAnimation = overlayKey;
         _heavyAttackOverlayActive = true;
+    }
+
+    /// <summary>换弹期间：Track0继续按真实移动状态播放站立/走路(腿部来源)，跟重攻击
+    /// 蓄力那套同一个思路——"Reload"动作本身播在独立的HeavyAttackOverlayTrack上
+    /// (上半身来源)，腿部不再被换弹动作锁死，玩家可以边走边换弹。复用跟重攻击覆盖
+    /// 完全同一份状态字段(_heavyAttackOverlayActive/_lastHeavyOverlayAnimation)——
+    /// Attack和Reload是互斥状态，不会同时成立，共用不会冲突，也顺带省了一套单独的
+    /// 清理逻辑(ClearHeavyAttackOverlayIfNeeded已经覆盖这个字段的所有清理场景)。</summary>
+    private void UpdateReloadOverlay(bool force)
+    {
+        string locomotionKey;
+        bool locomotionLoop;
+        ResolveNormalLocomotion(out locomotionKey, out locomotionLoop);
+        PlayByKey(locomotionKey, locomotionLoop, force: false);
+        ApplyLocomotionAnimationSpeedMatch();
+
+        string overlayKey = ResolveMovementKey(UnitActionAnimationSlot.Reload, reloadAnimation);
+        bool needsRestart = force || !_heavyAttackOverlayActive || !IsSameAnimationName(_lastHeavyOverlayAnimation, overlayKey);
+        if (!needsRestart || !HasAnimation(overlayKey))
+            return;
+
+        _heavyAttackOverlayStopping = false;
+        TrackEntry entry = skeletonAnimation.AnimationState.SetAnimation(HeavyAttackOverlayTrack, overlayKey, false);
+
+        // 2026-08-26：换弹动画播完之后手还举着不放下，根因是"Reload"这段动作的原始
+        // 时长跟真实换弹耗时(ResolveReloadDurationSeconds，会随换弹速度加成变化)本来
+        // 就对不上——不该让动画自己按固定速度播、播完了傻等状态计时器，而是应该反过来
+        // 让动画去匹配真实耗时：换弹速度越慢，动画播放也越慢，两者时长永远一致，动画
+        // 播完的那一刻正好就是换弹状态结束的那一刻，不用再单独处理"播完了但状态没完"
+        // 这个空窗期。
+        if (entry != null && entry.Animation != null && actionController != null)
+        {
+            float realDurationSeconds = actionController.StateLockedUntil - Time.time;
+            float animationDurationSeconds = entry.Animation.Duration;
+            if (realDurationSeconds > 0.01f && animationDurationSeconds > 0.01f)
+                entry.TimeScale = animationDurationSeconds / realDurationSeconds;
+        }
+
+        if (entry != null)
+        {
+            entry.Complete += _ =>
+            {
+                if (!_heavyAttackOverlayActive || !IsSameAnimationName(_lastHeavyOverlayAnimation, overlayKey))
+                    return;
+                if (skeletonAnimation == null || skeletonAnimation.AnimationState == null)
+                    return;
+
+                _heavyAttackOverlayActive = false;
+                _lastHeavyOverlayAnimation = "";
+                skeletonAnimation.AnimationState.SetEmptyAnimation(HeavyAttackOverlayTrack, Mathf.Max(0f, attackToNormalMixDuration));
+            };
+        }
+
+        _lastHeavyOverlayAnimation = overlayKey;
+        _heavyAttackOverlayActive = true;
+    }
+
+    /// <summary>按住攻击键的机枪式连发松开时调用——不是立刻收掉上半身覆盖轨道，而是把
+    /// 循环区间之后剩下的"收枪后摇"部分(从loopWindowSeconds播到动画自然结束)完整播
+    /// 一遍，播完了才真正调 NotifyAttackAnimationComplete() 收尾。
+    ///
+    /// 2026-08-25：之前是松手立刻调 NotifyAttackAnimationComplete()——问题是"闪避取消
+    /// 攻击"(TryPlayerRequestAttackCancelDodgeBack)要求 actionController.IsAttacking
+    /// 在按下闪避键那一刻依然为true。近战攻击有天然的后摇窗口：即使玩家已经松开攻击
+    /// 键，动画还没播完，IsAttacking 依然是true，这段时间按闪避键能正常取消。机枪式
+    /// 连发松手立刻收尾，等于直接跳过了这个窗口——玩家反馈"现在变成要左键右键一起按
+    /// 才能触发闪避取消，而不是松开左键再按右键"，根因就在这里。改成松手后继续播一段
+    /// 后摇动画、这段时间依然是Attack状态，闪避取消的窗口就跟近战武器一致了。</summary>
+    // 2026-08-25 追加：真正的根因在这——弹药/LP打空之后，Track2上那条loop=true的
+    // 原始循环TrackEntry不会自己停，每一次它自己触发的gun事件都会命中"没弹药"分支、
+    // 调一次这个方法。而这个方法原来每次都无条件调SetAnimation(...)去生成一条新的
+    // "收枪后摇"TrackEntry——SetAnimation是交叉混合(mix)语义，不是替换语义，旧的
+    // (依然在loop的)TrackEntry不会被杀掉，只是被"混合"到新条目背后，自己继续按原速
+    // 循环、继续触发它自己的gun事件。于是"没弹药→调用本方法→旧循环继续触发gun事件→
+    // 又没弹药→再调用本方法"变成了自我循环，每一轮都在Track2上再叠一条新TrackEntry，
+    // 而背后那条最初的循环entry从未被真正杀死过，一直在触发事件——表现就是打空弹药
+    // 之后子弹"停不下来"、甚至越叠越快。用_heavyAttackOverlayStopping挡掉重入(收尾
+    // 動画播放期间的重复调用直接跳过，不再追加新条目)，并且在真正需要重新生成收尾
+    // 动画之前先ClearTrack()，物理上斩断背后所有还在混合/推进的旧条目。
+    private bool _heavyAttackOverlayStopping = false;
+
+    public void StopHeavyAttackOverlayLoop()
+    {
+        // 收尾动画正在播放中，重复调用直接忽略——不再追加新的TrackEntry叠加到Track2
+        // 背后的混合链里，这是防止"没弹药→重复触发本方法→旧循环entry永远杀不死"这个
+        // 自我循环的关键一环。
+        if (_heavyAttackOverlayStopping)
+            return;
+
+        // 下面几条早退路径原本什么都不做——调用方(UnitActionModuleRuntime)已经不再
+        // 自己兜底调 NotifyAttackAnimationComplete() 了(见该方法调用点注释)，这里必须
+        // 保证每一条路径最终都会让攻击状态收尾，否则一旦命中这几个边界情况(比如
+        // skeletonAnimation意外为空)，攻击状态会永远卡在Attack出不来。
+        if (!_heavyAttackOverlayActive || skeletonAnimation == null || skeletonAnimation.AnimationState == null)
+        {
+            actionController?.NotifyAttackAnimationComplete();
+            return;
+        }
+
+        string overlayKey = _lastHeavyOverlayAnimation;
+        SkillDefinition skill = actionModuleRuntime?.CurrentSkill;
+
+        if (string.IsNullOrEmpty(overlayKey) || !HasAnimation(overlayKey) || skill == null)
+        {
+            ClearHeavyAttackOverlayIfNeeded();
+            actionController?.NotifyAttackAnimationComplete();
+            return;
+        }
+
+        // 物理清空Track2上此刻所有还在混合/推进的旧条目(包括原始循环entry自己)，
+        // 再生成收尾动画——不用交叉混合语义，避免任何旧条目残留在背后继续触发事件。
+        skeletonAnimation.AnimationState.ClearTrack(HeavyAttackOverlayTrack);
+
+        TrackEntry entry = skeletonAnimation.AnimationState.SetAnimation(HeavyAttackOverlayTrack, overlayKey, false);
+        if (entry != null)
+        {
+            if (skill.loopWindowSeconds > 0f)
+                entry.AnimationStart = skill.loopWindowSeconds;
+            _heavyAttackOverlayStopping = true;
+            entry.Complete += _ =>
+            {
+                _heavyAttackOverlayStopping = false;
+                actionController.NotifyAttackAnimationComplete();
+            };
+        }
+        else
+        {
+            // SetAnimation理论上不会返回null，但万一发生，同样不能让攻击状态卡死。
+            actionController?.NotifyAttackAnimationComplete();
+        }
+
+        _lastHeavyOverlayAnimation = overlayKey;
+        _heavyAttackOverlayActive = true;
+    }
+
+    /// <summary>硬性立即清空上半身覆盖轨道，不走"播完收枪后摇再收尾"那条路——给
+    /// 攻击取消闪避(TryPlayerRequestAttackCancelDodgeBack)这种"本来就是要立刻打断"的
+    /// 场景用。2026-08-25：这类调用点自己已经把 currentState 改成 Dodge 了，如果还
+    /// 走 StopHeavyAttackOverlayLoop()，那条路径最终要靠 NotifyAttackAnimationComplete()
+    /// 收尾，而那个方法内部有 currentState!=Attack 就直接return的保护，Dodge状态下
+    /// 会被静默吞掉——Track2的循环(loop=true的TrackEntry)是Spine自己独立跑的，不会
+    /// 因为currentState变了就自动停，于是"已经在切成Dodge的这段时间"Track2还在按
+    /// 原速循环、gun事件照常触发，一边闪避一边"自己开枪"，直到把LP耗光；LP耗光后
+    /// 触发的StopHeavyAttackOverlayLoop又因为同一个原因收尾失败，角色卡死在举枪姿势
+    /// 出不来。这里直接跳过NotifyAttackAnimationComplete，因为闪避本身的状态切换
+    /// (RequestAttackCancelDodgeBack里currentState=Dodge)已经代替了它的职责。</summary>
+    public void HardStopHeavyAttackOverlay()
+    {
+        // 2026-08-25 追加：光靠 SetEmptyAnimation(ClearHeavyAttackOverlayIfNeeded内部
+        // 调的) 不够——那是"淡出混合"，不是真正立刻停。Spine 的 AnimationState.
+        // SetEmptyAnimation 只是把新目标(空动画)和旧TrackEntry做一段mixDuration的
+        // 交叉淡出，旧的这条TrackEntry在混合期间依然在正常推进播放——它是loop=true
+        // 的循环片段，混合这几百毫秒里照样在循环、gun事件照样在触发，这才是闪避时
+        // "还在继续开枪"这个bug真正没堵上的那个洞。改成直接 ClearTrack()：立即、
+        // 完全移除这条轨道当前的TrackEntry，不留任何还在播放/推进的旧片段，才是
+        // 真正意义上的"立刻停"。
+        _heavyAttackOverlayActive = false;
+        _heavyAttackOverlayStopping = false;
+        _lastHeavyOverlayAnimation = "";
+
+        if (skeletonAnimation != null && skeletonAnimation.AnimationState != null)
+            skeletonAnimation.AnimationState.ClearTrack(HeavyAttackOverlayTrack);
     }
 
     private void ClearHeavyAttackOverlayIfNeeded()
@@ -548,6 +884,7 @@ public class SpineAnimationDriver_Current : MonoBehaviour
             return;
 
         _heavyAttackOverlayActive = false;
+        _heavyAttackOverlayStopping = false;
         _lastHeavyOverlayAnimation = "";
 
         if (skeletonAnimation != null && skeletonAnimation.AnimationState != null)
@@ -638,6 +975,10 @@ public class SpineAnimationDriver_Current : MonoBehaviour
             // 2026-07-18：原来这里有一个 case Dodge 分支，但 movement.IsDodging 在这个
             // switch之前就已经提前return了（见上面"MovementRuntimeDodge"那段），这个
             // 分支实际永远走不到，是排查半天才确认的死代码，直接删掉，别再留着误导人。
+
+            // Reload 不再走这里——isReloading 在 UpdateBodyAnimationFromActionState 里
+            // 提前拦截并转去 UpdateReloadOverlay（Track0走真实移动，"Reload"动作播在
+            // 上半身覆盖轨道），这个switch分支到不了，见上面 isHeavyAttack 同一批注释。
 
             case UnitActionController.UnitActionState.Jump:
                 ResolveActionControllerJumpAnimation(out key, out loop);

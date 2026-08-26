@@ -134,6 +134,37 @@ public class InventoryRuntime : MonoBehaviour
         return remaining;
     }
 
+    /// <summary>捡回一件"具体实例"（LootDropWorldObject.SpawnDropFromEntry 打的快照）——
+    /// 跟 AddItem 不一样，不按定义+数量重新 new 一个全新实例，而是把快照里的耐久/
+    /// 弹匣弹药/染色/改装件原样还原到新插入的这个实例上。这类物品 maxStackCount
+    /// 本来就是1，不需要考虑堆叠合并/部分放不下这些情况，背包满就整体失败。跟
+    /// SavedItemEntry.ToInventoryItemEntry 是同一套字段拷贝逻辑，区别只是这里直接
+    /// 拿到手的就是真实 ItemDefinition 引用，不需要经过 itemKey→ItemRegistry 反查
+    /// （拾取发生在同一局游戏内存里，用不上存档那套字符串间接层）。</summary>
+    public bool AddEntrySnapshot(ItemDefinition def, SavedItemEntry snapshot)
+    {
+        if (def == null || snapshot == null) return false;
+        EnsureSize();
+
+        int empty = FirstEmptyIndex();
+        if (empty < 0) return false;
+
+        var entry = new InventoryItemEntry(def, Mathf.Max(1, snapshot.count));
+        if (snapshot.durability >= 0) entry.currentDurability = snapshot.durability;
+        if (snapshot.magazineAmmo >= 0) entry.currentMagazineAmmo = snapshot.magazineAmmo;
+        if (snapshot.rolledBonuses?.Count > 0) entry.rolledBonuses = snapshot.rolledBonuses;
+        if (snapshot.installedMods?.Count > 0) entry.installedMods = snapshot.installedMods;
+        if (snapshot.dyeColors?.Length == 3) entry.dyeColors = snapshot.dyeColors;
+        if (!string.IsNullOrEmpty(snapshot.transmogSourceItemKey)) entry.transmogSourceItemKey = snapshot.transmogSourceItemKey;
+        entry.isIdentified = snapshot.isIdentified;
+        entry.isNew = true;
+
+        slots[empty] = entry;
+        OnInventoryChanged?.Invoke();
+        OnItemGained?.Invoke(def, entry.count);
+        return true;
+    }
+
     /// <summary>把一个已经存在的具体实例（带着它自己的耐久/染色/词条数据）原样塞进
     /// 一个空格——不能用 AddItem(definition, amount)：那个会新建一个全新entry（丢光
     /// 这件的耐久/染色/词条数据），如果 maxStackCount>1 还会把数量直接合并进背包里
@@ -260,6 +291,101 @@ public class InventoryRuntime : MonoBehaviour
 
         OnInventoryChanged?.Invoke();
         return true;
+    }
+
+    // ── 弹药总量丢弃（备用 + 已装填的弹匣算同一个池子）────────────────────────
+    // 弹匣里的弹药本来就是从背包这份口径总量里挪过去的(见 UnitActionModuleRuntime.
+    // UpdateReloadCompletion)，只是暂存在武器实例上，概念上仍然是玩家名下这个口径
+    // 弹药总量的一部分。丢弃弹药应该按"总量"扣，不该被"点开的是哪一个格子"限制住——
+    // 备用不够扣的部分继续从弹匣里扣，而不是只准扣到备用为0就不管弹匣。
+
+    /// <summary>这个口径玩家实际拥有的弹药总量 = 背包散装备用 + 所有该口径武器实例
+    /// （不管有没有装备在身上）弹匣里已装填的部分。</summary>
+    public int GetOwnedAmmoTotal(AmmoCaliberType caliber)
+    {
+        int total = GetAmmoCount(caliber);
+
+        var eq = EquipmentRuntime.Instance;
+        if (eq != null)
+        {
+            total += MagazineAmmoIfCaliberMatches(eq.GetWeapon(), caliber);
+            total += MagazineAmmoIfCaliberMatches(eq.GetWeaponSecondary(), caliber);
+        }
+
+        foreach (var slot in slots)
+            total += MagazineAmmoIfCaliberMatches(slot, caliber);
+
+        return total;
+    }
+
+    /// <summary>按总量丢弃这个口径的弹药——先扣背包散装备用（哪个格子都行，随便扣，
+    /// 跟 TryConsumeAmmo 同一个规则），备用扣完还有剩余请求量，再继续扣所有该口径
+    /// 武器实例弹匣里的弹药（先已装备的主/副武器，再背包里没装备的同类武器）。
+    /// 请求量超过总拥有量时按总拥有量截断，返回实际扣掉的数量。</summary>
+    public int DiscardAmmoTotal(AmmoCaliberType caliber, int amount)
+    {
+        if (amount <= 0) return 0;
+
+        int owned = GetOwnedAmmoTotal(caliber);
+        int toRemove = Mathf.Min(amount, owned);
+        if (toRemove <= 0) return 0;
+
+        int remaining = toRemove;
+
+        // 1) 先扣背包散装备用。
+        int fromReserve = Mathf.Min(remaining, GetAmmoCount(caliber));
+        if (fromReserve > 0)
+        {
+            TryConsumeAmmo(caliber, fromReserve);
+            remaining -= fromReserve;
+        }
+
+        // 2) 备用不够扣，继续扣弹匣。
+        bool magazineTouched = false;
+        if (remaining > 0)
+        {
+            var eq = EquipmentRuntime.Instance;
+            if (eq != null)
+            {
+                remaining -= DrainEntryMagazine(eq.GetWeapon(), caliber, remaining, ref magazineTouched);
+                remaining -= DrainEntryMagazine(eq.GetWeaponSecondary(), caliber, remaining, ref magazineTouched);
+            }
+
+            for (int i = 0; i < slots.Count && remaining > 0; i++)
+                remaining -= DrainEntryMagazine(slots[i], caliber, remaining, ref magazineTouched);
+        }
+
+        // 装备着的武器弹匣被扣掉了，右下角武器切换HUD只订阅
+        // UnitActionModuleRuntime.OnWeaponAmmoChanged（开枪/换弹时触发），不知道
+        // 背包这边发生了丢弃，不主动广播的话数字会停留在旧值，直到下次开枪才刷新。
+        if (magazineTouched)
+            UnitActionModuleRuntime.RaiseWeaponAmmoChanged();
+
+        OnInventoryChanged?.Invoke();
+        return toRemove;
+    }
+
+    private static int MagazineAmmoIfCaliberMatches(InventoryItemEntry entry, AmmoCaliberType caliber)
+    {
+        if (entry == null || entry.currentMagazineAmmo <= 0) return 0;
+
+        ItemEquipmentExtension ext = entry.definition?.equipment;
+        if (ext == null || !ext.usesAmmo || ext.ammoCaliber != caliber) return 0;
+
+        return entry.currentMagazineAmmo;
+    }
+
+    private static int DrainEntryMagazine(InventoryItemEntry entry, AmmoCaliberType caliber, int requested, ref bool touched)
+    {
+        if (requested <= 0) return 0;
+
+        int available = MagazineAmmoIfCaliberMatches(entry, caliber);
+        if (available <= 0) return 0;
+
+        int take = Mathf.Min(requested, available);
+        entry.currentMagazineAmmo -= take;
+        touched = true;
+        return take;
     }
 
     // ── Stack / placement operations ──────────────────────────────────────
@@ -613,6 +739,7 @@ public class InventoryRuntime : MonoBehaviour
             }
             var newEntry = new InventoryItemEntry(def, entry.count);
             if (entry.durability >= 0)          newEntry.currentDurability = entry.durability;
+            if (entry.magazineAmmo >= 0)         newEntry.currentMagazineAmmo = entry.magazineAmmo;
             if (entry.rolledBonuses?.Count > 0) newEntry.rolledBonuses     = entry.rolledBonuses;
             if (entry.installedMods?.Count > 0) newEntry.installedMods     = entry.installedMods;
             if (entry.dyeColors?.Length == 3)   newEntry.dyeColors         = entry.dyeColors;

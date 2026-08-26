@@ -117,7 +117,7 @@ public class UnitActionController : MonoBehaviour
     [Tooltip("触发空中攻击那一刻施加给角色的后坐力冲量大小——方向由调用方算好传进来\n" +
         "（跟弹幕发射方向相反）。这个冲量会按 TerrainGroundMotorV5 的击退衰减率\n" +
         "(18 m/s²)衰减，实际位移距离≈冲量²÷(2×18)，数值调大才看得出明显位移。")]
-    [SerializeField] private float aerialAttackRecoilImpulse = 8f;
+    [SerializeField] private float aerialAttackRecoilImpulse = 1.6f;
     [Tooltip("触发空中攻击的瞬间，角色先向上“顶”一小段高度再进入悬停——像鸟拍一下翅膀\n" +
         "那种干净利落的上升感，不是缓慢的物理加速。是一次性直接抬高位置，不是速度\n" +
         "冲量（冻结那一刻马上就把速度摁到0了，用速度冲量会被立刻吃掉，感觉不出来）。\n" +
@@ -182,6 +182,10 @@ public class UnitActionController : MonoBehaviour
 
     public string Version => scriptVersion;
     public UnitActionState CurrentState => currentState;
+    /// <summary>当前状态锁定到什么时间点(Time.time)——换弹动画要按这个反推剩余时长，
+    /// 把播放速度缩放到跟真实换弹耗时(含换弹速度加成)对齐，不能真实换弹快、动画播得
+    /// 慢，或者反过来。</summary>
+    public float StateLockedUntil => stateLockedUntil;
     public UnitLocomotionMode CurrentLocomotion => currentLocomotion;
     public JumpPhase CurrentJumpPhase => currentJumpPhase;
     public UnitMovementController.DodgeRuntimeState CurrentDodgeKind => currentDodgeKind;
@@ -314,14 +318,16 @@ public class UnitActionController : MonoBehaviour
         if (!CanRequestLocomotionAction())
             return;
 
-        if (loadRuntime != null && !loadRuntime.TrySpendDodge())
-            return;
-
         // 超重(Heavy/Overweight)时 movement.CanDodge 会是 false——movement.RequestDodge
         // 本身只是把这次闪避排进队列，真正的负重门槛判定在队列消费时(TryStartDodge)
         // 才发生，这里(外层)没提前查一遍的话，SFX会照样在闪避被内层拒绝之前先播完，
-        // 玩家会听到"闪避音效响了但人没动"。
+        // 玩家会听到"闪避音效响了但人没动"。2026-08-25：这个检查之前排在
+        // TrySpendDodge()后面——超重时这里直接return，但LP在上一行已经被扣掉了，
+        // 变成"超重闪避没效果但白扣LP"。改成先判超重，通过了再花LP。
         if (movement != null && !movement.CanDodge)
+            return;
+
+        if (loadRuntime != null && !loadRuntime.TrySpendDodge())
             return;
 
         currentDodgeKind = forward ? UnitMovementController.DodgeRuntimeState.Forward : UnitMovementController.DodgeRuntimeState.Back;
@@ -330,25 +336,36 @@ public class UnitActionController : MonoBehaviour
         PlayDodgeSFX();
     }
 
-    public void RequestDodge(Vector2 worldXZDirection, UnitMovementController.DodgeRuntimeState dodgeKind)
+    /// <summary>speedScale 默认1(正常闪避距离/速度)——只有明确需要"近战攻击取消后撤步"
+    /// 那种小步后退手感的调用方(见 SkyPrisonPlayerInputRouter.RequestDodgeDefaultBackward)
+    /// 才会传 AttackCancelDodgeBackSpeedScale 进来。不能把这个打折默认套到所有Back方向
+    /// 的闪避上——正常闪避判定(RequestDodgeFromCurrentInput)里，玩家按着跟朝向相反的
+    /// 方向键闪避同样会算出Back，那是完整距离的普通闪避，不该被这里悄悄改小。</summary>
+    public void RequestDodge(Vector2 worldXZDirection, UnitMovementController.DodgeRuntimeState dodgeKind, float speedScale = 1f)
     {
         lastActionRequest = "DodgeVector";
 
         if (!CanRequestLocomotionAction())
             return;
 
-        if (loadRuntime != null && !loadRuntime.TrySpendDodge())
-            return;
-
-        // 同上——超重时提前拦截，不让SFX抢跑在真正的负重判定前面。
+        // 同上——超重时提前拦截，不让SFX抢跑在真正的负重判定前面，也不能让LP在
+        // 超重拒绝之前就先被扣掉。
         if (movement != null && !movement.CanDodge)
             return;
 
+        if (loadRuntime != null && !loadRuntime.TrySpendDodge())
+            return;
+
         currentDodgeKind = dodgeKind == UnitMovementController.DodgeRuntimeState.None ? UnitMovementController.DodgeRuntimeState.Forward : dodgeKind;
-        movement?.RequestDodge(worldXZDirection, currentDodgeKind);
+        movement?.RequestDodge(worldXZDirection, currentDodgeKind, speedScale);
         currentState = UnitActionState.Dodge;
         PlayDodgeSFX();
     }
+
+    /// <summary>近战"攻击取消后撤步"用的小步后退速度倍率——射击被闪避打断、默认后撤
+    /// 那条路径想要同一种"小步后退"手感，直接复用这个配置值，不用另开一份重复的
+    /// 数值，两处后撤步调起来始终一致。</summary>
+    public float AttackCancelDodgeBackSpeedScale => attackCancelDodgeBackSpeedScale;
 
     private void PlayDodgeSFX()
     {
@@ -481,14 +498,19 @@ public class UnitActionController : MonoBehaviour
         if (currentState != UnitActionState.Attack) return false;
         if (movement == null) return false;
 
-        // 2026-07-21：这里之前漏了扣负重(TP)——攻击取消闪避跟普通闪避
-        // (RequestDodge/RequestDodge(Vector2,...))是同一类位移动作，理应共用同一套
-        // 消耗检查，不能因为走的是专属入口就绕过资源消耗，变成不花TP的白嫖闪避。
-        if (loadRuntime != null && !loadRuntime.TrySpendDodge())
+        // 2026-08-25：顺序反了——之前先花LP(TrySpendDodge)、再判超重(movement.CanDodge)。
+        // 超重时movement.CanDodge会返回false，直接return，但LP在这之前已经被扣掉了：
+        // 表现就是"大剑攻击取消闪避没有任何效果，但LP确实被吞了一口"。这正是
+        // PushMovementIntent里奔跑那处已经修过的同一类坑(先判超重、超重就直接跳过
+        // 资源消耗，压根不调用TrySpendDodge)，这里当时漏改。改成先判超重，通过了
+        // 再花LP。
+        if (!movement.CanDodge)
             return false;
 
-        // 同 RequestDodge——超重时提前拦截，不让SFX抢跑在真正的负重判定前面。
-        if (!movement.CanDodge)
+        // 攻击取消闪避跟普通闪避(RequestDodge/RequestDodge(Vector2,...))是同一类位移
+        // 动作，理应共用同一套消耗检查，不能因为走的是专属入口就绕过资源消耗，变成
+        // 不花LP的白嫖闪避。
+        if (loadRuntime != null && !loadRuntime.TrySpendDodge())
             return false;
 
         currentAttackKind = AttackRequestKind.None;
@@ -509,11 +531,26 @@ public class UnitActionController : MonoBehaviour
     public bool CanEnterAerialAttackPublic()
     {
         if (currentState == UnitActionState.Dead || currentState == UnitActionState.HitStun || currentState == UnitActionState.Attack)
+        {
+            Debug.Log($"[AerialDiag] CanEnterAerialAttackPublic false: currentState={currentState}", this);
             return false;
+        }
         if (movement == null) return false;
-        if (!movement.IsJumping) return false;
-        if (movement.CurrentJumpRuntimeState != UnitMovementController.JumpRuntimeState.Air) return false;
-        if (usedAerialAttackThisJump) return false;
+        if (!movement.IsJumping)
+        {
+            Debug.Log("[AerialDiag] CanEnterAerialAttackPublic false: movement.IsJumping=False", this);
+            return false;
+        }
+        if (movement.CurrentJumpRuntimeState != UnitMovementController.JumpRuntimeState.Air)
+        {
+            Debug.Log($"[AerialDiag] CanEnterAerialAttackPublic false: CurrentJumpRuntimeState={movement.CurrentJumpRuntimeState}", this);
+            return false;
+        }
+        if (usedAerialAttackThisJump)
+        {
+            Debug.Log("[AerialDiag] CanEnterAerialAttackPublic false: usedAerialAttackThisJump=True", this);
+            return false;
+        }
         return true;
     }
 
@@ -790,6 +827,17 @@ public class UnitActionController : MonoBehaviour
             finalSneak = false;
         }
 
+        // 2026-08-26：换弹期间禁止奔跑/潜行——按下换弹键那一刻已经有 CancelSprintAndSneak
+        // 把奔跑/潜行降级成走路一次，但那只是个0.35秒的短暂抑制窗口，玩家如果换弹全程
+        // 一直按着奔跑/潜行键，窗口一过奔跑/潜行会重新生效。换弹这个动作(手在弄弹匣)全程
+        // 都不该允许奔跑/潜行，不是只在按下换弹键那一瞬间——这里按状态硬性锁一遍，
+        // 覆盖整个Reload状态期间，不依赖那个一次性窗口。移动本身不受影响，还是能正常走。
+        if (currentState == UnitActionState.Reload)
+        {
+            finalRun = false;
+            finalSneak = false;
+        }
+
         if (finalSneak)
             finalRun = false;
 
@@ -818,8 +866,17 @@ public class UnitActionController : MonoBehaviour
             }
         }
 
-        currentLocomotion = ResolveLocomotion(finalMove, finalRun, finalSneak);
+        // 2026-08-25：奔跑/潜行换弹时"速度变了、动画没变"——CancelSprintAndSneak
+        // 那套 sprintSneakCancelUntil 抑制窗口是在 UnitMovementController.SetMoveInput
+        // 内部生效的，SetExternalMoveInput 会转调这个方法，实际移动速度确实被正确压
+        // 下来了。但这里的 finalRun/finalSneak 是本方法一开始就从 runHeld/sneakHeld
+        // 读到的原始按键状态，从头到尾没经过那个抑制窗口——ResolveLocomotion 用这份
+        // 没被压过的值算动画状态，跟真实速度用的是两份不同步的数据，才会出现"脚下
+        // 已经变成走路速度，动画却还在播奔跑"。改成调用 SetExternalMoveInput 之后，
+        // 回读 movement 自己（已经把抑制窗口套用过）的 IsRunHeld/IsSneakHeld 来算
+        // currentLocomotion，动画和真实速度就是同一份数据来源了。
         movement.SetExternalMoveInput(finalMove, finalRun, finalSneak);
+        currentLocomotion = ResolveLocomotion(finalMove, movement.IsRunHeld, movement.IsSneakHeld);
     }
 
     private UnitLocomotionMode ResolveLocomotion(Vector2 input, bool finalRun, bool finalSneak)

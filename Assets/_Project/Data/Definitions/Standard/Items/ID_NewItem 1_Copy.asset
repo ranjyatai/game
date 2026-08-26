@@ -1,0 +1,207 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cbc6c82406986741bc9f9b30a5f52a0, type: 3}
+  m_Name: ID_NewItem 1_Copy
+  m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemId: 100001
+  itemKey: new_item_001_copy
+  nameKey: item_name_new_item_001_copy
+  descKey: item_desc_new_item_001_copy
+  iconKey: icon_new_item_001_copy
+  displayName: "\u4EAC\u6781\u4E94\u5F0F\u519B\u94F3"
+  note: 
+  description: "\u4EAC\u6781\u91CD\u5DE5\u5F00\u53D1\u7684\u7B2C\u4E94\u5F0F\u519B\u7528\u67AA\u68B0\u3002\r\n\u8BE5\u578B\u53F7\u5C04\u901F\u8F83\u5FEB\uFF0C\u5F39\u9053\u7A33\u5B9A\uFF0C\u4E14\u66FE\u8FDB\u884C\u8FC7\u5927\u89C4\u6A21\u91CF\u4EA7\u3002\u5355\u4E2A\u5F39\u5323\u53EF\u88C5\u586B60\u53D1\u5F39\u836F\uFF1B\u53CC\u67AA\u540C\u65F6\u8FD0\u7528\u65F6\uFF0C\u603B\u8F7D\u5F39\u91CF\u4E3A120\u53D1\u3002\r\n\u7EFC\u5408\u5224\u5B9A\uFF1A\u9002\u5408\u6267\u884C\u8FD1\u8DDD\u79BB\u6301\u7EED\u538B\u5236\u3002\r"
+  icon: {fileID: 21300000, guid: f0f418358a837874983700d5591c62b0, type: 3}
+  localizedNames:
+  - languageCode: zh-CN
+    text: "\u4EAC\u6781\u4E94\u5F0F\u519B\u94F3"
+  - languageCode: ja
+    text: "\u4EAC\u6975\u4E94\u5F0F\u8ECD\u9283"
+  - languageCode: en
+    text: Kyogoku Type-5 Service Gun
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: "\u4EAC\u6781\u91CD\u5DE5\u5F00\u53D1\u7684\u7B2C\u4E94\u5F0F\u519B\u7528\u67AA\u68B0\u3002\r\n\u8BE5\u578B\u53F7\u5C04\u901F\u8F83\u5FEB\uFF0C\u5F39\u9053\u7A33\u5B9A\uFF0C\u4E14\u66FE\u8FDB\u884C\u8FC7\u5927\u89C4\u6A21\u91CF\u4EA7\u3002\u5355\u4E2A\u5F39\u5323\u53EF\u88C5\u586B60\u53D1\u5F39\u836F\uFF1B\u53CC\u67AA\u540C\u65F6\u8FD0\u7528\u65F6\uFF0C\u603B\u8F7D\u5F39\u91CF\u4E3A120\u53D1\u3002\r\n\u7EFC\u5408\u5224\u5B9A\uFF1A\u9002\u5408\u6267\u884C\u8FD1\u8DDD\u79BB\u6301\u7EED\u538B\u5236\u3002\r"
+  - languageCode: ja
+    text: "\u4EAC\u6975\u91CD\u5DE5\u88FD\u306E\u4E94\u5F0F\u8ECD\u7528\u9283\u3002\r\n\u9AD8\u3044\u9023\u5C04\u6027\u80FD\u3068\u5B89\u5B9A\u3057\u305F\u96C6\u5F3E\u6027\u3092\u4E21\u7ACB\u3057\u305F\u91CF\u7523\u30E2\u30C7\u30EB\u300260\u767A\u88C5\u586B\u306E\u5927\u5BB9\u91CF\u30DE\u30AC\u30B8\u30F3\u3092\u5099\u3048\u3001\u30C4\u30A4\u30F3\u88C5\u5099\u6642\u306E\u7DCF\u88C5\u5F3E\u6570\u306F120\u767A\u3002\r\n\u89E3\u6790\u7D50\u679C\uFF1A\u8FD1\u8DDD\u96E2\u3067\u306E\u7D99\u7D9A\u7684\u306A\u5236\u5727\u5C04\u6483\u306B\u9069\u6027\u3042\u308A\u3002"
+  - languageCode: en
+    text: 'A Type-5 service weapon developed by Kyogoku Heavy Industries.
+
+      A
+      mass-production model engineered for a high rate of fire without compromising
+      accuracy. Each weapon is fitted with a 60-round extended magazine, providing
+      a combined capacity of 120 rounds when dual-wielded.
+
+      Tactical Assessment:
+      Suited for sustained suppressive fire at close range.'
+  usability: 0
+  cooldown: 0
+  statusType: 0
+  majorCategory: 10
+  category: 0
+  materialSubCategory: 3
+  rarity: 0
+  itemLevel: 1
+  general:
+    type: 0
+    useEffectKey: 
+    canPutInQuickSlot: 0
+    consumeOnUse: 1
+    isReviveItem: 0
+    reviveProtectionDuration: 5
+    soundMaterial: 1
+  materialAlchemy:
+    affinityTags: []
+    basePotency: 10
+  ammo:
+    caliber: 0
+  equipment:
+    slot: 0
+    moveSpeedMultiplier: 1
+    lpCostMultiplier: 1
+    footstepNoiseMultiplier: 1
+    sneakNoiseMultiplier: 1
+    sprintNoiseMultiplier: 1
+    landingNoiseMultiplier: 1
+    weaponCategory: 30
+    weaponTypeKey: gun
+    combatModule: {fileID: 11400000, guid: 3d496b74872d7004b86873708deb6912, type: 2}
+    weaponModuleKey: gun
+    weaponSkinName: weapon_gun_kyougokuType05
+    weaponJudgmentSlotName: 
+    weaponSilhouette: {fileID: 21300000, guid: 577af04e02d94264693624a6f7dd3e1b, type: 3}
+    weaponSlashEffectTipOffset: {x: -1, y: 0, z: 0}
+    armorSkinName: 
+    usesAmmo: 1
+    ammoCaliber: 0
+    ammoPerShot: 1
+    magazineSize: 120
+    reloadDurationSeconds: 0.625
+    maxDurability: 100
+    durabilityLossPerHit: 1
+    modSlots: []
+    defaultDyeColorSchemes:
+    - colors:
+      - {r: 0.8351726, g: 0.858209, b: 0.8679245, a: 1}
+      - {r: 0.25882354, g: 0.25882354, b: 0.31764707, a: 1}
+      - {r: 0.5254902, g: 0.050980393, b: 0.12941177, a: 1}
+    statBonuses:
+    - parameterKey: maxHp
+      value: 0
+    - parameterKey: maxLp
+      value: 0
+    - parameterKey: atk
+      value: 9
+    - parameterKey: def
+      value: 0
+    - parameterKey: critRate
+      value: 30
+    - parameterKey: critDamageMultiplier
+      value: 0
+    - parameterKey: hp
+      value: 0
+    - parameterKey: lp
+      value: 0
+    - parameterKey: atkSpeed
+      value: 0
+    - parameterKey: hpRecoveryRate
+      value: 0
+    - parameterKey: lpRecoveryRate
+      value: 0
+    - parameterKey: heatDamage
+      value: 0
+    - parameterKey: shockDamage
+      value: 0
+    - parameterKey: corrosionDamage
+      value: 0
+    - parameterKey: freezeDamage
+      value: 0
+    - parameterKey: dodgeLpCostRate
+      value: 0
+    - parameterKey: sprintLpCostRate
+      value: 0
+    - parameterKey: lightAtkLpCostRate
+      value: 0
+    - parameterKey: heavyAtkLpCostRate
+      value: 0
+    - parameterKey: chargeAtkLpCostRate
+      value: 0
+    - parameterKey: lpRecoveryDelayRate
+      value: 0
+    - parameterKey: dodgeInvulTimeRate
+      value: 0
+    - parameterKey: staggerRecoveryRate
+      value: 0
+    - parameterKey: poise
+      value: 0
+    - parameterKey: hitRecoveryRate
+      value: 0
+    - parameterKey: negativeCritRate
+      value: 60
+    - parameterKey: negativeCritDamageMultiplier
+      value: 80
+    - parameterKey: lpRecoveryBase
+      value: 0
+    - parameterKey: hpRecoveryBase
+      value: 0
+    - parameterKey: lpRecoveryDelayBase
+      value: 0
+    - parameterKey: heatBuildUp
+      value: 0
+    - parameterKey: shockBuildUp
+      value: 0
+    - parameterKey: corrosionBuildUp
+      value: 0
+    - parameterKey: freezeBuildUp
+      value: 0
+    - parameterKey: slashResist
+      value: 0
+    - parameterKey: strikeResist
+      value: 0
+    - parameterKey: impactResist
+      value: 0
+    - parameterKey: heatResist
+      value: 0
+    - parameterKey: shockResist
+      value: 0
+    - parameterKey: corrosionResist
+      value: 0
+    - parameterKey: freezeResist
+      value: 0
+    alchemyPreferredTags: []
+  mod:
+    compatibleSlotTypeKeys: []
+    unidentifiedDisplayName: "\u672A\u9274\u5B9A\u7EC4\u4EF6"
+    identificationCost: 100
+    bonusPool: []
+    bonusCount: 2
+  appearance:
+    slot: 0
+    appearanceKey: 
+    spineSkinKey: 
+    overrideEquipmentAppearance: 0
+  maxStackCount: 1
+  value: 0
+  origin: 0
+  weightOrQuartz: 4
+  isKeyItem: 0
+  canDiscard: 1
+  canSell: 1
+  effects: []
+  useVFX: {fileID: 0}
+  useSE: []
+  useSEVolume: 1
+  currencyPrices:
+  - currencyId: token
+    price: 50
+  - currencyId: currency
+    price: 0

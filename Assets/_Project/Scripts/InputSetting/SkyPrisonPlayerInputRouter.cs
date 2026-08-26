@@ -333,12 +333,31 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
 
             if (!windowBlocking && settings.directDodgeKeyStillAllowed && settings.GetActionDown(SkyPrisonInputAction.Dodge))
             {
+                // 2026-08-25：机枪式连发(loopWhileHeld，比如双枪)不走"攻击取消闪避"那套
+                // 近战专属机制——那套是照近战"判定帧结束的后摇阶段接一个前闪/后闪"设计
+                // 的，跟Track2这条独立循环轨道交互了好几轮都没能捞干净(闪避途中Track2
+                // 还在继续循环触发gun事件、LP狂掉、闪避结束后卡在举枪姿势收不回来)。
+                // 不再修这条集成路径，改成按用户最初的期望来做：闪避键按下时按住的枪
+                // 直接当场闭火(硬性清空Track2 + 立即把攻击状态收回Normal，不走"播完
+                // 收枪后摇"那套需要时间的流程)，然后当成"根本没有在攻击"，走完全普通
+                // 的闪避判定——没有前闪/后闪特殊分支、没有朝向冻结、没有跟近战共用的
+                // 复杂状态机，就是关枪、闪避，两件事顺序做完。
+                if (actionController.IsAttacking && combatModuleRuntime != null && combatModuleRuntime.CurrentSkillLoopsWhileHeld)
+                {
+                    combatModuleRuntime.HardStopLoopingAttackForDodge();
+                    // 2026-08-26：这里不复用下面通用的 RequestDodgeFromCurrentInput——那个在
+                    // "没按方向键"时会按 noMoveInputDodgeForward 走前闪(面朝方向)，玩家反馈
+                    // 站着射击时按闪避打断，默认应该是往后躲，不是往前扑；只有明确按住朝向
+                    // "前方"的方向键才该改成前闪。专门给这个场景写一版默认后撤的版本。
+                    RequestDodgeDefaultBackward("DodgeKey");
+                }
                 // 攻击取消闪避：攻击状态下按闪避键不走正常的方向闪避判定，改成按玩家
                 // 当前是否按着朝向方向的方向键分别接前闪/后闪(前闪正常速度，后闪固定
                 // 沿朝向反方向、速度打折、保持朝向不转身)——是否允许由 WeaponCombatModule.
                 // allowAttackCancelDodgeBack + 判定帧是否已经结束(后摇阶段)决定，
                 // 都在 TryPlayerRequestAttackCancelDodgeBack 里判断，这里不重复检查。
-                if (actionController.IsAttacking)
+                // (机枪式连发已经在上面单独分支处理，不会走到这里。)
+                else if (actionController.IsAttacking)
                 {
                     bool canCancelToDodgeBack = combatModuleRuntime != null && combatModuleRuntime.TryPlayerRequestAttackCancelDodgeBack();
                     lastInputEvent = canCancelToDodgeBack ? "AttackCancelDodgeBack" : "DodgeKey(BlockedByAttack)";
@@ -401,10 +420,23 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
                 actionController.RequestRunThrust();
                 lastInputEvent = "RunThrust";
             }
-            else if (!windowBlocking && lightAttackDown && heavyAttackDown)
+            else if (!windowBlocking && lightAttackDown && heavyAttackDown && LightHeavyShareAnyKey(settings))
             {
+                // 只有轻/重攻击真的绑在同一个物理键上(比如都是鼠标左键，靠长按区分)
+                // 才需要这段"等一下再判断意图"的逻辑。
                 _sharedAttackKeyPending = true;
                 _sharedAttackKeyPressTime = Time.time;
+            }
+            else if (!windowBlocking && lightAttackDown && heavyAttackDown)
+            {
+                // 2026-08-25：绑的是两个真正独立的物理键(比如双枪的鼠标左键开火+
+                // 鼠标右键换弹)——不是"同一个按键，长按/点按二选一"这种情况，两个键
+                // 都按下了就该两个都正常触发，不用套用上面那套"猜你想按哪个"的
+                // disambiguation。之前不分青红皂白只要两个键同一帧一起按下就一律走
+                // 长按判定，鼠标党左键右键一起按(边开枪边想换弹)会被这套逻辑吞掉，
+                // 变成两个都不正常触发、要等长按阈值才决定播哪个，手感很怪。
+                RequestLightAttackWithBuffering();
+                RequestHeavyAttackWithBuffering();
             }
             else if (!windowBlocking && lightAttackDown)
             {
@@ -457,6 +489,49 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
                     _sharedAttackKeyPending = false;
                     RequestHeavyAttackWithBuffering();
                 }
+            }
+
+            // 连发：按住轻攻击键不放时，模组勾了 autoFireLightAttackWhileHeld（比如枪械）
+            // 就每帧检查一次——只要上一发的攻击状态已经播完回到 Normal（!IsAttacking）、
+            // 键还按着、且没被窗口挡住，就当作又按了一次轻攻击自动补发，不需要玩家手动
+            // 一下一下点。故意不复用 lightAttackDown（那个只在按下的第一帧为true，这里
+            // 要用 GetAction 的"持续按住"信号）；也不用担心跟按下那一帧重复触发，因为
+            // 那一帧 IsAttacking 必然还是true（RequestLightAttackWithBuffering 已经让
+            // actionController 进入Attack状态）。
+            // AutoFireArmed：弹药/LP见底强制打断连发之后会置false，必须先松开按键
+            // (ReleaseHeldLightAttack里重新置true)才会再次生效——不然玩家手指还压着
+            // 没松开，资源一回一点点，这里会在資源刚够的那一帧悄悄重新开一枪，玩家
+            // 可能早就不是在有意识地按着开火了（见 UnitActionModuleRuntime.
+            // AutoFireArmed 字段注释）。
+            if (!windowBlocking && !actionController.IsAttacking
+                && combatModuleRuntime != null && combatModuleRuntime.AutoFireLightAttackWhileHeld
+                && combatModuleRuntime.AutoFireArmed
+                && settings.GetAction(SkyPrisonInputAction.LightAttack))
+            {
+                RequestLightAttackWithBuffering();
+            }
+
+            // 机枪式连发（loopWhileHeld）：动画本身在Spine播放层面循环，不会自己在
+            // Complete时结束攻击状态（会每圈都触发一次，提前收掉攻击），所以松开轻攻击
+            // 键这一刻要主动通知收尾。ReleaseHeldLightAttack内部会自己判断当前技能是不是
+            // 这种循环类型、当前是不是真的还在攻击状态，对普通一次性攻击是安全的空操作。
+            if (settings.GetActionUp(SkyPrisonInputAction.LightAttack))
+            {
+                combatModuleRuntime?.ReleaseHeldLightAttack();
+            }
+
+            // 上面那行是"松开边沿"触发，只在按键从按下变成松开的那一帧生效一次——
+            // 实测偶发"鼠标已经松开、角色还在连续开火"，怀疑是硬直/锁定期间攒下的
+            // 缓冲攻击请求(UnitActionController._bufferedAttackKind)在玩家已经松手
+            // 之后才补发，重新进入了一次循环攻击，而这次重新进入不会再等到一次新的
+            // GetActionUp——那个边沿早就在按键真正松开的那一帧被消耗掉了，不会再触发
+            // 第二次。改成加一道电平检测兜底：只要循环还在攻击、但这一帧按键已经不是
+            // 按住状态，不管是怎么进入这个状态的，直接收尾，不依赖"松开"这个边沿事件
+            // 发生的具体时机。
+            if (combatModuleRuntime != null && combatModuleRuntime.CurrentSkillLoopsWhileHeld
+                && actionController.IsAttacking && !settings.GetAction(SkyPrisonInputAction.LightAttack))
+            {
+                combatModuleRuntime.ReleaseHeldLightAttack();
             }
 
             // 重攻击键松开 = 蓄力释放。窗口挡着的时候不拦截松开事件，避免按住重攻击键
@@ -667,6 +742,27 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
         lastInputEvent = "SprintDown";
     }
 
+    /// <summary>轻攻击/重攻击的绑定里是不是有任意一个物理键(键盘/鼠标主键、副键、
+    /// 手柄键)真的重叠——只有重叠的时候才需要"长按/点按二选一"这套 disambiguation，
+    /// 双枪这类"左键开火、右键换弹"的独立按键方案不该被当成同一个键处理。</summary>
+    private static bool LightHeavyShareAnyKey(SkyPrisonInputSettings settings)
+    {
+        if (settings == null) return false;
+
+        SkyPrisonInputBinding light = settings.GetBinding(SkyPrisonInputAction.LightAttack);
+        SkyPrisonInputBinding heavy = settings.GetBinding(SkyPrisonInputAction.HeavyAttack);
+        if (light == null || heavy == null) return false;
+
+        if (light.primaryKey != KeyCode.None && (light.primaryKey == heavy.primaryKey || light.primaryKey == heavy.secondaryKey || light.primaryKey == heavy.gamepadKey))
+            return true;
+        if (light.secondaryKey != KeyCode.None && (light.secondaryKey == heavy.primaryKey || light.secondaryKey == heavy.secondaryKey || light.secondaryKey == heavy.gamepadKey))
+            return true;
+        if (light.gamepadKey != KeyCode.None && (light.gamepadKey == heavy.primaryKey || light.gamepadKey == heavy.secondaryKey || light.gamepadKey == heavy.gamepadKey))
+            return true;
+
+        return false;
+    }
+
     /// <summary>
     /// 连点攻击时，硬直期间按下的键之前会在这里直接判 canAttack=false 就什么也不做——
     /// UnitActionController.RequestAttack() 里现成的"硬直期间缓冲、硬直结束自动补发"
@@ -693,7 +789,14 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
         }
 
         bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestLightAttack();
-        if (canAttack) actionController.RequestLightAttack();
+        if (canAttack)
+        {
+            actionController.RequestLightAttack();
+            // 机枪式连发(loopWhileHeld)不靠Complete事件收尾，得在真正进入Attack状态
+            // 之后立刻暂停"Complete迟迟不触发就强制解锁"的兜底超时，否则按住攻击键
+            // 不放，角色持枪姿势也会每隔一段时间自己被强制打断、放下再抬起来。
+            combatModuleRuntime?.SuspendAttackLockFallbackIfLooping();
+        }
         lastInputEvent = "LightAttack";
     }
 
@@ -702,6 +805,16 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
     {
         if (actionController == null)
             return;
+
+        // 有些武器模组（比如双枪）压根没配重攻击技能——右键这个按键与其按下去毫无
+        // 反应，不如直接改去触发换弹。TryPlayerRequestReload 内部会自己检查弹匣满没满/
+        // 背包有没有备用弹药，不满足条件时安静地什么都不做，不会误触发。
+        if (combatModuleRuntime != null && combatModuleRuntime.ShouldHeavyAttackFallBackToReload())
+        {
+            bool didReload = combatModuleRuntime.TryPlayerRequestReload();
+            lastInputEvent = didReload ? "HeavyAttack->Reload" : "HeavyAttack->Reload(Blocked)";
+            return;
+        }
 
         if (!actionController.CanEnterAttackPublic())
         {
@@ -722,7 +835,13 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
 
         ResolveReferences();
 
-        Vector2 facing = ResolveCurrentFacingInput();
+        // 2026-08-26：同 RequestDodgeDefaultBackward 那边的坑——ResolveCurrentFacingInput()
+        // 读的是 movement.FacingInput(移动意图/速度兜底)，闪避刚结束、玩家没有真实按键
+        // 时会被残留位移速度"带偏"，指向刚才闪避的位移方向而不是真实视觉朝向，导致
+        // "没按方向键的默认前闪"其实朝着脸的反方向走、"前闪"这个判定标签用错。统一改成
+        // 读渲染用的那份朝向(VisualFacingSign)，两处闪避判定用同一个数据源，不会再分叉。
+        int visualFacingSign = combatModuleRuntime != null ? combatModuleRuntime.VisualFacingSign : 1;
+        Vector2 facing = new Vector2(visualFacingSign == -1 ? 1f : -1f, 0f);
         Vector2 inputDir = currentMoveInput.sqrMagnitude > 0.0001f ? currentMoveInput.normalized : Vector2.zero;
 
         if (inputDir.sqrMagnitude > 0.0001f)
@@ -760,6 +879,60 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
 
         actionController.RequestDodge(noMoveForward);
         lastInputEvent = noMoveForward ? source + " ForwardNoInput" : source + " BackNoInput";
+    }
+
+    /// <summary>专给"射击被闪避打断"这个场景用——跟 RequestDodgeFromCurrentInput 的规则
+    /// 反过来：默认固定后撤(沿角色当前朝向的正后方，不看输入方向)，只有玩家这一刻确实
+    /// 按着朝向"前方"的方向键(跟RequestDodgeFromCurrentInput里前/后判定同一套dot阈值)
+    /// 才改成前闪、位移方向跟随输入。没有按方向键、按的是侧方向、或者按的方向本身就是
+    /// 背向朝向，统统按后撤处理——玩家站着开火被闪避打断时的直觉预期是"往后躲"，不是
+    /// 往面朝的方向扑过去。</summary>
+    private void RequestDodgeDefaultBackward(string source)
+    {
+        if (actionController == null)
+            return;
+
+        ResolveReferences();
+
+        // 2026-08-26：这里不能用 ResolveCurrentFacingInput()（读 movement.FacingInput）
+        // 当基准——那是移动意图/速度兜底，上一次后撤闪避结束时如果玩家没有真实按键，
+        // 残留速度会让它在原地"回弹"指向刚才闪避位移的方向(背对真实视觉朝向)。这里
+        // 直接读渲染用的那份朝向(VisualFacingSign，跟animationDriver.Facing同一个数据
+        // 源)，保证跟角色实际显示的朝向永远一致，不会因为上一次闪避的残留状态分叉。
+        int visualFacingSign = combatModuleRuntime != null ? combatModuleRuntime.VisualFacingSign : 1;
+        Vector2 facing = new Vector2(visualFacingSign == -1 ? 1f : -1f, 0f);
+        Vector2 inputDir = currentMoveInput.sqrMagnitude > 0.0001f ? currentMoveInput.normalized : Vector2.zero;
+
+        bool hasClearForwardInput = false;
+        if (inputDir.sqrMagnitude > 0.0001f && dodgeRelativeToCurrentFacing && facing.sqrMagnitude > 0.0001f)
+        {
+            float dot = Vector2.Dot(inputDir, facing.normalized);
+            hasClearForwardInput = dot > backDodgeDotThreshold;
+        }
+
+        if (hasClearForwardInput)
+        {
+            actionController.RequestDodge(inputDir, UnitMovementController.DodgeRuntimeState.Forward);
+            lastInputEvent = source + " ForwardRelativeToFacing";
+            return;
+        }
+
+        if (facing.sqrMagnitude > 0.0001f)
+        {
+            // 2026-08-26：这个默认后撤要跟近战"攻击取消后撤步"同一种"小步后退"手感——
+            // 不能用普通闪避的完整距离/速度(那是真正的位移型闪避，不是"退一步"的收尾
+            // 反馈)，也要跟它一样冻住朝向，不然位移方向背对着朝向，UpdateFacing会在
+            // 下一帧直接把角色转过去，变成"闪避完之后自己转身"这种违和表现。
+            combatModuleRuntime?.HoldFacingForDefaultBackDodge();
+            float backSpeedScale = actionController.AttackCancelDodgeBackSpeedScale;
+            actionController.RequestDodge(-facing.normalized, UnitMovementController.DodgeRuntimeState.Back, backSpeedScale);
+            lastInputEvent = source + " BackDefault";
+            return;
+        }
+
+        // 没有可用的朝向信息兜底(理论上不该发生)——退回普通闪避判定，不让这次闪避
+        // 请求彻底落空。
+        RequestDodgeFromCurrentInput(source, false);
     }
 
     private void UpdateLastKnownFacingFromMovement()

@@ -395,10 +395,10 @@ namespace SkyPrison.Runtime.UI
             ShowAmountPopup("丢弃", entry.definition.GetLocalizedDisplayName(), entry.count, entry.count,
                 amt =>
                 {
-                    ItemDefinition def = entry.definition;
+                    var dropSource = entry;
                     inv.DiscardSlot(index, amt);
                     Vector3 dropPos = GetPlayerDropPosition();
-                    var dropped = LootDropWorldObject.SpawnDrop(def, amt, dropPos);
+                    var dropped = LootDropWorldObject.SpawnDropFromEntry(dropSource, amt, dropPos);
                     if (dropped != null)
                     {
                         GameObject unit = SkyPrisonPlayerAuthority.CurrentPlayerUnit?.gameObject;

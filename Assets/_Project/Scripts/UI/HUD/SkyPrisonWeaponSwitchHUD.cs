@@ -88,6 +88,30 @@ namespace SkyPrison.Runtime.UI
             return _defaultHandSilhouetteCache;
         }
 
+        // 弹药数字字体要跟战斗掉血数字同一款——伤害数字实际用的字体来自
+        // OBS_NewStyle.asset(OverheadBarStyleAsset).damageNumberFontAsset，指向
+        // "MRT-すくてらむ SDF"。这个字体原本放在 UIUX/Fonts/TMP 下（普通资产目录，
+        // Editor 用序列化引用直接拖，不走 Resources.Load），这个 HUD 是纯运行时代码
+        // 生成、没有 Inspector 可以拖引用——照抄上面 DefaultHandSilhouette 那套
+        // Resources 固定路径方案，把这份字体挪到 Resources/UI/HUD 下（同一个GUID，
+        // 挪动不影响 OBS_NewStyle.asset 那边已经序列化好的引用，Unity 按GUID解析
+        // 不按路径）。
+        private const string AmmoFontResourcesPath = "UI/HUD/MRT-すくてらむ SDF";
+        private static TMP_FontAsset _ammoFontCache;
+        private static bool _ammoFontLoadAttempted;
+
+        private static TMP_FontAsset ResolveAmmoFont()
+        {
+            if (!_ammoFontLoadAttempted)
+            {
+                _ammoFontLoadAttempted = true;
+                _ammoFontCache = Resources.Load<TMP_FontAsset>(AmmoFontResourcesPath);
+                if (_ammoFontCache == null)
+                    Debug.LogWarning($"[SkyPrisonWeaponSwitchHUD] 找不到伤害数字同款字体，期望路径：Resources/{AmmoFontResourcesPath}.asset");
+            }
+            return _ammoFontCache;
+        }
+
         private RectTransform _contentRoot;
         private WeaponSlotCard _cardA;
         private WeaponSlotCard _cardB;
@@ -95,6 +119,15 @@ namespace SkyPrison.Runtime.UI
 
         private float _searchCooldown;
         private const float SearchInterval = 1.5f;
+
+        // 之前只订阅了"换装备"/"武器耐久变化"/"开枪换弹"这几个事件——买/捡弹药走的是
+        // InventoryRuntime.AddItem，只会触发 InventoryRuntime.OnInventoryChanged，
+        // 这个HUD完全没听这个事件，所以"背包弹药"这半个数字买了之后不会立刻刷新，
+        // 得等下次开枪/换弹这些别的事件顺带把它带出来才会更新。InventoryRuntime是
+        // 实例事件（不是静态的），且这个HUD在OnEnable那一刻背包系统不一定已经初始化
+        // 完，没法直接订阅，改成跟_contentRoot一样的"每帧检查一次直到拿到实例"惰性
+        // 订阅模式。
+        private InventoryRuntime _subscribedInventory;
 
         private class WeaponSlotCard
         {
@@ -126,10 +159,26 @@ namespace SkyPrison.Runtime.UI
             EquipmentRuntime.OnActiveWeaponChanged -= HandleActiveWeaponChanged;
             DurabilitySystem.OnDurabilityChanged -= HandleDurabilityChanged;
             UnitActionModuleRuntime.OnWeaponAmmoChanged -= RefreshContentImmediate;
+
+            if (_subscribedInventory != null)
+            {
+                _subscribedInventory.OnInventoryChanged -= RefreshContentImmediate;
+                _subscribedInventory = null;
+            }
         }
 
         private void Update()
         {
+            if (_subscribedInventory == null)
+            {
+                InventoryRuntime inv = InventoryRuntimeBootstrap.Instance?.Inventory;
+                if (inv != null)
+                {
+                    inv.OnInventoryChanged += RefreshContentImmediate;
+                    _subscribedInventory = inv;
+                }
+            }
+
             if (_contentRoot != null) return;
 
             _searchCooldown -= Time.unscaledDeltaTime;
@@ -244,16 +293,23 @@ namespace SkyPrison.Runtime.UI
             ammoGo.transform.SetParent(rect, false);
             SetLayerRecursive(ammoGo, LayerMask.NameToLayer("UI"));
             TMP_Text ammoText = ammoGo.AddComponent<TextMeshProUGUI>();
-            ammoText.alignment = TextAlignmentOptions.BottomRight;
+            TMP_FontAsset ammoFont = ResolveAmmoFont();
+            if (ammoFont != null)
+                ammoText.font = ammoFont;
+            // 之前贴在右下角，正好压在枪身上——枪剪影是照616:340整张画布画的，下半张
+            // 塞满了枪身/弹匣，右下角躲不开重叠。画布上方留白明显更多，挪到右上角
+            // 基本能完全让开枪身轮廓。
+            ammoText.alignment = TextAlignmentOptions.TopRight;
             ammoText.color     = Color.white;
             ammoText.raycastTarget = false;
+            ApplyAmmoTextUnderlayGlow(ammoText);
             RectTransform ammoRect = ammoGo.GetComponent<RectTransform>();
             // 改成固定锚点+固定宽度（不再是横向拉伸满宽），"往左挪"才能真的通过
             // anchoredPosition.x 生效——横向拉伸满宽时 sizeDelta.x=0 会导致锚点
             // 始终精确贴在格子右边缘，anchoredPosition.x 那个偏移量根本不起作用。
-            ammoRect.anchorMin = new Vector2(1f, 0f);
-            ammoRect.anchorMax = new Vector2(1f, 0f);
-            ammoRect.pivot     = new Vector2(1f, 0f);
+            ammoRect.anchorMin = new Vector2(1f, 1f);
+            ammoRect.anchorMax = new Vector2(1f, 1f);
+            ammoRect.pivot     = new Vector2(1f, 1f);
 
             var card = new WeaponSlotCard
             {
@@ -275,10 +331,14 @@ namespace SkyPrison.Runtime.UI
         // 跟随格子大小的比例关系。
         private static void ApplyAmmoLayout(WeaponSlotCard card, Vector2 cardSize)
         {
-            float ammoBoxHeight = cardSize.y * 0.6f;
+            float ammoBoxHeight = cardSize.y * 0.35f;
             float ammoBoxWidth  = cardSize.x * 0.6f;
             RectTransform ammoRect = card.ammoText.rectTransform;
-            ammoRect.anchoredPosition = new Vector2(-cardSize.x * 0.16f, 6f); // 往左挪，别贴着右边框角标
+            // 锚点/pivot都是(1,1)——anchoredPosition.y 从卡片顶边往上量。整个数字框
+            // 的高度(ammoBoxHeight)全部让到卡片顶边之外，再加一点间隙(gapAboveCard)，
+            // 保证数字完全悬在武器槽上方，跟槽内的剪影/边框完全不重叠。
+            const float gapAboveCard = 4f;
+            ammoRect.anchoredPosition = new Vector2(0f, ammoBoxHeight + gapAboveCard);
             ammoRect.sizeDelta        = new Vector2(ammoBoxWidth, ammoBoxHeight);
             card.ammoText.fontSize = Mathf.Min(Mathf.Max(14f, cardSize.y * 0.22f) * 2.3f, ammoBoxHeight * 0.9f);
         }
@@ -466,6 +526,51 @@ namespace SkyPrison.Runtime.UI
             rect.pivot     = new Vector2(0.5f, 0.5f);
             rect.offsetMin = min;
             rect.offsetMax = -max;
+        }
+
+        /// <summary>
+        /// 给弹药数文字加一层贴着字形轮廓的模糊暗影（TMP 自带的 Underlay 功能，不是
+        /// 磨砂窗口那套截屏模糊——Underlay 是 SDF 字体 shader 里专门做"贴合字形的软阴影/
+        /// 发光"用的，参数直接控制在字形周围晕开的柔度，天生就是贴着轮廓的模糊，不用
+        /// 额外拿一份贴图去做高斯模糊。
+        ///
+        /// 不能直接改 ammoText.fontSharedMaterial——那是整个项目默认字体共用的同一份
+        /// 材质实例，改了会让所有没单独设置材质的 TMP 文本一起被拖上这层暗影。改成
+        /// 读 fontMaterial（TMP 在这个属性第一次被访问时会自动复制一份材质实例出来），
+        /// 只影响这一个文字组件自己。
+        /// </summary>
+        // 色收差shader（Sky Prison/UI/HUD TMP Chromatic V83）挂到这个动态生成的弹药
+        // 文字上会花屏，参数对不对都一样——项目里这个shader真正的使用路径是
+        // SkyPrisonPlayerHUDBuilder，作用对象是烤好的HUD prefab里静态的TMP节点，那边的
+        // 字体atlas在编辑期就已经固定；这里的AmmoText是运行时new出来的动态TMP文本，用的
+        // 是运行时动态SDF atlas，字形随时可能重新打包/换页，这个shader按静态atlas假设
+        // 写的UV采样跟动态atlas对不上，才会花。换个稳的方案：黑描边（跟快捷栏1/2/3/4
+        // 数字同一套 PatchQuickSlotsHUDCorners.ApplyBlackOutline），保证不出问题。
+        private static void ApplyAmmoTextUnderlayGlow(TMP_Text ammoText)
+        {
+            Material sharedMat = ammoText.fontSharedMaterial;
+            if (sharedMat == null)
+                return;
+
+            if (!sharedMat.HasProperty("_OutlineWidth"))
+                return;
+
+            Material mat = new Material(sharedMat);
+            // TMP 的 SDF shader 描边是 shader_feature 开关控制的分支(OUTLINE_ON)，只设
+            // _OutlineWidth 数值、不开这个关键字，着色器里那条分支根本没编译进去，数值
+            // 白设——这大概率就是黑描边"设了但看不见"的真正原因。
+            mat.EnableKeyword("OUTLINE_ON");
+            mat.SetFloat("_OutlineWidth", 0.133f);
+            mat.SetColor("_OutlineColor", Color.black);
+            if (mat.HasProperty("_OutlineSoftness"))
+                mat.SetFloat("_OutlineSoftness", 0.05f);
+
+            // 同上一版色收差踩过的坑：只设 fontSharedMaterial 可能被 TMP 自己后续的
+            // 初始化流程用 fontAsset 默认材质覆盖掉，三处一起设保证不管初始化顺序如何
+            // 最终生效的都是这份材质。
+            ammoText.fontSharedMaterial = mat;
+            ammoText.fontMaterial = mat;
+            ammoText.material = mat;
         }
 
         private static void SetLayerRecursive(GameObject go, int layer)
