@@ -793,11 +793,37 @@ public class UnitActionModuleRuntime : MonoBehaviour
                 if (trailEmitter != null)
                 {
                     trailEmitter.transform.rotation = Quaternion.LookRotation(fireDirection, Vector3.up);
+
+                    // 拖尾的射线要跟真子弹在同一个平面上算——FireProjectileSkill 把子弹
+                    // 的 Z 对齐到角色脚底深度，而枪口锚点挂在 45 度倾斜的 Spine 上，Z 比
+                    // 脚底往墙里深了一截（实测 ~1.8）。贴墙朝侧面开枪时，射线从这个深度
+                    // 出发等于贴着墙面走，一两米就撞上墙的网格碰撞体，拖尾长度只剩 1~4、
+                    // 基本看不见；而真子弹在脚底深度飞得好好的。
+                    //
+                    // 做法：生成那一刻把发射器临时挪到脚底深度发射线，生成完再挪回枪口。
+                    // BulletTrailEmitter 的 followEmitterTransform 默认开（线段存在发射器
+                    // 本地空间），挪回去时整条拖尾跟着回到枪口，画面位置不变，长度按
+                    // 子弹平面算。
+                    Transform trailTransform = trailEmitter.transform;
+                    Vector3 visualTrailPosition = trailTransform.position;
+                    Vector3 physicsTrailPosition = visualTrailPosition;
+                    physicsTrailPosition.z = transform.position.z;
+                    trailTransform.position = physicsTrailPosition;
                     trailEmitter.enabled = true;
+                    trailTransform.position = visualTrailPosition;
                 }
             }
 
             ApplyWorld3DLayerAndSorting(muzzleFlash, 5);
+
+            // 火光和拖尾改走跟角色本体相同的落地深度遮挡（锚点=Spine 根节点，与
+            // SpineOcclusionComposite 取 unity_ObjectToWorld 平移的是同一个点）。
+            // 上面的 MuzzleVisualCameraBias 对它们已不再需要，保留是为了弹壳。
+            Vector3 occlusionAnchor = skeletonAnimation != null
+                ? skeletonAnimation.transform.position
+                : transform.position;
+            SkyPrisonUnitAttachedVfxBinder.Bind(muzzleFlash, occlusionAnchor);
+
             Destroy(muzzleFlash, MuzzleFlashAutoDestroySeconds);
         }
 
