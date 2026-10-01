@@ -31,7 +31,7 @@ MonoBehaviour:
   - languageCode: en
     text: 
   scenePath: Assets/_Project/Maps/Raid/Campus/NewMap/NewMap.unity
-  sceneGuid: 
+  sceneGuid: 9f5d41e3ed499d749a3372124ce23541
   mapBoundsCenter: {x: 0, y: 0, z: 0}
   mapBoundsSize: {x: 64, y: 6, z: 64}
   enablePhysicalMapBounds: 1
@@ -46,6 +46,7 @@ MonoBehaviour:
   skyRenderModel: {fileID: 0}
   skyboxMaterial: {fileID: 0}
   ambientColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
+  environmentReflectionIntensity: 1
   environmentAreaLightColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
   environmentAreaLightIntensity: 0.45
   environmentAreaLightSize: 16
@@ -58,15 +59,40 @@ MonoBehaviour:
   sceneFogColor: {r: 0.55, g: 0.58, b: 0.62, a: 1}
   fogStartDistance: 20
   fogEndDistance: 80
+  enableHeightFog: 0
+  heightFogColorStart: {r: 0.05, g: 0.06, b: 0.08, a: 1}
+  heightFogColorEnd: {r: 0.1, g: 0.12, b: 0.16, a: 1}
+  heightFogIntensity: 1
+  heightFogColorDuo: 1
+  heightFogDistanceStart: -60
+  heightFogDistanceEnd: 60
+  heightFogDistanceFalloff: 1
+  heightFogHeightStart: 0
+  heightFogHeightEnd: 15
+  heightFogHeightFalloff: 1
+  heightFogNoiseSpeed: {x: 0.5, y: 0.5, z: 0}
+  heightFogNoiseDistanceEnd: 30
   postProcessProfile: {fileID: 0}
   environmentFxPrefab: {fileID: 0}
   enableDayNightCycle: 0
   startTimeOfDay: 12
   enableWeather: 0
   weatherType: 0
-  weatherIntensity: 0.5
-  lensWetnessIntensity: 0
+  dustWeather:
+    intensity: 5
+  rainWeather:
+    intensity: 5
+    lensWetnessIntensity: 0
+  snowWeather:
+    intensity: 5
+  weatherFog:
+    intensity: 5
   enableDepthOfField: 0
   focusDistance: 8
   blurStrength: 0.4
   triggerPackages: []
+  exploreBgmClips: []
+  combatBgmClips: []
+  bgmPlayMode: 0
+  bgmCrossfadeDuration: 3
+  bgmVolume: 1

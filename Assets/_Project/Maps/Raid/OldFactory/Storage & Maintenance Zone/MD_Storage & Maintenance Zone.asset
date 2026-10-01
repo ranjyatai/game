@@ -47,6 +47,7 @@ MonoBehaviour:
   skyRenderModel: {fileID: 0}
   skyboxMaterial: {fileID: 0}
   ambientColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
+  environmentReflectionIntensity: 1
   environmentAreaLightColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
   environmentAreaLightIntensity: 0.45
   environmentAreaLightSize: 16
@@ -59,14 +60,34 @@ MonoBehaviour:
   sceneFogColor: {r: 0.55, g: 0.58, b: 0.62, a: 1}
   fogStartDistance: 20
   fogEndDistance: 80
+  enableHeightFog: 0
+  heightFogColorStart: {r: 0.05, g: 0.06, b: 0.08, a: 1}
+  heightFogColorEnd: {r: 0.1, g: 0.12, b: 0.16, a: 1}
+  heightFogIntensity: 1
+  heightFogColorDuo: 1
+  heightFogDistanceStart: 4
+  heightFogDistanceEnd: 60
+  heightFogDistanceFalloff: 1.4
+  heightFogHeightStart: 0
+  heightFogHeightEnd: 14
+  heightFogHeightFalloff: 1.2
+  heightFogNoiseSpeed: {x: 0.5, y: 0.5, z: 0}
+  heightFogNoiseDistanceEnd: 30
   postProcessProfile: {fileID: 0}
   environmentFxPrefab: {fileID: 0}
   enableDayNightCycle: 0
   startTimeOfDay: 12
   enableWeather: 0
   weatherType: 0
-  weatherIntensity: 0.5
-  lensWetnessIntensity: 0
+  dustWeather:
+    intensity: 5
+  rainWeather:
+    intensity: 5
+    lensWetnessIntensity: 0
+  snowWeather:
+    intensity: 5
+  weatherFog:
+    intensity: 5
   enableDepthOfField: 0
   focusDistance: 8
   blurStrength: 0.4
