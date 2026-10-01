@@ -10,17 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a90b9b713586622408b581bcf2633f33, type: 3}
-  m_Name: "GSM_\u91D1\u5C5E"
+  m_Name: "GSM_\u91D1\u5C5E\u683C\u6805"
   m_EditorClassIdentifier: Assembly-CSharp::GroundSurfaceMaterialDefinition
-  surfaceId: metal_surface
-  displayName: "\u91D1\u5C5E"
+  surfaceId: metal_grate
+  displayName: "\u91D1\u5C5E\u683C\u6805"
   category: "\u5730\u5F62\u88C5\u9970\u7269\u8868\u9762"
-  isStandard: 1
-  surfaceTagOnly: 1
-  note: "\u7ED9\u94C1\u8F68\u3001\u94C1\u697C\u68AF\u3001\u94C1\u677F\u5E73\u53F0\u8FD9\u7C7B\u53EF\u7AD9\u7ACB\u7684\u91D1\u5C5E\u88C5\u9970\u7269\u7528\u3002\u4E0D\u53C2\u4E0E\u5730\u5F62\u7B14\u5237\uFF08useAsTerrainSurface=0\uFF09\uFF0C\u53EA\u901A\u8FC7
-    TerrainDecorationDefinition.walkableSurface \u5F15\u7528\u3002"
+  isStandard: 0
+  note: "\u683C\u6805\u9542\u7A7A\u6D4B\u8BD5\u6750\u8D28\uFF08\u590D\u5236\u81EA
+    \u91D1\u5C5E\uFF09\u3002\u5237\u5230\u5730\u5F62\u4E0A\u6309\u683C\u6805\u56FE\u6848\u9542\u7A7A\uFF0C\u78B0\u649E\u4E0D\u53D8\u3002"
   baseColor: {r: 0.55, g: 0.55, b: 0.55, a: 1}
-  baseTexture: {fileID: 0}
+  baseTexture: {fileID: 2800000, guid: 60a6b92322766ab4d9cae39e03d83cb7, type: 3}
   safePreviewTexture: {fileID: 0}
   editPreviewTexture: {fileID: 0}
   runtimePreviewTexture: {fileID: 0}
@@ -89,10 +88,10 @@ MonoBehaviour:
   brightness: 1
   contrast: 1
   saturation: 1
-  seeThroughGrate: 0
+  seeThroughGrate: 1
   grateCellSize: 0.5
-  grateBarWidth: 0.08
-  grateMaskTexture: {fileID: 0}
+  grateBarWidth: 0.09
+  grateMaskTexture: {fileID: 2800000, guid: 8088568ea1d12974490db77c6831fb42, type: 3}
   grateMaskUseAlpha: 0
   grateMaskThreshold: 0.5
   surfaceType: 2

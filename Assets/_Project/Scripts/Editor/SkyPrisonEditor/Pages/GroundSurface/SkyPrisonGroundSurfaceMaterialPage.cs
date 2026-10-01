@@ -157,9 +157,12 @@ public class SkyPrisonGroundSurfaceMaterialPage : SkyPrisonEditorPageBase
 
         Rect viewRect = new Rect(rect.x + 6f, rect.y + 6f, rect.width - 12f, rect.height - 12f);
         List<GroundSurfaceMaterialDefinition> filtered = GetFilteredDefinitions();
+        // 仅作地面标签的统一归到最底部一组、默认折叠：不是笔刷，平时不该和纹理混在一起，
+        // 但要改它的脚步声/摩擦时还能找到。
         Dictionary<string, List<GroundSurfaceMaterialDefinition>> groups = filtered
-            .GroupBy(GetCategoryLabel)
-            .OrderBy(g => g.Key)
+            .GroupBy(GetListGroupLabel)
+            .OrderBy(g => g.Key == SurfaceTagOnlyGroupLabel ? 1 : 0)
+            .ThenBy(g => g.Key)
             .ToDictionary(g => g.Key, g => g.ToList());
 
         float contentHeight = Mathf.Max(viewRect.height, groups.Sum(g => 24f + g.Value.Count * 48f) + 12f);
@@ -172,7 +175,7 @@ public class SkyPrisonGroundSurfaceMaterialPage : SkyPrisonEditorPageBase
         {
             Rect header = new Rect(0f, y, contentRect.width, 24f);
             if (!categoryFoldouts.ContainsKey(group.Key))
-                categoryFoldouts[group.Key] = true;
+                categoryFoldouts[group.Key] = group.Key != SurfaceTagOnlyGroupLabel;
 
             categoryFoldouts[group.Key] = EditorGUI.Foldout(header, categoryFoldouts[group.Key], group.Key, true);
             y += 24f;
@@ -558,6 +561,7 @@ public class SkyPrisonGroundSurfaceMaterialPage : SkyPrisonEditorPageBase
         PropertyField("显示名称", "displayName");
         PropertyField("分类", "category");
         PropertyField("标准资源", "isStandard");
+        PropertyField("仅作地面标签", "surfaceTagOnly");
     }
 
     private void DrawVisualInfo()
@@ -933,6 +937,33 @@ public class SkyPrisonGroundSurfaceMaterialPage : SkyPrisonEditorPageBase
                 ? "当前地面标签未指定。建议从音声合成运行层 Key 中选择一个 surface_* 层。"
                 : $"音声合成建议运行层：{label}。地面标签是脚步语义分类；运行层 Key 是音声合成模块检索入口。",
             MessageType.None);
+
+        // 实际会播哪个脚步声：材质自己挂的优先，没挂就按地面标签查全项目共用的表。
+        if (selectedDefinition == null)
+            return;
+
+        if (selectedDefinition.surfaceAudioPackage != null)
+        {
+            EditorGUILayout.HelpBox($"脚步声：使用本材质自己的音效包 {selectedDefinition.surfaceAudioPackage.name}。", MessageType.None);
+            return;
+        }
+
+        SkyPrisonGroundSurfaceTypeAudioTable table = SkyPrisonGroundSurfaceTypeAudioTable.Instance;
+        if (table != null && table.TryGet(type, out SkyPrisonAudioPackage typePackage, out string typeKey))
+        {
+            EditorGUILayout.HelpBox(
+                $"脚步声：本材质没单独挂音效包，按地面标签使用 {typePackage.name}" +
+                (string.IsNullOrWhiteSpace(typeKey) ? "" : $"（运行层 {typeKey}）") + "。",
+                MessageType.None);
+        }
+        else
+        {
+            EditorGUILayout.HelpBox(
+                "脚步声：本材质没挂音效包，地面标签音效表里这个标签也没有配置——走上去只有默认鞋底声。\n" +
+                $"在 Resources/{SkyPrisonGroundSurfaceTypeAudioTable.ResourcesAssetName} 里给这个标签配一个音效包，" +
+                "或者在下方「音声合成」里给本材质单独挂一个。",
+                MessageType.Warning);
+        }
     }
 
     private void ApplyAudioTagsFromSurfaceType()
@@ -1131,6 +1162,50 @@ public class SkyPrisonGroundSurfaceMaterialPage : SkyPrisonEditorPageBase
             PropertyField("奔跑噪声倍率", "runNoiseMultiplier");
             PropertyField("潜行噪声倍率", "sneakNoiseMultiplier");
             PropertyField("落地噪声倍率", "landingNoiseMultiplier");
+        }
+
+        // 格栅是 Terrain 层的镂空，印章/样条这类覆盖层没有对应的地形层，不显示。
+        if (!overlayMode)
+        {
+            EditorGUILayout.Space(4f);
+            PropertyField("虚空地表", "isVoid");
+            if (selectedDefinition != null && selectedDefinition.isVoid)
+            {
+                EditorGUILayout.HelpBox(
+                    "刷到地形上的地方地面整块消失（边缘是平滑曲线），角色不能走上去；没有脚步声。\n" +
+                    "只去掉画面，地形碰撞还在——需要物体真正掉下去的地方用挖洞工具。\n" +
+                    "第一次用放置工具刷时自动给地形挂绑定组件并换格栅版地形着色器。",
+                    MessageType.Info);
+                if (selectedDefinition.seeThroughGrate)
+                    EditorGUILayout.HelpBox("虚空和格栅镂空不能同时勾——虚空优先，请取消格栅镂空。", MessageType.Warning);
+            }
+
+            using (new EditorGUI.DisabledScope(selectedDefinition != null && selectedDefinition.isVoid))
+                PropertyField("格栅镂空", "seeThroughGrate");
+            if (selectedDefinition != null && selectedDefinition.seeThroughGrate && !selectedDefinition.isVoid)
+            {
+                PropertyField("镂空遮罩贴图", "grateMaskTexture");
+                if (selectedDefinition.grateMaskTexture != null)
+                {
+                    PropertyField("读 Alpha 通道", "grateMaskUseAlpha");
+                    PropertyField("镂空阈值", "grateMaskThreshold");
+                    if (selectedDefinition.baseTexture != null &&
+                        (selectedDefinition.baseTexture.width * selectedDefinition.grateMaskTexture.height !=
+                         selectedDefinition.baseTexture.height * selectedDefinition.grateMaskTexture.width))
+                        EditorGUILayout.HelpBox("遮罩和基础纹理的长宽比不同：两张平铺不一致，镂空会和画出来的栅条错开。", MessageType.Warning);
+                }
+                else
+                {
+                    PropertyField("格子间距（米）", "grateCellSize");
+                    PropertyField("栅条宽度（米）", "grateBarWidth");
+                }
+                EditorGUILayout.HelpBox(
+                    "刷到地形上的地方按格栅图案镂空，透出地形下方的建筑群；碰撞不变，角色照常在上面走。\n" +
+                    "填了遮罩贴图就按贴图镂空（白=栅条，黑=孔），平铺跟这个地形层一致；遮罩要和基础纹理同一套像素布局。不填则按格子间距程序化生成。\n" +
+                    "第一次用放置工具刷这个材质时，会自动给地形挂格栅绑定组件并换成格栅版地形着色器。\n" +
+                    "一张地形同一时间只支持一种格栅材质。",
+                    MessageType.Info);
+            }
         }
     }
 
@@ -1571,6 +1646,13 @@ public class SkyPrisonGroundSurfaceMaterialPage : SkyPrisonEditorPageBase
         if (!string.IsNullOrWhiteSpace(def.surfaceId))
             return def.surfaceId;
         return def.name;
+    }
+
+    private const string SurfaceTagOnlyGroupLabel = "仅地面标签（不出现在笔刷）";
+
+    private string GetListGroupLabel(GroundSurfaceMaterialDefinition def)
+    {
+        return def != null && def.surfaceTagOnly ? SurfaceTagOnlyGroupLabel : GetCategoryLabel(def);
     }
 
     private string GetCategoryLabel(GroundSurfaceMaterialDefinition def)

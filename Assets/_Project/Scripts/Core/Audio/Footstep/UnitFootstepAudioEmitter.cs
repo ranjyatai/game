@@ -757,11 +757,15 @@ public class UnitFootstepAudioEmitter : MonoBehaviour
             if (definition == null)
                 continue;
 
-            SkyPrisonAudioPackage surfacePackage = ResolveGroundSurfaceAudioPackage(definition, kind, out GroundSurfaceAudioPackageBinding binding);
+            SkyPrisonAudioPackage surfacePackage = ResolveGroundSurfaceAudioPackage(
+                definition, kind, out GroundSurfaceAudioPackageBinding binding, out string surfaceTypeRuntimeKey);
             if (surfacePackage == null)
                 continue;
 
-            string runtimeKey = GetGroundSurfaceRuntimeLayerKey(definition, kind);
+            // 来自地面标签表的音效包，用表里的 Key（见 SkyPrisonGroundSurfaceTypeAudioTable）。
+            string runtimeKey = !string.IsNullOrWhiteSpace(surfaceTypeRuntimeKey)
+                ? surfaceTypeRuntimeKey
+                : GetGroundSurfaceRuntimeLayerKey(definition, kind);
             if (string.IsNullOrWhiteSpace(runtimeKey) && binding != null)
                 runtimeKey = binding.runtimeLayerKey;
 
@@ -805,9 +809,11 @@ public class UnitFootstepAudioEmitter : MonoBehaviour
     private SkyPrisonAudioPackage ResolveGroundSurfaceAudioPackage(
         GroundSurfaceMaterialDefinition definition,
         FootstepEventKind kind,
-        out GroundSurfaceAudioPackageBinding legacyBinding)
+        out GroundSurfaceAudioPackageBinding legacyBinding,
+        out string surfaceTypeRuntimeKey)
     {
         legacyBinding = null;
+        surfaceTypeRuntimeKey = "";
 
         if (definition == null)
             return null;
@@ -816,6 +822,12 @@ public class UnitFootstepAudioEmitter : MonoBehaviour
         // 角色脚步声组件只负责采样和混合，不再维护 草地->AP_Surface_Grass 这类外部映射表。
         if (definition.surfaceAudioPackage != null)
             return definition.surfaceAudioPackage;
+
+        // 材质没单独挂音效包：按地面标签查全项目共用的表。之前这里直接落到旧绑定表，
+        // 旧表是空的，结果水泥、石砾这些大面积地面走上去只有默认鞋底声。
+        SkyPrisonGroundSurfaceTypeAudioTable table = SkyPrisonGroundSurfaceTypeAudioTable.Instance;
+        if (table != null && table.TryGet(definition.surfaceType, out SkyPrisonAudioPackage typePackage, out surfaceTypeRuntimeKey))
+            return typePackage;
 
         // 兼容历史资源：如果旧绑定表还有数据，就兜底使用它。
         legacyBinding = FindLegacyGroundSurfaceAudioBinding(definition, kind);

@@ -84,6 +84,13 @@ public class TerrainGroundMotorV5 : MonoBehaviour
     public bool allowInputWhileSliding = true;
     [Range(0f, 1f)] public float inputControlWhileSliding = 0.35f;
 
+    [Header("Terrain Holes（地形挖洞）")]
+    [Tooltip("把 Terrain 的洞当墙：这一步脚底会进洞就挡住，并沿洞口边缘滑动。\n" +
+             "不开的话角色会踩着看不见的地面悬空走过洞口——找地面用的 Terrain.SampleHeight 不认洞。")]
+    public bool blockTerrainHoles = true;
+    [Tooltip("脚底中心往外多少米也算进洞。避免身体一半已经悬在洞上才被挡住。")]
+    [Min(0f)] public float terrainHoleEdgeMargin = 0.25f;
+
     [Header("Obstacle Edge Anti Hook")]
     [Tooltip("启用身体水平投射。角色碰到箱子、墙角、物体边缘时，会沿墙面滑开，而不是把位移硬顶进边角。")]
     public bool enableHorizontalBodyCollision = true;
@@ -785,9 +792,39 @@ public class TerrainGroundMotorV5 : MonoBehaviour
                 attrRescue, attrSeparation, attrSepBlock, attrFinalDepen);
         }
 
+        // 地形洞口当墙。放在所有水平修正（输入/碰撞/卡死救援/单位推挤/击退）之后统一
+        // 兜底——任何一处把人推向洞口都会在这里被拦下，不用逐处去改。
+        if (blockTerrainHoles)
+            candidate = BlockTerrainHoleEntry(position, candidate, footOffset);
+
         MoveTo(candidate);
         prevTickEndPosition = candidate;
         hasPrevTickEnd = true;
+    }
+
+    /// <summary>
+    /// 这一步脚底会进洞就退回；先试只走 X、再试只走 Z，贴着洞口边缘走时能顺边滑动
+    /// （和撞墙手感一致），而不是一碰到就整个停住。
+    /// 本来就站在洞上（出生在洞里 / 站着时脚下被挖空）不拦，否则会被永久卡死。
+    /// </summary>
+    // 洞和虚空地表（刷了「虚空」材质的地方）一视同仁：都当墙。
+    private Vector3 BlockTerrainHoleEntry(Vector3 position, Vector3 candidate, Vector3 footOffset)
+    {
+        if (SkyPrisonTerrainHoleQuery.IsBlockedAround(position + footOffset, terrainHoleEdgeMargin))
+            return candidate;
+
+        if (!SkyPrisonTerrainHoleQuery.IsBlockedAround(candidate + footOffset, terrainHoleEdgeMargin))
+            return candidate;
+
+        Vector3 xOnly = new Vector3(candidate.x, candidate.y, position.z);
+        if (!SkyPrisonTerrainHoleQuery.IsBlockedAround(xOnly + footOffset, terrainHoleEdgeMargin))
+            return xOnly;
+
+        Vector3 zOnly = new Vector3(position.x, candidate.y, candidate.z);
+        if (!SkyPrisonTerrainHoleQuery.IsBlockedAround(zOnly + footOffset, terrainHoleEdgeMargin))
+            return zOnly;
+
+        return new Vector3(position.x, candidate.y, position.z);
     }
 
     private Vector3 ApplyCommercialStuckRescue(

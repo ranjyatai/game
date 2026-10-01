@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52e176ef64ed78143805ae09e28b4915, type: 3}
+  m_Name: SkyPrisonGroundSurfaceTypeAudioTable
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonGroundSurfaceTypeAudioTable
+  entries:
+  - surfaceType: 2
+    audioPackage: {fileID: 11400000, guid: b91ae61c5c7a5a141ab9aa4d6ed41ca3, type: 2}
+    runtimeLayerKey: surface_metal
+  - surfaceType: 5
+    audioPackage: {fileID: 11400000, guid: 307440c8d27271f40b0b5fa68b12a73f, type: 2}
+    runtimeLayerKey: surface_grass
+  - surfaceType: 4
+    audioPackage: {fileID: 11400000, guid: d9239a92ca727c2489eb0e5e84eaae82, type: 2}
+    runtimeLayerKey: 

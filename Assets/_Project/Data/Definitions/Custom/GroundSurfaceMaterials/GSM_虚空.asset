@@ -10,16 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a90b9b713586622408b581bcf2633f33, type: 3}
-  m_Name: "GSM_\u91D1\u5C5E"
+  m_Name: "GSM_\u865A\u7A7A"
   m_EditorClassIdentifier: Assembly-CSharp::GroundSurfaceMaterialDefinition
-  surfaceId: metal_surface
-  displayName: "\u91D1\u5C5E"
-  category: "\u5730\u5F62\u88C5\u9970\u7269\u8868\u9762"
-  isStandard: 1
-  surfaceTagOnly: 1
-  note: "\u7ED9\u94C1\u8F68\u3001\u94C1\u697C\u68AF\u3001\u94C1\u677F\u5E73\u53F0\u8FD9\u7C7B\u53EF\u7AD9\u7ACB\u7684\u91D1\u5C5E\u88C5\u9970\u7269\u7528\u3002\u4E0D\u53C2\u4E0E\u5730\u5F62\u7B14\u5237\uFF08useAsTerrainSurface=0\uFF09\uFF0C\u53EA\u901A\u8FC7
-    TerrainDecorationDefinition.walkableSurface \u5F15\u7528\u3002"
-  baseColor: {r: 0.55, g: 0.55, b: 0.55, a: 1}
+  surfaceId: void
+  displayName: "\u865A\u7A7A"
+  category: "\u7279\u6B8A\u5730\u8868"
+  isStandard: 0
+  surfaceTagOnly: 0
+  note: "\u5237\u5230\u5730\u5F62\u4E0A\u7684\u5730\u65B9\u5730\u9762\u6574\u5757\u6D88\u5931\uFF0C\u8FB9\u7F18\u5E73\u6ED1\uFF1B\u4E0D\u80FD\u8D70\u4E0A\u53BB\uFF1B\u6CA1\u6709\u811A\u6B65\u58F0\u3002\u53EA\u53BB\u6389\u753B\u9762\uFF0C\u78B0\u649E\u4ECD\u5728\uFF08\u771F\u6B63\u8981\u6389\u4E0B\u53BB\u7528\u6316\u6D1E\uFF09\u3002"
+  baseColor: {r: 0, g: 0, b: 0, a: 1}
   baseTexture: {fileID: 0}
   safePreviewTexture: {fileID: 0}
   editPreviewTexture: {fileID: 0}
@@ -39,8 +38,8 @@ MonoBehaviour:
   randomScaleMin: 0.9
   randomScaleMax: 1.15
   randomOffsetStrength: 1
-  allowRotate90: 0
-  allowFlipX: 0
+  allowRotate90: 1
+  allowFlipX: 1
   allowFlipY: 0
   stampTexture: {fileID: 0}
   stampWorldSize: {x: 1, y: 1}
@@ -73,7 +72,7 @@ MonoBehaviour:
   lockedOverlayWorldSize: {x: 1, y: 1}
   lockSplineWorldWidth: 0
   lockedSplineWorldWidth: 0.55
-  antiRepeatEnabled: 0
+  antiRepeatEnabled: 1
   antiRepeatStrength: 0.62
   antiRepeatWorldSize: 12
   antiRepeatUvOffset: 0.72
@@ -82,29 +81,30 @@ MonoBehaviour:
   variantBlendStrength: 0.65
   stochasticBlendStrength: 0.45
   macroVariationTexture: {fileID: 0}
-  macroVariationStrength: 0
-  macroVariationWorldSize: 16
-  baseColorBlendMode: 0
-  baseColorBlendStrength: 0
+  macroVariationStrength: 0.18
+  macroVariationWorldSize: 18
+  baseColorBlendMode: 2
+  baseColorBlendStrength: 0.35
   brightness: 1
   contrast: 1
   saturation: 1
+  isVoid: 1
   seeThroughGrate: 0
   grateCellSize: 0.5
   grateBarWidth: 0.08
   grateMaskTexture: {fileID: 0}
   grateMaskUseAlpha: 0
   grateMaskThreshold: 0.5
-  surfaceType: 2
+  surfaceType: 0
   friction: 1
-  walkNoiseMultiplier: 1
-  runNoiseMultiplier: 1.25
-  sneakNoiseMultiplier: 0.55
-  landingNoiseMultiplier: 1.35
-  surfaceAudioPackage: {fileID: 11400000, guid: b91ae61c5c7a5a141ab9aa4d6ed41ca3, type: 2}
-  audioRuntimeLayerKey: surface_metal
-  footstepAudioTag: surface_metal
-  landingAudioTag: surface_metal
-  slideAudioTag: surface_metal
+  walkNoiseMultiplier: 0
+  runNoiseMultiplier: 0
+  sneakNoiseMultiplier: 0
+  landingNoiseMultiplier: 0
+  surfaceAudioPackage: {fileID: 0}
+  audioRuntimeLayerKey: 
+  footstepAudioTag: 
+  landingAudioTag: 
+  slideAudioTag: 
   defaultFootstepFx: {fileID: 0}
   defaultLandingFx: {fileID: 0}
