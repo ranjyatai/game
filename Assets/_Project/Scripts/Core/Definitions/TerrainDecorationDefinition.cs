@@ -121,6 +121,12 @@ public class TerrainDecorationDefinition : ScriptableObject
     [TextArea(2, 4)] public string note = "";
     public bool isStandard = false;
 
+    [Tooltip("白模（关卡体量占位几何体）。\n\n" +
+             "勾上后它不出现在放置工具的「地形装饰物」模块，只出现在「白模」模块；" +
+             "放置时固定进 WorldRoot/BackgroundRoot/GrayboxRoot，方便整体隐藏/停用，" +
+             "不影响实物。")]
+    public bool isGraybox = false;
+
     [Header("Visual Variants")]
     public List<TerrainDecorationVariant> variants = new List<TerrainDecorationVariant>();
     public bool randomVariantOnPlace = false;

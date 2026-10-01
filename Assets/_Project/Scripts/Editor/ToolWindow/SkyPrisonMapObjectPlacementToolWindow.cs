@@ -80,6 +80,9 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         SpawnPoint,
         Effect,
         AudioArea,
+        // 白模：放置流程与地形装饰物完全共用（同一个 TerrainDecorationDefinition / Builder），
+        // 只是列表按 isGraybox 分开、父节点固定为 GrayboxRoot，并多一组整体隐藏/停用开关。
+        Graybox,
     }
 
     private enum ToolPage
@@ -174,7 +177,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         new ToolBookmark(PlacementObjectKind.Unit, "单位", true),
         new ToolBookmark(PlacementObjectKind.Item, "道具", true),
         new ToolBookmark(PlacementObjectKind.Region, "区域", true),
-        new ToolBookmark(PlacementObjectKind.Trigger, "触发器", false),
+        new ToolBookmark(PlacementObjectKind.Graybox, "白模", true),
         new ToolBookmark(PlacementObjectKind.SpawnPoint, "出生点", false),
         new ToolBookmark(PlacementObjectKind.Effect, "特效", false),
         new ToolBookmark(PlacementObjectKind.AudioArea, "声音区域", false),
@@ -370,6 +373,28 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
     private bool terrainBrushStrokeUndoActive = false;
     private int terrainBrushStrokeUndoGroup = -1;
 
+    // ── 地面笔刷网格对齐 ─────────────────────────────────────
+    // 徒手刷建筑边界/走廊很难画齐，歪一点在俯视下很显眼。开启后：
+    //   笔刷吸附：笔刷中心吸到格子中心，笔刷形状/软硬照旧；
+    //   整格填充：刷到哪格就把整格填满（硬边），拖动沿路径一格一格填；
+    //   矩形填充：角点吸到网格交点，按世界坐标矩形填（不再按屏幕矩形——透视下屏幕矩形投到地面是梯形）；
+    //   Ctrl + 拖动：锁定水平 / 竖直 / 45°（Shift 已被挖洞的「补洞」占用）。
+    // 网格按世界原点对齐，对纹理、虚空、格栅、挖洞都生效；高度工具只做笔刷吸附。
+    private enum GroundGridSnapMode
+    {
+        SnapCenter,
+        FillCells,
+    }
+
+    private static readonly float[] GroundGridSizeOptions = { 0.25f, 0.5f, 1f, 2f, 4f };
+    private static readonly string[] GroundGridSizeLabels = { "0.25 米", "0.5 米", "1 米", "2 米", "4 米" };
+    private static readonly string[] GroundGridSnapModeLabels = { "笔刷吸附（中心对齐格子）", "整格填充（硬边）" };
+    private bool groundGridSnapEnabled = false;
+    private float groundGridSize = 1f;
+    private GroundGridSnapMode groundGridSnapMode = GroundGridSnapMode.FillCells;
+    private Vector3 groundStrokeStartPosition;
+    private bool hasGroundStrokeStart = false;
+
     // TerrainLayer 矩形填充：只给真正的地面纹理使用。
     // 与笔刷分开，按 Scene 里拖出的矩形一次性写入 alphamap。
     private bool terrainRectFillMode = false;
@@ -399,6 +424,11 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
     private const float TerrainDecorationPreviewHeightStep = 0.10f;
     private float terrainDecorationPreviewRotationY = 0f;
     private float terrainDecorationPreviewHeightOffset = 0f;
+    // 放置模式下无修饰键滚轮 = 等比缩放（乘在定义的 defaultScale/随机缩放之上）。
+    // 连续放置时保留，换选定义时归 1。
+    private const float TerrainDecorationPreviewScaleFactor = 1.1f;
+    private const float GrayboxPreviewScaleStep = 0.5f;
+    private float terrainDecorationPreviewScaleMultiplier = 1f;
     private Vector3 terrainDecorationPreviewBasePosition = Vector3.zero;
     private string parentPath = DefaultParentPath;
 
@@ -443,7 +473,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         var window = GetWindow<SkyPrisonMapObjectPlacementToolWindow>("地图对象放置工具");
         window.Show();
         window.ApplyExpandedFixedWindowSize();
-        window.currentKind = PlacementObjectKind.TerrainDecoration;
+        window.currentKind = definition != null && definition.isGraybox ? PlacementObjectKind.Graybox : PlacementObjectKind.TerrainDecoration;
         window.currentPage = ToolPage.Place;
         window.RefreshDefinitions();
         window.SelectDefinition(definition);
@@ -455,7 +485,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         var window = GetWindow<SkyPrisonMapObjectPlacementToolWindow>("地图对象放置工具");
         window.Show();
         window.ApplyExpandedFixedWindowSize();
-        window.currentKind = PlacementObjectKind.TerrainDecoration;
+        window.currentKind = definition != null && definition.isGraybox ? PlacementObjectKind.Graybox : PlacementObjectKind.TerrainDecoration;
         window.currentPage = ToolPage.Place;
         window.RefreshDefinitions();
         window.SelectDefinition(definition);
@@ -479,7 +509,12 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
     private void OnEnable()
     {
         titleContent = new GUIContent("地图对象放置工具");
-        ApplyExpandedFixedWindowSize();
+        // 不在这里调 ApplyExpandedFixedWindowSize()。项目关了 Enter Play Mode Options，
+        // 进/出 Play 都会整域重载，OnEnable 每次都会跑；这时 Unity 正在恢复窗口布局，
+        // 在这里改 minSize/maxSize/position（外加一帧后的 delayCall 再改一次）会和布局
+        // 恢复抢窗口——实测窗口每次进出 Play 都会跳位置，并且会留下空白的窗口外壳，
+        // 进几次 Play 就多几个。窗口的位置和 min/maxSize 本身会被序列化，重载后 Unity
+        // 自己会恢复；固定尺寸只在用户主动打开窗口（OpenWindow 等三个入口）时设一次。
 
         // 旧窗口实例可能缓存了旧路径。地形装饰物统一落到 StructureRoot。
         if (string.IsNullOrWhiteSpace(parentPath) || parentPath == "WorldRoot/BackgroundRoot")
@@ -703,6 +738,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         switch (currentKind)
         {
             case PlacementObjectKind.TerrainDecoration:
+            case PlacementObjectKind.Graybox:
                 return selectedDefinition != null;
             case PlacementObjectKind.GroundSurfaceMaterial:
                 return IsTerrainDefaultToolSelected() || groundBrushMode != GroundBrushMode.SurfaceMaterial || selectedSurfaceMaterial != null;
@@ -1049,6 +1085,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             ApplyGroundVisualDisplayModeToAllBlocks();
 
         RefreshDefinitions();
+        EnsureSelectedDefinitionMatchesKind();
 
         if (currentKind == PlacementObjectKind.Unit)
         {
@@ -1136,6 +1173,12 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             return;
         }
 
+        if (currentKind == PlacementObjectKind.Graybox)
+        {
+            DrawGrayboxPlacePage();
+            return;
+        }
+
         if (currentKind != PlacementObjectKind.TerrainDecoration)
         {
             DrawFutureKindPlaceholder();
@@ -1145,6 +1188,136 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         DrawFilters();
         DrawDefinitionList();
         DrawPlacementSettings();
+    }
+
+    // ── 白模模块 ──────────────────────────────────────────────
+    // 白模和实物分开挂在 GrayboxRoot 下，整体隐藏/停用都不碰实物。
+    private const string GrayboxParentPath = "WorldRoot/BackgroundRoot/GrayboxRoot";
+
+    private void DrawGrayboxPlacePage()
+    {
+        DrawGrayboxRootPanel();
+
+        EditorGUILayout.BeginVertical("box");
+        search = EditorGUILayout.TextField("搜索", search);
+        EditorGUILayout.EndVertical();
+
+        DrawDefinitionList();
+        DrawPlacementSettings();
+    }
+
+    /// <summary>
+    /// 两种"隐藏"语义不同，分成两个开关：
+    ///   场景视图隐藏——只是编辑器 Scene 视图里看不见（SceneVisibilityManager），碰撞照常、
+    ///                  进 Play 也还在。用来一边摆实物一边对照白模位置。
+    ///   停用——GrayboxRoot.SetActive(false)，碰撞一起消失。用来试玩"只有实物"的版本，
+    ///         确认换上实物后碰撞没有漏洞（白模的碰撞会掩盖实物缺的墙）。
+    /// </summary>
+    private void DrawGrayboxRootPanel()
+    {
+        Transform root = FindTransformByPath(GrayboxParentPath);
+        List<TerrainDecorationRuntimeBinder> grayboxes = placedCache
+            .Where(b => b != null && b.gameObject != null && b.definition != null && b.definition.isGraybox)
+            .ToList();
+        int stray = root == null
+            ? grayboxes.Count
+            : grayboxes.Count(b => !b.transform.IsChildOf(root));
+
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.LabelField("白模总控", EditorStyles.boldLabel);
+
+        // 按钮始终画出来：没有 GrayboxRoot 时置灰，而不是整组不显示——
+        // 否则第一次打开模块时看不到这组功能，会以为没做。
+        bool hasRoot = root != null;
+        bool active = hasRoot && root.gameObject.activeSelf;
+        bool sceneHidden = hasRoot && SceneVisibilityManager.instance.IsHidden(root.gameObject, false);
+
+        EditorGUILayout.LabelField("状态", hasRoot
+            ? $"{grayboxes.Count} 个白模 · {(active ? "启用" : "已停用（无碰撞）")} · Scene 视图{(sceneHidden ? "已隐藏" : "可见")}"
+            : "还没有白模（放下第一个时自动创建 GrayboxRoot）");
+
+        using (new EditorGUI.DisabledScope(!hasRoot))
+        {
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button(sceneHidden ? "Scene 视图：显示白模" : "Scene 视图：隐藏白模", GUILayout.Height(24f)))
+            {
+                if (sceneHidden)
+                    SceneVisibilityManager.instance.Show(root.gameObject, true);
+                else
+                    SceneVisibilityManager.instance.Hide(root.gameObject, true);
+            }
+
+            if (GUILayout.Button(!hasRoot || active ? "停用白模（含碰撞）" : "启用白模", GUILayout.Height(24f)))
+            {
+                Undo.RecordObject(root.gameObject, active ? "Disable graybox" : "Enable graybox");
+                root.gameObject.SetActive(!active);
+                EditorUtility.SetDirty(root.gameObject);
+            }
+            EditorGUILayout.EndHorizontal();
+
+            if (GUILayout.Button("选中全部白模"))
+                Selection.objects = grayboxes.Select(b => (UnityEngine.Object)b.gameObject).ToArray();
+        }
+
+        EditorGUILayout.HelpBox(
+            "Scene 视图隐藏：只是编辑器里看不见，碰撞照常、进 Play 也还在——摆实物时对照用。\n" +
+            "停用：整个 GrayboxRoot 关掉，碰撞一起消失——试玩「只有实物」的版本、查碰撞漏洞用。",
+            MessageType.None);
+
+        if (stray > 0)
+        {
+            EditorGUILayout.HelpBox($"有 {stray} 个白模不在 GrayboxRoot 下（多半是加这个模块之前摆的），不受上面两个开关控制。", MessageType.Warning);
+            if (GUILayout.Button($"把 {stray} 个白模归位到 GrayboxRoot"))
+                MoveStrayGrayboxesUnderRoot(grayboxes);
+        }
+
+        EditorGUILayout.EndVertical();
+    }
+
+    private void MoveStrayGrayboxesUnderRoot(List<TerrainDecorationRuntimeBinder> grayboxes)
+    {
+        Transform root = GetOrCreateParent(GrayboxParentPath);
+        int moved = 0;
+        foreach (TerrainDecorationRuntimeBinder b in grayboxes)
+        {
+            if (b == null || b.transform.IsChildOf(root))
+                continue;
+            Undo.SetTransformParent(b.transform, root, true, "Move graybox under GrayboxRoot");
+            moved++;
+        }
+        Debug.Log($"[TerrainDecorationPlacement] 已把 {moved} 个白模归位到 {GrayboxParentPath}。");
+        RefreshPlacedCache();
+    }
+
+    /// <summary>白模固定放进 GrayboxRoot。根节点正被停用/隐藏时先恢复——
+    /// 不然新放的白模一放下去就看不见，像是放置失败。</summary>
+    private Transform EnsureGrayboxRootVisibleForPlacement()
+    {
+        Transform root = GetOrCreateParent(GrayboxParentPath);
+        if (!root.gameObject.activeSelf)
+        {
+            Undo.RecordObject(root.gameObject, "Enable graybox");
+            root.gameObject.SetActive(true);
+            Debug.Log("[TerrainDecorationPlacement] GrayboxRoot 之前是停用状态，放置白模时已自动启用。");
+        }
+        if (SceneVisibilityManager.instance.IsHidden(root.gameObject, false))
+            SceneVisibilityManager.instance.Show(root.gameObject, true);
+        return root;
+    }
+
+    /// <summary>切模块后，当前选中的定义可能属于另一个模块（比如从地形装饰物切到白模时
+    /// 还选着空气墙）。不纠正的话直接进放置模式会把空气墙放进白模模块。</summary>
+    private void EnsureSelectedDefinitionMatchesKind()
+    {
+        bool grayboxKind = currentKind == PlacementObjectKind.Graybox;
+        if (currentKind != PlacementObjectKind.TerrainDecoration && !grayboxKind)
+            return;
+        if (grayboxKind)
+            RefreshPlacedCache(); // 总控面板的计数/归位提示读这份缓存
+        if (selectedDefinition != null && selectedDefinition.isGraybox == grayboxKind)
+            return;
+
+        SelectDefinition(GetFilteredDefinitions().FirstOrDefault());
     }
 
     private void DrawFilters()
@@ -1236,7 +1409,15 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         using (new EditorGUI.DisabledScope(!snapToGrid))
             gridSize = Mathf.Max(0.05f, DrawClampedFloatField("网格大小", gridSize));
         placementY = DrawClampedFloatField("放置高度 Y", placementY);
-        parentPath = DrawClampedTextField("父节点路径", parentPath);
+        if (currentKind == PlacementObjectKind.Graybox)
+        {
+            using (new EditorGUI.DisabledScope(true))
+                DrawClampedTextField("父节点路径（固定）", GrayboxParentPath);
+        }
+        else
+        {
+            parentPath = DrawClampedTextField("父节点路径", parentPath);
+        }
 
         if (selectedDefinition != null)
         {
@@ -1389,7 +1570,8 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         if (material == null)
             return;
 
-        bool selected = selectedSurfaceMaterial == material;
+        // 地形工具和地表材质是同一个列表里的二选一，只能有一个高亮。
+        bool selected = selectedSurfaceMaterial == material && selectedTerrainDefaultTool == TerrainDefaultTool.None;
         bool hover = rect.Contains(Event.current.mousePosition);
         if (selected)
         {
@@ -1414,7 +1596,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 
         if (GUI.Button(rect, GUIContent.none, GUIStyle.none))
         {
-            if (selectedSurfaceMaterial != material)
+            if (selectedSurfaceMaterial != material || selectedTerrainDefaultTool != TerrainDefaultTool.None)
             {
                 selectedTerrainDefaultTool = TerrainDefaultTool.None;
                 selectedSurfaceMaterial = material;
@@ -1544,6 +1726,9 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 
         if (!overlayBrush)
             groundBrushSize = DrawClampedSlider(splineBrush ? "Scene 预览范围" : "刷子尺寸", groundBrushSize, 0.25f, GroundBrushDesignerMaxSize);
+
+        if (!splineBrush && !overlayBrush)
+            DrawGroundGridSnapSettings();
         if (splineBrush && !groundOverlayEraseMode)
             EditorGUILayout.HelpBox($"当前样条图案预览按实际线宽显示：{GetSelectedSplinePaintWidth():0.###}m。上方绿色预览不再使用擦除 / 操作范围。", MessageType.None);
         if (!overlayBrush && groundBrushSize >= GroundBrushLargeSizeWarning)
@@ -1658,7 +1843,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 
     private void DrawPlacedPage()
     {
-        if (currentKind == PlacementObjectKind.TerrainDecoration)
+        if (currentKind == PlacementObjectKind.TerrainDecoration || currentKind == PlacementObjectKind.Graybox)
         {
             DrawTerrainDecorationPlacedPage();
             return;
@@ -1693,9 +1878,12 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 
     private void DrawTerrainDecorationPlacedPage()
     {
+        if (currentKind == PlacementObjectKind.Graybox)
+            DrawGrayboxRootPanel();
+
         EditorGUILayout.BeginVertical("box");
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("已摆放地形装饰物", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField(currentKind == PlacementObjectKind.Graybox ? "已摆放白模" : "已摆放地形装饰物", EditorStyles.boldLabel);
         if (GUILayout.Button("刷新", GUILayout.Width(60f)))
             RefreshPlacedCache();
         EditorGUILayout.EndHorizontal();
@@ -1925,6 +2113,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         {
             terrainDecorationPreviewRotationY = 0f;
             terrainDecorationPreviewHeightOffset = 0f;
+            terrainDecorationPreviewScaleMultiplier = 1f;
         }
 
         selectedDefinition = definition;
@@ -1951,6 +2140,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         switch (currentKind)
         {
             case PlacementObjectKind.TerrainDecoration:
+            case PlacementObjectKind.Graybox:
                 canEnable = selectedDefinition != null;
                 break;
             case PlacementObjectKind.GroundSurfaceMaterial:
@@ -1973,7 +2163,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         if (placementMode)
         {
             EnsureSceneGuiHook();
-            if (currentKind == PlacementObjectKind.TerrainDecoration)
+            if (currentKind == PlacementObjectKind.TerrainDecoration || currentKind == PlacementObjectKind.Graybox)
             {
                 terrainDecorationPreviewHeightOffset = 0f;
                 SceneView sceneView = SceneView.lastActiveSceneView;
@@ -2071,6 +2261,9 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         if (HandleTerrainDecorationPreviewRotationInput(sceneView, e))
             return;
 
+        if (HandleTerrainDecorationPreviewScaleInput(sceneView, e))
+            return;
+
         UpdatePreviewPosition(e.mousePosition);
         DrawSceneOverlay();
 
@@ -2149,11 +2342,14 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             activeGroundTerrain = FindActiveGroundTerrain();
 
         UpdateTerrainBrushPosition(e.mousePosition);
+        ApplyGroundGridToBrushPosition(e);
         DrawTerrainBrushSceneOverlay();
         if (terrainRectFillMode && IsTerrainLayerSurfaceMaterialSelected())
             DrawTerrainRectFillPreview();
         else
             DrawTerrainBrushPreview();
+        if (e.type == EventType.Repaint)
+            DrawGroundGridOverlay();
 
         // 同地形装饰物预览那个问题——鼠标移动/拖拽时主动重绘，笔刷位置才能跟手。
         if (e.type == EventType.MouseMove || e.type == EventType.MouseDrag)
@@ -2227,6 +2423,8 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             terrainPaintHoleRestoreMode = IsTerrainDefaultToolSelected() && selectedTerrainDefaultTool == TerrainDefaultTool.PaintHole && e.shift;
             hasLastGroundBrushPaintPosition = false;
             groundBrushStampSeedCounter++;
+            groundStrokeStartPosition = lastGroundBrushPosition;
+            hasGroundStrokeStart = hasValidGroundBrushPosition;
 
             if (hasValidGroundBrushPosition)
             {
@@ -2273,6 +2471,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             groundBrushPainting = false;
             terrainPaintHoleRestoreMode = false;
             hasLastGroundBrushPaintPosition = false;
+            hasGroundStrokeStart = false;
             e.Use();
             sceneView.Repaint();
             Repaint();
@@ -2284,6 +2483,280 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         // when the cursor is over generated GroundSpline meshes.
     }
 
+
+    // ── 地面笔刷网格对齐 ─────────────────────────────────────
+
+    private void DrawGroundGridSnapSettings()
+    {
+        EditorGUILayout.Space(2f);
+        bool before = groundGridSnapEnabled;
+        groundGridSnapEnabled = EditorGUILayout.Toggle("网格对齐", groundGridSnapEnabled);
+        if (before != groundGridSnapEnabled)
+            SceneView.RepaintAll();
+
+        if (!groundGridSnapEnabled)
+            return;
+
+        int sizeIndex = System.Array.IndexOf(GroundGridSizeOptions, groundGridSize);
+        if (sizeIndex < 0) sizeIndex = 2;
+        sizeIndex = EditorGUILayout.Popup("网格大小", sizeIndex, GroundGridSizeLabels);
+        groundGridSize = GroundGridSizeOptions[Mathf.Clamp(sizeIndex, 0, GroundGridSizeOptions.Length - 1)];
+
+        bool heightTool = IsTerrainDefaultToolSelected() && selectedTerrainDefaultTool != TerrainDefaultTool.PaintHole;
+        using (new EditorGUI.DisabledScope(heightTool))
+            groundGridSnapMode = (GroundGridSnapMode)EditorGUILayout.Popup("对齐方式", (int)groundGridSnapMode, GroundGridSnapModeLabels);
+
+        string modeHint;
+        if (heightTool)
+            modeHint = "高度工具只做笔刷吸附（中心对齐格子）。";
+        else if (groundGridSnapMode == GroundGridSnapMode.FillCells)
+        {
+            int n = Mathf.Max(1, Mathf.RoundToInt(groundBrushSize / GroundGridStep));
+            modeHint = $"整格填充：每一笔填 {n}×{n} 格（刷子尺寸 ÷ 网格大小），硬边，拖动沿路径一格一格填。";
+        }
+        else
+            modeHint = "笔刷吸附：笔刷中心对齐格子中心，形状和软硬照旧。";
+
+        EditorGUILayout.HelpBox(modeHint + "\nCtrl + 拖动：锁定水平 / 竖直 / 45°。矩形选区填充的角点会吸附到网格线上。", MessageType.None);
+    }
+
+    private bool IsGroundGridActive()
+    {
+        return groundGridSnapEnabled
+               && currentKind == PlacementObjectKind.GroundSurfaceMaterial
+               && !IsSelectedSurfaceMaterialSpline()
+               && !IsSelectedSurfaceMaterialStamp();
+    }
+
+    /// <summary>整格填充只对「写 TerrainLayer 的纹理」和挖洞生效；高度工具只做笔刷吸附。</summary>
+    private bool IsGroundGridFillCells()
+    {
+        if (!IsGroundGridActive() || groundGridSnapMode != GroundGridSnapMode.FillCells)
+            return false;
+
+        if (IsTerrainDefaultToolSelected())
+            return selectedTerrainDefaultTool == TerrainDefaultTool.PaintHole;
+
+        return true;
+    }
+
+    private float GroundGridStep => Mathf.Max(0.05f, groundGridSize);
+
+    /// <summary>
+    /// 把鼠标落点吸到网格上：矩形填充吸到网格交点（矩形四角正好落在网格线上），
+    /// 其它吸到格子中心。Ctrl/Cmd 按住拖动时先按这一笔的起点锁成水平/竖直/45°。
+    /// </summary>
+    private void ApplyGroundGridToBrushPosition(Event e)
+    {
+        if (!IsGroundGridActive() || !hasValidGroundBrushPosition || activeGroundTerrain == null)
+            return;
+
+        bool rectMode = terrainRectFillMode && IsTerrainLayerSurfaceMaterialSelected();
+        Vector3 p = lastGroundBrushPosition;
+
+        if (!rectMode && groundBrushPainting && hasGroundStrokeStart && e != null && (e.control || e.command))
+            p = ConstrainGroundStrokeAxis(groundStrokeStartPosition, p);
+
+        float g = GroundGridStep;
+        if (rectMode)
+        {
+            p.x = Mathf.Round(p.x / g) * g;
+            p.z = Mathf.Round(p.z / g) * g;
+        }
+        else
+        {
+            p.x = (Mathf.Floor(p.x / g) + 0.5f) * g;
+            p.z = (Mathf.Floor(p.z / g) + 0.5f) * g;
+        }
+
+        if (!TryWorldToTerrainUV(activeGroundTerrain, p, out _))
+            return;
+
+        p.y = activeGroundTerrain.SampleHeight(p) + activeGroundTerrain.transform.position.y;
+        lastGroundBrushPosition = p;
+    }
+
+    private static Vector3 ConstrainGroundStrokeAxis(Vector3 start, Vector3 p)
+    {
+        float dx = p.x - start.x;
+        float dz = p.z - start.z;
+        float ax = Mathf.Abs(dx);
+        float az = Mathf.Abs(dz);
+
+        if (ax >= az * 2f)
+            return new Vector3(p.x, p.y, start.z);
+        if (az >= ax * 2f)
+            return new Vector3(start.x, p.y, p.z);
+
+        float m = (ax + az) * 0.5f;
+        return new Vector3(start.x + Mathf.Sign(dx) * m, p.y, start.z + Mathf.Sign(dz) * m);
+    }
+
+    /// <summary>整格填充时一笔覆盖的格子块（世界 XZ）。刷子尺寸换算成边长 N 格，N×N 块以落点所在格为中心。</summary>
+    private void GetGroundGridCellBlock(Vector3 worldPosition, out Vector2 min, out Vector2 max)
+    {
+        float g = GroundGridStep;
+        int n = Mathf.Max(1, Mathf.RoundToInt(groundBrushSize / g));
+        int cx = Mathf.FloorToInt(worldPosition.x / g) - (n - 1) / 2;
+        int cz = Mathf.FloorToInt(worldPosition.z / g) - (n - 1) / 2;
+        min = new Vector2(cx * g, cz * g);
+        max = new Vector2((cx + n) * g, (cz + n) * g);
+    }
+
+    /// <summary>两个角点围成的世界矩形；snapToGrid 时角点按网格交点取整。</summary>
+    private void GetGroundGridRect(Vector3 a, Vector3 b, bool snapToGrid, out Vector2 min, out Vector2 max)
+    {
+        min = new Vector2(Mathf.Min(a.x, b.x), Mathf.Min(a.z, b.z));
+        max = new Vector2(Mathf.Max(a.x, b.x), Mathf.Max(a.z, b.z));
+        if (!snapToGrid)
+            return;
+
+        float g = GroundGridStep;
+        min = new Vector2(Mathf.Round(min.x / g) * g, Mathf.Round(min.y / g) * g);
+        max = new Vector2(Mathf.Round(max.x / g) * g, Mathf.Round(max.y / g) * g);
+    }
+
+    /// <summary>
+    /// 把世界坐标矩形 [min, max) 内的 alphamap 纹素填成 material（取 Max，不越过不透明度），
+    /// 其余层按比例缩放保持总和 1——和圆形笔刷同一套权重规则，只是边界换成矩形硬边。
+    /// </summary>
+    private void FillTerrainSurfaceMaterialWorldRect(Terrain terrain, GroundSurfaceMaterialDefinition material, Vector3 worldA, Vector3 worldB, bool registerUndo)
+    {
+        if (terrain == null || terrain.terrainData == null || material == null)
+            return;
+
+        GetGroundGridRect(worldA, worldB, registerUndo, out Vector2 rectMin, out Vector2 rectMax);
+        if (rectMax.x - rectMin.x <= 0.0001f || rectMax.y - rectMin.y <= 0.0001f)
+            return;
+
+        TerrainData data = terrain.terrainData;
+        int targetLayer = EnsureSelectedSurfaceMaterialTerrainLayer(terrain, material);
+        int w = data.alphamapWidth, h = data.alphamapHeight, layers = data.alphamapLayers;
+        if (targetLayer < 0 || w <= 1 || h <= 1 || layers <= targetLayer)
+            return;
+
+        // alphamap 纹素 i 对应地形局部坐标 i / (w - 1) * size（和圆形笔刷一致）。
+        Vector3 origin = terrain.transform.position;
+        float sx = data.size.x / (w - 1f), sz = data.size.z / (h - 1f);
+        int minX = Mathf.Clamp(Mathf.CeilToInt((rectMin.x - origin.x) / sx), 0, w - 1);
+        int maxX = Mathf.Clamp(Mathf.CeilToInt((rectMax.x - origin.x) / sx) - 1, 0, w - 1);
+        int minY = Mathf.Clamp(Mathf.CeilToInt((rectMin.y - origin.z) / sz), 0, h - 1);
+        int maxY = Mathf.Clamp(Mathf.CeilToInt((rectMax.y - origin.z) / sz) - 1, 0, h - 1);
+        if (maxX < minX || maxY < minY)
+            return;
+
+        if (registerUndo)
+            Undo.RegisterCompleteObjectUndo(data, "Grid Rect Fill Terrain Surface Material");
+
+        int width = maxX - minX + 1, height = maxY - minY + 1;
+        float[,,] maps = data.GetAlphamaps(minX, minY, width, height);
+        float opacity = Mathf.Clamp01(terrainSurfaceBrushOpacity);
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                float newTarget = Mathf.Max(maps[y, x, targetLayer], opacity);
+                float oldOther = 0f;
+                for (int l = 0; l < layers; l++)
+                    if (l != targetLayer) oldOther += maps[y, x, l];
+
+                maps[y, x, targetLayer] = newTarget;
+                float newOther = Mathf.Max(0f, 1f - newTarget);
+                for (int l = 0; l < layers; l++)
+                {
+                    if (l == targetLayer) continue;
+                    maps[y, x, l] = oldOther > 0.0001f ? maps[y, x, l] * (newOther / oldOther) : 0f;
+                }
+            }
+        }
+
+        data.SetAlphamaps(minX, minY, maps);
+        EditorUtility.SetDirty(data);
+    }
+
+    /// <summary>世界矩形 [min, max) 内的洞纹素全部挖掉（restore=true 时补回）。洞纹素 i 覆盖 [i, i+1) × size / res。</summary>
+    private void SetTerrainHolesWorldRect(Terrain terrain, Vector2 rectMin, Vector2 rectMax, bool restore)
+    {
+        if (terrain == null || terrain.terrainData == null)
+            return;
+
+        TerrainData data = terrain.terrainData;
+        int res = data.holesResolution;
+        if (res <= 0)
+            return;
+
+        Vector3 origin = terrain.transform.position;
+        float cx = data.size.x / res, cz = data.size.z / res;
+        // 纹素中心落在矩形里的才算。
+        int minX = Mathf.Clamp(Mathf.CeilToInt((rectMin.x - origin.x) / cx - 0.5f), 0, res - 1);
+        int maxX = Mathf.Clamp(Mathf.CeilToInt((rectMax.x - origin.x) / cx - 0.5f) - 1, 0, res - 1);
+        int minY = Mathf.Clamp(Mathf.CeilToInt((rectMin.y - origin.z) / cz - 0.5f), 0, res - 1);
+        int maxY = Mathf.Clamp(Mathf.CeilToInt((rectMax.y - origin.z) / cz - 0.5f) - 1, 0, res - 1);
+        if (maxX < minX || maxY < minY)
+            return;
+
+        int width = maxX - minX + 1, height = maxY - minY + 1;
+        bool[,] holes = data.GetHoles(minX, minY, width, height);
+        for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
+                holes[y, x] = restore;   // TerrainData 约定：true = 有地面
+
+        data.SetHoles(minX, minY, holes);
+        EditorUtility.SetDirty(data);
+    }
+
+    /// <summary>笔刷周围画一片局部网格；整格填充时高亮这一笔会填的格子块。</summary>
+    private void DrawGroundGridOverlay()
+    {
+        if (!IsGroundGridActive() || !hasValidGroundBrushPosition)
+            return;
+
+        float g = GroundGridStep;
+        float range = Mathf.Max(g * 6f, groundBrushSize * 1.5f);
+        range = Mathf.Min(range, g * 20f);
+        Vector3 c = lastGroundBrushPosition;
+        float y = c.y + 0.03f;
+
+        float x0 = Mathf.Floor((c.x - range) / g) * g, x1 = Mathf.Ceil((c.x + range) / g) * g;
+        float z0 = Mathf.Floor((c.z - range) / g) * g, z1 = Mathf.Ceil((c.z + range) / g) * g;
+
+        Color old = Handles.color;
+        Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
+        for (float x = x0; x <= x1 + 0.0001f; x += g)
+        {
+            float fade = 1f - Mathf.Clamp01(Mathf.Abs(x - c.x) / (range + g));
+            Handles.color = new Color(1f, 1f, 1f, 0.35f * fade);
+            Handles.DrawLine(new Vector3(x, y, z0), new Vector3(x, y, z1));
+        }
+        for (float z = z0; z <= z1 + 0.0001f; z += g)
+        {
+            float fade = 1f - Mathf.Clamp01(Mathf.Abs(z - c.z) / (range + g));
+            Handles.color = new Color(1f, 1f, 1f, 0.35f * fade);
+            Handles.DrawLine(new Vector3(x0, y, z), new Vector3(x1, y, z));
+        }
+
+        if (IsGroundGridFillCells() && !(terrainRectFillMode && IsTerrainLayerSurfaceMaterialSelected()))
+        {
+            GetGroundGridCellBlock(c, out Vector2 bMin, out Vector2 bMax);
+            Color tint = IsTerrainDefaultToolSelected() ? warningColor : GroundBrushSurfaceColor;
+            DrawGroundWorldRect(bMin, bMax, tint, 0.22f);
+        }
+
+        Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
+        Handles.color = old;
+    }
+
+    private void DrawGroundWorldRect(Vector2 min, Vector2 max, Color color, float fillAlpha)
+    {
+        float y = (hasValidGroundBrushPosition ? lastGroundBrushPosition.y : 0f) + 0.04f;
+        Vector3[] verts =
+        {
+            new Vector3(min.x, y, min.y), new Vector3(min.x, y, max.y),
+            new Vector3(max.x, y, max.y), new Vector3(max.x, y, min.y),
+        };
+        Handles.DrawSolidRectangleWithOutline(verts, new Color(color.r, color.g, color.b, fillAlpha), new Color(color.r, color.g, color.b, 1f));
+    }
 
     private void HandleTerrainRectFillSceneGUI(SceneView sceneView, Event e)
     {
@@ -2334,7 +2807,11 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             if (hasValidGroundBrushPosition)
                 terrainRectFillEndPosition = lastGroundBrushPosition;
 
-            FillTerrainSurfaceMaterialScreenRect(activeGroundTerrain, selectedSurfaceMaterial, terrainRectFillStartGuiPosition, terrainRectFillEndGuiPosition);
+            // 网格对齐时按世界坐标矩形填（两个角点已经吸到网格交点）；否则保持原来的屏幕矩形。
+            if (IsGroundGridActive())
+                FillTerrainSurfaceMaterialWorldRect(activeGroundTerrain, selectedSurfaceMaterial, terrainRectFillStartPosition, terrainRectFillEndPosition, true);
+            else
+                FillTerrainSurfaceMaterialScreenRect(activeGroundTerrain, selectedSurfaceMaterial, terrainRectFillStartGuiPosition, terrainRectFillEndGuiPosition);
             terrainRectFillDragging = false;
             terrainRectFillControlId = 0;
             e.Use();
@@ -2351,6 +2828,13 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         if (!terrainRectFillDragging)
         {
             DrawTerrainBrushPreview();
+            return;
+        }
+
+        if (IsGroundGridActive())
+        {
+            GetGroundGridRect(terrainRectFillStartPosition, terrainRectFillEndPosition, true, out Vector2 rectMin, out Vector2 rectMax);
+            DrawGroundWorldRect(rectMin, rectMax, GroundBrushSurfaceColor, 0.18f);
             return;
         }
 
@@ -3890,6 +4374,13 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 
     private void PaintTerrainHole(Terrain terrain, Vector3 worldPosition, bool restoreHole)
     {
+        if (IsGroundGridFillCells())
+        {
+            GetGroundGridCellBlock(worldPosition, out Vector2 cellMin, out Vector2 cellMax);
+            SetTerrainHolesWorldRect(terrain, cellMin, cellMax, restoreHole);
+            return;
+        }
+
         TerrainData data = terrain.terrainData;
         if (!TryWorldToTerrainUV(terrain, worldPosition, out Vector2 uv))
             return;
@@ -3981,6 +4472,14 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
     {
         if (terrain == null || terrain.terrainData == null || material == null)
             return;
+
+        // 整格填充：把落点所在的格子块整块填满（硬边），不走圆形笔刷。
+        if (IsGroundGridFillCells())
+        {
+            GetGroundGridCellBlock(worldPosition, out Vector2 cellMin, out Vector2 cellMax);
+            FillTerrainSurfaceMaterialWorldRect(terrain, material, new Vector3(cellMin.x, 0f, cellMin.y), new Vector3(cellMax.x, 0f, cellMax.y), false);
+            return;
+        }
 
         TerrainData data = terrain.terrainData;
         int targetLayer = EnsureSelectedSurfaceMaterialTerrainLayer(terrain, material);
@@ -4269,6 +4768,14 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         TerrainLayer layer = GetOrCreateTerrainLayerAsset(material);
         if (layer == null)
             return -1;
+
+        // 格栅 / 虚空地表：自动给地形挂绑定组件并换格栅版着色器，刷下去立刻就是镂空的。
+        if (material.seeThroughGrate || material.isVoid)
+            SkyPrisonTerrainGrateBinder.EnsureOn(terrain, material, layer);
+
+        // 脚步声：把「这个地形层 = 这个材质」登记进解析器，否则刷上去走路是默认鞋底声
+        // （层名 TL_<surfaceId> 和解析器的名字兜底对不上）。
+        SkyPrisonGroundAudioBindingUtility.EnsureBinding(terrain, layer, material);
 
         TerrainLayer[] layers = data.terrainLayers ?? Array.Empty<TerrainLayer>();
         for (int i = 0; i < layers.Length; i++)
@@ -4955,6 +5462,62 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         return true;
     }
 
+    /// <summary>
+    /// 无修饰键滚轮 = 等比缩放当前预览（取代 SceneView 默认的镜头推拉）。
+    /// Ctrl/Shift/Alt+滚轮 各有用途或交还给 SceneView，这里只认纯滚轮。
+    ///
+    /// 普通装饰物按 ×1.1 连续缩放；白模按 0.5 倍率步进——白模的网格是固定米数，
+    /// 倍率落在 0.5 的整数倍上，边长才会对齐网格，方便直接数尺寸。
+    /// </summary>
+    private bool HandleTerrainDecorationPreviewScaleInput(SceneView sceneView, Event e)
+    {
+        if (e == null || e.type != EventType.ScrollWheel)
+            return false;
+
+        if (e.shift || e.control || e.command || e.alt)
+            return false;
+
+        if (EditorGUIUtility.editingTextField || selectedDefinition == null || !selectedDefinition.allowScale)
+            return false;
+
+        float wheel = Mathf.Abs(e.delta.y) >= Mathf.Abs(e.delta.x) ? e.delta.y : e.delta.x;
+        if (Mathf.Abs(wheel) < 0.0001f)
+            return false;
+
+        bool grow = wheel < 0f;
+        float previous = terrainDecorationPreviewScaleMultiplier;
+        float next;
+        if (selectedDefinition.isGraybox)
+        {
+            float snapped = Mathf.Round(previous / GrayboxPreviewScaleStep) * GrayboxPreviewScaleStep;
+            next = snapped + (grow ? GrayboxPreviewScaleStep : -GrayboxPreviewScaleStep);
+            next = Mathf.Clamp(next, GrayboxPreviewScaleStep, 100f);
+        }
+        else
+        {
+            next = grow ? previous * TerrainDecorationPreviewScaleFactor : previous / TerrainDecorationPreviewScaleFactor;
+            next = Mathf.Clamp(next, 0.05f, 50f);
+        }
+
+        terrainDecorationPreviewScaleMultiplier = next;
+
+        // 已生成的预览直接按比例改，不重建——重建会重新抽随机变体/材质，滚一下就换个样子。
+        float ratio = next / Mathf.Max(0.0001f, previous);
+        if (currentPreviewResult != null)
+            currentPreviewResult.finalScale *= ratio;
+        if (previewInstance != null)
+        {
+            Transform visualRoot = previewInstance.transform.Find("VisualRoot");
+            if (visualRoot != null && currentPreviewResult != null)
+                visualRoot.localScale = currentPreviewResult.finalScale;
+        }
+
+        e.Use();
+        sceneView.Repaint();
+        Repaint();
+        return true;
+    }
+
     private bool HandleTerrainDecorationPreviewHeightInput(SceneView sceneView, Event e)
     {
         if (e == null || e.type != EventType.ScrollWheel)
@@ -5027,7 +5590,11 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         string heightText = Mathf.Abs(terrainDecorationPreviewHeightOffset) > 0.0001f
             ? $" / 高度偏移 {terrainDecorationPreviewHeightOffset:+0.00;-0.00;0.00}"
             : "";
-        GUI.Label(new Rect(rect.x + 10f, rect.y + 50f, rect.width - 20f, 18f), state + heightText + " / Ctrl+滚轮旋转 / Shift+滚轮升降 / 右键或 Esc 取消", EditorStyles.miniLabel);
+        string scaleText = Mathf.Abs(terrainDecorationPreviewScaleMultiplier - 1f) > 0.0001f
+            ? $" / 缩放 ×{terrainDecorationPreviewScaleMultiplier:0.##}"
+            : "";
+        GUI.Label(new Rect(rect.x + 10f, rect.y + 50f, rect.width - 20f, 18f), state + heightText + scaleText, EditorStyles.miniLabel);
+        GUI.Label(new Rect(rect.x + 10f, rect.y + 64f, rect.width - 20f, 18f), "滚轮缩放 / Ctrl+滚轮旋转 / Shift+滚轮升降 / 右键或 Esc 取消", EditorStyles.miniLabel);
         Handles.EndGUI();
     }
 
@@ -5130,7 +5697,9 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             return;
         }
 
-        Transform parent = GetOrCreateParent(parentPath);
+        Transform parent = selectedDefinition.isGraybox
+            ? EnsureGrayboxRootVisibleForPlacement()
+            : GetOrCreateParent(parentPath);
 
         Vector3 placementEuler = GetRuleEuler(selectedDefinition, result);
         Vector3 visualEuler = GetVisualLocalEuler(selectedDefinition, result);
@@ -5843,6 +6412,8 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         if (result.variant == null)
             return result;
         result.finalScale = BuildRandomScale(definition, random);
+        if (definition.allowScale)
+            result.finalScale *= terrainDecorationPreviewScaleMultiplier;
         result.visualLocalEuler = BuildRandomVisualEuler(definition, random);
         result.materialChoices = BuildMaterialChoices(definition, result.variant, random);
         return result;
@@ -7250,9 +7821,12 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
     private List<TerrainDecorationRuntimeBinder> GetFilteredPlacedBinders()
     {
         string s = string.IsNullOrWhiteSpace(placedSearch) ? "" : placedSearch.Trim().ToLowerInvariant();
+        bool grayboxKind = currentKind == PlacementObjectKind.Graybox;
         return placedCache.Where(b =>
         {
             if (b == null || b.gameObject == null)
+                return false;
+            if ((b.definition != null && b.definition.isGraybox) != grayboxKind)
                 return false;
             if (string.IsNullOrEmpty(s))
                 return true;
@@ -7514,7 +8088,8 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         {
             string path = AssetDatabase.GUIDToAssetPath(guid);
             GroundSurfaceMaterialDefinition def = AssetDatabase.LoadAssetAtPath<GroundSurfaceMaterialDefinition>(path);
-            if (def != null)
+            // 仅作地面标签的（如给铁轨提供金属脚步声的「金属」）不是笔刷，不进列表。
+            if (def != null && !def.surfaceTagOnly)
                 surfaceMaterials.Add(def);
         }
 
@@ -7528,6 +8103,16 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
                 selectedSurfaceMaterial = matched;
                 return;
             }
+        }
+
+        // 选着地形工具（挖洞/隆起…）时，「没有选中材质」是正常状态，不能自动补选第一个——
+        // 这个方法在窗口每次获得焦点时都会跑，之前点完挖洞、切出去再切回来，就会被补选成
+        // 列表第一项（井盖），挖洞和井盖同时高亮，两个光标。
+        if (selectedTerrainDefaultTool != TerrainDefaultTool.None)
+        {
+            if (selectedSurfaceMaterial != null && !surfaceMaterials.Contains(selectedSurfaceMaterial))
+                selectedSurfaceMaterial = null;
+            return;
         }
 
         if (selectedSurfaceMaterial == null || !surfaceMaterials.Contains(selectedSurfaceMaterial))
@@ -7679,6 +8264,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         switch (currentKind)
         {
             case PlacementObjectKind.TerrainDecoration:
+            case PlacementObjectKind.Graybox:
                 return selectedDefinition != null ? GetDisplayName(selectedDefinition) : "未选择";
             case PlacementObjectKind.GroundSurfaceMaterial:
                 return selectedSurfaceMaterial != null ? GetDisplayName(selectedSurfaceMaterial) : "未选择";
@@ -7693,15 +8279,22 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         List<string> subOptions = GetSubCategoryOptions();
         string selectedSub = subOptions[Mathf.Clamp(subCategoryIndex, 0, Mathf.Max(0, subOptions.Count - 1))];
         string s = string.IsNullOrWhiteSpace(search) ? "" : search.Trim().ToLowerInvariant();
+        bool grayboxKind = currentKind == PlacementObjectKind.Graybox;
         return definitions.Where(def =>
         {
             if (def == null)
+                return false;
+            // 白模和地形装饰物共用定义类型，按 isGraybox 分到两个模块，互不出现。
+            if (def.isGraybox != grayboxKind)
                 return false;
             if (!string.IsNullOrEmpty(s)
                 && !GetDisplayName(def).ToLowerInvariant().Contains(s)
                 && !(def.decorationId ?? "").ToLowerInvariant().Contains(s)
                 && !(def.subCategory ?? "").ToLowerInvariant().Contains(s))
                 return false;
+            // 白模模块不画主/子分类筛选，残留的地形装饰物筛选值不能把白模全筛掉。
+            if (grayboxKind)
+                return true;
             if (selectedCategory != "全部" && GetCategoryLabel(def) != selectedCategory)
                 return false;
             if (selectedSub != "全部" && def.subCategory != selectedSub)
@@ -7777,6 +8370,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         switch (currentKind)
         {
             case PlacementObjectKind.TerrainDecoration:
+            case PlacementObjectKind.Graybox:
                 return selectedDefinition != null;
             case PlacementObjectKind.GroundSurfaceMaterial:
                 return selectedSurfaceMaterial != null;
@@ -7794,6 +8388,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         switch (currentKind)
         {
             case PlacementObjectKind.TerrainDecoration:
+            case PlacementObjectKind.Graybox:
                 if (selectedDefinition != null)
                     SkyPrisonEditorWindow.OpenWindowWithTab("地形装饰物", selectedDefinition);
                 break;
