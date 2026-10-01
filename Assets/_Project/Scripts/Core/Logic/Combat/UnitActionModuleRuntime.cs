@@ -170,6 +170,9 @@ public class UnitActionModuleRuntime : MonoBehaviour
     private float _travelVfxUntil;
     private ChargeDashVfxAnchorMode _travelVfxAnchorMode;
     private Vector3 _travelVfxCharacterAnchorOffset;
+    // 生成时的缩放（含朝向镜像），每帧跟随时乘上透视补偿重新设置。
+    private Vector3 _travelVfxBaseScale = Vector3.one;
+    private Vector3 _chargeDashVfxBaseScale = Vector3.one;
 
     // 从charge_hold触发那一刻记录时间，ReleaseChargeAttack时算握住了多久，满
     // charge.fullChargeHoldSeconds才算"蓄满"，HandleHit结算伤害时读这个标记加成。
@@ -632,7 +635,8 @@ public class UnitActionModuleRuntime : MonoBehaviour
         if (Time.time >= _chargeDashVfxUntil)
             return;
 
-        _chargeDashVfxHandle.SetLocation(ResolveChargeDashVfxWorldPosition());
+        _chargeDashVfxHandle.SetLocation(ResolveChargeDashVfxWorldPosition(out float scaleCompensation));
+        _chargeDashVfxHandle.SetScale(_chargeDashVfxBaseScale * scaleCompensation);
     }
 
     /// <summary>通用位移特效跟随——跟 UpdateChargeDashVfxFollow 是同一个道理，只是给
@@ -645,7 +649,8 @@ public class UnitActionModuleRuntime : MonoBehaviour
         if (Time.time >= _travelVfxUntil)
             return;
 
-        _travelVfxHandle.SetLocation(ResolveDashVfxWorldPosition(_travelVfxAnchorMode, _travelVfxCharacterAnchorOffset));
+        _travelVfxHandle.SetLocation(ResolveTravelVfxWorldPosition(out float scaleCompensation));
+        _travelVfxHandle.SetScale(_travelVfxBaseScale * scaleCompensation);
     }
 
     // ── 枪械视觉：枪口火光 / 弹壳抛出（外购VFX包，普通GameObject，不是Effekseer） ──
@@ -848,7 +853,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
 
         _travelVfxAnchorMode = skill.travelVfxAnchor;
         _travelVfxCharacterAnchorOffset = skill.travelVfxCharacterAnchorOffset;
-        Vector3 vfxSpawnPosition = ResolveDashVfxWorldPosition(_travelVfxAnchorMode, _travelVfxCharacterAnchorOffset);
+        Vector3 vfxSpawnPosition = ResolveTravelVfxWorldPosition(out float travelScaleCompensation);
 
         float facing = animationDriver != null ? animationDriver.Facing : 1f;
 
@@ -864,7 +869,8 @@ public class UnitActionModuleRuntime : MonoBehaviour
         // 装饰性粒子造型是不对称手性图形，镜像朝右时单靠旋转转不出镜像版本，必须用
         // 负缩放做真正的几何翻转——跟冲刺特效/挥剑特效验证过的一样是Y轴取负。
         Vector3 vfxScale = facing == -1 ? new Vector3(1f, -1f, 1f) : Vector3.one;
-        _travelVfxHandle.SetScale(vfxScale);
+        _travelVfxBaseScale = vfxScale;
+        _travelVfxHandle.SetScale(vfxScale * travelScaleCompensation);
 
         int vfxLayer = LayerMask.NameToLayer("World3D");
         if (vfxLayer < 0) vfxLayer = 0;
@@ -878,8 +884,24 @@ public class UnitActionModuleRuntime : MonoBehaviour
     private const string ChargeDashVfxFxTipSlotName = "fx_tip";
     private const string ChargeDashVfxFxTipAttachmentName = "fx_tip";
 
-    private Vector3 ResolveChargeDashVfxWorldPosition() =>
-        ResolveDashVfxWorldPosition(_chargeDashVfxAnchorMode, _chargeDashVfxCharacterAnchorOffset);
+    // 冲刺/位移特效是 Effekseer，换不了着色器，靠沿视线推到脚底深度避免贴墙被吃
+    // （见 SkyPrisonUnitAttachedVfxBinder.SlideToOwnerFootDepth）。只套在特效专用的
+    // 这两个入口上——ResolveDashVfxWorldPosition 本身还给枪口/子弹出生点用，不能动。
+    // scaleCompensation：透视相机下推近镜头会变大，乘到特效缩放上保持屏幕尺寸不变。
+    private const float DashVfxOcclusionDepthMargin = 1f;
+
+    private Vector3 ResolveChargeDashVfxWorldPosition(out float scaleCompensation) =>
+        SkyPrisonUnitAttachedVfxBinder.SlideToOwnerFootDepth(
+            ResolveDashVfxWorldPosition(_chargeDashVfxAnchorMode, _chargeDashVfxCharacterAnchorOffset),
+            VfxOwnerFootPosition, DashVfxOcclusionDepthMargin, out scaleCompensation);
+
+    private Vector3 ResolveTravelVfxWorldPosition(out float scaleCompensation) =>
+        SkyPrisonUnitAttachedVfxBinder.SlideToOwnerFootDepth(
+            ResolveDashVfxWorldPosition(_travelVfxAnchorMode, _travelVfxCharacterAnchorOffset),
+            VfxOwnerFootPosition, DashVfxOcclusionDepthMargin, out scaleCompensation);
+
+    private Vector3 VfxOwnerFootPosition =>
+        skeletonAnimation != null ? skeletonAnimation.transform.position : transform.position;
 
     // 通用版本——蓄力冲刺特效和闪避接突刺的位移特效共用同一套锚点解析逻辑，
     // 区别只在于各自缓存的锚点模式/偏移量。
@@ -1935,7 +1957,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
                 // 武器Skin自动切换位置），找不到就退回骨骼所在的 Transform 兜底。
                 _chargeDashVfxAnchorMode = charge.dashVfxAnchor;
                 _chargeDashVfxCharacterAnchorOffset = charge.dashVfxCharacterAnchorOffset;
-                Vector3 vfxSpawnPosition = ResolveChargeDashVfxWorldPosition();
+                Vector3 vfxSpawnPosition = ResolveChargeDashVfxWorldPosition(out float dashScaleCompensation);
 
                 // 朝左用默认姿势(identity)，朝右在这基础上加180度。
                 Quaternion dashVfxRotation = animationDriver.Facing == -1
@@ -1951,7 +1973,8 @@ public class UnitActionModuleRuntime : MonoBehaviour
                 Vector3 dashVfxScale = Vector3.one;
                 if (animationDriver.Facing == -1)
                     dashVfxScale = new Vector3(1f, -1f, 1f);
-                _chargeDashVfxHandle.SetScale(dashVfxScale);
+                _chargeDashVfxBaseScale = dashVfxScale;
+                _chargeDashVfxHandle.SetScale(dashVfxScale * dashScaleCompensation);
                 // 挥剑特效(SkyPrisonSwordSlashTrailController)会显式把特效渲染层设成"World3D"，
                 // 不设的话 Effekseer 会退回默认0号(Default)层——如果摄像机剔除遮罩没勾Default，
                 // 位置/旋转全对，画面上还是什么都看不见。这里踩过同样的坑，补上同样的设置。
