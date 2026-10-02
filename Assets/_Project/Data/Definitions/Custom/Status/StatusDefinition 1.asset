@@ -80,13 +80,19 @@ MonoBehaviour:
   enableRegain: 0
   regainRatio: 0
   useStatusOutline: 1
-  statusOutlineColor: {r: 2.6314542, g: 0.13766192, b: 0.049650043, a: 1}
-  statusOutlineWidthPixels: 3.83
+  statusOutlineColor: {r: 2.6, g: 1.35, b: 0.25, a: 1}
+  statusOutlineWidthPixels: 2
   statusOutlineWidthVariance: 1
   statusOutlineFlowSpeed: 0.6
   statusOutlineNoiseScale: 0.35
   statusOutlineFadeInSeconds: 0.35
   statusOutlineFadeOutSeconds: 0.6
+  statusGlowRadiusPixels: 12
+  statusGlowIntensity: 1
+  statusGlowInnerColor: {r: 1, g: 0.6, b: 0.12, a: 1}
+  statusGlowOuterColor: {r: 1, g: 0.3, b: 0.06, a: 1}
+  statusGlowVariance: 0.7
+  statusGlowNoiseScale: 5
   useStatusFlash: 0
   statusFlashColor: {r: 1, g: 0.45, b: 0.45, a: 1}
   statusFlashDuration: 0.3

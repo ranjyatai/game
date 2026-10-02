@@ -16,10 +16,12 @@ using UnityEngine;
 /// 做法：复制场景里最贵的那个遮挡物到玩家周围，按 N 档分别采样，两条路径各跑一遍，
 /// 最后打印对比表。复制体在测完后全部销毁，不碰场景资产。
 ///
-/// F7 开始。整轮大约 (档数 × 2 条路径 × (预热+采样)) 秒。
+/// Ctrl+Shift+F7 开始。整轮大约 (档数 × 2 条路径 × (预热+采样)) 秒。
 /// </summary>
 public sealed class OcclusionScalingBenchmark : MonoBehaviour
 {
+    // 必须带 Ctrl+Shift：单按 F7 是 UnitStatusDebugApplier 的「施加测试状态」键，
+    // 以前两者共用裸 F7，每次测灼烧都会顺带启动基准，在玩家周围复制上百个装饰物。
     private const KeyCode StartKey = KeyCode.F7;
     private static readonly int[] Counts = { 0, 10, 50, 100 };
     private const float SettleSeconds = 1.5f;   // 让候选扫描和休眠优化稳定下来
@@ -53,7 +55,9 @@ public sealed class OcclusionScalingBenchmark : MonoBehaviour
 
     private void Update()
     {
-        if (!running && Input.GetKeyDown(StartKey))
+        bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        bool shift = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        if (!running && ctrl && shift && Input.GetKeyDown(StartKey))
             StartCoroutine(RunAll());
     }
 

@@ -17,6 +17,26 @@ Shader "Spine/SpineOcclusionComposite"
 
         _Cutoff ("Shadow alpha cutoff", Range(0,1)) = 0.1
 
+        // 2026-08-15：这个着色器原本只给 Spine 2D 镂空精灵用——alpha 通道本来就是
+        // "轮廓遮罩"语义，SamplePremulBody 里低alpha直接clip()掉整块像素。3D 通道的
+        // 静态道具（比如破坏箱子）套这份材质做被遮挡全息时，它们的贴图alpha从来没被
+        // 设计成透明度语义（可能是任意残留数据），被这条clip逻辑误当成"镂空区域"，
+        // 表现为贴图上莫名其妙的黑洞。开这个开关强制alpha=1，绕开这整条判定，
+        // 3D道具材质应该始终按不透明处理，不需要任何alpha裁剪。
+        [Toggle] _SkyPrison_Force3DPropOpaqueAlpha ("Force Opaque Alpha (3D Prop Mode)", Float) = 0
+
+        // 2026-08-15：3D道具（有实体体积，不是没有厚度的Spine精灵）需要真正的深度测试
+        // 才能让自己网格内部交叉的结构（比如箱子的斜向撑木）正确前后排序——但
+        // ZTest Always 又是"隔着遮挡物也要画出全息"这个效果本身的前提，两者在同一条
+        // Pass 里互斥，调哪个参数都顾此失彼。拆成两条Pass解决：NormalBody这条按这几个
+        // 属性切换成3D道具该有的正常深度测试渲染（自身排序完全正确，被真实遮挡物挡住
+        // 的部分自然不画——这是期望行为，交给下面新增的HologramOverlay3D这条Pass补上
+        // "被挡住时改画全息"）。默认值维持跟原来完全一致（Off/Off/Always），不影响任何
+        // 现有Spine角色。
+        [Enum(UnityEngine.Rendering.CullMode)] _SkyPrison_CullMode ("3D Prop Cull Mode", Float) = 0
+        [Enum(Off,0,On,1)] _SkyPrison_ZWriteMode ("3D Prop ZWrite", Float) = 0
+        [Enum(UnityEngine.Rendering.CompareFunction)] _SkyPrison_ZTestMode ("3D Prop ZTest", Float) = 8
+
         _OcclusionTex ("Occlusion Texture - Precomputed HiddenMask", 2D) = "black" {}
         _SkyPrison_CleanCharacterOutlineTex ("Clean Character Outline Texture", 2D) = "black" {}
         _SkyPrison_UseCleanCharacterOutlineTex ("Use Clean Character Outline Texture", Float) = 1
@@ -196,6 +216,7 @@ Shader "Spine/SpineOcclusionComposite"
 
         float4 _TintColor;
         float _StraightAlphaInput;
+        float _SkyPrison_Force3DPropOpaqueAlpha;
 
         float _MaskThreshold;
         float _MaskSoftness;
@@ -308,20 +329,23 @@ Shader "Spine/SpineOcclusionComposite"
             if (_SkyPrison_StatusOutlinePresenceActive < 0.5)
                 return 0.0;
 
-            float2 texel = abs(_SkyPrison_StatusOutlinePresence_TexelSize.xy) * max(1.0, widthPixels);
-
-            float neighborMin = 1.0;
-            neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2( texel.x, 0)));
-            neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2(-texel.x, 0)));
-            neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2(0,  texel.y)));
-            neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2(0, -texel.y)));
-            neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2( texel.x,  texel.y)));
-            neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2(-texel.x,  texel.y)));
-            neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2( texel.x, -texel.y)));
-            neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2(-texel.x, -texel.y)));
+            // 圆形 16 方向、内外两圈（宽度 ±0.5px）取邻域最小值再平均：原来方形 8 邻域 +
+            // 二值结果会在转角处出锯齿台阶和缺口，两圈平均给内侧边缘一个像素的抗锯齿过渡。
+            float2 texel = abs(_SkyPrison_StatusOutlinePresence_TexelSize.xy);
+            float rIn = max(0.5, widthPixels - 0.5);
+            float rOut = max(1.0, widthPixels + 0.5);
+            float minIn = 1.0;
+            float minOut = 1.0;
+            [unroll] for (int k = 0; k < 16; k++)
+            {
+                float a = k * 0.39269908;
+                float2 dir = float2(cos(a), sin(a)) * texel;
+                minIn = min(minIn, SampleStatusOutlinePresenceRaw(screenUV + dir * rIn));
+                minOut = min(minOut, SampleStatusOutlinePresenceRaw(screenUV + dir * rOut));
+            }
 
             float center = SampleStatusOutlinePresenceRaw(screenUV);
-            return saturate(center - neighborMin);
+            return saturate(center - 0.5 * (minIn + minOut));
         }
 
         // 2026-07-14：角色自身轮廓边缘 - 复用 CharacterPresenceFeature 每帧写好的全局贴图
@@ -410,6 +434,11 @@ Shader "Spine/SpineOcclusionComposite"
             float4 texColor = tex2D(_MainTex, i.uv);
             if (_StraightAlphaInput > 0.5)
                 texColor.rgb *= texColor.a;
+
+            // 3D道具模式：源贴图的alpha通道不代表透明度，强制视为完全不透明，
+            // 不参与下面的CleanupAlpha/clip镂空判定。
+            if (_SkyPrison_Force3DPropOpaqueAlpha > 0.5)
+                texColor.a = 1.0;
 
             float4 c = texColor * i.color;
             c.rgb *= _TintColor.rgb;
@@ -531,9 +560,19 @@ Shader "Spine/SpineOcclusionComposite"
         ///
         /// 没有遮挡物覆盖的像素保持清空值（极大），一定判为不遮挡——
         /// 所以角色露在遮挡物轮廓外面的部分正常显示，遮挡依然是逐像素的。
-        float GetHiddenFactorFromFootprint(float2 screenUV)
+        float GetHiddenFactorFromFootprint(float2 screenUV, float3 worldPos)
         {
-            float charEye = SkyPrisonFragmentEyeDepth(SkyPrisonRootWorldPos());
+            // 单点根节点锚点是给没有厚度的 Spine 精灵设计的——落地深度图里每个遮挡物
+            // 也是拍扁成常数（自己根节点深度），两边都用锚点比较，符合"谁的脚在前面"
+            // 的 2.5D 排序语义。3D 通道场景物（比如箱子）是有实体体积的立方体，不同
+            // 像素跟根节点锚点的真实深度差异很大，同一个锚点判定套到整个表面上必然有
+            // 一部分像素判错——同时能解释"该显示时全灭"和"该藏时露出来"两个症状。
+            // _SkyPrison_UseRootAnchorDepth=0 时改用这个像素自己的世界坐标，3D 通道
+            // 场景物在 EnsureCompositeDefaults 里强制关掉这个开关。
+            float3 anchorPos = _SkyPrison_UseRootAnchorDepth > 0.5
+                ? SkyPrisonRootWorldPos()
+                : worldPos;
+            float charEye = SkyPrisonFragmentEyeDepth(anchorPos);
 
             float occluderEye = tex2D(_SkyPrison_OccluderFootprintDepth, screenUV).r;
 
@@ -728,6 +767,26 @@ Shader "Spine/SpineOcclusionComposite"
             float confidence = smoothstep(minVotes - 0.5, minVotes + 0.5, votes);
             return saturate(legacyEdge * confidence);
         }
+
+        // ---- 全息去重 ----
+        // Spine 角色是一片片部件分别画的，被挡住时每片各自叠一层全息，部件重叠处
+        // （手压身体、头发压头）就会亮一倍。HologramCoverageFeature 在画透明物体之前，
+        // 用下面的 HologramCoverage Pass 把每个像素上「被挡住的部件 alpha」累加进
+        // _SP_HoloCoverage（R16F）。NormalBody 画全息时每片按 alpha / 总和 缩放，
+        // 重叠几层加起来都正好是一层，整个人是一块均匀的填充。
+        // 仍然在角色自己的绘制顺序里画，前后排序（sortingOrder）不受影响。
+        sampler2D _SP_HoloCoverage;
+        float _SP_HoloCoverageActive;
+
+        float SkyPrisonHologramDedupWeight(float2 screenUV, float alpha)
+        {
+            if (_SP_HoloCoverageActive < 0.5)
+                return 1.0; // Feature 没跑（场景视图、预览）：维持旧行为
+            float sum = tex2D(_SP_HoloCoverage, screenUV).r;
+            if (sum <= 0.0001)
+                return alpha;
+            return alpha * min(sum, 1.0) / sum;
+        }
         ENDCG
 
         Pass
@@ -876,8 +935,13 @@ Shader "Spine/SpineOcclusionComposite"
         {
             Name "NormalBody"
             Tags { "LightMode"="UniversalForward" }
-            ZTest Always
-            ZWrite Off
+            Cull [_SkyPrison_CullMode]
+            // 3D道具模式下切成正常深度测试——保证自己网格内部的复杂结构排序正确，
+            // 代价是被真实遮挡物挡住的部分这条Pass不会画出来（正常深度测试的题中之义），
+            // 那部分交给下面 HologramOverlay3D 这条新Pass 单独补上全息。Spine默认值
+            // （Off/Always）完全不变。
+            ZTest [_SkyPrison_ZTestMode]
+            ZWrite [_SkyPrison_ZWriteMode]
             Blend One OneMinusSrcAlpha
             ColorMask RGBA
 
@@ -888,6 +952,13 @@ Shader "Spine/SpineOcclusionComposite"
 
             fixed4 frag(v2f i) : SV_Target
             {
+                // 一次性诊断——放在函数最开头、任何 clip/discard 之前，排除"属性确实
+                // 传到了材质、但被更早的 clip 提前干掉这个像素"这个可能性。品红=这条
+                // Pass 真的被 URP 调度并执行到了这一行；如果连品红都看不到，说明问题
+                // 出在这条 Pass 有没有被绘制，不是判定逻辑本身。
+                if (_SkyPrison_SceneDepthDebug > 3.5)
+                    return fixed4(1, 0, 1, 1);
+
                 float alpha;
                 float4 c = SamplePremulBody(i, alpha);
                 clip(alpha - 0.001);
@@ -966,7 +1037,7 @@ Shader "Spine/SpineOcclusionComposite"
                 float hidden = _SkyPrison_UseSceneDepthOcclusion > 0.5
                     ? (_SkyPrison_EnableBodyClip < 0.5
                         ? 0.0
-                        : GetHiddenFactorFromFootprint(screenUV))
+                        : GetHiddenFactorFromFootprint(screenUV, i.worldPos))
                     : GetHiddenFactor(screenUV);
 
                 // 深度诊断优先于一切后续处理返回：后面被挡的像素会 discard，
@@ -1033,8 +1104,16 @@ Shader "Spine/SpineOcclusionComposite"
                         if (silA <= 0.001 && glowAdd <= 0.001 && dissolveEdgeGlowStrength <= 0.001 && statusOutlineGlowStrength <= 0.001)
                             discard;
 
-                        float3 outRgb = _SkyPrison_HologramFillColor.rgb * (silA + glowAdd * 0.6) + extraGlow * saturate(silA + glowAdd);
-                        return float4(outRgb, silA);
+                        float holoW = SkyPrisonHologramDedupWeight(screenUV, alpha);
+                        // 状态描边（灼烧等）被挡住就跟着淡掉，不再穿墙——它和 UnitStatusOutlineGlowFeature
+                        // 的外圈辉光一起被遮挡（辉光那边只从没被挡住的身体部分往外发光）。
+                        // 溶解边仍然跟着全息走：角色在墙后溶解消失也要看得见。
+                        float3 dissolveGlowOnly = _SkyPrison_DissolveEdgeColor.rgb * dissolveEdgeGlowStrength;
+                        float3 statusGlowVisible = _SkyPrison_StatusOutlineColor.rgb * statusOutlineGlowStrength * (1.0 - saturate(hidden));
+                        float3 outRgb = _SkyPrison_HologramFillColor.rgb * (silA + glowAdd * 0.6)
+                                      + dissolveGlowOnly * saturate(silA + glowAdd)
+                                      + statusGlowVisible;
+                        return float4(outRgb * holoW, silA * holoW);
                     }
                 }
                 else
@@ -1088,6 +1167,142 @@ Shader "Spine/SpineOcclusionComposite"
 
                 c.rgb += extraGlow * alpha;
                 return c;
+            }
+            ENDCG
+        }
+
+        // 全息去重的计数 Pass：由 HologramCoverageFeature 用 DrawRenderer 显式调用
+        // （LightMode 不是 UniversalForward，URP 不会自己调度）。判定条件必须和
+        // NormalBody 里走全息分支的条件逐项一致，否则计数和实际绘制对不上。
+        Pass
+        {
+            Name "HologramCoverage"
+            Tags { "LightMode"="SkyPrisonHologramCoverage" }
+            Cull [_SkyPrison_CullMode]
+            ZTest Always
+            ZWrite Off
+            Blend One One
+            ColorMask R
+
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment fragHoloCoverage
+            #pragma target 3.0
+
+            float4 fragHoloCoverage(v2f i) : SV_Target
+            {
+                clip(_SkyPrison_UseHologramFill - 0.5);
+                clip(0.5 - _SkyPrison_Force3DPropOpaqueAlpha); // 3D道具走 HologramOverlay3D，不参与
+
+                float alpha;
+                SamplePremulBody(i, alpha);
+                clip(alpha - 0.001);
+
+                float dissolveAmount = saturate(_SkyPrison_DissolveAmount);
+                if (dissolveAmount > 0.0001)
+                {
+                    float dissolveNoiseValue = tex2D(_SkyPrison_DissolveNoiseTex, i.worldPos.xy * _SkyPrison_DissolveNoiseScale).r;
+                    clip(dissolveNoiseValue - dissolveAmount);
+                }
+
+                float2 screenUV = i.screenPos.xy / max(i.screenPos.w, 0.00001);
+                float hidden = _SkyPrison_UseSceneDepthOcclusion > 0.5
+                    ? (_SkyPrison_EnableBodyClip < 0.5
+                        ? 0.0
+                        : GetHiddenFactorFromFootprint(screenUV, i.worldPos))
+                    : GetHiddenFactor(screenUV);
+                clip(hidden - 0.001);
+
+                return float4(alpha, 0, 0, 0);
+            }
+            ENDCG
+        }
+
+        // 2026-08-15：3D道具专属——上面 NormalBody 那条Pass 为了让道具自己的立体结构
+        // 正确排序，改成了正常深度测试，代价是真被遮挡物挡住的部分不会画出来。这条Pass
+        // 单独补上"被挡住时改画全息"：ZTest Always（不管真实遮挡物挡没挡都画），
+        // 但只在 hidden>0（我们自己那套逐像素场景深度判断认定"被挡住"）时才真正输出
+        // 颜色，其余像素 discard——这样正常可见的部分完全交给 NormalBody 那条已经排序
+        // 正确的Pass，这里只负责"露出来的隐藏轮廓"，两条Pass 画的像素不重叠。
+        // 对 Spine 精灵完全无影响：_SkyPrison_Force3DPropOpaqueAlpha 默认0，最上面
+        // 直接 clip 整条Pass 变成空Pass，Spine 的遮挡表现继续走 NormalBody 单条Pass
+        // 里 ZTest Always 那套原有逻辑，不会被这条新Pass 干扰或重复绘制。
+        Pass
+        {
+            Name "HologramOverlay3D"
+            Tags { "LightMode"="UniversalForward" }
+            Cull [_SkyPrison_CullMode]
+            ZTest Always
+            ZWrite Off
+            Blend One OneMinusSrcAlpha
+            ColorMask RGBA
+
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment fragOverlay3D
+            #pragma target 3.0
+
+            fixed4 fragOverlay3D(v2f i) : SV_Target
+            {
+                // 一次性诊断——同 NormalBody 那条，放在最开头、任何 clip 之前。青色=这条
+                // Pass 真的被 URP 调度并执行到了这一行。
+                if (_SkyPrison_SceneDepthDebug > 3.5)
+                    return fixed4(0, 1, 1, 1);
+
+                // 只给3D道具用——Spine精灵（Force3DPropOpaqueAlpha==0）这条Pass整个是
+                // 空的，遮挡表现继续由 NormalBody 那条Pass 自己的 ZTest Always 处理，
+                // 不会跟这里重复画。
+                clip(_SkyPrison_Force3DPropOpaqueAlpha - 0.5);
+
+                float alpha;
+                SamplePremulBody(i, alpha);
+                clip(alpha - 0.001);
+
+                float2 screenUV = i.screenPos.xy / max(i.screenPos.w, 0.00001);
+                float hidden = _SkyPrison_UseSceneDepthOcclusion > 0.5
+                    ? (_SkyPrison_EnableBodyClip < 0.5
+                        ? 0.0
+                        : GetHiddenFactorFromFootprint(screenUV, i.worldPos))
+                    : GetHiddenFactor(screenUV);
+
+                // 一次性诊断：3D道具被挡住时这条Pass完全没画出东西，怀疑hidden对3D网格
+                // 一直算出0。开着诊断模式时跳过下面这行clip，不管hidden是多少都画，
+                // 把hidden本身当亮度直接画出来（绿=判定为被挡住，越亮判定越强，
+                // 全黑=完全没被判定为挡住）——NormalBody那条Pass的诊断分支因为现在
+                // 走真实深度测试，箱子真被挡住时压根不会执行到那段诊断代码，只能在
+                // 这条ZTest Always的Pass里才看得到"被挡住的那部分"到底算出了什么。
+                if (_SkyPrison_SceneDepthDebug > 0.5)
+                    return float4(0.0, saturate(hidden), 0.0, 1.0);
+
+                // 没被挡住的部分交给 NormalBody 那条Pass（已经按正常深度测试画好了），
+                // 这里只负责被挡住的那部分，避免两条Pass同一像素画两次。
+                clip(hidden - 0.001);
+
+                float2 gridPos  = i.worldPos.xy * _SkyPrison_HologramGridDensity;
+                float2 cellFrac = frac(gridPos);
+                float2 toLine   = min(cellFrac, 1.0 - cellFrac);
+                float  aa       = fwidth(min(toLine.x, toLine.y));
+                float  gridMask = 1.0 - smoothstep(_SkyPrison_HologramGridLineWidth - aa,
+                                                    _SkyPrison_HologramGridLineWidth + aa,
+                                                    min(toLine.x, toLine.y));
+
+                float cycleT = frac(_Time.y / _SkyPrison_HologramCycleLength);
+                float sweepFade = smoothstep(0.0, 0.08, cycleT);
+                float bandY = cycleT * _SkyPrison_HologramSweepRangeY;
+                float dist  = i.relativeY - bandY;
+                float front = 1.0 - smoothstep(0.0, 0.03, dist);
+                float trail = 1.0 - smoothstep(0.0, _SkyPrison_HologramTrailLength, -dist);
+                float waveMask = saturate(front * trail) * sweepFade;
+
+                float silA = saturate(hidden) * _SkyPrison_HologramSilhouetteAlpha * _SkyPrison_HologramFillColor.a;
+                float glowAdd = saturate(gridMask * _SkyPrison_HologramGridBright * 0.6 + waveMask) * hidden
+                              * _SkyPrison_HologramAlpha * _SkyPrison_HologramFillColor.a;
+
+                if (silA <= 0.001 && glowAdd <= 0.001)
+                    discard;
+
+                float3 outRgb = _SkyPrison_HologramFillColor.rgb * (silA + glowAdd * 0.6);
+                return float4(outRgb, silA);
             }
             ENDCG
         }

@@ -218,26 +218,29 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
             }
 
             // 跟 SpineOcclusionComposite.shader 的 GetCharSilhouetteEdge 同一套算法：
-            // 屏幕空间8邻域采样，中心比邻域最小值多出来的部分就是"轮廓边缘"。这里采样
+            // 屏幕空间圆形邻域采样，中心比邻域最小值多出来的部分就是"轮廓边缘"。这里采样
             // 的是每单位专属蒙版，不是全场合并蒙版，不会跟其他单位重叠焊接。
             float GetStatusOutlineSilhouetteEdge(float2 screenUV, float widthPixels) {
                 if (_SkyPrison_StatusOutlinePresenceActive < 0.5)
                     return 0.0;
 
-                float2 texel = abs(_SkyPrison_StatusOutlinePresence_TexelSize.xy) * max(1.0, widthPixels);
-
-                float neighborMin = 1.0;
-                neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2( texel.x, 0)));
-                neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2(-texel.x, 0)));
-                neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2(0,  texel.y)));
-                neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2(0, -texel.y)));
-                neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2( texel.x,  texel.y)));
-                neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2(-texel.x,  texel.y)));
-                neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2( texel.x, -texel.y)));
-                neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2(-texel.x, -texel.y)));
+                // 圆形 16 方向、内外两圈（宽度 ±0.5px）取邻域最小值再平均：原来方形 8 邻域 +
+                // 二值结果会在转角处出锯齿台阶和缺口，两圈平均给内侧边缘一个像素的抗锯齿过渡。
+                float2 texel = abs(_SkyPrison_StatusOutlinePresence_TexelSize.xy);
+                float rIn = max(0.5, widthPixels - 0.5);
+                float rOut = max(1.0, widthPixels + 0.5);
+                float minIn = 1.0;
+                float minOut = 1.0;
+                [unroll] for (int k = 0; k < 16; k++)
+                {
+                    float a = k * 0.39269908;
+                    float2 dir = float2(cos(a), sin(a)) * texel;
+                    minIn = min(minIn, SampleStatusOutlinePresenceRaw(screenUV + dir * rIn));
+                    minOut = min(minOut, SampleStatusOutlinePresenceRaw(screenUV + dir * rOut));
+                }
 
                 float center = SampleStatusOutlinePresenceRaw(screenUV);
-                return saturate(center - neighborMin);
+                return saturate(center - 0.5 * (minIn + minOut));
             }
 
             float3 SkyPrisonApplyOverlayEnvironment(float3 rgb) {

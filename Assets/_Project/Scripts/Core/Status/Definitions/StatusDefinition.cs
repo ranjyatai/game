@@ -195,6 +195,26 @@ public class StatusDefinition : ScriptableObject
     [Tooltip("状态结束/被清除时，描边从有到无的淡出时长（秒），带缓动曲线。通常比淡入更长，像火焰熄灭那种慢慢暗下去的过程。")]
     public float statusOutlineFadeOutSeconds = 0.6f;
 
+    [Tooltip("描边外圈的专属辉光半径（屏幕像素，按 1080p 计）。0 = 不要辉光。\n" +
+             "辉光由 UnitStatusOutlineGlowFeature 单独渲染：只取这个单位自己的轮廓、模糊后扣掉身体内部再叠加，" +
+             "和 Volume 的全局 Bloom 无关——调它不会让场景里其它亮的东西一起发光。")]
+    [Range(0f, 96f)]
+    public float statusGlowRadiusPixels = 12f;
+    [Tooltip("辉光强度。颜色取描边颜色的色相（按最大通道归一，不会因为描边是 HDR 高亮就爆白），再乘这个值。\n" +
+             "超过 Bloom 阈值（当前 1.1）的部分还会再被全局 Bloom 吃一点，想要纯色不发白就保持在 1 左右。")]
+    [Range(0f, 4f)]
+    public float statusGlowIntensity = 1f;
+    [Tooltip("辉光内侧（贴着轮廓）的颜色。偏橙黄，像火焰较热的芯。只取色相和相对亮度，整体亮度由辉光强度决定。")]
+    public Color statusGlowInnerColor = new Color(1f, 0.6f, 0.12f, 1f);
+    [Tooltip("辉光外侧（向外散开、逐渐变淡）的颜色。偏橙红，像火焰冷下来的边缘。")]
+    public Color statusGlowOuterColor = new Color(1f, 0.3f, 0.06f, 1f);
+    [Tooltip("辉光强弱起伏幅度。0 = 一圈均匀的光；越大越像火光——有的地方亮、有的地方几乎没有。\n" +
+             "噪波流动速度沿用上面的「描边噪波流动速度」。")]
+    [Range(0f, 1f)]
+    public float statusGlowVariance = 0.7f;
+    [Tooltip("辉光起伏的噪波密度（每个屏幕高度大约几格）。越小斑块越大，越大越碎。")]
+    public float statusGlowNoiseScale = 5f;
+
     [Header("状态效果响应闪烁")]
     [Tooltip("这个状态每次触发DOT tick（真的跳一下伤害）时，角色本体是否全身半透明呼吸闪一下。")]
     public bool useStatusFlash = false;

@@ -37,13 +37,21 @@ public class SkyPrisonAfterimageEmitter : MonoBehaviour
              "实测太淡看不见——这个 Shader 真正生效之后，同样的数值视觉效果比预期弱，" +
              "调回一个看得清但依然偏暗的值，需要的话继续调。")]
     [Range(0f, 1f)]
-    [SerializeField] private float ghostStartAlpha = 0.38f;
+    [SerializeField] private float ghostStartAlpha = 0.5f;
 
-    [Tooltip("残影染色。暗淡但不能淡到跟透明度叠加后完全看不见。")]
-    [SerializeField] private Color ghostTint = new Color(0.32f, 0.4f, 0.5f, 1f);
+    [Tooltip("残影染色。加算模式下是「往画面上加多少光」，所以要偏亮，暗色加上去几乎看不出来。")]
+    [SerializeField] private Color ghostTint = new Color(0.45f, 0.7f, 1f, 1f);
+
+    [Tooltip("1 = 加算（只提亮背景，任何地面上都不会显得发暗）；0 = 原来的普通半透明覆盖。")]
+    [Range(0f, 1f)]
+    [SerializeField] private float ghostAdditive = 1f;
 
     private static Shader _fillShaderCache;
-    private const string FillShaderName = "Spine/Skeleton Fill";
+    // 用自己的 ZTest Always 版本，不用原版 Spine/Skeleton Fill——原版走标准深度测试，
+    // 残影贴墙闪避时会被墙体真实 3D 几何裁掉一半，跟角色本体"贴墙只变淡、不缺块"
+    // 的观感对不上（角色走的是遮挡合成 Shader 那一套逐像素全息判定，不是物理裁切）。
+    // 见 SkyPrisonAfterimageFill.shader 头部注释。
+    private const string FillShaderName = "SkyPrison/AfterimageFill";
 
     private bool _wasActive;
     private float _actionStartTime;
@@ -51,6 +59,26 @@ public class SkyPrisonAfterimageEmitter : MonoBehaviour
     private int _emittedThisAction;
 
     private readonly List<Ghost> _pool = new List<Ghost>();
+
+    private static readonly List<SkyPrisonAfterimageEmitter> s_Emitters = new List<SkyPrisonAfterimageEmitter>();
+    private static readonly int GhostFadeId = Shader.PropertyToID("_GhostFade");
+    private static readonly int GhostChannelId = Shader.PropertyToID("_GhostChannel");
+    private static readonly Vector4[] GhostChannels =
+    {
+        new Vector4(1, 0, 0, 0), new Vector4(0, 1, 0, 0), new Vector4(0, 0, 1, 0), new Vector4(0, 0, 0, 1),
+    };
+
+    /// <summary>当前所有正在显示的残影渲染器，供 HologramCoverageFeature 画去重计数图。</summary>
+    public static void CollectActiveGhostRenderers(List<Renderer> result)
+    {
+        for (int e = 0; e < s_Emitters.Count; e++)
+        {
+            List<Ghost> pool = s_Emitters[e]._pool;
+            for (int i = 0; i < pool.Count; i++)
+                if (pool[i].active && pool[i].meshRenderer != null)
+                    result.Add(pool[i].meshRenderer);
+        }
+    }
 
     private sealed class Ghost
     {
@@ -66,7 +94,14 @@ public class SkyPrisonAfterimageEmitter : MonoBehaviour
     }
 
     private void Awake() => AutoResolve();
-    private void OnEnable() => AutoResolve();
+    private void OnEnable()
+    {
+        AutoResolve();
+        if (!s_Emitters.Contains(this))
+            s_Emitters.Add(this);
+    }
+
+    private void OnDisable() => s_Emitters.Remove(this);
 
     private void AutoResolve()
     {
@@ -158,6 +193,13 @@ public class SkyPrisonAfterimageEmitter : MonoBehaviour
 
         EnsureMaterials(ghost, sourceMesh.subMeshCount);
 
+        // 去重计数图的通道：按池序号轮流占 RGBA，相邻的残影各用各的通道——
+        // 残影和残影之间照常叠加，只去掉同一个残影内部的部件重叠。
+        Vector4 channel = GhostChannels[_pool.IndexOf(ghost) % GhostChannels.Length];
+        if (ghost.materials != null)
+            foreach (Material m in ghost.materials)
+                if (m != null) m.SetVector(GhostChannelId, channel);
+
         ghost.go.transform.SetPositionAndRotation(skeletonAnimation.transform.position, skeletonAnimation.transform.rotation);
         ghost.go.transform.localScale = skeletonAnimation.transform.lossyScale;
 
@@ -202,6 +244,7 @@ public class SkyPrisonAfterimageEmitter : MonoBehaviour
             // 完全不生效。必须显式拨到 1 才会真的用 _FillColor.rgb 画纯色剪影。
             mat.SetFloat("_FillPhase", 1f);
             mat.SetColor("_FillColor", ghostTint);
+            mat.SetFloat("_Additive", ghostAdditive);
             materials[i] = mat;
         }
 
@@ -246,6 +289,11 @@ public class SkyPrisonAfterimageEmitter : MonoBehaviour
             scaled[i] = new Color32(c.r, c.g, c.b, (byte)((c.a * alphaByte) / 255));
         }
         ghost.mesh.colors32 = scaled;
+
+        // 计数 Pass 用它把淡出除掉，只按部件形状去重。
+        if (ghost.materials != null)
+            foreach (Material m in ghost.materials)
+                if (m != null) m.SetFloat(GhostFadeId, alphaByte / 255f);
     }
 
     private Ghost GetPooledGhost()

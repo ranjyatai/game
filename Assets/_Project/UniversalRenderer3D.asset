@@ -47,7 +47,7 @@ MonoBehaviour:
     stencilWriterShader: {fileID: 0}
     stencilWriterShaderName: Hidden/SkyPrison/ShadowOccluderStencilWriter
     debugLogs: 0
-    lastStatus: SKIP camera=SceneCamera, type=SceneView
+    lastStatus: SKIP camera=OverheadUICamera, type=Game
 --- !u!114 &-7712744575805377286
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -226,6 +226,20 @@ MonoBehaviour:
       surfaceData: 2
     screenSpaceSettings:
       normalBlend: 0
+--- !u!114 &-5125064887452956496
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7835e5fca9dade14fa48bed6e76ab171, type: 3}
+  m_Name: SkyPrison Model3D Hologram Overlay
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonModel3DHologramOverlayFeature
+  m_Active: 1
+  targetCameraName: Main Camera
 --- !u!114 &-2737790189208504755
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -296,6 +310,21 @@ MonoBehaviour:
     runtimeFirstRTPreview: {fileID: 0}
     runtimeSecondRTPreview: {fileID: 0}
     lastStatus: SKIP camera=OverheadUICamera, type=Game
+--- !u!114 &-564683440424441097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: afa1fa6dc103d2e4cb0af40a1ff17501, type: 3}
+  m_Name: SkyPrison Status Outline Glow
+  m_EditorClassIdentifier: Assembly-CSharp::UnitStatusOutlineGlowFeature
+  m_Active: 1
+  glowShader: {fileID: 4800000, guid: 29e9e768b3cca5c429d489165601390c, type: 3}
+  scanIntervalFrames: 15
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -337,7 +366,10 @@ MonoBehaviour:
   - {fileID: -6394802454394906081}
   - {fileID: 4170064773752753920}
   - {fileID: 129449282084084999}
-  m_RendererFeatureMap: d613843334d5b96c9c403b378e74f553f320bf91a69d4b2f4d76ad0e546a01da6c9e4a623e9af683022cb08049a6b4e587969772f7f6b01957be6bcbb39dc1a934037fadf87ade80c5969bb5730899b06704a876e40596a81fdafe800c1941a7000fe759d10bdf39071d0dab6fe5cb01
+  - {fileID: -5125064887452956496}
+  - {fileID: -564683440424441097}
+  - {fileID: 7565828206689154666}
+  m_RendererFeatureMap: d613843334d5b96c9c403b378e74f553f320bf91a69d4b2f4d76ad0e546a01da6c9e4a623e9af683022cb08049a6b4e587969772f7f6b01957be6bcbb39dc1a934037fadf87ade80c5969bb5730899b06704a876e40596a81fdafe800c1941a7000fe759d10bdf39071d0dab6fe5cb01b0088a7ca31ce0b8f7aaf41a67d729f86a765623ab38ff68
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -546,7 +578,7 @@ MonoBehaviour:
     targetMode: 0
     afterOverlayCameraName: GamePlayCamera
     maskMode: 0
-    focusDistance: 70
+    focusDistance: 50
     blurRange: 45
     screenBlurStartY: 0.62
     screenBlurEndY: 1
@@ -621,6 +653,20 @@ MonoBehaviour:
       restoreCamera: 1
       offset: {x: 0, y: 0, z: 0, w: 0}
       cameraFieldOfView: 60
+--- !u!114 &7565828206689154666
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3d23e77bf8756440bf5a00b2de0bd8f, type: 3}
+  m_Name: SkyPrison Hologram Coverage
+  m_EditorClassIdentifier: Assembly-CSharp::HologramCoverageFeature
+  m_Active: 1
+  scanIntervalFrames: 30
 --- !u!114 &7834527446966997974
 MonoBehaviour:
   m_ObjectHideFlags: 0
