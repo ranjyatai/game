@@ -18,7 +18,7 @@ using UnityEngine;
 /// </summary>
 public static class SkyPrisonPushableGroundContactEditorUtility
 {
-    private const string MenuRoot = "Tools/Sky Prison/Physics/";
+    private const string MenuRoot = "天空囚笼/地图/";
     private const string MenuCalibrateSelected = MenuRoot + "矫正选中可推动物体接地（80%自动）";
 
     private static readonly string[] PreferredColliderRoots =
@@ -43,7 +43,7 @@ public static class SkyPrisonPushableGroundContactEditorUtility
         "Editor"
     };
 
-    [MenuItem(MenuCalibrateSelected, false, 1800)]
+    [MenuItem(MenuCalibrateSelected, false, 127)]
     private static void CalibrateSelected()
     {
         Object[] selected = Selection.objects;

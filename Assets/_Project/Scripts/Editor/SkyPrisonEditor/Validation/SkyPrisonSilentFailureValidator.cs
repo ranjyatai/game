@@ -64,7 +64,7 @@ public static class SkyPrisonSilentFailureValidator
         public bool isError;
     }
 
-    [MenuItem("Tools/Sky Prison/校验/检查静默失败", priority = 1)]
+    [MenuItem("天空囚笼/校验与清理/检查静默失败", false, 210)]
     public static void Run()
     {
         var findings = new List<Finding>();

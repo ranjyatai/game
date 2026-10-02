@@ -7,7 +7,7 @@ public static class SkyPrisonCurrencySeeder
     private const string CurrencyFolder = "Assets/_Project/Data/Definitions/Standard/Currencies";
     private const string DefaultCurrencyPath = CurrencyFolder + "/CD_Token.asset";
 
-    [MenuItem("Tools/Sky Prison/Currencies/确保默认标准货币")]
+    [MenuItem("天空囚笼/内容数据/确保默认标准货币", false, 181)]
     public static void EnsureDefaultCurrency()
     {
         EnsureFolderExists(CurrencyFolder);

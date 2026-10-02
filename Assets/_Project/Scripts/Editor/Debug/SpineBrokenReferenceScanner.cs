@@ -8,9 +8,9 @@ using UnityEngine.SceneManagement;
 
 public static class SpineBrokenReferenceScanner_ReflectionV3
 {
-    private const string MenuRoot = "Tools/Sky Prison/Debug/Spine空引用扫描 V3/";
+    private const string MenuRoot = "天空囚笼/调试/Spine 空引用扫描/";
 
-    [MenuItem(MenuRoot + "扫描Prefab资源")]
+    [MenuItem(MenuRoot + "扫描Prefab资源", false, 231)]
     public static void ScanProjectPrefabs()
     {
         int checkedObjects = 0;
@@ -31,7 +31,7 @@ public static class SpineBrokenReferenceScanner_ReflectionV3
         Debug.Log($"[Spine扫描V3完成] Prefab数量: {guids.Length}, 检查对象: {checkedObjects}, 检查Spine组件: {checkedComponents}, 空引用数量: {brokenCount}");
     }
 
-    [MenuItem(MenuRoot + "扫描当前打开场景")]
+    [MenuItem(MenuRoot + "扫描当前打开场景", false, 232)]
     public static void ScanCurrentOpenScenes()
     {
         int checkedObjects = 0;
@@ -54,7 +54,7 @@ public static class SpineBrokenReferenceScanner_ReflectionV3
         Debug.Log($"[Spine扫描V3完成] 当前场景检查对象: {checkedObjects}, 检查Spine组件: {checkedComponents}, 空引用数量: {brokenCount}");
     }
 
-    [MenuItem(MenuRoot + "扫描Build Settings启用场景")]
+    [MenuItem(MenuRoot + "扫描Build Settings启用场景", false, 233)]
     public static void ScanEnabledBuildScenes()
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())

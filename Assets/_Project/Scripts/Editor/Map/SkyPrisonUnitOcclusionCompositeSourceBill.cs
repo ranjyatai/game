@@ -40,7 +40,7 @@ public static class SkyPrisonUnitOcclusionCompositeSourceBill
         "_SkyPrison_OcclusionColor"
     };
 
-    [MenuItem("Tools/Sky Prison/Map/遮挡诊断/复制选中单位遮挡材质账单", false, 3601)]
+    [MenuItem("天空囚笼/遮挡/诊断账单/复制选中单位遮挡材质账单", false, 124)]
     public static void CopySelectedUnitBill()
     {
         Transform root = Selection.activeTransform;

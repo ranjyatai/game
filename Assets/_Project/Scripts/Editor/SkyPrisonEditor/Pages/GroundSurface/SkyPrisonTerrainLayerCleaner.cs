@@ -3,9 +3,9 @@ using UnityEngine;
 
 public static class SkyPrisonTerrainLayerCleaner
 {
-    private const string MenuRoot = "Tools/Sky Prison/Ground Overlay/";
+    private const string MenuRoot = "天空囚笼/地面/";
 
-    [MenuItem(MenuRoot + "清除选中 TerrainLayer 的地表残留")]
+    [MenuItem(MenuRoot + "清除选中 TerrainLayer 的地表残留", false, 147)]
     public static void ClearSelectedTerrainLayerResidue()
     {
         Terrain terrain = GetTargetTerrain();
@@ -49,7 +49,7 @@ public static class SkyPrisonTerrainLayerCleaner
         return Selection.activeObject is TerrainLayer || Selection.activeGameObject != null || Terrain.activeTerrain != null;
     }
 
-    [MenuItem(MenuRoot + "清除 RoadLine 类 TerrainLayer 残留")]
+    [MenuItem(MenuRoot + "清除 RoadLine 类 TerrainLayer 残留", false, 148)]
     public static void ClearRoadLineLikeTerrainLayers()
     {
         Terrain terrain = GetTargetTerrain();

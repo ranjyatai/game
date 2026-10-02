@@ -23,7 +23,7 @@ public static class SkyPrisonFogOverlayMaterialFix
     private const string CorrectMaterialPath =
         "Assets/_Project/Art/Materials/FrontOccluder/FogOfWar/SkyPrisonFogOfWarOverlay.mat";
 
-    [MenuItem("Tools/Sky Prison/Map/修复战争迷雾材质引用")]
+    [MenuItem("天空囚笼/地图/修复战争迷雾材质引用", false, 118)]
     public static void Run()
     {
         Material correctMaterial = AssetDatabase.LoadAssetAtPath<Material>(CorrectMaterialPath);

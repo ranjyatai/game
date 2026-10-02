@@ -8,31 +8,31 @@ using UnityEngine;
 /// </summary>
 public class SkyPrisonRenderQualityPanel : EditorWindow
 {
-    [MenuItem("Tools/Sky Prison/Render Quality/Open Render Quality Panel")]
+    [MenuItem("天空囚笼/设置/渲染质量面板", false, 105)]
     public static void Open()
     {
         GetWindow<SkyPrisonRenderQualityPanel>("渲染质量");
     }
 
-    [MenuItem("Tools/Sky Prison/Render Quality/Set Safe")]
+    [MenuItem("天空囚笼/设置/渲染质量预设/Safe", false, 109)]
     public static void SetSafe()
     {
         SkyPrisonRenderQualityEditorBridge.SetEditorTier(SkyPrisonRenderQualityTier.Safe);
     }
 
-    [MenuItem("Tools/Sky Prison/Render Quality/Set Edit Preview")]
+    [MenuItem("天空囚笼/设置/渲染质量预设/Edit Preview", false, 106)]
     public static void SetEditPreview()
     {
         SkyPrisonRenderQualityEditorBridge.SetEditorTier(SkyPrisonRenderQualityTier.EditPreview);
     }
 
-    [MenuItem("Tools/Sky Prison/Render Quality/Set Runtime Preview")]
+    [MenuItem("天空囚笼/设置/渲染质量预设/Runtime Preview", false, 107)]
     public static void SetRuntimePreview()
     {
         SkyPrisonRenderQualityEditorBridge.SetEditorTier(SkyPrisonRenderQualityTier.RuntimePreview);
     }
 
-    [MenuItem("Tools/Sky Prison/Render Quality/Set Final")]
+    [MenuItem("天空囚笼/设置/渲染质量预设/Final", false, 108)]
     public static void SetFinal()
     {
         bool ok = EditorUtility.DisplayDialog(

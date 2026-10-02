@@ -17,12 +17,12 @@ using UnityEngine.SceneManagement;
 public static class SkyPrisonSpawnerOverrideCleanup
 {
     private const string LogPrefix = "[SkyPrison Spawner]";
-    private const string MenuRoot = "Tools/Sky Prison/Map/孵化器/";
+    private const string MenuRoot = "天空囚笼/地图/孵化器朝向/";
 
-    [MenuItem(MenuRoot + "1. 检查视觉模型朝向")]
+    [MenuItem(MenuRoot + "1. 检查视觉模型朝向", false, 129)]
     public static void Audit() => Run(apply: false);
 
-    [MenuItem(MenuRoot + "2. 校正视觉模型朝向（保留位置和缩放）")]
+    [MenuItem(MenuRoot + "2. 校正视觉模型朝向（保留位置和缩放）", false, 130)]
     public static void Fix() => Run(apply: true);
 
     /// <summary>
@@ -30,7 +30,7 @@ public static class SkyPrisonSpawnerOverrideCleanup
     /// 不改的话，放置时 Apply 会在每个实例上写一个 override——功能上没错，
     /// 但每个孵化器都带一条蓝线覆盖，久了没人分得清哪些 override 是有意的。
     /// </summary>
-    [MenuItem(MenuRoot + "3. 把预制体本身改成标准朝向")]
+    [MenuItem(MenuRoot + "3. 把预制体本身改成标准朝向", false, 131)]
     public static void NormalizePrefab()
     {
         const string prefabPath = "Assets/_Project/Data/Definitions/Core/Spawners/UnitSpawner.prefab";

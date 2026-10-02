@@ -24,7 +24,7 @@ public static class SkyPrisonFontCharacterPrebake
         "Assets/_Project/UIUX/Fonts/TMP/ZhouFangRiMingTi-2 SDF.asset",
     };
 
-    [MenuItem("Tools/Sky Prison/UI/预烘焙全部游戏文本到字体图集")]
+    [MenuItem("天空囚笼/UI/预烘焙全部游戏文本到字体图集", false, 182)]
     public static void Prebake()
     {
         HashSet<char> chars = CollectAllGameTextCharacters();

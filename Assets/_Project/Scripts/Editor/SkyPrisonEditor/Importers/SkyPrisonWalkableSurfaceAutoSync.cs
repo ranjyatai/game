@@ -133,7 +133,7 @@ public static class SkyPrisonWalkableSurfaceAutoSync
             "场景已标脏，记得保存。");
     }
 
-    [MenuItem("Tools/Sky Prison/Ground/Surface/立即校正场景内可站立装饰物标记")]
+    [MenuItem("天空囚笼/地面/立即校正场景内可站立装饰物标记", false, 145)]
     private static void SyncNow()
     {
         SyncLoadedScenes();

@@ -16,7 +16,7 @@ public static class SkyPrisonClearOcclusionDebugState
 {
     private const string LogPrefix = "[SkyPrison 遮挡诊断清理]";
 
-    [MenuItem("Tools/Sky Prison/Map/前景遮挡/清除诊断残留（角色发黑时用）")]
+    [MenuItem("天空囚笼/遮挡/清除诊断残留（角色发黑时用）", false, 122)]
     public static void Run()
     {
         int cleared = 0;

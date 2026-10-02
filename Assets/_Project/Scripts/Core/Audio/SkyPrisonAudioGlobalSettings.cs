@@ -332,7 +332,7 @@ public class SkyPrisonAudioGlobalSettingsWindow : UnityEditor.EditorWindow
         { SkyPrisonSystemSEType.WeaponSwitch, "武器切换（滚轮）" }, // 之前漏了这个类型，音声设置窗口列表里一直显示英文原名
     };
 
-    [UnityEditor.MenuItem("Tools/音声设置")]
+    [UnityEditor.MenuItem("天空囚笼/设置/音声设置", false, 103)]
     public static void Open()
     {
         var w = GetWindow<SkyPrisonAudioGlobalSettingsWindow>("音声设置");

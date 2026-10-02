@@ -59,7 +59,7 @@ public static class SkyPrisonOccluderCheapPathSetup
         Run();
     }
 
-    [MenuItem("Tools/Sky Prison/Map/前景遮挡/切换到碰撞体判定（省 CPU）")]
+    [MenuItem("天空囚笼/遮挡/切换到碰撞体判定（省 CPU）", false, 121)]
     public static void Run()
     {
         if (EditorApplication.isCompiling || EditorApplication.isUpdating)

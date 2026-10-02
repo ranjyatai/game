@@ -53,7 +53,7 @@ public static class SkyPrisonOccluderCostTuning
         Run();
     }
 
-    [MenuItem("Tools/Sky Prison/Map/前景遮挡/调整遮挡判定开销")]
+    [MenuItem("天空囚笼/遮挡/调整遮挡判定开销", false, 123)]
     public static void Run()
     {
         var triggers = Object.FindObjectsByType<SkyPrisonTerrainDecorationFrontOccluderTrigger>(

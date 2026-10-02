@@ -14,9 +14,9 @@ using UnityEngine;
 public static class SkyPrisonOcclusionRTSnapshotBill
 {
     private const string Version = "V1 - 2026-05-22 - occlusion RT snapshot + binding bill";
-    private const string MenuPath = "Tools/Sky Prison/Map/遮挡诊断/保存遮挡RT快照并复制账单";
+    private const string MenuPath = "天空囚笼/遮挡/诊断账单/保存遮挡RT快照并复制账单";
 
-    [MenuItem(MenuPath)]
+    [MenuItem(MenuPath, false, 141)]
     public static void SaveSnapshotsAndCopyBill()
     {
         var selected = Selection.activeTransform;

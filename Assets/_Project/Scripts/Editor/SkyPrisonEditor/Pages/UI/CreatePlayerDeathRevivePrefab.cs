@@ -29,7 +29,7 @@ namespace SkyPrison.Editor.UI
         }
 
         // ── 菜单入口（首次创建） ──────────────────────────────────────────────
-        [MenuItem("Tools/Sky Prison/UI/Create Player Death Revive Popup")]
+        [MenuItem("天空囚笼/UI/Create Player Death Revive Popup", false, 173)]
         public static void Create()
         {
             var root = new GameObject("PF_PlayerDeathRevive");

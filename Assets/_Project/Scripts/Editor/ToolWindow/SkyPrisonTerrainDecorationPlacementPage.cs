@@ -13,7 +13,6 @@ public class SkyPrisonTerrainDecorationPlacementPage : EditorWindow
 {
     private const string MenuPath = "Tools/Sky Prison/Map/模块/地形装饰物/旧入口-已废弃";
 
-    [MenuItem(MenuPath)]
     public static void OpenWindow()
     {
         SkyPrisonTerrainDecorationPlacementPage window = GetWindow<SkyPrisonTerrainDecorationPlacementPage>("地形装饰物-旧入口");

@@ -228,7 +228,7 @@ namespace SkyPrison.Editor.UI
             }
         }
 
-        [MenuItem("Tools/Sky Prison/UI/Create Stash Window")]
+        [MenuItem("天空囚笼/UI/Create Stash Window", false, 171)]
         public static void Create()
         {
             InventoryReference refData = ReadInventoryReference();

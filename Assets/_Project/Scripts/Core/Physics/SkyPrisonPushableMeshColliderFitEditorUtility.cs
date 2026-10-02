@@ -17,7 +17,7 @@ using UnityEngine;
 /// </summary>
 public static class SkyPrisonPushableMeshColliderFitEditorUtility
 {
-    private const string MenuRoot = "Tools/Sky Prison/Physics/";
+    private const string MenuRoot = "天空囚笼/地图/";
     private const string MenuRebuildSelected = MenuRoot + "用模型Mesh重建选中可推动物体Collider";
 
     private const string ColliderRootName = "PushableColliderRoot";
@@ -48,7 +48,7 @@ public static class SkyPrisonPushableMeshColliderFitEditorUtility
         "GroundContact"
     };
 
-    [MenuItem(MenuRebuildSelected, false, 1802)]
+    [MenuItem(MenuRebuildSelected, false, 128)]
     private static void RebuildSelected()
     {
         Object[] selected = Selection.objects;

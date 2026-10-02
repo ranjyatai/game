@@ -155,7 +155,7 @@ public class SkyPrisonInputSettingsWindow : EditorWindow
 
     private static readonly string[] TriggerModeLabels = { "按住", "按下", "松开" };
 
-    [MenuItem("Tools/按键设置")]
+    [MenuItem("天空囚笼/设置/按键设置", false, 100)]
     public static void Open()
     {
         SkyPrisonInputSettingsWindow window = GetWindow<SkyPrisonInputSettingsWindow>("输入设置");

@@ -17,7 +17,7 @@ using Effekseer.Internal;
 /// </summary>
 public static class SkyPrisonEffekseerTextureRelinker
 {
-    [MenuItem("Assets/Sky Prison/修复Effekseer特效贴图引用（按文件名重新关联）")]
+    [MenuItem("Assets/天空囚笼/修复Effekseer特效贴图引用（按文件名重新关联）")]
     private static void RelinkSelectedEffect()
     {
         Object selected = Selection.activeObject;
@@ -91,7 +91,7 @@ public static class SkyPrisonEffekseerTextureRelinker
             "确定");
     }
 
-    [MenuItem("Assets/Sky Prison/修复Effekseer特效贴图引用（按文件名重新关联）", true)]
+    [MenuItem("Assets/天空囚笼/修复Effekseer特效贴图引用（按文件名重新关联）", true)]
     private static bool ValidateRelinkSelectedEffect()
     {
         return Selection.activeObject is EffekseerEffectAsset;

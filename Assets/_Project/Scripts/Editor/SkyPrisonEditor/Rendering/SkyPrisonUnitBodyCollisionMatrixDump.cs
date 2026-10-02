@@ -9,13 +9,13 @@ using UnityEngine;
 /// </summary>
 public static class SkyPrisonUnitBodyCollisionMatrixDump
 {
-    [MenuItem("Tools/Sky Prison/Debug/打印 UnitBody 碰撞矩阵")]
+    [MenuItem("天空囚笼/调试/打印 UnitBody 碰撞矩阵", false, 227)]
     public static void Dump()
     {
         DumpLayer("UnitBody");
     }
 
-    [MenuItem("Tools/Sky Prison/Debug/打印 World3D 碰撞矩阵")]
+    [MenuItem("天空囚笼/调试/打印 World3D 碰撞矩阵", false, 228)]
     public static void DumpWorld3D()
     {
         DumpLayer("World3D");

@@ -19,7 +19,7 @@ namespace SkyPrison.Editor.UI
     /// </summary>
     public static class SkyPrisonAudioListenerSceneCleanup
     {
-        [MenuItem("Tools/Sky Prison/Audio/清理所有场景多余AudioListener")]
+        [MenuItem("天空囚笼/校验与清理/清理所有场景多余 AudioListener", false, 215)]
         public static void CleanupAllScenes()
         {
             string[] sceneGuids = AssetDatabase.FindAssets("t:Scene", new[] { "Assets/_Project" });

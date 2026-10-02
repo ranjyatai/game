@@ -58,10 +58,10 @@ public static class SkyPrisonDeadMaterialPropertyCleaner
     /// <summary>属性总数低于这个值就认为着色器状态可疑，不做清理。</summary>
     private const int MinPlausiblePropertyCount = 4;
 
-    [MenuItem("Tools/Sky Prison/校验/清理材质死属性", priority = 2)]
+    [MenuItem("天空囚笼/校验与清理/清理材质死属性", false, 212)]
     public static void Run() => Execute(dryRun: false);
 
-    [MenuItem("Tools/Sky Prison/校验/清理材质死属性（只列出不删）", priority = 3)]
+    [MenuItem("天空囚笼/校验与清理/清理材质死属性（只列出不删）", false, 211)]
     public static void DryRun() => Execute(dryRun: true);
 
     private static void Execute(bool dryRun)

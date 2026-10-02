@@ -20,7 +20,7 @@ public static class SkyPrisonOrphanAudioListenerCleanup
     private const string LogPrefix = "[SkyPrison 孤儿 Listener 清理]";
     private const string FallbackName = "SkyPrison_RuntimeFallbackAudioListener";
 
-    [MenuItem("Tools/Sky Prison/Audio/清理泄漏的孤儿 AudioListener")]
+    [MenuItem("天空囚笼/校验与清理/清理泄漏的孤儿 AudioListener", false, 216)]
     public static void Run()
     {
         var all = Resources.FindObjectsOfTypeAll<AudioListener>();

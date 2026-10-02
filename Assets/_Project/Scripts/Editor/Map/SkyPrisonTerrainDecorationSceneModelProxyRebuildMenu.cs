@@ -17,11 +17,11 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public static class SkyPrisonTerrainDecorationSceneModelProxyRebuildMenu
 {
-    private const string MenuRoot = "Tools/Sky Prison/Map/遮挡矫正/";
+    private const string MenuRoot = "天空囚笼/遮挡/矫正/";
     private const string OcclusionMaskLayerName = "OcclusionMask";
     private const string ProxyModelName = "FrontOccluderProxy_Model";
 
-    [MenuItem(MenuRoot + "重建选中物体的模型遮挡代理", priority = 2110)]
+    [MenuItem(MenuRoot + "重建选中物体的模型遮挡代理", false, 138)]
     public static void RebuildSelectedModelProxy()
     {
         GameObject[] selectedObjects = Selection.gameObjects;

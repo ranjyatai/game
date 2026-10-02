@@ -10,7 +10,7 @@ using UnityEngine.Rendering.Universal;
 /// </summary>
 static class CharacterPresenceFeatureAutoSetup
 {
-    [MenuItem("SkyPrison/Rendering/确保 CharacterPresenceFeature 已注册")]
+    [MenuItem("天空囚笼/渲染/确保 CharacterPresenceFeature 已注册", false, 190)]
     public static void EnsureFeatureOnAllRenderers()
     {
         string[] guids = AssetDatabase.FindAssets("t:UniversalRendererData");

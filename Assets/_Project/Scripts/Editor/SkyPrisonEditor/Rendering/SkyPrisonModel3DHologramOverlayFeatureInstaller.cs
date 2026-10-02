@@ -31,7 +31,6 @@ public static class SkyPrisonModel3DHologramOverlayFeatureInstaller
         };
     }
 
-    [MenuItem("Tools/Sky Prison/Map/前景遮挡/安装 3D 全息覆盖 Feature")]
     public static void Install()
     {
         var renderer = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(RendererPath);

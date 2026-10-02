@@ -30,7 +30,7 @@ public static class SkyPrisonMapTemplateGenerator
         "WorldRoot/BackgroundRoot/StructureRoot",
     };
 
-    [MenuItem("Tools/Sky Prison/Map/从 StillVault 生成新地图模板")]
+    [MenuItem("天空囚笼/地图/从 StillVault 生成新地图模板", false, 114)]
     public static void GenerateTemplate()
     {
         if (!System.IO.File.Exists(SourceScenePath))

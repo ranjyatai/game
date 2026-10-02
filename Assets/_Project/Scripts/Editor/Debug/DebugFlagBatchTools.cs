@@ -36,13 +36,13 @@ public static class DebugFlagBatchTools
 
     // ========= 菜单 =========
 
-    [MenuItem("Tools/Debug/打开 Debug 批处理工具")]
+    [MenuItem("天空囚笼/调试/打开 Debug 批处理工具", false, 220)]
     public static void OpenWindow()
     {
         DebugFlagBatchWindow.OpenWindow();
     }
 
-    [MenuItem("Tools/Debug/列出当前场景已开启 Debug")]
+    [MenuItem("天空囚笼/调试/列出当前场景已开启 Debug", false, 221)]
     public static void ListEnabledDebugFlagsInOpenScene()
     {
         BatchOptions options = CreateDefaultOptions();
@@ -57,7 +57,7 @@ public static class DebugFlagBatchTools
         Debug.Log("[DebugFlagBatchTools] 当前场景已开启 Debug 的组件：\n" + string.Join("\n", result.enabledLines));
     }
 
-    [MenuItem("Tools/Debug/关闭当前场景全部 Debug")]
+    [MenuItem("天空囚笼/调试/关闭当前场景全部 Debug", false, 222)]
     public static void DisableAllDebugFlagsInOpenScene()
     {
         BatchOptions options = CreateDefaultOptions();
@@ -69,7 +69,7 @@ public static class DebugFlagBatchTools
         );
     }
 
-    [MenuItem("Tools/Debug/关闭当前选中对象全部 Debug")]
+    [MenuItem("天空囚笼/调试/关闭当前选中对象全部 Debug", false, 223)]
     public static void DisableAllDebugFlagsInSelection()
     {
         BatchOptions options = CreateDefaultOptions();
@@ -81,7 +81,7 @@ public static class DebugFlagBatchTools
         );
     }
 
-    [MenuItem("Tools/Debug/关闭当前场景 + 选中对象全部 Debug")]
+    [MenuItem("天空囚笼/调试/关闭当前场景 + 选中对象全部 Debug", false, 224)]
     public static void DisableDebugFlagsInSceneAndSelection()
     {
         BatchOptions options = CreateDefaultOptions();

@@ -17,9 +17,9 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public static class SkyPrisonTerrainDecorationSceneInstanceCorrectionMenu
 {
-    private const string MenuRoot = "Tools/Sky Prison/Map/遮挡矫正/";
+    private const string MenuRoot = "天空囚笼/遮挡/矫正/";
 
-    [MenuItem(MenuRoot + "矫正选中的地图物体", priority = 2100)]
+    [MenuItem(MenuRoot + "矫正选中的地图物体", false, 136)]
     public static void CorrectSelectedMapObjects()
     {
         GameObject[] selectedObjects = Selection.gameObjects;
@@ -97,7 +97,7 @@ public static class SkyPrisonTerrainDecorationSceneInstanceCorrectionMenu
         return Selection.gameObjects != null && Selection.gameObjects.Length > 0;
     }
 
-    [MenuItem(MenuRoot + "矫正场景内全部硬遮挡物", priority = 2101)]
+    [MenuItem(MenuRoot + "矫正场景内全部硬遮挡物", false, 137)]
     public static void CorrectAllSceneHardOccluders()
     {
         if (!EditorUtility.DisplayDialog(

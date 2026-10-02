@@ -33,7 +33,6 @@ public static class SkyPrisonOccluderProbeBootstrap
         Run();
     }
 
-    [MenuItem("Tools/Sky Prison/Map/前景遮挡/一键接入（建层 + 开定义 + 重建实例）")]
     public static void Run()
     {
         // 编译刚结束、场景还没就绪时跑会白跑一趟，而且版本号已经写进去了不会重试。

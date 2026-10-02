@@ -44,7 +44,7 @@ public class SkyPrisonGroundOverlaySplineGeometryTool : EditorWindow
     private const int MaxPathUndo = 32;
     private readonly List<List<Vector3>> pathUndo = new List<List<Vector3>>();
 
-    [MenuItem("Tools/Sky Prison/Ground/Spline 几何路径绘制器")]
+    [MenuItem("天空囚笼/地面/Spline 几何路径绘制器", false, 140)]
     public static void Open()
     {
         var window = GetWindow<SkyPrisonGroundOverlaySplineGeometryTool>("Spline 几何路径绘制");

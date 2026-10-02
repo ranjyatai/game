@@ -93,7 +93,7 @@ public static class SkyPrisonGroundAudioBindingUtility
         return changed;
     }
 
-    [MenuItem("Tools/Sky Prison/Map/修复当前场景地形脚步声绑定")]
+    [MenuItem("天空囚笼/地图/修复当前场景地形脚步声绑定", false, 117)]
     public static void RepairActiveScene()
     {
         // surfaceId → 定义。TL_<surfaceId> 就是放置工具生成地形层时用的命名规则。

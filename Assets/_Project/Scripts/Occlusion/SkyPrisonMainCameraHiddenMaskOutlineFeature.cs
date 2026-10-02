@@ -2001,7 +2001,6 @@ public sealed class SkyPrisonMainCameraHiddenMaskOutlineFeature_V18_BuildSafePub
     }
 
 #if UNITY_EDITOR
-    [MenuItem("Tools/Sky Prison/Rendering/Install Hidden Mask Outline Feature V16 Build Safe Shader References")]
     private static void InstallFeatureMenu()
     {
         ScriptableRendererData[] renderers = Resources.FindObjectsOfTypeAll<ScriptableRendererData>();

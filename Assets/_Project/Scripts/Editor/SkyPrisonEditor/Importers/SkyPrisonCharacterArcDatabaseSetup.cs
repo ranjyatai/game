@@ -23,7 +23,7 @@ public static class SkyPrisonCharacterArcDatabaseSetup
         EditorApplication.delayCall += Sync;
     }
 
-    [MenuItem("Tools/Sky Prison/任务/重建人物记录数据库")]
+    [MenuItem("天空囚笼/重建注册表/重建人物记录数据库", false, 167)]
     public static void Rebuild() => Sync();
 
     private static void Sync()

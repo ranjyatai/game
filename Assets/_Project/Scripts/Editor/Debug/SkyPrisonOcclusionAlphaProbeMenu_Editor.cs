@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class SkyPrisonOcclusionAlphaProbeMenu
 {
-    [MenuItem("Tools/Sky Prison/Debug/给选中物体添加遮挡透明测试器")]
+    [MenuItem("天空囚笼/遮挡/给选中物体添加遮挡透明测试器", false, 128)]
     public static void AddProbeToSelection()
     {
         GameObject go = Selection.activeGameObject;

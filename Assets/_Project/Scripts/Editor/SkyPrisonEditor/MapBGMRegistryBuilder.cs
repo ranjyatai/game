@@ -35,7 +35,7 @@ public class MapBGMRegistryBuilder : AssetPostprocessor
         return AssetDatabase.LoadAssetAtPath<MapDefinition>(path) != null;
     }
 
-    [MenuItem("Sky Prison/音频/重建地图BGM注册表")]
+    [MenuItem("天空囚笼/重建注册表/重建地图BGM注册表", false, 164)]
     public static void RebuildMenu()
     {
         Rebuild(true);

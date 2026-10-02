@@ -129,7 +129,7 @@ public sealed class SkyPrisonGroundSurfaceTexturePostprocessor : AssetPostproces
         Debug.Log($"{LogPrefix} {path} 被用作 Terrain 地表，已套用地表导入标准（Repeat 平铺 / mipmap / 去 alpha）。", texture);
     }
 
-    [MenuItem("Tools/Sky Prison/Ground/Surface/检查并修复所有地表贴图平铺设置")]
+    [MenuItem("天空囚笼/地面/检查并修复所有地表贴图平铺设置", false, 143)]
     public static void FixAllTerrainSurfaceTextures()
     {
         checkedTextureIds.Clear();

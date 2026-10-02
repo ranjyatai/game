@@ -35,7 +35,7 @@ public class SkyPrisonTerrainDecorationBatchImportWindow : EditorWindow
     private bool blockPlayer = true;
     private Vector2 scroll;
 
-    [MenuItem("Tools/Sky Prison/Map/批量从模型生成地形装饰物定义")]
+    [MenuItem("天空囚笼/地图/批量从模型生成地形装饰物定义", false, 115)]
     public static void Open()
     {
         // 普通可停靠窗口，不用 utility——utility 窗口浮在最前、抢焦点，

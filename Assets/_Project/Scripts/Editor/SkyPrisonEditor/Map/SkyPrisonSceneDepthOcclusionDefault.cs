@@ -58,7 +58,6 @@ public static class SkyPrisonSceneDepthOcclusionDefault
 
     private static void RunSilently() => Run(logEvenIfNothingChanged: false);
 
-    [MenuItem("Tools/Sky Prison/Map/前景遮挡/把材质切到场景深度判定")]
     public static void Run() => Run(logEvenIfNothingChanged: true);
 
     private static void Run(bool logEvenIfNothingChanged)

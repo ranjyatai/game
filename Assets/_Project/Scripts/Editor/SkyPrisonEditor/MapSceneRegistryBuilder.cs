@@ -37,7 +37,7 @@ public class MapSceneRegistryBuilder : AssetPostprocessor
         return AssetDatabase.LoadAssetAtPath<MapDefinition>(path) != null;
     }
 
-    [MenuItem("Sky Prison/地图/重建地图场景名单")]
+    [MenuItem("天空囚笼/重建注册表/重建地图场景名单", false, 161)]
     public static void RebuildMenu()
     {
         Rebuild(true);

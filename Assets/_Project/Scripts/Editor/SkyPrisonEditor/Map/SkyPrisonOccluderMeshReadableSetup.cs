@@ -38,7 +38,6 @@ public static class SkyPrisonOccluderMeshReadableSetup
         Run();
     }
 
-    [MenuItem("Tools/Sky Prison/Map/前景遮挡/让遮挡模型可读并撤掉探测碰撞体")]
     public static void Run()
     {
         if (EditorApplication.isCompiling || EditorApplication.isUpdating)

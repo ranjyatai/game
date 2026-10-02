@@ -45,7 +45,7 @@ public sealed class SkyPrisonGroundRoadLineTexturePostprocessor : AssetPostproce
         }
     }
 
-    [MenuItem("Tools/Sky Prison/Ground/RoadLine/应用 RoadLine 导入设置到选中贴图")]
+    [MenuItem("天空囚笼/地面/应用 RoadLine 导入设置到选中贴图", false, 141)]
     public static void ApplyToSelectedTextures()
     {
         int changed = 0;
@@ -70,7 +70,7 @@ public sealed class SkyPrisonGroundRoadLineTexturePostprocessor : AssetPostproce
         Debug.Log($"[SkyPrison RoadLine] 已处理 {changed} 张贴图。选中对象中可处理贴图数：{checkedCount}。");
     }
 
-    [MenuItem("Tools/Sky Prison/Ground/RoadLine/检查选中 RoadLine 尺寸")]
+    [MenuItem("天空囚笼/地面/检查选中 RoadLine 尺寸", false, 142)]
     public static void CheckSelectedRoadLineTextureSize()
     {
         int checkedCount = 0;

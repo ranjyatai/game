@@ -29,7 +29,7 @@ public static class SkyPrisonWalkableProbeLayerSetup
     private const string LogPrefix = "[SkyPrison WalkableProbe]";
     private const int FirstUserLayerToSearch = 28;
 
-    [MenuItem("Tools/Sky Prison/Ground/Surface/接入可站立装饰物探测层")]
+    [MenuItem("天空囚笼/地面/接入可站立装饰物探测层", false, 144)]
     public static void Setup()
     {
         RunSetup(interactive: true);

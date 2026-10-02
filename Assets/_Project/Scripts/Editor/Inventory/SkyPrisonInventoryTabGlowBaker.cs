@@ -24,7 +24,7 @@ namespace SkyPrison.EditorTools
         public  static readonly Color NormalColor  = SkyPrison.Runtime.UI.SkyPrisonUIPalette.White; // 未选中也用白
         private static readonly Color GlowColor    = SkyPrison.Runtime.UI.SkyPrisonUIPalette.ColdGreen;
 
-        [MenuItem("Sky Prison/背包/烤入标签辉光 (TMP)")]
+        [MenuItem("天空囚笼/UI/烤入标签辉光 (TMP)", false, 180)]
         public static void Bake()
         {
             TMP_FontAsset font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontPath);

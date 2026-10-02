@@ -36,7 +36,7 @@ namespace SkyPrison.Editor.UI
             (ShelfW - ShelfGridPadding * 2f - ShelfGridSpacing * (ShelfColumns - 1) - ShelfScrollbarReserve) / ShelfColumns;
         private const float ShelfCardH = 480f; // 数量胶囊加高后跟名字区打架，加高卡片留出间距
 
-        [MenuItem("Tools/Sky Prison/UI/Create Shop Window")]
+        [MenuItem("天空囚笼/UI/Create Shop Window", false, 170)]
         public static void Create()
         {
             ShopDefinition demoShop = EnsureDemoShopAsset(); // 先建好，等下直接烤进prefab字段，F6不用再运行时现set

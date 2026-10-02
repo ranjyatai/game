@@ -28,7 +28,7 @@ public static class SkyPrisonOccluderDebugLogsOff
         EditorApplication.delayCall += Run;
     }
 
-    [MenuItem("Tools/Sky Prison/Map/前景遮挡/关闭所有遮挡调试日志")]
+    [MenuItem("天空囚笼/遮挡/关闭所有遮挡调试日志", false, 120)]
     public static void Run()
     {
         if (EditorApplication.isCompiling || EditorApplication.isUpdating)

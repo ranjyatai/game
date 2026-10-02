@@ -37,7 +37,7 @@ public class MapWeatherRegistryBuilder : AssetPostprocessor
         return AssetDatabase.LoadAssetAtPath<MapDefinition>(path) != null;
     }
 
-    [MenuItem("Sky Prison/地图/重建地图天气注册表")]
+    [MenuItem("天空囚笼/重建注册表/重建地图天气注册表", false, 162)]
     public static void RebuildMenu()
     {
         Rebuild(true);

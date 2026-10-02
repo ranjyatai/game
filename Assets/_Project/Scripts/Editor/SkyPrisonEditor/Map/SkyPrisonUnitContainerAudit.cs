@@ -22,7 +22,7 @@ using UnityEngine.SceneManagement;
 public static class SkyPrisonUnitContainerAudit
 {
     private const string LogPrefix = "[SkyPrison UnitContainer]";
-    private const string MenuRoot = "Tools/Sky Prison/Map/单位归属容器/";
+    private const string MenuRoot = "天空囚笼/地图/单位归属容器/";
 
     private struct Mismatch
     {
@@ -39,14 +39,14 @@ public static class SkyPrisonUnitContainerAudit
     /// </summary>
     private static readonly List<Transform> unboundUnits = new List<Transform>();
 
-    [MenuItem(MenuRoot + "1. 检查（只报告，不改动）")]
+    [MenuItem(MenuRoot + "1. 检查（只报告，不改动）", false, 132)]
     public static void Audit()
     {
         List<Mismatch> mismatches = CollectMismatches();
         ReportMismatches(mismatches, applied: false);
     }
 
-    [MenuItem(MenuRoot + "2. 校正（移动到正确容器）")]
+    [MenuItem(MenuRoot + "2. 校正（移动到正确容器）", false, 133)]
     public static void Fix()
     {
         List<Mismatch> mismatches = CollectMismatches();

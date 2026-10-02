@@ -28,7 +28,7 @@ public static class SkyPrisonAirWallAssetCreator
 
     private static readonly Color AirWallColor = new Color(1f, 0f, 1f, 0.35f);
 
-    [MenuItem("Tools/Sky Prison/Map/创建或修复「空气墙」资产")]
+    [MenuItem("天空囚笼/地图/创建或修复「空气墙」资产", false, 111)]
     public static void CreateOrRepair()
     {
         Material material = EnsureMaterial();

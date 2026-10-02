@@ -25,14 +25,14 @@ public static class SkyPrisonTerrainDecorationPhysicsAutoApplyOnPlacement
     private const string UnitBodyLayerName = "UnitBody";
     private const string LegacyPushableColliderRootName = "PushableColliderRoot";
 
-    [MenuItem("Tools/Sky Prison/Terrain Decoration/Physics/Apply Physics Settings To All Scene Runtime Roots")]
+    [MenuItem("天空囚笼/地形装饰物/物理/Apply Physics Settings To All Scene Runtime Roots", false, 141)]
     public static void ApplyToAllSceneRuntimeRootsMenu()
     {
         int changed = ApplyToAllSceneRuntimeRoots();
         EditorUtility.DisplayDialog("地形装饰物物理结构", $"已扫描场景运行时根节点。发生修正：{changed} 个。\n\n本恢复版不会自动后台运行，也不会重建遮挡盒。", "知道了");
     }
 
-    [MenuItem("Tools/Sky Prison/Terrain Decoration/Physics/Apply Physics Settings To Selected Runtime Root")]
+    [MenuItem("天空囚笼/地形装饰物/物理/Apply Physics Settings To Selected Runtime Root", false, 142)]
     public static void ApplyToSelectedRuntimeRootMenu()
     {
         GameObject root = ResolveRuntimeRoot(Selection.activeGameObject);

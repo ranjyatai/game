@@ -54,7 +54,7 @@ public class MainMenuSettingsWindow : EditorWindow
     // ── Scene View 拾取模式 ───────────────────────────────────────────────
     private bool _picking = false;
 
-    [MenuItem("Tools/界面设置")]
+    [MenuItem("天空囚笼/设置/界面设置", false, 101)]
     public static void Open()
     {
         var win = GetWindow<MainMenuSettingsWindow>("界面设置");

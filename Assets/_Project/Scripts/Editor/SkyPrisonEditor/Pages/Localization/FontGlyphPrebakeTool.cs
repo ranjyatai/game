@@ -29,7 +29,6 @@ namespace SkyPrison.Editor.Localization
         // Build 里连菜单文字全变方块。这个菜单项专门用来把已经被那次误操作改坏的
         // 两份字体资产改回 Dynamic（脚本改枚举值这条路对切换到 Static 不可靠，但
         // 切回 Dynamic 是安全的，因为 Dynamic 本来就是这两份资产创建时的原始状态）。
-        [MenuItem("Tools/Sky Prison/Localization/撤销字体 Static 误操作（改回 Dynamic）")]
         public static void RevertToDynamic()
         {
             int fixedCount = 0;
@@ -49,7 +48,7 @@ namespace SkyPrison.Editor.Localization
                       "改完记得重新跑一次上面那个预烤工具，再重新打包测。");
         }
 
-        [MenuItem("Tools/Sky Prison/Localization/预烤字体字形（修 Build 方块字）")]
+        [MenuItem("天空囚笼/UI/预烤字体字形（修 Build 方块字）", false, 183)]
         public static void PrebakeGlyphs()
         {
             var table = AssetDatabase.LoadAssetAtPath<UILocalizationTable>(TablePath);

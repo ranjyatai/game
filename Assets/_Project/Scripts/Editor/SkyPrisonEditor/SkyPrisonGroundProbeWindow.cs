@@ -28,7 +28,7 @@ public class SkyPrisonGroundProbeWindow : EditorWindow
     /// 而这些节点名字长得几乎一样（只差结尾编号），肉眼对很容易认错。
     private Collider[] lastHitColliders = new Collider[0];
 
-    [MenuItem("Tools/Sky Prison/Diagnostics/地面探针")]
+    [MenuItem("天空囚笼/调试/地面探针", false, 226)]
     public static void Open()
     {
         var w = GetWindow<SkyPrisonGroundProbeWindow>("地面探针");

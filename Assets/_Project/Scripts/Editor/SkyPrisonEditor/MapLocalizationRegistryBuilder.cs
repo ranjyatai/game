@@ -35,7 +35,7 @@ public class MapLocalizationRegistryBuilder : AssetPostprocessor
         return AssetDatabase.LoadAssetAtPath<MapDefinition>(path) != null;
     }
 
-    [MenuItem("Sky Prison/本地化/重建地图名称注册表")]
+    [MenuItem("天空囚笼/重建注册表/重建地图名称注册表", false, 166)]
     public static void RebuildMenu()
     {
         Rebuild(true);

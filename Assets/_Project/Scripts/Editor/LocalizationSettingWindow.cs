@@ -19,7 +19,7 @@ public class LocalizationSettingsWindow : EditorWindow
 
     private int selectedLanguageIndex = -1;
 
-    [MenuItem("Tools/语言与字体设置")]
+    [MenuItem("天空囚笼/设置/语言与字体设置", false, 102)]
     public static void OpenWindow()
     {
         LocalizationSettingsWindow window = GetWindow<LocalizationSettingsWindow>("语言与字体设置");

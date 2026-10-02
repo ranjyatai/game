@@ -18,11 +18,11 @@ using UnityEngine;
 /// </summary>
 public static class SkyPrisonOcclusionProxySourceCleaner_V1
 {
-    private const string MenuRoot = "Tools/Sky Prison/Map/遮挡矫正/";
+    private const string MenuRoot = "天空囚笼/遮挡/矫正/";
     private const string ModelPath = "RuleRoot/FrontOccluderRoot/FrontOccluderProxy_Model";
     private const string BoxPath = "RuleRoot/FrontOccluderRoot/FrontOccluderProxy_Box";
 
-    [MenuItem(MenuRoot + "净化选中物体Mask来源/只保留Model代理", false, 1540)]
+    [MenuItem(MenuRoot + "净化选中物体Mask来源/只保留Model代理", false, 134)]
     public static void CleanSelected()
     {
         GameObject[] selected = Selection.gameObjects;
@@ -63,7 +63,7 @@ public static class SkyPrisonOcclusionProxySourceCleaner_V1
         EditorUtility.DisplayDialog("遮挡代理来源净化", $"完成。\nroots={roots}\ncleaned={cleaned}\ndisabledNonModelRenderers={disabled}", "OK");
     }
 
-    [MenuItem(MenuRoot + "净化场景全部Mask来源/Model优先", false, 1541)]
+    [MenuItem(MenuRoot + "净化场景全部Mask来源/Model优先", false, 135)]
     public static void CleanAllInScene()
     {
         Transform[] all = Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);

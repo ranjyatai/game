@@ -20,7 +20,7 @@ public static class SkyPrisonGroundSurfaceAssetRenamer
 {
     private const string Prefix = "GSM_";
 
-    [MenuItem("Tools/Sky Prison/Ground/按中文名整理地表材质文件名")]
+    [MenuItem("天空囚笼/地面/按中文名整理地表材质文件名", false, 146)]
     public static void RenameByDisplayName()
     {
         string[] guids = AssetDatabase.FindAssets("t:GroundSurfaceMaterialDefinition");

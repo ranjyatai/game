@@ -5,7 +5,7 @@ using UnityEngine.Rendering.Universal;
 
 static class CharacterPresenceFeatureCleanup
 {
-    [MenuItem("SkyPrison/Rendering/清理重复的 CharacterPresenceFeature")]
+    [MenuItem("天空囚笼/渲染/清理重复的 CharacterPresenceFeature", false, 191)]
     public static void CleanupDuplicates()
     {
         string[] guids = AssetDatabase.FindAssets("t:UniversalRendererData");

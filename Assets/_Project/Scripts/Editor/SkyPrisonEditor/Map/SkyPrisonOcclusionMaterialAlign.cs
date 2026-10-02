@@ -68,7 +68,6 @@ public static class SkyPrisonOcclusionMaterialAlign
         Run();
     }
 
-    [MenuItem("Tools/Sky Prison/Map/前景遮挡/遮挡材质外观对齐普通材质")]
     public static void Run()
     {
         if (EditorApplication.isCompiling || EditorApplication.isUpdating)

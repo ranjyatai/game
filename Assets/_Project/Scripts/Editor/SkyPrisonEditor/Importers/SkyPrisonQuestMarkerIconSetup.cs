@@ -34,7 +34,7 @@ public static class SkyPrisonQuestMarkerIconSetup
         Build();
     }
 
-    [MenuItem("Tools/Sky Prison/任务/重建任务标记图标集")]
+    [MenuItem("天空囚笼/重建注册表/重建任务标记图标集", false, 168)]
     public static void Rebuild()
     {
         Build();

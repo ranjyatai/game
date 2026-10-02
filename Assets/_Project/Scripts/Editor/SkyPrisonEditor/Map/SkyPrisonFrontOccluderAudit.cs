@@ -18,7 +18,7 @@ using UnityEngine.SceneManagement;
 public static class SkyPrisonFrontOccluderAudit
 {
     private const string LogPrefix = "[SkyPrison FrontOccluder]";
-    private const string MenuRoot = "Tools/Sky Prison/Map/前景遮挡/";
+    private const string MenuRoot = "天空囚笼/遮挡/";
 
     private const string RuleRootName = "RuleRoot";
     private const string FrontOccluderRootName = "FrontOccluderRoot";
@@ -33,7 +33,7 @@ public static class SkyPrisonFrontOccluderAudit
     /// 逐个去定义里点一遍太容易漏——项目里现在就有三个定义同时踩了这个坑，
     /// 而且表现完全一样：配置看着全对，就是不遮挡。
     /// </summary>
-    [MenuItem(MenuRoot + "给需要的定义打开遮挡探测碰撞体")]
+    [MenuItem(MenuRoot + "给需要的定义打开遮挡探测碰撞体", false, 139)]
     public static void EnableProbeWhereNeeded()
     {
         string[] guids = AssetDatabase.FindAssets("t:TerrainDecorationDefinition");
@@ -81,7 +81,7 @@ public static class SkyPrisonFrontOccluderAudit
             "跑完 Ctrl+S。");
     }
 
-    [MenuItem(MenuRoot + "检查场景里的遮挡代理")]
+    [MenuItem(MenuRoot + "检查场景里的遮挡代理", false, 140)]
     public static void Audit()
     {
         List<TerrainDecorationRuntimeBinder> binders = CollectSceneInstances<TerrainDecorationRuntimeBinder>();

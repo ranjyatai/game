@@ -25,7 +25,7 @@ namespace SkyPrison.Editor.UI
          * Removed intentionally.
          *
          * Old dangerous entry:
-         * [MenuItem("Tools/Sky Prison/UI/Create Runtime UI Driver In Scene")]
+         * [MenuItem("天空囚笼/UI/Create Runtime UI Driver In Scene", false, 175)]
          *
          * Reason:
          * This creates a SkyPrisonUISystem object in the active Scene and attaches
@@ -35,7 +35,7 @@ namespace SkyPrison.Editor.UI
          * Normal UI editing must use the UI Workbench only.
          */
 
-        [MenuItem("Tools/Sky Prison/UI/Cleanup Legacy Runtime UI Driver In Scene")]
+        [MenuItem("天空囚笼/UI/Cleanup Legacy Runtime UI Driver In Scene", false, 176)]
         public static void CleanupLegacyRuntimeUIDriverInScene()
         {
             int removed = 0;

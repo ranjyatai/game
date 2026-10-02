@@ -33,7 +33,7 @@ public static class SkyPrisonDistanceBlurDepthSetup
     private const float BlurStartY = 0.62f;   // 从这个高度开始出现模糊
     private const float BlurEndY = 1.0f;      // 到屏幕顶端达到最大模糊
 
-    [MenuItem("Tools/Sky Prison/Map/距离模糊：上缘渐进（推荐）")]
+    [MenuItem("天空囚笼/地图/距离模糊：上缘渐进（推荐）", false, 119)]
     public static void Run()
     {
         var rendererData = AssetDatabase.LoadAssetAtPath<ScriptableRendererData>(RendererPath);

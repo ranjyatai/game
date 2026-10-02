@@ -13,7 +13,7 @@ public class GameAssetManifestBuilder : AssetPostprocessor
 
     // ── 菜单入口 ──────────────────────────────────────────────────────────
 
-    [MenuItem("Sky Prison/重建 Asset Manifest", priority = 50)]
+    [MenuItem("天空囚笼/重建注册表/重建 Asset Manifest", false, 160)]
     public static void RebuildManifest()
     {
         var manifest = GetOrCreateManifest();

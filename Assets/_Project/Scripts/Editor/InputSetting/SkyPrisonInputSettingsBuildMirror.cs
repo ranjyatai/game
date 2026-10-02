@@ -23,7 +23,7 @@ public sealed class SkyPrisonInputSettingsBuildMirror : IPreprocessBuildWithRepo
         SyncInputSettingsToResources(log: true);
     }
 
-    [MenuItem("Tools/Sky Prison/Input/同步输入设置到 Resources(Build)")]
+    [MenuItem("天空囚笼/重建注册表/同步输入设置到 Resources(Build)", false, 170)]
     public static void SyncInputSettingsToResourcesMenu()
     {
         SyncInputSettingsToResources(log: true);

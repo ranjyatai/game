@@ -14,7 +14,7 @@ public static class SkyPrisonTMPFontAtlasReset
 {
     private const string FontAssetPath = "Assets/_Project/UIUX/Fonts/TMP/ZhouFangRiMingTi-2 SDF.asset";
 
-    [MenuItem("Tools/Sky Prison/UI/清空对话字体动态图集")]
+    [MenuItem("天空囚笼/UI/清空对话字体动态图集", false, 181)]
     public static void Reset()
     {
         TMP_FontAsset font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontAssetPath);

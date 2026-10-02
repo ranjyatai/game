@@ -39,7 +39,6 @@ public static class SkyPrisonSceneDepthFootScaleSync
         Run();
     }
 
-    [MenuItem("Tools/Sky Prison/Map/前景遮挡/脚部补偿归零（深度路径必需）")]
     public static void Run()
     {
         int changed = 0;

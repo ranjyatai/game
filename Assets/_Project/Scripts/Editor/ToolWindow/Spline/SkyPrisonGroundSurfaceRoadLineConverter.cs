@@ -5,9 +5,9 @@ using UnityEngine;
 
 public static class SkyPrisonGroundSurfaceRoadLineConverter
 {
-    private const string MenuRoot = "Tools/Sky Prison/Ground Surface/";
+    private const string MenuRoot = "天空囚笼/地面/";
 
-    [MenuItem(MenuRoot + "将选中的地表材质转换为画线")]
+    [MenuItem(MenuRoot + "将选中的地表材质转换为画线", false, 149)]
     public static void ConvertSelectedToRoadLine()
     {
         GroundSurfaceMaterialDefinition def = Selection.activeObject as GroundSurfaceMaterialDefinition;
@@ -24,7 +24,7 @@ public static class SkyPrisonGroundSurfaceRoadLineConverter
         Debug.Log($"[GroundSurface RoadLine Converter] 已转换为画线：{AssetDatabase.GetAssetPath(def)}");
     }
 
-    [MenuItem(MenuRoot + "修复误建的马路线印章")]
+    [MenuItem(MenuRoot + "修复误建的马路线印章", false, 150)]
     public static void FixMiscreatedRoadLineStamps()
     {
         string[] guids = AssetDatabase.FindAssets("t:GroundSurfaceMaterialDefinition");

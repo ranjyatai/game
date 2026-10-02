@@ -15,7 +15,7 @@ public static class SkyPrisonOcclusionMaskSourceBill
 {
     private const string Version = "V1 - 2026-05-22 - occlusion mask source renderer bill";
 
-    [MenuItem("Tools/Sky Prison/Map/遮挡诊断/复制选中物体遮挡Mask来源账单", priority = 3101)]
+    [MenuItem("天空囚笼/遮挡/诊断账单/复制选中物体遮挡Mask来源账单", false, 125)]
     public static void CopySelectedBill()
     {
         Transform root = ResolveSelectedDecorationRoot();
@@ -37,7 +37,7 @@ public static class SkyPrisonOcclusionMaskSourceBill
             "OK");
     }
 
-    [MenuItem("Tools/Sky Prison/Map/遮挡诊断/复制选中物体遮挡Mask来源账单", true)]
+    [MenuItem("天空囚笼/遮挡/诊断账单/复制选中物体遮挡Mask来源账单", true)]
     public static bool ValidateCopySelectedBill()
     {
         return Selection.activeTransform != null;

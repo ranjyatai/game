@@ -52,7 +52,7 @@ public class SkyPrisonEditorWindow : EditorWindow
 
     private double lastAnimTime;
 
-    [MenuItem("Tools/天空囚笼编辑器")]
+    [MenuItem("天空囚笼/天空囚笼编辑器 %#e", false, 0)]
     public static void OpenWindow()
     {
         OpenWindowWithTab(null, null);

@@ -30,7 +30,7 @@ public static class SkyPrisonStandardItemSeeder
         public string enDesc;
     }
 
-    [MenuItem("Tools/Sky Prison/Items/导入或更新标准物品")]
+    [MenuItem("天空囚笼/内容数据/导入或更新标准物品", false, 180)]
     public static void ImportOrUpdateStandardItems()
     {
         EnsureFolderExists(StandardItemFolder);

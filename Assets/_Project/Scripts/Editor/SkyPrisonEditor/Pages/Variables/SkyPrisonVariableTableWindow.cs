@@ -20,7 +20,7 @@ public class SkyPrisonVariableTableWindow : EditorWindow
     private Vector2 leftScroll;
     private string search = "";
 
-    [MenuItem("Tools/Sky Prison/变量表")]
+    [MenuItem("天空囚笼/变量表", false, 4)]
     public static void Open()
     {
         SkyPrisonVariableTableWindow window = GetWindow<SkyPrisonVariableTableWindow>(true, "变量表", true);

@@ -72,7 +72,7 @@ public static class SkyPrisonDebugLogFlagsOff
         return n.Contains("debug") || n.Contains("verbose") || n.Contains("trace");
     }
 
-    [MenuItem("Tools/Sky Prison/Diagnostics/关闭所有逐帧调试日志开关")]
+    [MenuItem("天空囚笼/调试/关闭所有逐帧调试日志开关", false, 225)]
     public static void Run()
     {
         var perType = new Dictionary<string, int>();

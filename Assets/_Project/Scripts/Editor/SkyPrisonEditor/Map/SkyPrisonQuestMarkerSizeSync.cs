@@ -47,7 +47,7 @@ public static class SkyPrisonQuestMarkerSizeSync
         Run();
     }
 
-    [MenuItem("Tools/Sky Prison/Map/任务图标/把已存在的头顶图标尺寸推到标准值")]
+    [MenuItem("天空囚笼/地图/把头顶任务图标尺寸推到标准值", false, 121)]
     public static void Run()
     {
         int changed = 0;

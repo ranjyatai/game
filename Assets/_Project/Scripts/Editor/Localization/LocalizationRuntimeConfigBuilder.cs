@@ -7,7 +7,7 @@ public static class LocalizationRuntimeConfigBuilder
     private const string ResourcesFolder = "Assets/_Project/Resources/SkyPrison";
     private const string AssetPath       = ResourcesFolder + "/LocalizationRuntimeConfig.asset";
 
-    [MenuItem("Sky Prison/生成本地化运行时配置")]
+    [MenuItem("天空囚笼/重建注册表/生成本地化运行时配置", false, 169)]
     public static void Build()
     {
         // 确保 Resources/SkyPrison 文件夹存在
