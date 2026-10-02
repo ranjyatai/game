@@ -10,7 +10,7 @@ using UnityEngine.Rendering;
 
 public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 {
-    private const string MenuPath = "Tools/Sky Prison/Map/地图对象放置工具";
+    private const string MenuPath = "天空囚笼/地图对象放置工具 %&m";
     private const string LegacyMenuPath = "Tools/Sky Prison/Map/地形装饰物放置工具";
     private const string DefinitionSearchFilter = "t:TerrainDecorationDefinition";
     private const string GroundSurfaceMaterialSearchFilter = "t:GroundSurfaceMaterialDefinition";
@@ -454,7 +454,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         "全部", "普通", "箱体", "墙体", "柱体", "地面装饰", "苔藓", "残骸", "管线", "遮挡体", "机关", "自定义"
     };
 
-    [MenuItem(MenuPath)]
+    [MenuItem(MenuPath, false, 1)]
     public static void OpenWindow()
     {
         var window = GetWindow<SkyPrisonMapObjectPlacementToolWindow>("地图对象放置工具");
@@ -462,7 +462,6 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         window.ApplyExpandedFixedWindowSize();
     }
 
-    [MenuItem(LegacyMenuPath)]
     public static void OpenLegacyWindow()
     {
         OpenWindow();
@@ -728,9 +727,22 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
                 OpenCurrentKindEditor();
         }
 
+        DrawSceneTopViewToolbarButton();
+
         GUILayout.FlexibleSpace();
         DrawPlacementModeToolbarButton(72f);
         EditorGUILayout.EndHorizontal();
+    }
+
+    /// <summary>场景视图正交俯视 ⇄ 还原。按下状态跟着场景视图的实际角度走。</summary>
+    private void DrawSceneTopViewToolbarButton()
+    {
+        bool active = SkyPrisonSceneTopView.IsActive;
+        bool pressed = GUILayout.Toggle(active, new GUIContent(active ? "还原视角" : "俯视",
+            "场景视图切到正交俯视（从正上方往下看、无透视），再按一次回到切换前的视角。"),
+            EditorStyles.toolbarButton, GUILayout.Width(60f));
+        if (pressed != active)
+            SkyPrisonSceneTopView.Toggle();
     }
 
     private bool CanTogglePlacementMode()
@@ -905,6 +917,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             GUILayout.Label($"{kind}：{selected}", EditorStyles.boldLabel, GUILayout.MinWidth(180f));
 
             DrawPlacementModeToolbarButton(64f);
+            DrawSceneTopViewToolbarButton();
 
             if (GUILayout.Button("已摆放", EditorStyles.toolbarButton, GUILayout.Width(64f)))
             {
@@ -3414,7 +3427,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         mat.SetOverrideTag("RenderType", "Transparent");
     }
 
-    [MenuItem("Tools/Sky Prison/Map/修复地面印花与画线透明排序")]
+    [MenuItem("天空囚笼/地图/修复地面印花与画线透明排序", false, 116)]
     private static void FixAllGroundOverlayTransparentSorting()
     {
         int materialCount = 0;
@@ -4817,7 +4830,11 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             SkyPrisonGroundSurfaceTexturePostprocessor.EnsureTerrainSurfaceTextureTiling(diffuse);
             layer.diffuseTexture = diffuse;
         }
-        layer.tileSize = new Vector2(4f, 4f);
+        // 默认统一 4 米一循环。只有显式勾了 terrainTileUsesTextureWorldSize 的材质才读自己的
+        // textureWorldSize——这个字段在不少旧材质里填着 1、10 之类没生效过的值（马路-水泥3
+        // 是 1），直接全局改读会让已经铺满地图的主地面纹理突然变密/变疏。
+        float tile = material.terrainTileUsesTextureWorldSize ? Mathf.Max(0.1f, material.textureWorldSize) : 4f;
+        layer.tileSize = new Vector2(tile, tile);
         layer.tileOffset = Vector2.zero;
         layer.specular = Color.black;
         layer.metallic = 0f;

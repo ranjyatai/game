@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// 创建「白模」这一套资产：网格材质 + 长方体/圆柱体预制体 + 两份地形装饰物定义。
+/// 创建「白模」这一套资产：网格材质 + 长方体/圆柱体/墙体/远景体块预制体 + 对应的地形装饰物定义。
 ///
 /// 用途：关卡白模阶段先用纯几何体把体量、高差、遮挡关系摆出来，再换美术资产。
 ///
@@ -33,6 +33,12 @@ public static class SkyPrisonGrayboxAssetCreator
     private const string BoxDefinitionPath = DefinitionFolder + "/TD_Graybox_Box.asset";
     private const string CylinderDefinitionPath = DefinitionFolder + "/TD_Graybox_Cylinder.asset";
 
+    // 通用墙体：长方体压扁拉高。默认 4 米宽 × 4 米高 × 0.5 米厚，宽和厚都落在整米/半米上，
+    // 网格吸附摆放时墙和墙能首尾对齐；要别的尺寸直接缩放，世界空间网格不会被拉伸。
+    private const string WallPrefabPath = PrefabFolder + "/PF_Graybox_Wall.prefab";
+    private const string WallDefinitionPath = DefinitionFolder + "/TD_Graybox_Wall.asset";
+    private static readonly Vector3 WallSize = new Vector3(4f, 4f, 0.5f);
+
     // 远景体块：格栅地面下方的建筑群占位。纯视觉——没有碰撞、不参与遮挡、不挡视线，
     // 不然会被地面检测当成脚下的地、被遮挡系统误判成挡住角色、挡住视野射线。
     // 颜色压暗，一眼和可玩层的白模区分开，也提前验证"下层要比上层暗"的明暗关系。
@@ -40,7 +46,7 @@ public static class SkyPrisonGrayboxAssetCreator
     private const string BackdropBoxPrefabPath = PrefabFolder + "/PF_Graybox_BackdropBox.prefab";
     private const string BackdropBoxDefinitionPath = DefinitionFolder + "/TD_Graybox_BackdropBox.asset";
 
-    [MenuItem("Tools/Sky Prison/Map/创建或修复「白模」资产")]
+    [MenuItem("天空囚笼/地图/创建或修复「白模」资产", false, 110)]
     public static void CreateOrRepair()
     {
         Shader shader = AssetDatabase.LoadAssetAtPath<Shader>(ShaderPath);
@@ -60,6 +66,10 @@ public static class SkyPrisonGrayboxAssetCreator
         TerrainDecorationDefinition cylinderDef = EnsureDefinition(
             CylinderDefinitionPath, cylinderPrefab, "graybox_cylinder", "白模·圆柱体", -997);
 
+        GameObject wallPrefab = EnsurePrefab(WallPrefabPath, "PF_Graybox_Wall", PrimitiveType.Cube, material, WallSize);
+        TerrainDecorationDefinition wallDef = EnsureDefinition(
+            WallDefinitionPath, wallPrefab, "graybox_wall", "白模·墙体", -995);
+
         Material backdropMaterial = EnsureMaterial(shader, BackdropMaterialPath, backdrop: true);
         GameObject backdropPrefab = EnsurePrefab(BackdropBoxPrefabPath, "PF_Graybox_BackdropBox", PrimitiveType.Cube, backdropMaterial);
         TerrainDecorationDefinition backdropDef = EnsureDefinition(
@@ -69,8 +79,8 @@ public static class SkyPrisonGrayboxAssetCreator
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
-        Selection.objects = new Object[] { boxDef, cylinderDef, backdropDef };
-        Debug.Log($"{LogPrefix} 完成。长方体：{BoxDefinitionPath}，圆柱体：{CylinderDefinitionPath}，远景体块：{BackdropBoxDefinitionPath}");
+        Selection.objects = new Object[] { boxDef, cylinderDef, wallDef, backdropDef };
+        Debug.Log($"{LogPrefix} 完成。长方体：{BoxDefinitionPath}，圆柱体：{CylinderDefinitionPath}，墙体：{WallDefinitionPath}，远景体块：{BackdropBoxDefinitionPath}");
     }
 
     /// <summary>远景体块在通用白模规则之上关掉一切交互：碰撞、遮挡、视线、子弹。</summary>
@@ -119,6 +129,10 @@ public static class SkyPrisonGrayboxAssetCreator
     }
 
     private static GameObject EnsurePrefab(string prefabPath, string objectName, PrimitiveType primitive, Material material)
+        => EnsurePrefab(prefabPath, objectName, primitive, material, Vector3.one);
+
+    /// <param name="size">体块尺寸（米）。轴心始终在底面中心，网格往上抬半个高度。</param>
+    private static GameObject EnsurePrefab(string prefabPath, string objectName, PrimitiveType primitive, Material material, Vector3 size)
     {
         GameObject existing = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
         if (existing != null)
@@ -140,11 +154,11 @@ public static class SkyPrisonGrayboxAssetCreator
         mesh.name = "Mesh";
         mesh.layer = visibleLayer;
         mesh.transform.SetParent(root.transform, false);
-        mesh.transform.localPosition = new Vector3(0f, 0.5f, 0f);
-        // Unity 自带圆柱高 2 米，压成 1 米，和长方体同为 1×1×1 的单位体块。
+        mesh.transform.localPosition = new Vector3(0f, size.y * 0.5f, 0f);
+        // Unity 自带圆柱高 2 米，Y 再减半，和长方体同为 size 指定的体块。
         mesh.transform.localScale = primitive == PrimitiveType.Cylinder
-            ? new Vector3(1f, 0.5f, 1f)
-            : Vector3.one;
+            ? new Vector3(size.x, size.y * 0.5f, size.z)
+            : size;
 
         // 碰撞归 Builder 的 CollisionRoot 管（Mesh 模式按这份网格生成），
         // 视觉子树一律不带碰撞，同空气墙/柔边雾箱的约定。
@@ -160,7 +174,7 @@ public static class SkyPrisonGrayboxAssetCreator
         GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
         Object.DestroyImmediate(root);
 
-        Debug.Log($"{LogPrefix} 新建预制体 {prefabPath}（1×1×1 米，轴心在底面，图层 World3D）。");
+        Debug.Log($"{LogPrefix} 新建预制体 {prefabPath}（{size.x}×{size.y}×{size.z} 米，轴心在底面，图层 World3D）。");
         return prefab;
     }
 

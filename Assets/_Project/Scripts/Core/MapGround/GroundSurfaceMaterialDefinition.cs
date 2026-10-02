@@ -105,6 +105,10 @@ public class GroundSurfaceMaterialDefinition : ScriptableObject
     [Header("纹理散布")]
     public GroundSurfaceTextureDistributionMode textureDistributionMode = GroundSurfaceTextureDistributionMode.SeamlessTiling;
     [Min(0.01f)] public float textureWorldSize = 4f;
+    [Tooltip("刷到 Terrain 时地形层的平铺按上面的「纹理世界尺寸」，而不是放置工具默认的 4 米。\n" +
+             "贴图里画的是按米对齐的图案（比如白模地面的 1 米 / 5 米网格）时打开。\n" +
+             "默认关：很多旧材质的纹理世界尺寸填着从没生效过的值，打开会改变它们在地图上的纹理密度。")]
+    public bool terrainTileUsesTextureWorldSize = false;
     [Min(0.01f)] public float randomScaleMin = 0.9f;
     [Min(0.01f)] public float randomScaleMax = 1.15f;
     [Range(0f, 1f)] public float randomOffsetStrength = 1f;

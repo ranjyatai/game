@@ -611,6 +611,7 @@ public class SkyPrisonGroundSurfaceMaterialPage : SkyPrisonEditorPageBase
         DrawReadonlyText("正式用途", "Terrain 地表");
         PropertyField("TerrainLayer", "terrainLayer");
         PropertyField("世界平铺尺寸", "textureWorldSize");
+        PropertyField("地形层按此尺寸平铺", "terrainTileUsesTextureWorldSize");
         EditorGUILayout.HelpBox("正式结构：TerrainLayer 是地形采样入口；音声运行层 Key 是脚步声 / 听觉系统的出口。旧版“是否作为 Terrain 地表”开关不再暴露，按素材用途自动决定。", MessageType.None);
 
         if (mode == GroundSurfaceTextureDistributionMode.RandomScatter)
