@@ -369,7 +369,8 @@ MonoBehaviour:
   - {fileID: -5125064887452956496}
   - {fileID: -564683440424441097}
   - {fileID: 7565828206689154666}
-  m_RendererFeatureMap: d613843334d5b96c9c403b378e74f553f320bf91a69d4b2f4d76ad0e546a01da6c9e4a623e9af683022cb08049a6b4e587969772f7f6b01957be6bcbb39dc1a934037fadf87ade80c5969bb5730899b06704a876e40596a81fdafe800c1941a7000fe759d10bdf39071d0dab6fe5cb01b0088a7ca31ce0b8f7aaf41a67d729f86a765623ab38ff68
+  - {fileID: 2295825353081439797}
+  m_RendererFeatureMap: d613843334d5b96c9c403b378e74f553f320bf91a69d4b2f4d76ad0e546a01da6c9e4a623e9af683022cb08049a6b4e587969772f7f6b01957be6bcbb39dc1a934037fadf87ade80c5969bb5730899b06704a876e40596a81fdafe800c1941a7000fe759d10bdf39071d0dab6fe5cb01b0088a7ca31ce0b8f7aaf41a67d729f86a765623ab38ff686a765623ab38ff686a765623ab38ff683546c1acfe68dc1f
   m_UseNativeRenderPass: 0
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
@@ -434,6 +435,23 @@ MonoBehaviour:
     rgbShift: 0.012
     scanline: 0.18
   glitchShader: {fileID: 4800000, guid: 9bf31c5984c4bc1469a26e5ce343ca38, type: 3}
+--- !u!114 &2295825353081439797
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20aaad7db178cf94ca1bad847a972b45, type: 3}
+  m_Name: SkyPrison Night Vision Grade
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonNightVisionRendererFeature
+  m_Active: 1
+  settings:
+    shader: {fileID: 4800000, guid: e35cc0c39276ace40b2644b682981b60, type: 3}
+    targetCameraName: Main Camera
+    applyToSceneView: 0
 --- !u!114 &2634432127906669843
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -590,6 +608,7 @@ MonoBehaviour:
     halfBlurRadiusScale: 1
     quarterBlurRadiusScale: 1.25
     debugShowBlurMask: 0
+    debugLogs: 0
 --- !u!114 &4170064773752753920
 MonoBehaviour:
   m_ObjectHideFlags: 0

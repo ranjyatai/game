@@ -92,6 +92,6 @@ public sealed class InventoryBurdenSync : MonoBehaviour
         // 谁先订阅谁后订阅。
         _equipWeight?.Rebuild();
         float equippedWeight = _equipWeight != null ? _equipWeight.TotalEquipWeight : 0f;
-        _movement.SetBurdenValues(_inventory.TotalWeight + equippedWeight, _inventory.MaxWeightCapacity);
+        _movement.SetBurdenValues(_inventory.TotalWeight + equippedWeight, _inventory.MaxWeightCapacity * (1f + TechTreePerks.Get("overloadTolerance") / 100f));      // 科技树「超载宽容」：略微超出上限也不触发惩罚
     }
 }

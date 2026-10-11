@@ -87,7 +87,7 @@ public class InventoryRuntime : MonoBehaviour
         for (int i = 0; i < slots.Count && remaining > 0; i++)
         {
             if (slots[i] != null) continue;
-            remaining -= Mathf.Min(remaining, Mathf.Max(1, def.maxStackCount));
+            remaining -= Mathf.Min(remaining, Mathf.Max(1, def.EffectiveMaxStack));
         }
         return remaining;
     }
@@ -119,7 +119,7 @@ public class InventoryRuntime : MonoBehaviour
         {
             int empty = FirstEmptyIndex();
             if (empty < 0) break;
-            int take = Mathf.Min(remaining, def.maxStackCount);
+            int take = Mathf.Min(remaining, def.EffectiveMaxStack);
             slots[empty] = new InventoryItemEntry(def, take) { isNew = true };
             remaining -= take;
         }
@@ -127,6 +127,7 @@ public class InventoryRuntime : MonoBehaviour
         int gained = amount - remaining;
         if (gained > 0)
         {
+            SkyPrisonItemDiscovery.MarkDiscovered(def);   // 记一笔：这个存档持有过这件物品
             OnInventoryChanged?.Invoke();
             OnItemGained?.Invoke(def, gained);
         }

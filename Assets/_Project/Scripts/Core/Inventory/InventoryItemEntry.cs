@@ -80,8 +80,8 @@ public class InventoryItemEntry
     }
 
     public bool IsEmpty    => definition == null || count <= 0;
-    public bool IsStackFull => definition != null && count >= definition.maxStackCount;
-    public int  StackRoom  => definition != null ? definition.maxStackCount - count : 0;
+    public bool IsStackFull => definition != null && count >= definition.EffectiveMaxStack;
+    public int  StackRoom  => definition != null ? definition.EffectiveMaxStack - count : 0;
     // 任务物品/重要物品按分类强制不可丢弃，不看资产上那个默认为true的手动
     // 勾选框(见 ItemDefinition.CanBeDiscarded)。丢弃的几条入口(背包右键菜单、
     // 仓库右键菜单、InventoryRuntime.Discard)都收敛到这一个属性上。

@@ -6,6 +6,9 @@ Shader "UI/SkyPrison/Desaturate"
         _MainTex    ("Texture", 2D)       = "white" {}
         [PerRendererData] _Color ("Tint", Color) = (1,1,1,1)
         _Saturation ("Saturation", Range(0,1)) = 0
+        // 对比度：以 _ContrastPivot 为中心拉开明暗，默认 1 = 完全不影响(向下兼容)。实时磨砂窗口用它把「亮度 0.5 的一片灰」里的轮廓拉出来
+        _Contrast ("Contrast", Range(0.5,4)) = 1
+        _ContrastPivot ("Contrast Pivot", Range(0,1)) = 0.5
         _ClipRect   ("Clip Rect", vector) = (-32767,-32767,32767,32767)
 
         // 双色调（duotone）：灰度亮度按这个颜色重新上色，强度 0 时完全不影响原有的
@@ -18,6 +21,7 @@ Shader "UI/SkyPrison/Desaturate"
         // SkyPrisonUIScreenGlitch 用的是同一套做法。
         _ScanlineCount    ("扫描线密度", Range(40, 600)) = 240
         _ScanlineStrength ("扫描线强度", Range(0, 1))    = 0
+        _ScanlineScrollSpeed ("扫描线滚动速度", Range(-5, 5)) = 0.12
 
         // 电子屏幕抖动：不是偶尔冒一下的故障块，是整个画面持续存在的、幅度很小的
         // 左右抖动——按行给一点各自不同步的横向偏移，幅度 0 时完全不影响原有效果。
@@ -34,6 +38,20 @@ Shader "UI/SkyPrison/Desaturate"
         // 叠加一个很慢的呼吸式脉动（±15%），不是死板的固定形变。
         _DistortionStrength   ("径向扭曲强度", Range(0, 0.3)) = 0
         _DistortionPulseSpeed ("扭曲呼吸速度", Range(0, 5))   = 0
+
+        // 径向扭曲会把边缘附近的UV往外推，推到贴图[0,1]范围之外——纹理wrapMode是
+        // Clamp的话，超界部分会被钳在最边缘那一列像素上，如果那一列正好挨着场景里
+        // 对比强烈的物体(比如集装箱)，钳出来的画面会显得像"撕裂了一道口子露出别的
+        // 东西"，边界还会因为扭曲幅度按行变化而参差不齐。真正的解法不是把扭曲调
+        // 弱(那样会削弱效果本身)，是让实际显示的画面本来就用贴图中间裁小一圈的
+        // 区域(=1时不裁，向下兼容)，把扭曲需要的"往外推"空间提前让出来，扭曲
+        // 再怎么推也推不到贴图真正的边界。1=不裁切(向下兼容，已有用法不用改)。
+        _EdgeSafetyZoom ("边缘扭曲安全裁切(1=不裁)", Range(0.5, 1)) = 1
+
+        // 水平单边淡出：从这个UV.x开始往右淡到透明，1=不淡出(向下兼容，已有用法
+        // 不用改，共享的全局材质实例不会受影响)。用来给磨砂背景做"左侧干净、
+        // 右侧暗淡淡出"的条状底色，不用另外叠一张遮罩贴图。
+        _HorizontalFadeStart ("水平淡出起点(UV.x)，1=不淡出", Range(0,1)) = 1
     }
     SubShader
     {
@@ -76,16 +94,21 @@ Shader "UI/SkyPrison/Desaturate"
             sampler2D _MainTex;
             fixed4    _Color;
             float     _Saturation;
+            float     _Contrast;
+            float     _ContrastPivot;
             float4    _ClipRect;
             fixed4    _DuotoneColor;
             float     _DuotoneStrength;
             float     _ScanlineCount;
             float     _ScanlineStrength;
+            float     _ScanlineScrollSpeed;
             float     _JitterStrength;
             float     _JitterSpeed;
             float     _UnscaledTime;
             float     _DistortionStrength;
             float     _DistortionPulseSpeed;
+            float     _HorizontalFadeStart;
+            float     _EdgeSafetyZoom;
 
             v2f vert(appdata v)
             {
@@ -110,6 +133,12 @@ Shader "UI/SkyPrison/Desaturate"
                 float tick = floor(_UnscaledTime * _JitterSpeed);
                 float wobble = frac(sin(dot(float2(tick, band), float2(12.9898, 78.233))) * 43758.5453) * 2.0 - 1.0;
                 float2 uv = i.uv + float2(wobble * _JitterStrength, 0.0);
+
+                // 先按安全裁切量把UV往中心收一圈，把"扭曲需要往外推"的空间提前让出来——
+                // 必须放在径向扭曲计算之前，扭曲是在这一步产出的uv基础上再往外推的，
+                // 顺序反了起不到"提前留出安全边距"的作用。=1时(_EdgeSafetyZoom默认值)
+                // 这一步完全是恒等变换，不影响没设这个属性的其它调用方(设置/存档窗口)。
+                uv = (uv - 0.5) * _EdgeSafetyZoom + 0.5;
 
                 // 四边对称夹紧：竖直线（左右边）在垂直中点夹得最紧、往上下角上撇开；
                 // 横线（上下边）在水平中点夹得最紧、往左右角上撇开——两个方向对称叠加，
@@ -139,11 +168,17 @@ Shader "UI/SkyPrison/Desaturate"
                 gray = lerp(gray, duotone, _DuotoneStrength);
 
                 col.rgb = lerp(gray, col.rgb, _Saturation);
+                // 此时 col 已经乘过顶点色(窗口把 blurImage.color 压到 0.5 之类的亮度)，对比度中心也要跟着乘这个亮度，
+                // 否则中心(画面平均亮度，没压暗)比被压暗的像素高得多，整块会被一路拉成纯黑。tint=1 时跟原来完全一样。
+                float tint = dot(i.color.rgb, float3(0.299, 0.587, 0.114));
+                float pivot = _ContrastPivot * tint;
+                col.rgb = saturate((col.rgb - pivot) * _Contrast + pivot);
 
                 // 常驻横向扫描线（电子屏幕质感）——命中抖动块的区域，线条相位额外叠加
                 // 同一个动态 wobble，扫描线边缘清晰，局部抖动在这上面才真正看得出来。
                 float scanJitter = wobble * _JitterStrength * 60.0;
-                float scan = sin((i.uv.y * _ScanlineCount + scanJitter) * 3.14159265) * 0.5 + 0.5;
+                float scanY = i.uv.y - _UnscaledTime * _ScanlineScrollSpeed;
+                float scan = sin((scanY * _ScanlineCount + scanJitter) * 3.14159265) * 0.5 + 0.5;
                 col.rgb *= 1.0 - _ScanlineStrength * (1.0 - scan) * 0.5;
 
 
@@ -154,6 +189,13 @@ Shader "UI/SkyPrison/Desaturate"
                 float  n2   = frac(sin(dot(sp + 7.31, float2(39.346, 11.135))) * 24634.6345);
                 float  tri  = (n1 + n2) - 1.0;        // [-1,1] 三角分布，边缘更少
                 col.rgb    += tri * (1.0 / 255.0);
+
+                // 水平单边淡出：edge0 卡到最高 0.999，避免 _HorizontalFadeStart=1 时
+                // smoothstep(1,1,x) 两个边界相等触发除零/未定义行为——钳到 0.999 之后
+                // 默认值实际效果依然是"几乎不淡出"，向下兼容不影响其它共享这份材质的窗口。
+                float fadeStart = min(_HorizontalFadeStart, 0.999);
+                float fade = 1.0 - smoothstep(fadeStart, 1.0, uv.x);
+                col.a *= fade;
 
                 // Unity UI 软裁剪（Mask 组件等）
                 col.a *= UnityGet2DClipping(i.worldPos.xy, _ClipRect);

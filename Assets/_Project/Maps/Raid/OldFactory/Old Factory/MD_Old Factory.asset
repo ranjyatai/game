@@ -1,0 +1,118 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37600d2b343ea0847ac945ea73927454, type: 3}
+  m_Name: MD_Old Factory
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::MapDefinition
+  mapKey: newmap
+  fileName: Old Factory
+  displayName: "\u65E7\u5DE5\u5382"
+  description: "\u56DE\u6536\u4EF7\u503C\uFF1A\u9AD8\u3002\n\u4EAC\u6781\u91CD\u5DE5\u539F\u4E3B\u8981\u52A0\u5DE5\u751F\u4EA7\u57FA\u5730\uFF0C\u517C\u6709\u519B\u5DE5\u751F\u4EA7\u8BBE\u65BD\u3002\n\u68C0\u51FA\u9AD8\u54C1\u8D28\u91D1\u5C5E\u53CA\u7CBE\u5BC6\u7EC4\u4EF6\uFF0C\u5B58\u91CF\u53EF\u89C2\u3002\nMEMENTO\u4FB5\u8680\u5A01\u80C1\u8BC4\u4F30\uFF1A\u4F4E\u3002"
+  localizedNames:
+  - languageCode: zh-CN
+    text: "\u65E7\u5DE5\u5382"
+  - languageCode: ja
+    text: "\u65E7\u5DE5\u5834"
+  - languageCode: en
+    text: Old Factory
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: "\u56DE\u6536\u4EF7\u503C\uFF1A\u9AD8\u3002\n\u4EAC\u6781\u91CD\u5DE5\u539F\u4E3B\u8981\u52A0\u5DE5\u751F\u4EA7\u57FA\u5730\uFF0C\u517C\u6709\u519B\u5DE5\u751F\u4EA7\u8BBE\u65BD\u3002\n\u68C0\u51FA\u9AD8\u54C1\u8D28\u91D1\u5C5E\u53CA\u7CBE\u5BC6\u7EC4\u4EF6\uFF0C\u5B58\u91CF\u53EF\u89C2\u3002\nMEMENTO\u4FB5\u8680\u5A01\u80C1\u8BC4\u4F30\uFF1A\u4F4E\u3002"
+  - languageCode: ja
+    text: "\u56DE\u53CE\u4FA1\u5024\uFF1A\u9AD8\u3002\n\u4EAC\u6975\u91CD\u5DE5\u306E\u65E7\u4E3B\u8981\u52A0\u5DE5\u30FB\u751F\u7523\u62E0\u70B9\u3002\u8ECD\u9700\u751F\u7523\u8A2D\u5099\u3082\u4F75\u8A2D\u3002\n\u9AD8\u54C1\u8CEA\u306A\u91D1\u5C5E\u6750\u304A\u3088\u3073\u7CBE\u5BC6\u90E8\u54C1\u3092\u691C\u51FA\u3002\u6B8B\u5B58\u91CF\u306F\u591A\u3044\u3002\nMEMENTO\u4FB5\u8755\u8105\u5A01\u8A55\u4FA1\uFF1A\u4F4E\u3002"
+  - languageCode: en
+    text: 'Salvage value: high.
+
+      Formerly the primary processing and production
+      base of Kyogoku Heavy Industries, with military production facilities on site.
+
+      High-grade
+      metals and precision components detected. Stock levels: substantial.
+
+      MEMENTO
+      erosion threat assessment: low.'
+  raidDayOutputs:
+  - {fileID: 11400000, guid: 322e4bd24b2c0a74098834aae404bfb9, type: 2}
+  - {fileID: 11400000, guid: b2dc36bef92bc6741b6d0128b2279d29, type: 2}
+  raidNightOutputs:
+  - {fileID: 11400000, guid: 322e4bd24b2c0a74098834aae404bfb9, type: 2}
+  - {fileID: 11400000, guid: b2dc36bef92bc6741b6d0128b2279d29, type: 2}
+  lootBoxes:
+  - box: {fileID: 11400000, guid: e009ad2c75ffb724da743960afceccc4, type: 2}
+    dayCount: 85
+    nightCount: 121
+    minSpacing: 12
+  scenePath: Assets/_Project/Maps/Raid/OldFactory/Old Factory/Old Factory.unity
+  sceneGuid: c02929878b5e86f42a590af294a1c8be
+  mapBoundsCenter: {x: 0, y: 0, z: -74}
+  mapBoundsSize: {x: 600, y: 80, z: 420}
+  enablePhysicalMapBounds: 1
+  mapBoundsWallThickness: 2
+  mapBoundsWallHeight: 80
+  mapBoundsUseCeiling: 0
+  mapBoundsCeilingThickness: 1
+  enableFogOfWar: 1
+  fogStrength: 0.72
+  fogSoftEdgeWidth: 3.5
+  environmentPreset: 1
+  skyRenderModel: {fileID: 0}
+  skyboxMaterial: {fileID: 2100000, guid: b77ec6dacd80fc840ac92894afab788c, type: 2}
+  ambientColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
+  environmentReflectionIntensity: 1
+  environmentAreaLightColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
+  environmentAreaLightIntensity: 0.45
+  environmentAreaLightSize: 16
+  environmentAreaLightPosition: {x: 0, y: 8, z: 0}
+  environmentAreaLightEuler: {x: 90, y: 0, z: 0}
+  mainLightColor: {r: 1, g: 1, b: 1, a: 1}
+  mainLightIntensity: 0.6
+  mainLightEuler: {x: 50, y: -30, z: 0}
+  enableSceneFog: 0
+  sceneFogColor: {r: 0.55, g: 0.58, b: 0.62, a: 1}
+  fogStartDistance: 20
+  fogEndDistance: 80
+  enableHeightFog: 0
+  heightFogColorStart: {r: 0.05, g: 0.06, b: 0.08, a: 1}
+  heightFogColorEnd: {r: 0.1, g: 0.12, b: 0.16, a: 1}
+  heightFogIntensity: 1
+  heightFogColorDuo: 1
+  heightFogDistanceStart: -60
+  heightFogDistanceEnd: 60
+  heightFogDistanceFalloff: 1
+  heightFogHeightStart: 0
+  heightFogHeightEnd: 15
+  heightFogHeightFalloff: 1
+  heightFogNoiseSpeed: {x: 0.5, y: 0.5, z: 0}
+  heightFogNoiseDistanceEnd: 30
+  postProcessProfile: {fileID: 0}
+  environmentFxPrefab: {fileID: 0}
+  enableDayNightCycle: 0
+  startTimeOfDay: 12
+  enableWeather: 0
+  weatherType: 0
+  dustWeather:
+    intensity: 5
+  rainWeather:
+    intensity: 5
+    lensWetnessIntensity: 0
+  snowWeather:
+    intensity: 5
+  weatherFog:
+    intensity: 5
+  enableDepthOfField: 0
+  focusDistance: 8
+  blurStrength: 0.4
+  triggerPackages: []
+  exploreBgmClips: []
+  combatBgmClips: []
+  bgmPlayMode: 0
+  bgmCrossfadeDuration: 3
+  bgmVolume: 1

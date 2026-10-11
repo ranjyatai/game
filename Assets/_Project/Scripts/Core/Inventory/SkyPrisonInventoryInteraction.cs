@@ -66,6 +66,7 @@ namespace SkyPrison.Runtime.UI
             _srcIndex = srcIndex;
 
             EnsureGhost();
+            _ghostCanvas.sortingOrder = Mathf.Max(1200, RootSortingOrder() + 100);      // 跟着背包窗口当前的层级(角色面板呼出时被抬高)，拖影永远在窗口上面
             _ghost.sprite = entry.definition.icon;
             _ghost.enabled = entry.definition.icon != null;
             _ghostCanvas.gameObject.SetActive(true);
@@ -201,6 +202,12 @@ namespace SkyPrison.Runtime.UI
             if (stashInteraction == null) return false;
             var stashPanelRect = (RectTransform)stashInteraction.transform;
             return RectTransformUtility.RectangleContainsScreenPoint(stashPanelRect, e.position, e.pressEventCamera);
+        }
+
+        private int RootSortingOrder()
+        {
+            var c = transform.GetComponentInParent<Canvas>();
+            return c != null ? c.rootCanvas.sortingOrder : 1100;
         }
 
         private void EnsureGhost()
@@ -767,7 +774,7 @@ namespace SkyPrison.Runtime.UI
                 ItemCooldownTracker.StartCooldown(key, entry.definition.cooldown);
             }
             ItemEffectExecutor.Execute(entry.definition.effects, playerGo, entry.definition);
-            if (entry.definition.general.consumeOnUse)
+            if (entry.definition.general.consumeOnUse && TechTreePerks.OnConsumableUsed())
                 inv.DiscardSlot(index, 1);
         }
 
@@ -1135,7 +1142,7 @@ namespace SkyPrison.Runtime.UI
 
             // 中间小框：纯黑白灰、矩形（无圆角）
             RectTransform box = NewRect("Box", _popupRoot.transform,
-                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(420f, 240f));
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(500f, 240f));
             _popupBox = box;
             _popupBlur = BuildFrostedBackground(box);            // 磨砂背板：复用面板磨砂纹理遮住背后重叠内容
             AddCornerBrackets(box);                               // 四角角标
@@ -1149,11 +1156,17 @@ namespace SkyPrison.Runtime.UI
             _popupName.color = new Color(0.70f, 0.70f, 0.72f, 1f); // 灰
 
             _popupAmount = NewText("Amount", box, font, 30, TextAnchor.MiddleCenter,
-                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 6f), new Vector2(160f, 44f));
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 6f), new Vector2(210f, 44f));
             _popupAmount.color = Color.white;
+            // 数字太长(几千 / 上万)时自动缩小，不压到两边的 −/+ 按钮
+            _popupAmount.horizontalOverflow = HorizontalWrapMode.Wrap;
+            _popupAmount.verticalOverflow = VerticalWrapMode.Truncate;
+            _popupAmount.resizeTextForBestFit = true;
+            _popupAmount.resizeTextMinSize = 14;
+            _popupAmount.resizeTextMaxSize = 30;
 
-            MakeButton("-", box, font, new Vector2(0.5f, 0.5f), new Vector2(-120f, 6f), () => StepPopup(-1));
-            MakeButton("+", box, font, new Vector2(0.5f, 0.5f), new Vector2(120f, 6f), () => StepPopup(1));
+            MakeButton("-", box, font, new Vector2(0.5f, 0.5f), new Vector2(-170f, 6f), () => StepPopup(-1));
+            MakeButton("+", box, font, new Vector2(0.5f, 0.5f), new Vector2(170f, 6f), () => StepPopup(1));
             _popupCancelText  = MakeButton("取消", box, font, new Vector2(0.5f, 0f), new Vector2(-90f, 36f), HidePopup);
             _popupConfirmText = MakeButton("确认", box, font, new Vector2(0.5f, 0f), new Vector2(90f, 36f), ConfirmPopup);
 
@@ -1238,7 +1251,10 @@ namespace SkyPrison.Runtime.UI
         }
 
         // 四角 L 形角标：每角一条横臂 + 一条竖臂，从角点向内延伸
-        private static void AddCornerBrackets(RectTransform parent, float arm = 26f, float thickness = 2f)
+        // 这个弹窗挂在背包面板层级下面，会被 InventoryPanel 身上的 SkyPrisonInventoryPanelScaler
+        // 额外乘 1.3 倍——这里的 30/3 是"除掉那 1.3 倍之前"的原始值，乘上去之后正好是
+        // 39/3.9，跟角色信息面板（SkyPrisonFloatingWindowKit 默认值）最终渲染大小一致。
+        private static void AddCornerBrackets(RectTransform parent, float arm = 30f, float thickness = 3f)
         {
             Vector2[] corners = { new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(1f, 0f) };
             foreach (var c in corners)

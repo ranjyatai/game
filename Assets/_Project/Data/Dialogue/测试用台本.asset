@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcef4979f273ebc4084e1da01b2d10ae, type: 3}
+  m_Name: "\u6D4B\u8BD5\u7528\u53F0\u672C"
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueSentenceLibrary
+  chapterGroup: ab9c3dfc61e9445c96cb4fce930080f7
+  entries:
+  - sentenceId: Chapter 1-001
+    chapter: ab9c3dfc61e9445c96cb4fce930080f7
+    note: 
+    speakerUnit: {fileID: 11400000, guid: cf8216c7a7955cc49bd4af1ed2598936, type: 2}
+    speakerAnonymous: 0
+    speakerAliasOverride:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    texts:
+    - languageCode: zh-CN
+      text: "\u6700\u9AD8\u6388\u6743\u5DF2\u5B8C\u6210\u3002\u8BF7\u4E0B\u8FBE\u6307\u4EE4\u3002"
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    voices:
+    - languageCode: zh-CN
+      clip: {fileID: 0}
+    - languageCode: ja
+      clip: {fileID: 0}
+    - languageCode: en
+      clip: {fileID: 0}
+  - sentenceId: Chapter 1-002
+    chapter: ab9c3dfc61e9445c96cb4fce930080f7
+    note: 
+    speakerUnit: {fileID: 0}
+    speakerAnonymous: 0
+    speakerAliasOverride:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    texts:
+    - languageCode: zh-CN
+      text: "\u8FD9\u662F\u4E00\u53E5\u65C1\u767D"
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    voices:
+    - languageCode: zh-CN
+      clip: {fileID: 0}
+    - languageCode: ja
+      clip: {fileID: 0}
+    - languageCode: en
+      clip: {fileID: 0}

@@ -420,10 +420,191 @@ namespace SkyPrison.Runtime.UI
             useUnscaledTimeForBars = false;
         }
 
+        // ── 灰色损失（灰炉）：血条按"没有灰色时的最大生命"算比例，右端画灰色段 ──
+        private RectTransform hpGrayRect;
+        private Image hpGrayImage;
+        private float hpGrayRatio;
+
+        // 灰色段的故障(glitch)：整段上下抖动 + 上/下边缘随机冒出小碎片
+        private const int HpGrayGlitchSliceCount = 4;
+        private readonly RectTransform[] hpGraySlices = new RectTransform[HpGrayGlitchSliceCount];
+        // 缺口：着色器里把这块区域的透明度设为 0，真正"挖掉"，露出后面的血条底槽（最多 4 个，见 _Hole0.._Hole3）
+        private readonly Vector4[] hpGrayHoles = new Vector4[HpGrayGlitchSliceCount];
+        private float hpGrayGlitchTimer;
+        private float hpGrayGlitchWobbleY;
+        private float hpGrayRightEdge, hpGrayWidth, hpGrayBaseY, hpGrayHeight, hpGrayPivotY;
+        private static readonly Color HpGrayColor = new Color(0.68f, 0.70f, 0.74f, 1f);
+
+        private static float GetPlayerGrayLoss()
+        {
+            var p = SkyPrisonPlayerAuthority.CurrentPlayerUnit;
+            if (p == null) return 0f;
+            var gl = p.GetComponent<SkyPrisonGrayLoss>();
+            return gl != null ? gl.Loss : 0f;
+        }
+
+        /// <summary>current/max 里的 max 已经是被灰色压低后的上限：还原出基础上限，并记录灰色占比。</summary>
+        private float ResolveHpBaseMax(float max)
+        {
+            float loss = GetPlayerGrayLoss();
+            float baseMax = max + loss;
+            hpGrayRatio = baseMax > 0.01f ? Mathf.Clamp01(loss / baseMax) : 0f;
+            return baseMax;
+        }
+
+        private void ApplyHpGrayVisual()
+        {
+            if (hpFillMask == null) return;
+
+            if (hpGrayRatio <= 0.0001f)
+            {
+                if (hpGrayRect != null && hpGrayRect.gameObject.activeSelf) hpGrayRect.gameObject.SetActive(false);
+                return;
+            }
+
+            if (hpGrayRect == null)
+            {
+                var go = new GameObject("HpGray", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                hpGrayRect = (RectTransform)go.transform;
+                hpGrayRect.SetParent(hpFillMask.parent, false);
+
+                hpGrayImage = go.GetComponent<Image>();
+                hpGrayImage.raycastTarget = false;
+                hpGrayImage.color = HpGrayColor;
+
+                // 噪点质感：细长条专用着色器 UI/SkyPrison/BarNoise（TVStatic 在细条上会被平均成一片暗色）
+                var sh = Shader.Find("UI/SkyPrison/BarNoise");
+                if (sh != null)
+                {
+                    var mat = new Material(sh) { hideFlags = HideFlags.HideAndDontSave };
+                    mat.SetFloat("_NoiseSpeed", 9f);
+                    mat.SetFloat("_Contrast", 0.75f);
+                    hpGrayImage.material = mat;
+                }
+
+                for (int i = 0; i < HpGrayGlitchSliceCount; i++)
+                {
+                    var sg = new GameObject("HpGrayGlitch" + i, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                    var srt = (RectTransform)sg.transform;
+                    srt.SetParent(hpFillMask.parent, false);
+                    var simg = sg.GetComponent<Image>();
+                    simg.raycastTarget = false;
+                    simg.color = HpGrayColor;
+                    simg.material = hpGrayImage.material;
+                    sg.SetActive(false);
+                    hpGraySlices[i] = srt;
+                }
+
+            }
+
+            if (!hpGrayRect.gameObject.activeSelf) hpGrayRect.gameObject.SetActive(true);
+
+            float maxW = Mathf.Max(1f, hpFillMaxWidth);
+            // 血条左缘：mask 用左缘/锚点定位，宽度随血量变；右缘 = 左缘 + 满宽
+            float leftEdge = hpFillMask.anchoredPosition.x - hpFillMask.pivot.x * hpFillMask.rect.width;
+            float rightEdge = leftEdge + maxW;
+
+            hpGrayRect.anchorMin = hpFillMask.anchorMin;
+            hpGrayRect.anchorMax = hpFillMask.anchorMax;
+            hpGrayRect.pivot = new Vector2(1f, hpFillMask.pivot.y);
+            hpGrayRect.anchoredPosition = new Vector2(rightEdge, hpFillMask.anchoredPosition.y + hpGrayGlitchWobbleY);
+            hpGrayRect.sizeDelta = new Vector2(maxW * hpGrayRatio, hpFillMask.sizeDelta.y);
+            hpGrayRightEdge = rightEdge;
+            hpGrayWidth = hpGrayRect.sizeDelta.x;
+            hpGrayBaseY = hpFillMask.anchoredPosition.y;
+            hpGrayHeight = hpGrayRect.sizeDelta.y;
+            hpGrayPivotY = hpFillMask.pivot.y;
+            hpGrayImage.color = HpGrayColor;
+            if (hpGrayImage.material != null && hpGrayImage.material.HasProperty("_CountX"))
+            {
+                const float cell = 1.5f; // 颗粒大小(UI单位)
+                hpGrayImage.material.SetFloat("_CountX", Mathf.Max(1f, hpGrayRect.sizeDelta.x / cell));
+                hpGrayImage.material.SetFloat("_CountY", Mathf.Max(1f, hpGrayRect.sizeDelta.y / cell));
+            }
+
+            // 灰色段放在血量填充之下（填充永远不会进灰色区域，只有受击滞后条会短暂重叠）
+            hpGrayRect.SetSiblingIndex(Mathf.Max(0, hpFillMask.GetSiblingIndex() - 1));
+        }
+
+        private void UpdateHpGrayGlitch(float dt)
+        {
+            if (hpGrayRect == null) return;
+            bool on = hpGrayRect.gameObject.activeSelf && hpGrayRatio > 0.0001f;
+            if (!on)
+            {
+                for (int i = 0; i < HpGrayGlitchSliceCount; i++)
+                    if (hpGraySlices[i] != null && hpGraySlices[i].gameObject.activeSelf) hpGraySlices[i].gameObject.SetActive(false);
+                hpGrayGlitchWobbleY = 0f;
+                return;
+            }
+
+            hpGrayGlitchTimer -= Mathf.Max(0f, dt);
+            if (hpGrayGlitchTimer > 0f) return;
+            hpGrayGlitchTimer = Random.Range(0.25f, 0.6f);
+
+            // 不再整段平移：故障只发生在局部（外冒碎片 / 内挖缺口），整条灰条本身保持原位
+            hpGrayGlitchWobbleY = 0f;
+            hpGrayRect.anchoredPosition = new Vector2(hpGrayRightEdge, hpGrayBaseY);
+
+            // 同时固定 3~4 处明显的故障：沿灰条长度均分成等宽的几段，每段一处，保证分散、各自清楚。
+            // 每处随机是"外冒"(上/下边缘冒出噪点碎片)还是"内挖"(从上/下边缘往里挖掉一块)，不必都往外扩。
+            float centerY = hpGrayBaseY + (0.5f - hpGrayPivotY) * hpGrayHeight + hpGrayGlitchWobbleY;
+            int count = Random.Range(3, HpGrayGlitchSliceCount + 1);          // 3 或 4
+            float segW = hpGrayWidth / count;
+            for (int i = 0; i < HpGrayGlitchSliceCount; i++)
+            {
+                var srt = hpGraySlices[i];
+                bool active = i < count && hpGrayWidth > 12f;
+                bool notch = active && Random.value < 0.55f;       // 内挖
+                bool spill = active && !notch;                      // 外冒
+
+                if (srt != null && srt.gameObject.activeSelf != spill) srt.gameObject.SetActive(spill);
+                hpGrayHoles[i] = Vector4.zero;
+                if (!active) continue;
+
+                float segStartFromRight = i * segW;
+                float side = Random.value < 0.5f ? 1f : -1f;
+
+                if (spill && srt != null)
+                {
+                    float w = Mathf.Min(segW * 0.8f, Random.Range(5f, 18f));
+                    float h = Random.Range(3f, 6f);
+                    float x = hpGrayRightEdge - (segStartFromRight + Random.Range(0f, Mathf.Max(0f, segW - w)));
+                    float y = centerY + side * (hpGrayHeight * 0.5f + h * 0.5f - 0.5f);
+                    srt.anchorMin = hpGrayRect.anchorMin; srt.anchorMax = hpGrayRect.anchorMax;
+                    srt.pivot = new Vector2(1f, 0.5f);
+                    srt.anchoredPosition = new Vector2(x, y);
+                    srt.sizeDelta = new Vector2(w, h);
+                    srt.SetSiblingIndex(hpGrayRect.GetSiblingIndex() + 1);
+                }
+                else if (notch)
+                {
+                    // 透明缺口：uv 空间 (xMin,yMin,xMax,yMax)；灰条以右缘为锚点，x 是缺口右缘
+                    float nw = Mathf.Min(segW * 0.8f, Random.Range(3f, 10f));
+                    float nhFrac = Random.Range(0.4f, 0.75f);
+                    float xRight = hpGrayRightEdge - (segStartFromRight + Random.Range(0f, Mathf.Max(0f, segW - nw)));
+                    float leftEdgeOfGray = hpGrayRightEdge - hpGrayWidth;
+                    float u0 = Mathf.Clamp01((xRight - nw - leftEdgeOfGray) / hpGrayWidth);
+                    float u1 = Mathf.Clamp01((xRight - leftEdgeOfGray) / hpGrayWidth);
+                    bool fromTop = side > 0f;
+                    hpGrayHoles[i] = fromTop ? new Vector4(u0, 1f - nhFrac, u1, 1f) : new Vector4(u0, 0f, u1, nhFrac);
+                }
+            }
+
+            if (hpGrayImage != null && hpGrayImage.material != null && hpGrayImage.material.HasProperty("_Hole0"))
+            {
+                hpGrayImage.material.SetVector("_Hole0", hpGrayHoles[0]);
+                hpGrayImage.material.SetVector("_Hole1", hpGrayHoles[1]);
+                hpGrayImage.material.SetVector("_Hole2", hpGrayHoles[2]);
+                hpGrayImage.material.SetVector("_Hole3", hpGrayHoles[3]);
+            }
+        }
+
         public void SetHp(float current, float max)
         {
             NotifyCombatVisibilityHp(current, max);
-            float next = SafeRatio(current, max);
+            float baseMax = ResolveHpBaseMax(max);
+            float next = SafeRatio(current, baseMax);
             float oldTarget = hpTargetRatio;
 
             hpTargetRatio = next;
@@ -701,7 +882,8 @@ namespace SkyPrison.Runtime.UI
         public void SnapHp(float current, float max)
         {
             NotifyCombatVisibilityHp(current, max);
-            float ratio = SafeRatio(current, max);
+            float baseMax = ResolveHpBaseMax(max);
+            float ratio = SafeRatio(current, baseMax);
             hpTargetRatio = ratio;
             hpVisualRatio = ratio;
             hpDamageLagRatio = ratio;
@@ -739,6 +921,7 @@ namespace SkyPrison.Runtime.UI
             float dt = useUnscaledTimeForBars ? Time.unscaledDeltaTime : Time.deltaTime;
             TickBars(dt);
             TickLoadRoll(dt);
+            UpdateHpGrayGlitch(Time.unscaledDeltaTime);
         }
 
         private bool TickBars(float dt)
@@ -843,6 +1026,8 @@ namespace SkyPrison.Runtime.UI
                 hpDamageLagMask.gameObject.SetActive(visible);
                 ApplyBarVisual(hpDamageLagMask, hpDamageLagImage, hpFillMaxWidth, visible ? hpDamageLagRatio : hpVisualRatio, visible);
             }
+
+            ApplyHpGrayVisual();
         }
 
         private void ApplyLpVisual(bool force)

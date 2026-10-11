@@ -151,7 +151,7 @@ public class DamageNumberView : MonoBehaviour
     }
 
     public void Play(float amount, Color color, bool isHeal, Vector2 anchoredPosition, bool preferSoft = false,
-        bool isPositiveCrit = false, bool isNegativeCrit = false)
+        bool isPositiveCrit = false, bool isNegativeCrit = false, bool isLethalShot = false)
     {
         // 之前这个开关只在 SettingsData/SettingsGameplayPanel 里存了个字段，没有任何
         // 消费方读它，勾了跟没勾一个样。伤害数字永远播，直接在这里拦住。
@@ -187,6 +187,14 @@ public class DamageNumberView : MonoBehaviour
             _critScaleMultiplier = 1f;
             _flashBoostOverride = -1f;
             _useOutlineColorOverride = false;
+        }
+
+        // 致命子弹那一发：冷绿白 + 放大 1.3 倍 + 强闪光(可以和暴击叠加：暴击的放大会再乘上去)
+        if (isLethalShot && !isHeal && !isNegativeCrit)
+        {
+            baseColor = new Color(0.74f, 1f, 0.88f, 1f);
+            _critScaleMultiplier *= 1.3f;
+            if (_flashBoostOverride < 0f) _flashBoostOverride = critFlashBoost;
         }
 
         ApplyOutlineToLabel(); // 上面可能改了描边反色开关，这里立刻按新状态重新应用一次

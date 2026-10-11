@@ -238,7 +238,7 @@ public class WorkshopWindowController : SkyPrisonBaseWindowController
         switch (result)
         {
             case WorkshopRuntime.RepairResult.Success:
-                SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Confirm);
+                SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Repair);
                 RefreshDurability();
                 break;
             case WorkshopRuntime.RepairResult.InsufficientFunds:

@@ -41,7 +41,7 @@ public class BattleParameterDatabase : ScriptableObject
     {
         new ActionModuleDefinition
         {
-            key = "one_hand_sword", displayName = "单手剑模组", isStandard = true,
+            key = "sword", displayName = "剑模组", isStandard = true,
             moveSpeed = 5.4f, sprintSpeed = 7.6f, attackSpeedBase = 1.0f,
             lightAttackStartup = 0.10f, lightAttackRecovery = 0.16f,
             heavyAttackStartup = 0.22f, heavyAttackRecovery = 0.30f,
@@ -49,11 +49,11 @@ public class BattleParameterDatabase : ScriptableObject
         },
         new ActionModuleDefinition
         {
-            key = "hammer", displayName = "大锤模组", isStandard = true,
-            moveSpeed = 4.5f, sprintSpeed = 6.4f, attackSpeedBase = 0.78f,
-            lightAttackStartup = 0.18f, lightAttackRecovery = 0.28f,
-            heavyAttackStartup = 0.36f, heavyAttackRecovery = 0.46f,
-            comboInterval = 0.14f, chargeTime = 0.62f, poiseBase = 10f,
+            key = "gun", displayName = "双枪模组", isStandard = true,
+            moveSpeed = 5.2f, sprintSpeed = 7.4f, attackSpeedBase = 1.0f,
+            lightAttackStartup = 0.06f, lightAttackRecovery = 0.20f,
+            heavyAttackStartup = 0.18f, heavyAttackRecovery = 0.30f,
+            comboInterval = 0.10f, chargeTime = 0.50f,
         },
     };
 

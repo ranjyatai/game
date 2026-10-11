@@ -85,6 +85,7 @@ public class SkyPrisonInputSettings : ScriptableObject
         // 这条注释是按理论按键布局猜的，跟用户实测的真实硬件映射对不上）。用户打算
         // 以后单独做一套面向手柄的独立菜单面板，这个键先空出来，键盘(C键)不受影响。
         EnsureBinding(SkyPrisonInputAction.CharacterPanel, "角色面板", KeyCode.C, KeyCode.None, KeyCode.None, SkyPrisonInputTriggerMode.Press);
+        EnsureBinding(SkyPrisonInputAction.QuestLog, "任务日志", KeyCode.L, KeyCode.None, KeyCode.None, SkyPrisonInputTriggerMode.Press);
 
         EnsureBinding(SkyPrisonInputAction.QuickItem1, "快捷物品 1", KeyCode.Alpha1, KeyCode.None, KeyCode.JoystickButton12, SkyPrisonInputTriggerMode.Press);
         EnsureBinding(SkyPrisonInputAction.QuickItem2, "快捷物品 2", KeyCode.Alpha2, KeyCode.None, KeyCode.JoystickButton13, SkyPrisonInputTriggerMode.Press);
@@ -134,6 +135,7 @@ public class SkyPrisonInputSettings : ScriptableObject
         SetBinding(SkyPrisonInputAction.Map, "地图", KeyCode.M, KeyCode.None, KeyCode.None, SkyPrisonInputTriggerMode.Press);
         SetBinding(SkyPrisonInputAction.Menu, "菜单", KeyCode.Escape, KeyCode.None, KeyCode.None, SkyPrisonInputTriggerMode.Press);
         SetBinding(SkyPrisonInputAction.CharacterPanel, "角色面板", KeyCode.C, KeyCode.None, KeyCode.None, SkyPrisonInputTriggerMode.Press);
+        SetBinding(SkyPrisonInputAction.QuestLog, "任务日志", KeyCode.L, KeyCode.None, KeyCode.None, SkyPrisonInputTriggerMode.Press);
 
         SetBinding(SkyPrisonInputAction.QuickItem1, "快捷物品 1", KeyCode.Alpha1, KeyCode.None, KeyCode.JoystickButton12, SkyPrisonInputTriggerMode.Press);
         SetBinding(SkyPrisonInputAction.QuickItem2, "快捷物品 2", KeyCode.Alpha2, KeyCode.None, KeyCode.JoystickButton13, SkyPrisonInputTriggerMode.Press);

@@ -110,7 +110,8 @@ public class SkyPrisonTechTreeCanvasPanel
         Dictionary<int, Rect> worldLayout = SkyPrisonTechTreeLayoutUtility.BuildNodeLayout(
             nodeCount,
             i => nodesProp.GetArrayElementAtIndex(i).FindPropertyRelative("primaryParentIndex").intValue,
-            mode
+            mode,
+            BuildExtraParentsGetter(nodesProp)
         );
 
         Rect worldBounds = SkyPrisonTechTreeLayoutUtility.CalculateBoundsRect(worldLayout);
@@ -341,9 +342,37 @@ public class SkyPrisonTechTreeCanvasPanel
         GUI.EndGroup();
     }
 
+    // 次要前置(secondaryRequirements.targetNodeId)转成节点下标，给布局和连线用
+    private static System.Func<int, IList<int>> BuildExtraParentsGetter(SerializedProperty nodesProp)
+    {
+        Dictionary<string, int> idToIndex = new Dictionary<string, int>();
+        for (int i = 0; i < nodesProp.arraySize; i++)
+        {
+            string id = nodesProp.GetArrayElementAtIndex(i).FindPropertyRelative("nodeId").stringValue;
+            if (!string.IsNullOrEmpty(id) && !idToIndex.ContainsKey(id))
+                idToIndex[id] = i;
+        }
+
+        return i =>
+        {
+            List<int> list = new List<int>();
+            SerializedProperty reqs = nodesProp.GetArrayElementAtIndex(i).FindPropertyRelative("secondaryRequirements");
+            if (reqs == null || !reqs.isArray)
+                return list;
+            for (int k = 0; k < reqs.arraySize; k++)
+            {
+                string target = reqs.GetArrayElementAtIndex(k).FindPropertyRelative("targetNodeId").stringValue;
+                if (!string.IsNullOrEmpty(target) && idToIndex.TryGetValue(target, out int idx) && idx != i && !list.Contains(idx))
+                    list.Add(idx);
+            }
+            return list;
+        };
+    }
+
     private void DrawConnections(SerializedProperty nodesProp, Dictionary<int, Rect> layout, TechTreeGraphAsset.LayoutMode mode)
     {
         Handles.BeginGUI();
+        var getExtraParents = BuildExtraParentsGetter(nodesProp);
 
         for (int i = 0; i < nodesProp.arraySize; i++)
         {
@@ -372,6 +401,40 @@ public class SkyPrisonTechTreeCanvasPanel
                 default:
                     DrawStraightEdgeConnection(parentRect, childRect);
                     break;
+            }
+        }
+
+        // 次要前置的连线：画成偏青的颜色，和主前置的灰线区分开(两条线汇到同一个子节点)
+        for (int i = 0; i < nodesProp.arraySize; i++)
+        {
+            IList<int> extras = getExtraParents(i);
+            if (extras == null || extras.Count == 0 || !layout.ContainsKey(i))
+                continue;
+
+            bool childActivated = simulationMode && simulatedLevels.ContainsKey(i) && simulatedLevels[i] > 0;
+            Handles.color = childActivated ? new Color(0.62f, 0.95f, 0.85f, 1f) : new Color(0.38f, 0.62f, 0.62f, 1f);
+
+            foreach (int parentIndex in extras)
+            {
+                if (!layout.ContainsKey(parentIndex))
+                    continue;
+                Rect parentRect = layout[parentIndex];
+                Rect childRect = layout[i];
+                switch (mode)
+                {
+                    case TechTreeGraphAsset.LayoutMode.Horizontal:
+                        DrawOrthogonalHorizontalEdge(parentRect, childRect);
+                        break;
+                    case TechTreeGraphAsset.LayoutMode.Vertical:
+                        if (VerticalEdgeBlocked(layout, parentIndex, i))
+                            DrawSideBypassVerticalEdge(parentRect, childRect, parentIndex, i);       // 标准折线会穿过别的节点：绕到子节点左侧的空隙里走
+                        else
+                            DrawOrthogonalVerticalEdge(parentRect, childRect);
+                        break;
+                    default:
+                        DrawStraightEdgeConnection(parentRect, childRect);
+                        break;
+                }
             }
         }
 
@@ -758,6 +821,44 @@ public class SkyPrisonTechTreeCanvasPanel
             alignment = TextAnchor.MiddleCenter,
             normal = { textColor = Color.white }
         };
+    }
+
+    // 标准纵向折线(父底部中心 → 中线 → 子顶部中心)的三段，会不会穿过除父子以外的节点
+    private static bool VerticalEdgeBlocked(Dictionary<int, Rect> layout, int parentIndex, int childIndex)
+    {
+        Rect pr = layout[parentIndex], cr = layout[childIndex];
+        float sx = pr.center.x, sy = pr.yMax, ex = cr.center.x, ey = cr.yMin;
+        float midY = (sy + ey) * 0.5f;
+        foreach (var kv in layout)
+        {
+            if (kv.Key == parentIndex || kv.Key == childIndex) continue;
+            Rect r = kv.Value;
+            Rect grown = new Rect(r.x - 3f, r.y - 3f, r.width + 6f, r.height + 6f);
+            if (SegmentHitsRect(sx, sy, sx, midY, grown) || SegmentHitsRect(sx, midY, ex, midY, grown) || SegmentHitsRect(ex, midY, ex, ey, grown))
+                return true;
+        }
+        return false;
+    }
+
+    private static bool SegmentHitsRect(float x0, float y0, float x1, float y1, Rect r)
+    {
+        float minX = Mathf.Min(x0, x1), maxX = Mathf.Max(x0, x1), minY = Mathf.Min(y0, y1), maxY = Mathf.Max(y0, y1);
+        return maxX >= r.xMin && minX <= r.xMax && maxY >= r.yMin && minY <= r.yMax;
+    }
+
+    // 绕行：父底部下来一小段 → 横走到子节点左侧的空隙 → 竖直走到子节点中部 → 从左侧进入子节点
+    private void DrawSideBypassVerticalEdge(Rect parentRect, Rect childRect, int parentIndex, int childIndex)
+    {
+        float corridorX = childRect.xMin - 12f - (parentIndex % 6) * 7f;   // 不同前置各走各的竖道，避免线叠在一起
+        Vector3 p0 = new Vector3(parentRect.center.x, parentRect.yMax, 0f);
+        Vector3 p1 = new Vector3(p0.x, p0.y + 10f + (childIndex % 6) * 6f, 0f);
+        Vector3 p2 = new Vector3(corridorX, p1.y, 0f);
+        Vector3 p3 = new Vector3(corridorX, childRect.center.y, 0f);
+        Vector3 p4 = new Vector3(childRect.xMin, childRect.center.y, 0f);
+        Handles.DrawLine(p0, p1);
+        Handles.DrawLine(p1, p2);
+        Handles.DrawLine(p2, p3);
+        Handles.DrawLine(p3, p4);
     }
 
     private void DrawOrthogonalVerticalEdge(Rect parentRect, Rect childRect)

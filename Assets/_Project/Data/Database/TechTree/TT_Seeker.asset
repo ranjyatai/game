@@ -1,0 +1,1176 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1065bc303bd83f04eb30ff259a4d8b93, type: 3}
+  m_Name: TT_Seeker
+  m_EditorClassIdentifier: Assembly-CSharp::TechTreeGraphAsset
+  graphId: tech_tree_seeker
+  displayName: "\u63A2\u7D22\u8005"
+  note: "AFP \u9002\u5E94\u7CFB\u7EDF\uFF1A\u63A0\u593A\u3001\u81EA\u9002\u5E94\u3001\u8BCD\u6761\u89E3\u9501\u3001\u8BCD\u6761\u8FDB\u5316(\u7279\u6548\u529B\u573A/\u751F\u547D\u4FDD\u9669/\u5F02\u5E38\u8FFD\u4F24/\u6B66\u5668\u4E13\u7CBE)\u3002\u8282\u70B9
+    ID \u4E0E\u4EE3\u7801\u91CC\u7684 SkyPrisonAfpAbilityTable \u5BF9\u5E94\uFF0C\u522B\u968F\u610F\u6539\u3002"
+  layoutMode: 0
+  nodes:
+  - nodeId: seeker_root
+    nodeName: "\u63A2\u7D22\u8005\u9002\u5E94"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u89E3\u9501\u9002\u5E94\u7CFB\u7EDF\uFF1A\u8FDB\u672C\u540E\u5728
+      AFP \u8D2D\u4E70\u533A\u8FDB\u884C AFP \u90E8\u7F72\u3002"
+    enabled: 1
+    primaryParentIndex: -1
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 1
+      rewards: []
+      note: "\u89E3\u9501\u9002\u5E94\u7CFB\u7EDF\uFF1A\u8FDB\u672C\u540E\u5728 AFP
+        \u8D2D\u4E70\u533A\u8FDB\u884C AFP \u90E8\u7F72\u3002"
+  - nodeId: seeker_loot
+    nodeName: "\u63A0\u593A"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  \u6389\u5B9D\u7387 +5%\nLv2 
+      \u6389\u5B9D\u7387\u7D2F\u8BA1 +10%\nLv3  \u6389\u5B9D\u7387\u7D2F\u8BA1 +15%"
+    enabled: 1
+    primaryParentIndex: 0
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 3
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 1
+      rewards:
+      - key: lootDropRate
+        displayName: "\u63A0\u593A"
+        value: 5
+        isPercent: 1
+        note: 
+      note: "\u6389\u5B9D\u7387 +5%"
+    - level: 2
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards:
+      - key: lootDropRate
+        displayName: "\u63A0\u593A"
+        value: 5
+        isPercent: 1
+        note: 
+      note: "\u6389\u5B9D\u7387\u7D2F\u8BA1 +10%"
+    - level: 3
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards:
+      - key: lootDropRate
+        displayName: "\u63A0\u593A"
+        value: 5
+        isPercent: 1
+        note: 
+      note: "\u6389\u5B9D\u7387\u7D2F\u8BA1 +15%"
+  - nodeId: seeker_loot_scavenger
+    nodeName: "\u62FE\u8352\u8005"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  \u62FE\u53D6\u8303\u56F4
+      +10%\nLv2  \u62FE\u53D6\u8303\u56F4\u7D2F\u8BA1 +20%"
+    enabled: 1
+    primaryParentIndex: 1
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 2
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards:
+      - key: pickupRange
+        displayName: "\u62FE\u8352\u8005"
+        value: 10
+        isPercent: 1
+        note: 
+      note: "\u62FE\u53D6\u8303\u56F4 +10%"
+    - level: 2
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards:
+      - key: pickupRange
+        displayName: "\u62FE\u8352\u8005"
+        value: 10
+        isPercent: 1
+        note: 
+      note: "\u62FE\u53D6\u8303\u56F4\u7D2F\u8BA1 +20%"
+  - nodeId: seeker_adapt
+    nodeName: "\u81EA\u9002\u5E94"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  AFP \u83B7\u53D6\u7387 +8%\nLv2 
+      AFP \u83B7\u53D6\u7387\u7D2F\u8BA1 +16%\nLv3  AFP \u83B7\u53D6\u7387\u7D2F\u8BA1
+      +24%\n\u524D\u7F6E\uFF1A\u62FE\u8352\u8005(\u63A0\u593A \u2192 \u62FE\u8352\u8005
+      \u2192 \u81EA\u9002\u5E94)\u3002"
+    enabled: 1
+    primaryParentIndex: 2
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 3
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards:
+      - key: afpGainRate
+        displayName: "\u81EA\u9002\u5E94"
+        value: 8
+        isPercent: 1
+        note: 
+      note: "AFP \u83B7\u53D6\u7387 +8%"
+    - level: 2
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards:
+      - key: afpGainRate
+        displayName: "\u81EA\u9002\u5E94"
+        value: 8
+        isPercent: 1
+        note: 
+      note: "AFP \u83B7\u53D6\u7387\u7D2F\u8BA1 +16%"
+    - level: 3
+      costs:
+      - item: {fileID: 0}
+        amount: 4
+      rewards:
+      - key: afpGainRate
+        displayName: "\u81EA\u9002\u5E94"
+        value: 8
+        isPercent: 1
+        note: 
+      note: "AFP \u83B7\u53D6\u7387\u7D2F\u8BA1 +24%"
+  - nodeId: seeker_starting_afp
+    nodeName: "\u8D77\u59CB\u8D44\u91D1"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  \u5F00\u5C40 AFP +50\nLv2 
+      \u7D2F\u8BA1 +100\nLv3  \u7D2F\u8BA1 +150\nLv4  \u7D2F\u8BA1 +200\nLv5  \u7D2F\u8BA1
+      +250\n\u524D\u7F6E\uFF1A\u81EA\u9002\u5E94\u3002"
+    enabled: 1
+    primaryParentIndex: 3
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 5
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards: []
+      note: "\u5F00\u5C40 AFP +50"
+    - level: 2
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards: []
+      note: "\u5F00\u5C40 AFP \u7D2F\u8BA1 +100"
+    - level: 3
+      costs:
+      - item: {fileID: 0}
+        amount: 4
+      rewards: []
+      note: "\u5F00\u5C40 AFP \u7D2F\u8BA1 +150"
+    - level: 4
+      costs:
+      - item: {fileID: 0}
+        amount: 6
+      rewards: []
+      note: "\u5F00\u5C40 AFP \u7D2F\u8BA1 +200"
+    - level: 5
+      costs:
+      - item: {fileID: 0}
+        amount: 8
+      rewards: []
+      note: "\u5F00\u5C40 AFP \u7D2F\u8BA1 +250"
+  - nodeId: seeker_afp_res_phys
+    nodeName: "\u8BCD\u6761\uFF1A\u7269\u7406\u6297\u6027"
+    description: "\u89E3\u9501\u65A9\u51FB / \u6253\u51FB / \u51B2\u51FB\u6297\u6027\u5F3A\u5316\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u89E3\u9501\u9002\u5E94\u5F3A\u5316\uFF1A\u65A9\u51FB
+      / \u6253\u51FB / \u51B2\u51FB\u6297\u6027(\u6BCF\u7EA7 +0.5% \u5BF9\u5E94\u6297\u6027\uFF0C\u6700\u591A
+      99 \u7EA7)\u3002"
+    enabled: 1
+    primaryParentIndex: 0
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards: []
+      note: "\u89E3\u9501\u9002\u5E94\u5F3A\u5316\uFF1A\u65A9\u51FB / \u6253\u51FB
+        / \u51B2\u51FB\u6297\u6027(\u6BCF\u7EA7 +0.5% \u5BF9\u5E94\u6297\u6027\uFF0C\u6700\u591A
+        99 \u7EA7)\u3002"
+  - nodeId: seeker_afp_res_attr
+    nodeName: "\u8BCD\u6761\uFF1A\u5C5E\u6027\u6297\u6027"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u89E3\u9501\u9002\u5E94\u5F3A\u5316\uFF1A\u707C\u70ED
+      / \u7535\u78C1 / \u8150\u8680 / \u51BB\u7ED3\u6297\u6027(\u6BCF\u7EA7 +0.5%
+      \u5BF9\u5E94\u6297\u6027\uFF0C\u6700\u591A 99 \u7EA7)\u3002"
+    enabled: 1
+    primaryParentIndex: 0
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards: []
+      note: "\u89E3\u9501\u9002\u5E94\u5F3A\u5316\uFF1A\u707C\u70ED / \u7535\u78C1
+        / \u8150\u8680 / \u51BB\u7ED3\u6297\u6027(\u6BCF\u7EA7 +0.5% \u5BF9\u5E94\u6297\u6027\uFF0C\u6700\u591A
+        99 \u7EA7)\u3002"
+  - nodeId: seeker_afp_atk
+    nodeName: "\u8BCD\u6761\uFF1A\u653B\u51FB\u5F3A\u5316"
+    description: "\u89E3\u9501\u7269\u7406\u653B\u51FB\u5F3A\u5316\u4E0E\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u89E3\u9501\u9002\u5E94\u5F3A\u5316\uFF1A\u7269\u7406\u653B\u51FB\u5F3A\u5316\u3001\u5C5E\u6027\u653B\u51FB\u5F3A\u5316(\u6BCF\u7EA7
+      +0.5% \u5BF9\u5E94\u4F24\u5BB3\uFF0C\u6700\u591A 99 \u7EA7)\u3002"
+    enabled: 1
+    primaryParentIndex: 0
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards: []
+      note: "\u89E3\u9501\u9002\u5E94\u5F3A\u5316\uFF1A\u7269\u7406\u653B\u51FB\u5F3A\u5316\u3001\u5C5E\u6027\u653B\u51FB\u5F3A\u5316(\u6BCF\u7EA7
+        +0.5% \u5BF9\u5E94\u4F24\u5BB3\uFF0C\u6700\u591A 99 \u7EA7)\u3002"
+  - nodeId: seeker_afp_magazine
+    nodeName: "\u8BCD\u6761\uFF1A\u6269\u5BB9\u5F39\u5323"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u89E3\u9501\u9002\u5E94\u5F3A\u5316\uFF1A\u6269\u5BB9\u5F39\u5323(\u6BCF\u6B21
+      +10 \u53D1\uFF0C\u6700\u591A 3 \u6B21\uFF0C\u4EF7\u76EE 350 / 2200 / 7500 AFP\uFF0C\u4E0D\u53D7\u5168\u5C40\u6DA8\u4EF7\u5F71\u54CD)\u3002"
+    enabled: 1
+    primaryParentIndex: 0
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards: []
+      note: "\u89E3\u9501\u9002\u5E94\u5F3A\u5316\uFF1A\u6269\u5BB9\u5F39\u5323(\u6BCF\u6B21
+        +10 \u53D1\uFF0C\u6700\u591A 3 \u6B21\uFF0C\u4EF7\u76EE 350 / 2200 / 7500
+        AFP\uFF0C\u4E0D\u53D7\u5168\u5C40\u6DA8\u4EF7\u5F71\u54CD)\u3002"
+  - nodeId: seeker_afp_magazine_discount
+    nodeName: "\u52A0\u901F\u6539\u9020\uFF1A\u6269\u5BB9\u5F39\u5323"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u6269\u5BB9\u5F39\u5323\u4EF7\u76EE\u6574\u4F53
+      \xD7300/350\uFF1A350\u2192300\uFF0C2200\u2192\u7EA6 1886\uFF0C7500\u2192\u7EA6
+      6429(\u7B2C\u4E00\u6B21\u6B63\u597D\u662F\u5F00\u5C40 300 AFP \u4E70\u5F97\u8D77\u7684\u4EF7\u683C)\u3002"
+    enabled: 1
+    primaryParentIndex: 8
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 6
+      rewards: []
+      note: "\u6269\u5BB9\u5F39\u5323\u4EF7\u76EE\u6574\u4F53 \xD7300/350\uFF1A350\u2192300\uFF0C2200\u2192\u7EA6
+        1886\uFF0C7500\u2192\u7EA6 6429(\u7B2C\u4E00\u6B21\u6B63\u597D\u662F\u5F00\u5C40
+        300 AFP \u4E70\u5F97\u8D77\u7684\u4EF7\u683C)\u3002"
+  - nodeId: seeker_afp_heat_shield_1
+    nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u707C\u70ED I"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 1 \u6863(I)\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38
+      \xB7 150\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+      5 \u7EA7\u3002"
+    enabled: 1
+    primaryParentIndex: 6
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards: []
+      note: "\u7B2C 1 \u6863(I)\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38
+        \xB7 150\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+        5 \u7EA7\u3002"
+  - nodeId: seeker_afp_heat_shield_2
+    nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u707C\u70ED II"
+    description: "\u707C\u70ED\u6297\u6027\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u6062\u590D\u65F6\u95F4\u968F\u6863\u4F4D\u7F29\u77ED(150/120/90/60
+      \u79D2)\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 2 \u6863(II)\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38
+      \xB7 120\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+      10 \u7EA7\u3002"
+    enabled: 1
+    primaryParentIndex: 10
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards: []
+      note: "\u7B2C 2 \u6863(II)\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38
+        \xB7 120\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+        10 \u7EA7\u3002"
+  - nodeId: seeker_afp_heat_shield_3
+    nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u707C\u70ED III"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 3 \u6863(III)\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38
+      \xB7 90\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+      15 \u7EA7\u3002"
+    enabled: 1
+    primaryParentIndex: 11
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 5
+      rewards: []
+      note: "\u7B2C 3 \u6863(III)\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38
+        \xB7 90\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+        15 \u7EA7\u3002"
+  - nodeId: seeker_afp_heat_shield_4
+    nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u707C\u70ED IV"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 4 \u6863(IV)\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38
+      \xB7 60\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+      20 \u7EA7\u3002"
+    enabled: 1
+    primaryParentIndex: 12
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 8
+      rewards: []
+      note: "\u7B2C 4 \u6863(IV)\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38
+        \xB7 60\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+        20 \u7EA7\u3002"
+  - nodeId: seeker_afp_shock_shield_1
+    nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u7535\u78C1 I"
+    description: "\u7535\u78C1\u6297\u6027\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u6062\u590D\u65F6\u95F4\u968F\u6863\u4F4D\u7F29\u77ED(150/120/90/60
+      \u79D2)\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 1 \u6863(I)\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38
+      \xB7 150\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+      5 \u7EA7\u3002"
+    enabled: 1
+    primaryParentIndex: 6
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards: []
+      note: "\u7B2C 1 \u6863(I)\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38
+        \xB7 150\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+        5 \u7EA7\u3002"
+  - nodeId: seeker_afp_shock_shield_2
+    nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u7535\u78C1 II"
+    description: "\u7535\u78C1\u6297\u6027\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u6062\u590D\u65F6\u95F4\u968F\u6863\u4F4D\u7F29\u77ED(150/120/90/60
+      \u79D2)\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 2 \u6863(II)\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38
+      \xB7 120\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+      10 \u7EA7\u3002"
+    enabled: 1
+    primaryParentIndex: 14
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards: []
+      note: "\u7B2C 2 \u6863(II)\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38
+        \xB7 120\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+        10 \u7EA7\u3002"
+  - nodeId: seeker_afp_shock_shield_3
+    nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u7535\u78C1 III"
+    description: "\u7535\u78C1\u6297\u6027\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u6062\u590D\u65F6\u95F4\u968F\u6863\u4F4D\u7F29\u77ED(150/120/90/60
+      \u79D2)\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 3 \u6863(III)\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38
+      \xB7 90\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+      15 \u7EA7\u3002"
+    enabled: 1
+    primaryParentIndex: 15
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 5
+      rewards: []
+      note: "\u7B2C 3 \u6863(III)\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38
+        \xB7 90\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+        15 \u7EA7\u3002"
+  - nodeId: seeker_afp_shock_shield_4
+    nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u7535\u78C1 IV"
+    description: "\u7535\u78C1\u6297\u6027\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u6062\u590D\u65F6\u95F4\u968F\u6863\u4F4D\u7F29\u77ED(150/120/90/60
+      \u79D2)\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 4 \u6863(IV)\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38
+      \xB7 60\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+      20 \u7EA7\u3002"
+    enabled: 1
+    primaryParentIndex: 16
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 8
+      rewards: []
+      note: "\u7B2C 4 \u6863(IV)\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38
+        \xB7 60\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+        20 \u7EA7\u3002"
+  - nodeId: seeker_afp_life_insurance
+    nodeName: "\u751F\u547D\u4FDD\u9669"
+    description: "\u8FFD\u52A0\u751F\u547D 5 \u7EA7\u540E\u751F\u6548\uFF1A\u53D7\u5230\u81F4\u547D\u4F24\u5BB3\u65F6\u6B7B\u4EA1\u8C41\u514D\uFF0C\u8840\u91CF\u4FDD\u7559
+      1 \u70B9\uFF0C\u968F\u540E\u51B7\u5374 300 \u79D2\u3002\u9700\u8981\u5148\u70B9\u4EAE\u300C\u8BCD\u6761\uFF1A\u7269\u7406\u6297\u6027\u300D\u548C\u300C\u8BCD\u6761\uFF1A\u5C5E\u6027\u6297\u6027\u300D(\u4E24\u7C7B\u6297\u6027\u90FD\u6709\u5E95\u5B50\u624D\u4E70\u5F97\u8D77\u4FDD\u9669)\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8FFD\u52A0\u751F\u547D\u6EE1
+      5 \u7EA7\u540E\u751F\u6548\uFF1A\u53D7\u5230\u81F4\u547D\u4F24\u5BB3\u65F6\u6B7B\u4EA1\u8C41\u514D\uFF0C\u8840\u91CF\u4FDD\u7559
+      1 \u70B9\uFF0C\u968F\u540E\u51B7\u5374 300 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u8BCD\u6761\uFF1A\u7269\u7406\u6297\u6027(\u4E3B\u524D\u7F6E\uFF0C\u9632\u5FA1\u7EBF)
+      + \u8BCD\u6761\uFF1A\u5C5E\u6027\u6297\u6027(\u6B21\u8981\u524D\u7F6E\uFF0C\u9632\u5FA1\u7EBF)\uFF0C\u4E24\u4E2A\u90FD\u70B9\u4EAE\u624D\u80FD\u89E3\u9501\u3002"
+    enabled: 1
+    primaryParentIndex: 5
+    secondaryRequirements:
+    - targetNodeId: seeker_afp_res_attr
+      requirementType: 0
+      requiredLevel: 1
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 10
+      rewards: []
+      note: "\u8FFD\u52A0\u751F\u547D 5 \u7EA7\u540E\u751F\u6548\uFF1A\u6B7B\u4EA1\u8C41\u514D\uFF0C\u8840\u91CF\u4FDD\u7559
+        1 \u70B9\uFF0C\u51B7\u5374 300 \u79D2\u3002\u524D\u7F6E\uFF1A\u8D77\u59CB\u8D44\u91D1
+        + \u8BCD\u6761\uFF1A\u7269\u7406\u6297\u6027\u3002"
+  - nodeId: seeker_afp_attr_burst_1
+    nodeName: "\u5F02\u5E38\u8FFD\u4F24 I"
+    description: "\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u5F02\u5E38\u8D4B\u4E88\u65F6\u8FFD\u52A0\u4E00\u7B14\u653B\u51FB\u529B\u500D\u6570\u7684\u540C\u5C5E\u6027\u4F24\u5BB3\uFF0C\u5E76\u8BA9\u5F02\u5E38\u4E2D\u7684\u654C\u4EBA\u53D7\u5230\u66F4\u591A\u4F24\u5BB3\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 1 \u6863(I)\uFF1A\u8FFD\u4F24
+      \u653B\u51FB\u529B\xD73.0 \xB7 \u5F02\u5E38\u589E\u4F24 +5%\uFF1B\u9700\u8981\u5BF9\u5E94
+      AFP \u5F3A\u5316\u9879\u6BCF\u6EE1 5 \u7EA7\u3002"
+    enabled: 1
+    primaryParentIndex: 7
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards: []
+      note: "\u7B2C 1 \u6863(I)\uFF1A\u8FFD\u4F24 \u653B\u51FB\u529B\xD73.0 \xB7
+        \u5F02\u5E38\u589E\u4F24 +5%\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+        5 \u7EA7\u3002"
+  - nodeId: seeker_afp_attr_burst_2
+    nodeName: "\u5F02\u5E38\u8FFD\u4F24 II"
+    description: "\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u5F02\u5E38\u8D4B\u4E88\u65F6\u8FFD\u52A0\u4E00\u7B14\u653B\u51FB\u529B\u500D\u6570\u7684\u540C\u5C5E\u6027\u4F24\u5BB3\uFF0C\u5E76\u8BA9\u5F02\u5E38\u4E2D\u7684\u654C\u4EBA\u53D7\u5230\u66F4\u591A\u4F24\u5BB3\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 2 \u6863(II)\uFF1A\u8FFD\u4F24
+      \u653B\u51FB\u529B\xD74.5 \xB7 \u5F02\u5E38\u589E\u4F24 +10%\uFF1B\u9700\u8981\u5BF9\u5E94
+      AFP \u5F3A\u5316\u9879\u6BCF\u6EE1 10 \u7EA7\u3002"
+    enabled: 1
+    primaryParentIndex: 19
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards: []
+      note: "\u7B2C 2 \u6863(II)\uFF1A\u8FFD\u4F24 \u653B\u51FB\u529B\xD74.5 \xB7
+        \u5F02\u5E38\u589E\u4F24 +10%\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+        10 \u7EA7\u3002"
+  - nodeId: seeker_afp_attr_burst_3
+    nodeName: "\u5F02\u5E38\u8FFD\u4F24 III"
+    description: "\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u5F02\u5E38\u8D4B\u4E88\u65F6\u8FFD\u52A0\u4E00\u7B14\u653B\u51FB\u529B\u500D\u6570\u7684\u540C\u5C5E\u6027\u4F24\u5BB3\uFF0C\u5E76\u8BA9\u5F02\u5E38\u4E2D\u7684\u654C\u4EBA\u53D7\u5230\u66F4\u591A\u4F24\u5BB3\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 3 \u6863(III)\uFF1A\u8FFD\u4F24
+      \u653B\u51FB\u529B\xD76.0 \xB7 \u5F02\u5E38\u589E\u4F24 +15%\uFF1B\u9700\u8981\u5BF9\u5E94
+      AFP \u5F3A\u5316\u9879\u6BCF\u6EE1 15 \u7EA7\u3002"
+    enabled: 1
+    primaryParentIndex: 20
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 5
+      rewards: []
+      note: "\u7B2C 3 \u6863(III)\uFF1A\u8FFD\u4F24 \u653B\u51FB\u529B\xD76.0 \xB7
+        \u5F02\u5E38\u589E\u4F24 +15%\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+        15 \u7EA7\u3002"
+  - nodeId: seeker_afp_attr_burst_4
+    nodeName: "\u5F02\u5E38\u8FFD\u4F24 IV"
+    description: "\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u5F02\u5E38\u8D4B\u4E88\u65F6\u8FFD\u52A0\u4E00\u7B14\u653B\u51FB\u529B\u500D\u6570\u7684\u540C\u5C5E\u6027\u4F24\u5BB3\uFF0C\u5E76\u8BA9\u5F02\u5E38\u4E2D\u7684\u654C\u4EBA\u53D7\u5230\u66F4\u591A\u4F24\u5BB3\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 4 \u6863(IV)\uFF1A\u8FFD\u4F24
+      \u653B\u51FB\u529B\xD78.0 \xB7 \u5F02\u5E38\u589E\u4F24 +20%\uFF1B\u9700\u8981\u5BF9\u5E94
+      AFP \u5F3A\u5316\u9879\u6BCF\u6EE1 20 \u7EA7\u3002"
+    enabled: 1
+    primaryParentIndex: 21
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 8
+      rewards: []
+      note: "\u7B2C 4 \u6863(IV)\uFF1A\u8FFD\u4F24 \u653B\u51FB\u529B\xD78.0 \xB7
+        \u5F02\u5E38\u589E\u4F24 +20%\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
+        20 \u7EA7\u3002"
+  - nodeId: seeker_afp_cycle_1
+    nodeName: "\u56DE\u8F6C I"
+    description: "\u7269\u7406\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u56DE\u8F6C(\u51FB\u6740\u56DE
+      LP)\u4E0E\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA\u5F39\u5323\u672B\u5C3E\u52A0\u4F24)\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u4EC5\u9650\u5251\u3002\u51FB\u6740\u654C\u4EBA\u65F6\uFF0C\u6062\u590D\u6700\u5927
+      LP \u7684 12%\n\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
+      \xD73\uFF1B\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002\n\u524D\u7F6E\uFF1A\u8BCD\u6761\uFF1A\u653B\u51FB\u5F3A\u5316\u3002"
+    enabled: 1
+    primaryParentIndex: 7
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards: []
+      note: "\u51FB\u6740\u654C\u4EBA\u65F6\uFF0C\u6062\u590D\u6700\u5927 LP \u7684
+        12%"
+  - nodeId: seeker_afp_cycle_2
+    nodeName: "\u56DE\u8F6C II"
+    description: "\u7269\u7406\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u56DE\u8F6C(\u51FB\u6740\u56DE
+      LP)\u4E0E\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA\u5F39\u5323\u672B\u5C3E\u52A0\u4F24)\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u4EC5\u9650\u5251\u3002\u51FB\u6740\u56DE\u590D
+      18% LP\n\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
+      \xD73\uFF1B\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002\n\u524D\u7F6E\uFF1A\u56DE\u8F6C
+      I\u3002"
+    enabled: 1
+    primaryParentIndex: 23
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards: []
+      note: "\u51FB\u6740\u56DE\u590D 18% LP"
+  - nodeId: seeker_afp_cycle_3
+    nodeName: "\u56DE\u8F6C III"
+    description: "\u7269\u7406\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u56DE\u8F6C(\u51FB\u6740\u56DE
+      LP)\u4E0E\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA\u5F39\u5323\u672B\u5C3E\u52A0\u4F24)\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u4EC5\u9650\u5251\u3002\u51FB\u6740\u56DE\u590D
+      25% LP\n\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
+      \xD73\uFF1B\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002\n\u524D\u7F6E\uFF1A\u56DE\u8F6C
+      II\u3002"
+    enabled: 1
+    primaryParentIndex: 24
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 5
+      rewards: []
+      note: "\u51FB\u6740\u56DE\u590D 25% LP"
+  - nodeId: seeker_afp_cycle_4
+    nodeName: "\u56DE\u8F6C IV"
+    description: "\u7269\u7406\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u56DE\u8F6C(\u51FB\u6740\u56DE
+      LP)\u4E0E\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA\u5F39\u5323\u672B\u5C3E\u52A0\u4F24)\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u4EC5\u9650\u5251\u3002\u51FB\u6740\u56DE\u590D
+      35% LP\n\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
+      \xD73\uFF1B\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002\n\u524D\u7F6E\uFF1A\u56DE\u8F6C
+      III\u3002"
+    enabled: 1
+    primaryParentIndex: 25
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 8
+      rewards: []
+      note: "\u51FB\u6740\u56DE\u590D 35% LP"
+  - nodeId: seeker_afp_lethal_1
+    nodeName: "\u81F4\u547D\u5B50\u5F39 I"
+    description: "\u7269\u7406\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u56DE\u8F6C(\u51FB\u6740\u56DE
+      LP)\u4E0E\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA\u5F39\u5323\u672B\u5C3E\u52A0\u4F24)\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u4EC5\u9650\u53CC\u67AA\u3002\u6BCF\u7B2C
+      10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3 +100%\u3002\n\u524D\u7F6E\uFF1A\u8BCD\u6761\uFF1A\u653B\u51FB\u5F3A\u5316\u3002"
+    enabled: 1
+    primaryParentIndex: 7
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards: []
+      note: "\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
+        +100%"
+  - nodeId: seeker_afp_lethal_2
+    nodeName: "\u81F4\u547D\u5B50\u5F39 II"
+    description: "\u7269\u7406\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u56DE\u8F6C(\u51FB\u6740\u56DE
+      LP)\u4E0E\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA\u5F39\u5323\u672B\u5C3E\u52A0\u4F24)\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u4EC5\u9650\u53CC\u67AA\u3002\u6BCF\u7B2C
+      10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3 +150%\u3002\n\u524D\u7F6E\uFF1A\u81F4\u547D\u5B50\u5F39
+      I\u3002"
+    enabled: 1
+    primaryParentIndex: 27
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards: []
+      note: "\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
+        +150%"
+  - nodeId: seeker_afp_lethal_3
+    nodeName: "\u81F4\u547D\u5B50\u5F39 III"
+    description: "\u7269\u7406\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u56DE\u8F6C(\u51FB\u6740\u56DE
+      LP)\u4E0E\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA\u5F39\u5323\u672B\u5C3E\u52A0\u4F24)\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u4EC5\u9650\u53CC\u67AA\u3002\u6BCF\u7B2C
+      10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3 +200%\u3002\n\u524D\u7F6E\uFF1A\u81F4\u547D\u5B50\u5F39
+      II\u3002"
+    enabled: 1
+    primaryParentIndex: 28
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 5
+      rewards: []
+      note: "\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
+        +200%"
+  - nodeId: seeker_afp_lethal_4
+    nodeName: "\u81F4\u547D\u5B50\u5F39 IV"
+    description: "\u7269\u7406\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u56DE\u8F6C(\u51FB\u6740\u56DE
+      LP)\u4E0E\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA\u5F39\u5323\u672B\u5C3E\u52A0\u4F24)\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u4EC5\u9650\u53CC\u67AA\u3002\u6BCF\u7B2C
+      10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3 +300%\u3002\n\u524D\u7F6E\uFF1A\u81F4\u547D\u5B50\u5F39
+      III\u3002"
+    enabled: 1
+    primaryParentIndex: 29
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 8
+      rewards: []
+      note: "\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
+        +300%"
+  - nodeId: seeker_usurper
+    nodeName: "\u7BE1\u593A\u8005"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u70B9\u4EAE\u540E\uFF0CAFP \u7A97\u53E3\u91CC\u51FA\u73B0\u72EC\u7ACB\u7684\u300C\u7BE1\u593A\u8005\u300D\u4E00\u884C\uFF0C\u8FFD\u52A0\u751F\u547D\u3001\u7269\u7406\u653B\u51FB\u5F3A\u5316\u5404
+      \u2265 10 \u7EA7\u624D\u80FD\u8D2D\u4E70\uFF0C\u6700\u9AD8 10 \u7EA7\u3002\n\u53D7\u5230\u7684\u4F24\u5BB3\uFF0C\u6709
+      30%\uFF081 \u7EA7\uFF09\u81F3 60%\uFF0810 \u7EA7\uFF09\u8F6C\u4E3A\u8840\u6761\u4E0A\u7684\u7EA2\u8272\u90E8\u5206\uFF0C\u968F\u65F6\u95F4\u6D88\u9000\u3002\n\u653B\u51FB\u654C\u4EBA\u65F6\uFF0C\u9020\u6210\u4F24\u5BB3\u7684\u4E00\u90E8\u5206\u8F6C\u5316\u4E3A\u751F\u547D\u56DE\u590D\uFF0C\u53EA\u80FD\u56DE\u590D\u7EA2\u8272\u90E8\u5206\uFF1A\u8FD1\u6218
+      20%\u201380%\uFF0C\u8FDC\u7A0B\u4E3A\u8FD1\u6218\u7684 40%\u3002\n\u524D\u7F6E\uFF1A\u8BCD\u6761\uFF1A\u653B\u51FB\u5F3A\u5316\u3002"
+    enabled: 1
+    primaryParentIndex: 7
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 8
+      rewards: []
+      note: "\u89E3\u9501 AFP \u5347\u7EA7\u9879\u300C\u7BE1\u593A\u8005\u300D"
+  - nodeId: seeker_afp_corrosion_shield_1
+    nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680 I"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF0C\u6062\u590D\u65F6\u95F4
+      150 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u8BCD\u6761\uFF1A\u5C5E\u6027\u6297\u6027\u3002"
+    enabled: 1
+    primaryParentIndex: 6
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards: []
+      note: "\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38 \xB7 150 \u79D2\u6062\u590D"
+  - nodeId: seeker_afp_corrosion_shield_2
+    nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680 II"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF0C\u6062\u590D\u65F6\u95F4
+      120 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680
+      I\u3002"
+    enabled: 1
+    primaryParentIndex: 32
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards: []
+      note: "\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38 \xB7 120 \u79D2\u6062\u590D"
+  - nodeId: seeker_afp_corrosion_shield_3
+    nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680 III"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF0C\u6062\u590D\u65F6\u95F4
+      90 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680
+      II\u3002"
+    enabled: 1
+    primaryParentIndex: 33
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 5
+      rewards: []
+      note: "\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38 \xB7 90 \u79D2\u6062\u590D"
+  - nodeId: seeker_afp_corrosion_shield_4
+    nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680 IV"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF0C\u6062\u590D\u65F6\u95F4
+      60 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680
+      III\u3002"
+    enabled: 1
+    primaryParentIndex: 34
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 8
+      rewards: []
+      note: "\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38 \xB7 60 \u79D2\u6062\u590D"
+  - nodeId: seeker_afp_freeze_shield_1
+    nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3 I"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF0C\u6062\u590D\u65F6\u95F4
+      150 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u8BCD\u6761\uFF1A\u5C5E\u6027\u6297\u6027\u3002"
+    enabled: 1
+    primaryParentIndex: 6
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards: []
+      note: "\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38 \xB7 150 \u79D2\u6062\u590D"
+  - nodeId: seeker_afp_freeze_shield_2
+    nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3 II"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF0C\u6062\u590D\u65F6\u95F4
+      120 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3
+      I\u3002"
+    enabled: 1
+    primaryParentIndex: 36
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards: []
+      note: "\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38 \xB7 120 \u79D2\u6062\u590D"
+  - nodeId: seeker_afp_freeze_shield_3
+    nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3 III"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF0C\u6062\u590D\u65F6\u95F4
+      90 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3
+      II\u3002"
+    enabled: 1
+    primaryParentIndex: 37
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 5
+      rewards: []
+      note: "\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38 \xB7 90 \u79D2\u6062\u590D"
+  - nodeId: seeker_afp_freeze_shield_4
+    nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3 IV"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF0C\u6062\u590D\u65F6\u95F4
+      60 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3
+      III\u3002"
+    enabled: 1
+    primaryParentIndex: 38
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 8
+      rewards: []
+      note: "\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38 \xB7 60 \u79D2\u6062\u590D"

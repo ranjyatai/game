@@ -457,6 +457,12 @@ public class UnitMovementController : MonoBehaviour
     public BurdenLevel CurrentBurdenLevel => currentBurdenLevel;
     public bool CanRun => canRunNow;
     public bool CanDodge => canDodgeNow;
+
+    /// <summary>此刻闪避请求能不能真正开始——跟 TryStartDodge 的拒绝条件完全一致（负重不允许、
+    /// 空中、闪避硬直中），再加上本帧已经排了一次闪避还没消费。外层在扣 LP / 播音效之前必须
+    /// 用这个判断，只看 CanDodge 的话，闪避中连按会先扣 LP、响音效，再被内层静默拒绝。</summary>
+    public bool CanStartDodgeNow => canDodgeNow && !dodgeQueued
+        && jumpState == JumpRuntimeState.None && dodgeState == DodgeRuntimeState.None;
     public bool CanJump => canJumpNow;
     public bool CanMove => canMoveNow;
     public Vector2 MoveInput => input;
@@ -808,6 +814,7 @@ public class UnitMovementController : MonoBehaviour
     /// </summary>
     public void RequestJump()
     {
+        if (IsStatusImmobilized) return;
         jumpQueued = true;
         jumpQueuedUntil = Time.time + Mathf.Max(0.01f, jumpInputBufferSeconds);
     }
@@ -833,6 +840,7 @@ public class UnitMovementController : MonoBehaviour
 
     public void RequestDodge(Vector2 worldXZDirection, DodgeRuntimeState dodgeKind = DodgeRuntimeState.Forward, float speedScale = 1f)
     {
+        if (IsStatusImmobilized) return;
         if (worldXZDirection.sqrMagnitude > 1f)
             worldXZDirection.Normalize();
 
@@ -877,6 +885,16 @@ public class UnitMovementController : MonoBehaviour
         // 朝向判定会读到冲刺开始前的旧方向，导致角色朝向跟实际冲刺方向不一致（看起来
         // 像是"反方向突刺"）。
         currentVelocity = dashVelocity;
+    }
+
+    /// <summary>中途终止冲刺（AI 冲刺不穿透时撞到第一个目标就停）：速度立刻归零，不滑行。</summary>
+    public void CancelChargeDash()
+    {
+        if (!chargeDashActive) return;
+        chargeDashActive = false;
+        currentVelocity = Vector3.zero;
+        if (externalTerrainMotor != null)
+            externalTerrainMotor.SnapHorizontalVelocity(Vector3.zero);
     }
 
     /// <summary>
@@ -1507,6 +1525,15 @@ public class UnitMovementController : MonoBehaviour
             return;
         }
 
+        if (IsStatusImmobilized)
+        {
+            input = Vector2.zero;
+            currentInput = Vector2.zero;
+            externalRunHeld = false;
+            externalSneakHeld = false;
+            return;
+        }
+
         if (inputMode == MovementInputMode.PlayerInput)
         {
             if (useSkyPrisonInputSettings)
@@ -1523,6 +1550,24 @@ public class UnitMovementController : MonoBehaviour
             input.Normalize();
 
         currentInput = input;
+    }
+
+    /// <summary>被状态(冻结)停滞：moveSpeedRate 降到 0，原地静止，不能移动/闪避/跳跃。</summary>
+    public bool IsStatusImmobilized => ResolveStatusMoveSpeedMultiplier() <= 0.0001f;
+
+    private UnitBattleStatRuntime _statRuntimeForSpeed;
+    private bool _statRuntimeForSpeedResolved;
+
+    private float ResolveStatusMoveSpeedMultiplier()
+    {
+        if (!_statRuntimeForSpeedResolved)
+        {
+            _statRuntimeForSpeed = GetComponent<UnitBattleStatRuntime>() ?? GetComponentInParent<UnitBattleStatRuntime>();
+            _statRuntimeForSpeedResolved = true;
+        }
+        if (_statRuntimeForSpeed == null) return 1f;
+        float rate = _statRuntimeForSpeed.GetFinalValue("moveSpeedRate", 100f);
+        return Mathf.Clamp(rate / 100f, 0f, 2f);
     }
 
     private SkyPrisonInputSettings GetInputSettings()
@@ -2324,6 +2369,7 @@ public class UnitMovementController : MonoBehaviour
             currentVelocity = dodgeTargetVelocity;
 
             Vector3 dodgeDesiredDelta = currentVelocity * Time.fixedDeltaTime;
+            SkyPrisonGuardianShield.ClampDodgeDelta(rb.position, ref dodgeDesiredDelta);   // 守卫者的盾：闪避穿不过去
             dodgeDesiredDelta = ResolveMapBoundaryDelta(rb.position, dodgeDesiredDelta);
             dodgeDesiredDelta = ResolveGroundShapeDelta(rb.position, dodgeDesiredDelta);
             Vector3 dodgeSolvedDelta = ResolveMovementDelta(rb.position, dodgeDesiredDelta);
@@ -2383,6 +2429,9 @@ public class UnitMovementController : MonoBehaviour
         // 现在只压普通行走，不压 AI/玩家奔跑。
         if (!wantsSneak && !wantsRun && sameDirectionTimer >= sustainedMoveDelay)
             baseSpeed *= sustainedMoveSpeedMultiplier;
+
+        // 状态(冻结等)通过战斗属性 moveSpeedRate 调整移速，100=原速。
+        baseSpeed *= ResolveStatusMoveSpeedMultiplier();
 
         currentWantsSneak = wantsSneak;
         currentWantsRun = wantsRun;

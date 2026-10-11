@@ -1,0 +1,869 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1065bc303bd83f04eb30ff259a4d8b93, type: 3}
+  m_Name: TT_Strategist
+  m_EditorClassIdentifier: Assembly-CSharp::TechTreeGraphAsset
+  graphId: tech_tree_strategist
+  displayName: "\u6218\u7565\u5BB6"
+  note: "\u6D88\u8017\u54C1(\u836F\u5242)\u4E0E\u8865\u7ED9\uFF1A\u836F\u6548\u5F3A\u5316\u3001\u8282\u7EA6(\u6982\u7387\u4E0D\u6D88\u8017)\u3001\u8D1F\u91CD\u4E0A\u9650\u3001\u7EDF\u7B79\u3002"
+  layoutMode: 0
+  nodes:
+  - nodeId: strategist_root
+    nodeName: "\u6218\u7565\u5BB6"
+    description: "\u89E3\u9501\u8865\u7ED9\u7EDF\u7B79\u7CFB\u7EDF\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u89E3\u9501\u8865\u7ED9\u7EDF\u7B79\u7CFB\u7EDF\u3002"
+    enabled: 1
+    primaryParentIndex: -1
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 1
+      rewards: []
+      note: "\u89E3\u9501\u8865\u7ED9\u7EDF\u7B79\u7CFB\u7EDF\u3002"
+  - nodeId: strategist_potency
+    nodeName: "\u836F\u6548\u5F3A\u5316"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  \u6D88\u8017\u54C1\u6548\u679C
+      +10%\nLv2  \u6D88\u8017\u54C1\u6548\u679C\u7D2F\u8BA1 +20%\nLv3  \u6D88\u8017\u54C1\u6548\u679C\u7D2F\u8BA1
+      +30%\nLv4  \u6D88\u8017\u54C1\u6548\u679C\u7D2F\u8BA1 +40%"
+    enabled: 1
+    primaryParentIndex: 0
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 4
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 1
+      rewards:
+      - key: consumableEffectMult
+        displayName: "\u836F\u6548\u5F3A\u5316"
+        value: 10
+        isPercent: 1
+        note: 
+      note: "\u6D88\u8017\u54C1\u6548\u679C +10%"
+    - level: 2
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards:
+      - key: consumableEffectMult
+        displayName: "\u836F\u6548\u5F3A\u5316"
+        value: 10
+        isPercent: 1
+        note: 
+      note: "\u6D88\u8017\u54C1\u6548\u679C\u7D2F\u8BA1 +20%"
+    - level: 3
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards:
+      - key: consumableEffectMult
+        displayName: "\u836F\u6548\u5F3A\u5316"
+        value: 10
+        isPercent: 1
+        note: 
+      note: "\u6D88\u8017\u54C1\u6548\u679C\u7D2F\u8BA1 +30%"
+    - level: 4
+      costs:
+      - item: {fileID: 0}
+        amount: 4
+      rewards:
+      - key: consumableEffectMult
+        displayName: "\u836F\u6548\u5F3A\u5316"
+        value: 10
+        isPercent: 1
+        note: 
+      note: "\u6D88\u8017\u54C1\u6548\u679C\u7D2F\u8BA1 +40%"
+  - nodeId: strategist_duration
+    nodeName: "\u836F\u6548\u5EF6\u957F"
+    description: "\u589E\u76CA\u7C7B\u6D88\u8017\u54C1\u7684\u6301\u7EED\u65F6\u95F4\u5EF6\u957F\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  \u589E\u76CA\u7C7B\u6D88\u8017\u54C1\u6301\u7EED\u65F6\u95F4
+      +10%\nLv2  \u6301\u7EED\u65F6\u95F4\u7D2F\u8BA1 +20%\nLv3  \u6301\u7EED\u65F6\u95F4\u7D2F\u8BA1
+      +30%"
+    enabled: 1
+    primaryParentIndex: 1
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 3
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards:
+      - key: consumableDurationMult
+        displayName: "\u836F\u6548\u5EF6\u957F"
+        value: 10
+        isPercent: 1
+        note: 
+      note: "\u589E\u76CA\u7C7B\u6D88\u8017\u54C1\u6301\u7EED\u65F6\u95F4 +10%"
+    - level: 2
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards:
+      - key: consumableDurationMult
+        displayName: "\u836F\u6548\u5EF6\u957F"
+        value: 10
+        isPercent: 1
+        note: 
+      note: "\u6301\u7EED\u65F6\u95F4\u7D2F\u8BA1 +20%"
+    - level: 3
+      costs:
+      - item: {fileID: 0}
+        amount: 4
+      rewards:
+      - key: consumableDurationMult
+        displayName: "\u836F\u6548\u5EF6\u957F"
+        value: 10
+        isPercent: 1
+        note: 
+      note: "\u6301\u7EED\u65F6\u95F4\u7D2F\u8BA1 +30%"
+  - nodeId: strategist_quickuse
+    nodeName: "\u901F\u6548"
+    description: "\u4F7F\u7528\u6D88\u8017\u54C1\u7684\u52A8\u4F5C\u65F6\u95F4\u7F29\u77ED\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  \u4F7F\u7528\u6D88\u8017\u54C1\u7684\u52A8\u4F5C\u901F\u5EA6
+      +10%\nLv2  \u52A8\u4F5C\u901F\u5EA6\u7D2F\u8BA1 +20%"
+    enabled: 1
+    primaryParentIndex: 1
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 2
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards:
+      - key: consumableUseSpeed
+        displayName: "\u901F\u6548"
+        value: 10
+        isPercent: 1
+        note: 
+      note: "\u4F7F\u7528\u6D88\u8017\u54C1\u7684\u52A8\u4F5C\u901F\u5EA6 +10%"
+    - level: 2
+      costs:
+      - item: {fileID: 0}
+        amount: 4
+      rewards:
+      - key: consumableUseSpeed
+        displayName: "\u901F\u6548"
+        value: 10
+        isPercent: 1
+        note: 
+      note: "\u52A8\u4F5C\u901F\u5EA6\u7D2F\u8BA1 +20%"
+  - nodeId: strategist_thrift
+    nodeName: "\u8282\u7EA6"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  \u4F7F\u7528\u6D88\u8017\u54C1\u65F6
+      10% \u6982\u7387\u4E0D\u6D88\u8017\nLv2  \u4E0D\u6D88\u8017\u6982\u7387\u7D2F\u8BA1
+      15%\nLv3  \u4E0D\u6D88\u8017\u6982\u7387\u7D2F\u8BA1 20%\nLv4  \u4E0D\u6D88\u8017\u6982\u7387\u7D2F\u8BA1
+      25%(\u5C01\u9876\uFF0C\u4E0D\u4F1A\u53D8\u6210\u5FC5\u7136\u4E0D\u6D88\u8017)"
+    enabled: 1
+    primaryParentIndex: 0
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 4
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards:
+      - key: consumableSaveChance
+        displayName: "\u8282\u7EA6"
+        value: 10
+        isPercent: 1
+        note: 
+      note: "\u4F7F\u7528\u6D88\u8017\u54C1\u65F6 10% \u6982\u7387\u4E0D\u6D88\u8017"
+    - level: 2
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards:
+      - key: consumableSaveChance
+        displayName: "\u8282\u7EA6"
+        value: 5
+        isPercent: 1
+        note: 
+      note: "\u4E0D\u6D88\u8017\u6982\u7387\u7D2F\u8BA1 15%"
+    - level: 3
+      costs:
+      - item: {fileID: 0}
+        amount: 4
+      rewards:
+      - key: consumableSaveChance
+        displayName: "\u8282\u7EA6"
+        value: 5
+        isPercent: 1
+        note: 
+      note: "\u4E0D\u6D88\u8017\u6982\u7387\u7D2F\u8BA1 20%"
+    - level: 4
+      costs:
+      - item: {fileID: 0}
+        amount: 5
+      rewards:
+      - key: consumableSaveChance
+        displayName: "\u8282\u7EA6"
+        value: 5
+        isPercent: 1
+        note: 
+      note: "\u4E0D\u6D88\u8017\u6982\u7387\u7D2F\u8BA1 25%(\u5C01\u9876\uFF0C\u4E0D\u4F1A\u53D8\u6210\u5FC5\u7136\u4E0D\u6D88\u8017)"
+  - nodeId: strategist_stockpile
+    nodeName: "\u50A8\u5907"
+    description: "\u6BCF\u5C40\u5F00\u5C40\u514D\u8D39\u83B7\u5F97 1 \u4E2A\u57FA\u7840\u836F\u5242\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u6BCF\u5C40\u5F00\u5C40\u514D\u8D39\u83B7\u5F97
+      1 \u4E2A\u57FA\u7840\u836F\u5242\u3002"
+    enabled: 1
+    primaryParentIndex: 4
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 6
+      rewards: []
+      note: "\u6BCF\u5C40\u5F00\u5C40\u514D\u8D39\u83B7\u5F97 1 \u4E2A\u57FA\u7840\u836F\u5242\u3002"
+  - nodeId: strategist_capacity
+    nodeName: "\u8D1F\u91CD\u4E0A\u9650"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  \u8D1F\u91CD\u4E0A\u9650
+      +5\nLv2  \u8D1F\u91CD\u4E0A\u9650\u7D2F\u8BA1 +10\nLv3  \u8D1F\u91CD\u4E0A\u9650\u7D2F\u8BA1
+      +15\nLv4  \u8D1F\u91CD\u4E0A\u9650\u7D2F\u8BA1 +20\nLv5  \u8D1F\u91CD\u4E0A\u9650\u7D2F\u8BA1
+      +25"
+    enabled: 1
+    primaryParentIndex: 0
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 5
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 1
+      rewards:
+      - key: carryCapacity
+        displayName: "\u8D1F\u91CD\u4E0A\u9650"
+        value: 5
+        isPercent: 0
+        note: 
+      note: "\u8D1F\u91CD\u4E0A\u9650 +5"
+    - level: 2
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards:
+      - key: carryCapacity
+        displayName: "\u8D1F\u91CD\u4E0A\u9650"
+        value: 5
+        isPercent: 0
+        note: 
+      note: "\u8D1F\u91CD\u4E0A\u9650\u7D2F\u8BA1 +10"
+    - level: 3
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards:
+      - key: carryCapacity
+        displayName: "\u8D1F\u91CD\u4E0A\u9650"
+        value: 5
+        isPercent: 0
+        note: 
+      note: "\u8D1F\u91CD\u4E0A\u9650\u7D2F\u8BA1 +15"
+    - level: 4
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards:
+      - key: carryCapacity
+        displayName: "\u8D1F\u91CD\u4E0A\u9650"
+        value: 5
+        isPercent: 0
+        note: 
+      note: "\u8D1F\u91CD\u4E0A\u9650\u7D2F\u8BA1 +20"
+    - level: 5
+      costs:
+      - item: {fileID: 0}
+        amount: 4
+      rewards:
+      - key: carryCapacity
+        displayName: "\u8D1F\u91CD\u4E0A\u9650"
+        value: 5
+        isPercent: 0
+        note: 
+      note: "\u8D1F\u91CD\u4E0A\u9650\u7D2F\u8BA1 +25"
+  - nodeId: strategist_overload
+    nodeName: "\u8D85\u8F7D\u5BBD\u5BB9"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  \u7565\u5FAE\u8D85\u51FA\u8D1F\u91CD\u4E0A\u9650(+5%)\u4ECD\u4E0D\u89E6\u53D1\u60E9\u7F5A\nLv2 
+      \u8D85\u8F7D\u5BBD\u5BB9\u7D2F\u8BA1 +10%"
+    enabled: 1
+    primaryParentIndex: 6
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 2
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards:
+      - key: overloadTolerance
+        displayName: "\u8D85\u8F7D\u5BBD\u5BB9"
+        value: 5
+        isPercent: 1
+        note: 
+      note: "\u7565\u5FAE\u8D85\u51FA\u8D1F\u91CD\u4E0A\u9650(+5%)\u4ECD\u4E0D\u89E6\u53D1\u60E9\u7F5A"
+    - level: 2
+      costs:
+      - item: {fileID: 0}
+        amount: 4
+      rewards:
+      - key: overloadTolerance
+        displayName: "\u8D85\u8F7D\u5BBD\u5BB9"
+        value: 5
+        isPercent: 1
+        note: 
+      note: "\u8D85\u8F7D\u5BBD\u5BB9\u7D2F\u8BA1 +10%"
+  - nodeId: strategist_bag
+    nodeName: "\u80CC\u5305\u6269\u5BB9"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  \u80CC\u5305\u683C\u5B50
+      +2\nLv2  \u80CC\u5305\u683C\u5B50\u7D2F\u8BA1 +4\nLv3  \u80CC\u5305\u683C\u5B50\u7D2F\u8BA1
+      +6"
+    enabled: 1
+    primaryParentIndex: 6
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 3
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards:
+      - key: inventorySlots
+        displayName: "\u80CC\u5305\u6269\u5BB9"
+        value: 2
+        isPercent: 0
+        note: 
+      note: "\u80CC\u5305\u683C\u5B50 +2"
+    - level: 2
+      costs:
+      - item: {fileID: 0}
+        amount: 4
+      rewards:
+      - key: inventorySlots
+        displayName: "\u80CC\u5305\u6269\u5BB9"
+        value: 2
+        isPercent: 0
+        note: 
+      note: "\u80CC\u5305\u683C\u5B50\u7D2F\u8BA1 +4"
+    - level: 3
+      costs:
+      - item: {fileID: 0}
+        amount: 5
+      rewards:
+      - key: inventorySlots
+        displayName: "\u80CC\u5305\u6269\u5BB9"
+        value: 2
+        isPercent: 0
+        note: 
+      note: "\u80CC\u5305\u683C\u5B50\u7D2F\u8BA1 +6"
+  - nodeId: strategist_quickslots
+    nodeName: "\u5FEB\u6377\u680F\u6269\u5C55"
+    description: "\u89E3\u9501\u66F4\u591A\u5FEB\u6377\u7269\u54C1\u69FD\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  \u5FEB\u6377\u7269\u54C1\u69FD
+      +1\nLv2  \u5FEB\u6377\u7269\u54C1\u69FD\u7D2F\u8BA1 +2"
+    enabled: 1
+    primaryParentIndex: 0
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 2
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 5
+      rewards:
+      - key: quickSlotCount
+        displayName: "\u5FEB\u6377\u680F\u6269\u5C55"
+        value: 1
+        isPercent: 0
+        note: 
+      note: "\u5FEB\u6377\u7269\u54C1\u69FD +1"
+    - level: 2
+      costs:
+      - item: {fileID: 0}
+        amount: 8
+      rewards:
+      - key: quickSlotCount
+        displayName: "\u5FEB\u6377\u680F\u6269\u5C55"
+        value: 1
+        isPercent: 0
+        note: 
+      note: "\u5FEB\u6377\u7269\u54C1\u69FD\u7D2F\u8BA1 +2"
+  - nodeId: strategist_stack
+    nodeName: "\u5206\u88C5"
+    description: "\u6D88\u8017\u54C1\u5806\u53E0\u4E0A\u9650\u63D0\u5347\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  \u6D88\u8017\u54C1\u5806\u53E0\u4E0A\u9650
+      +2\nLv2  \u5806\u53E0\u4E0A\u9650\u7D2F\u8BA1 +4\nLv3  \u5806\u53E0\u4E0A\u9650\u7D2F\u8BA1
+      +6"
+    enabled: 1
+    primaryParentIndex: 9
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 3
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 2
+      rewards:
+      - key: stackBonus
+        displayName: "\u5206\u88C5"
+        value: 2
+        isPercent: 0
+        note: 
+      note: "\u6D88\u8017\u54C1\u5806\u53E0\u4E0A\u9650 +2"
+    - level: 2
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards:
+      - key: stackBonus
+        displayName: "\u5206\u88C5"
+        value: 2
+        isPercent: 0
+        note: 
+      note: "\u5806\u53E0\u4E0A\u9650\u7D2F\u8BA1 +4"
+    - level: 3
+      costs:
+      - item: {fileID: 0}
+        amount: 4
+      rewards:
+      - key: stackBonus
+        displayName: "\u5206\u88C5"
+        value: 2
+        isPercent: 0
+        note: 
+      note: "\u5806\u53E0\u4E0A\u9650\u7D2F\u8BA1 +6"
+  - nodeId: strategist_recycle
+    nodeName: "\u56DE\u6536"
+    description: "\u4F7F\u7528\u6D88\u8017\u54C1\u65F6\u56DE\u590D\u5C11\u91CF AFP\uFF0C\u8BA9\u4E24\u68F5\u6811\u4E92\u76F8\u914D\u5408\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  \u4F7F\u7528\u6D88\u8017\u54C1\u65F6\u56DE\u590D
+      2 AFP\nLv2  \u6BCF\u6B21\u56DE\u590D\u7D2F\u8BA1 4 AFP\nLv3  \u6BCF\u6B21\u56DE\u590D\u7D2F\u8BA1
+      6 AFP"
+    enabled: 1
+    primaryParentIndex: 9
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 3
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards:
+      - key: afpOnConsume
+        displayName: "\u56DE\u6536"
+        value: 2
+        isPercent: 0
+        note: 
+      note: "\u4F7F\u7528\u6D88\u8017\u54C1\u65F6\u56DE\u590D 2 AFP"
+    - level: 2
+      costs:
+      - item: {fileID: 0}
+        amount: 4
+      rewards:
+      - key: afpOnConsume
+        displayName: "\u56DE\u6536"
+        value: 2
+        isPercent: 0
+        note: 
+      note: "\u6BCF\u6B21\u56DE\u590D\u7D2F\u8BA1 4 AFP"
+    - level: 3
+      costs:
+      - item: {fileID: 0}
+        amount: 5
+      rewards:
+      - key: afpOnConsume
+        displayName: "\u56DE\u6536"
+        value: 2
+        isPercent: 0
+        note: 
+      note: "\u6BCF\u6B21\u56DE\u590D\u7D2F\u8BA1 6 AFP"
+  - nodeId: strategist_night_vision
+    nodeName: "\u591C\u89C6\u8BBE\u5907\u642D\u8F7D"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u642D\u8F7D\u591C\u89C6\u4EEA\uFF1A\u5F00\u542F\u540E\u6218\u4E89\u8FF7\u96FE\u5931\u6548\u3001\u80FD\u770B\u89C1\u5168\u90E8\u5355\u4F4D\uFF08\u9ED8\u8BA4
+      F6 \u5F00\u5173\uFF09\u3002\n\u57FA\u7840\u7EED\u822A 60 \u79D2\uFF1B\u5173\u95ED\u540E\u56DE\u5145\u901F\u5EA6\u662F\u8017\u7535\u7684
+      1/4\uFF08\u7A7A\u7535\u5145\u6EE1\u7EA6 240 \u79D2\uFF09\u3002\n\u8017\u5C3D\u81EA\u52A8\u5173\u673A\uFF0C\u7535\u91CF\u56DE\u5230
+      20% \u624D\u80FD\u518D\u5F00\uFF1B\u6BCF\u6B21\u8FDB\u56FE\u6EE1\u7535\u51FA\u53D1\u3002\n\u591C\u95F4\u526F\u672C\u91CC
+      AXIA \u7684\u89C6\u91CE 11\u21927\uFF0C\u591C\u89C6\u4EEA\u662F\u591C\u665A\u7684\u4E3B\u8981\u624B\u6BB5\u3002\n\u524D\u7F6E\uFF1A\u6218\u7565\u5BB6\u3002\u9700\u300C\u591C\u95F4\u6A21\u5F0F\u51FA\u73B0\u300D\u540E\u624D\u80FD\u70B9\u3002"
+    enabled: 1
+    primaryParentIndex: 0
+    secondaryRequirements: []
+    externalCondition: 1
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 6
+      rewards:
+      - key: nightVisionUnlock
+        displayName: "\u591C\u89C6\u8BBE\u5907\u642D\u8F7D"
+        value: 1
+        isPercent: 0
+        note: 
+      note: "\u642D\u8F7D\u591C\u89C6\u4EEA\uFF1A\u7EED\u822A 60 \u79D2"
+  - nodeId: strategist_nv_capacity
+    nodeName: "\u8D85\u5BB9\u7535\u6C60"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u591C\u89C6\u7535\u6C60\u5BB9\u91CF\u66F4\u5927\u3002\nLv1
+      \u7EED\u822A 90 \u79D2\nLv2 \u7EED\u822A 120 \u79D2\nLv3 \u7EED\u822A 150 \u79D2\n\u524D\u7F6E\uFF1A\u591C\u89C6\u8BBE\u5907\u642D\u8F7D\u3002"
+    enabled: 1
+    primaryParentIndex: 12
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 3
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 4
+      rewards:
+      - key: nvCapacitySeconds
+        displayName: "\u8D85\u5BB9\u7535\u6C60"
+        value: 30
+        isPercent: 0
+        note: 
+      note: "\u7EED\u822A +30 \u79D2\uFF08\u7D2F\u8BA1 90 \u79D2\uFF09"
+    - level: 2
+      costs:
+      - item: {fileID: 0}
+        amount: 6
+      rewards:
+      - key: nvCapacitySeconds
+        displayName: "\u8D85\u5BB9\u7535\u6C60"
+        value: 30
+        isPercent: 0
+        note: 
+      note: "\u7EED\u822A\u7D2F\u8BA1 +60 \u79D2\uFF08120 \u79D2\uFF09"
+    - level: 3
+      costs:
+      - item: {fileID: 0}
+        amount: 8
+      rewards:
+      - key: nvCapacitySeconds
+        displayName: "\u8D85\u5BB9\u7535\u6C60"
+        value: 30
+        isPercent: 0
+        note: 
+      note: "\u7EED\u822A\u7D2F\u8BA1 +90 \u79D2\uFF08150 \u79D2\uFF09"
+  - nodeId: strategist_nv_recharge
+    nodeName: "\u9AD8\u901F\u5145\u7535"
+    description: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u591C\u89C6\u5173\u95ED\u65F6\u56DE\u5145\u66F4\u5FEB\uFF08\u8017\u7535\u901F\u5EA6\u7684\u500D\u6570\uFF09\u3002\n\u57FA\u7840
+      0.25 \u500D\uFF08\u7A7A\u7535\u7EA6 240 \u79D2\u5145\u6EE1\uFF0C\u6309 60 \u79D2\u7EED\u822A\uFF09\nLv1
+      0.4 \u500D\uFF08\u7EA6 150 \u79D2\uFF09\nLv2 0.6 \u500D\uFF08\u7EA6 100 \u79D2\uFF09\nLv3
+      0.85 \u500D\uFF08\u7EA6 70 \u79D2\uFF09\n\u524D\u7F6E\uFF1A\u591C\u89C6\u8BBE\u5907\u642D\u8F7D\u3002"
+    enabled: 1
+    primaryParentIndex: 12
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 3
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 4
+      rewards:
+      - key: nvRechargeRatio
+        displayName: "\u9AD8\u901F\u5145\u7535"
+        value: 1
+        isPercent: 0
+        note: 
+      note: "\u56DE\u5145 0.4 \u500D\u8017\u7535\u901F\u5EA6"
+    - level: 2
+      costs:
+      - item: {fileID: 0}
+        amount: 6
+      rewards:
+      - key: nvRechargeRatio
+        displayName: "\u9AD8\u901F\u5145\u7535"
+        value: 2
+        isPercent: 0
+        note: 
+      note: "\u56DE\u5145 0.6 \u500D\u8017\u7535\u901F\u5EA6"
+    - level: 3
+      costs:
+      - item: {fileID: 0}
+        amount: 8
+      rewards:
+      - key: nvRechargeRatio
+        displayName: "\u9AD8\u901F\u5145\u7535"
+        value: 3
+        isPercent: 0
+        note: 
+      note: "\u56DE\u5145 0.85 \u500D\u8017\u7535\u901F\u5EA6"
+  - nodeId: strategist_heavy_arms_1
+    nodeName: "\u91CD\u88C5\u5175\u5668 I"
+    description: 
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u88C5\u5907\u603B\u91CD(\u77F3\u82F1)\u8FDB\u5165\u91CD\u88C5\u6863(25
+      \u4EE5\u4E0A)\u540E\uFF0C\u53D7\u5230\u7684\u786C\u76F4\u65F6\u95F4\u548C\u51FB\u9000\u989D\u5916
+      \u221215%\uFF08\u53E0\u52A0\u6863\u4F4D\u81EA\u5E26\u7684 \u221215% / \u221230%\uFF09\u3002\n\u53EA\u7B97\u8EAB\u4E0A\u88C5\u5907\uFF0C\u4E0D\u7B97\u80CC\u5305\u3002\n\u524D\u7F6E\uFF1A\u8D85\u8F7D\u5BBD\u5BB9\u3002"
+    enabled: 1
+    primaryParentIndex: 7
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards:
+      - key: heavyArmsStaggerResist
+        displayName: "\u91CD\u88C5\u5175\u5668 I"
+        value: 15
+        isPercent: 1
+        note: 
+      note: "\u91CD\u88C5 / \u8D85\u91CD\u88C5\u6863\uFF1A\u786C\u76F4\u548C\u51FB\u9000\u989D\u5916
+        \u221215%"
+  - nodeId: strategist_heavy_arms_2
+    nodeName: "\u91CD\u88C5\u5175\u5668 II"
+    description: 
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u91CD\u88C5\u6863\u4EE5\u4E0A\uFF0C\u786C\u76F4\u548C\u51FB\u9000\u989D\u5916
+      \u221230%\u3002\n\u524D\u7F6E\uFF1A\u91CD\u88C5\u5175\u5668 I\u3002"
+    enabled: 1
+    primaryParentIndex: 15
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 5
+      rewards:
+      - key: heavyArmsStaggerResist
+        displayName: "\u91CD\u88C5\u5175\u5668 II"
+        value: 30
+        isPercent: 1
+        note: 
+      note: "\u91CD\u88C5 / \u8D85\u91CD\u88C5\u6863\uFF1A\u786C\u76F4\u548C\u51FB\u9000\u989D\u5916
+        \u221230%"
+  - nodeId: strategist_heavy_arms_3
+    nodeName: "\u91CD\u88C5\u5175\u5668 III"
+    description: 
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u91CD\u88C5\u6863\u4EE5\u4E0A\uFF0C\u786C\u76F4\u548C\u51FB\u9000\u989D\u5916
+      \u221245%\u3002\n\u524D\u7F6E\uFF1A\u91CD\u88C5\u5175\u5668 II\u3002"
+    enabled: 1
+    primaryParentIndex: 16
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 7
+      rewards:
+      - key: heavyArmsStaggerResist
+        displayName: "\u91CD\u88C5\u5175\u5668 III"
+        value: 45
+        isPercent: 1
+        note: 
+      note: "\u91CD\u88C5 / \u8D85\u91CD\u88C5\u6863\uFF1A\u786C\u76F4\u548C\u51FB\u9000\u989D\u5916
+        \u221245%"
+  - nodeId: strategist_heavy_arms_4
+    nodeName: "\u91CD\u88C5\u5175\u5668 IV"
+    description: 
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u91CD\u88C5\u6863\u4EE5\u4E0A\uFF0C\u786C\u76F4\u548C\u51FB\u9000\u989D\u5916
+      \u221260%\uFF08\u53E0\u52A0\u6863\u4F4D\u81EA\u5E26\u7684 \u221215% / \u221230%\uFF09\u3002\n\u4E0D\u4F1A\u5B8C\u5168\u514D\u75AB\uFF1A\u786C\u76F4\u548C\u51FB\u9000\u81F3\u5C11\u4FDD\u7559
+      25%\u3002\n\u524D\u7F6E\uFF1A\u91CD\u88C5\u5175\u5668 III\u3002"
+    enabled: 1
+    primaryParentIndex: 17
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 10
+      rewards:
+      - key: heavyArmsStaggerResist
+        displayName: "\u91CD\u88C5\u5175\u5668 IV"
+        value: 60
+        isPercent: 1
+        note: 
+      note: "\u91CD\u88C5 / \u8D85\u91CD\u88C5\u6863\uFF1A\u786C\u76F4\u548C\u51FB\u9000\u989D\u5916
+        \u221260%"
+  - nodeId: strategist_drones
+    nodeName: "\u6D6E\u6E38\u70AE\u7CFB\u7EDF"
+    description: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u89E3\u9501\u6D6E\u6E38\u70AE\uFF1A\u8FDB\u672C\u540E\u5728
+      AFP \u8D2D\u4E70\u533A\u53EF\u90E8\u7F72\u6D6E\u6E38\u70AE\uFF0CAXIA \u7684\u8F85\u52A9\u706B\u529B\u4F1A\u81EA\u52A8\u7784\u51C6\u5E76\u5F00\u706B\u3002\n\u6570\u91CF\u3001\u5F39\u4ED3\u3001\u51B7\u5374\u90FD\u5728
+      AFP \u91CC\u5347\u7EA7\u3002\n\u524D\u7F6E\uFF1A\u6218\u7565\u5BB6\u3002"
+    localizedDescriptions: []
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u89E3\u9501\u6D6E\u6E38\u70AE\uFF1A\u8FDB\u672C\u540E\u5728
+      AFP \u8D2D\u4E70\u533A\u53EF\u90E8\u7F72\u6D6E\u6E38\u70AE\uFF0CAXIA \u7684\u8F85\u52A9\u706B\u529B\u4F1A\u81EA\u52A8\u7784\u51C6\u5E76\u5F00\u706B\u3002\n\u6570\u91CF\u3001\u5F39\u4ED3\u3001\u51B7\u5374\u90FD\u5728
+      AFP \u91CC\u5347\u7EA7\u3002\n\u524D\u7F6E\uFF1A\u6218\u7565\u5BB6\u3002"
+    enabled: 1
+    primaryParentIndex: 0
+    secondaryRequirements: []
+    externalCondition: 0
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 5
+      rewards: []
+      note: "\u89E3\u9501\u6D6E\u6E38\u70AE"

@@ -30,10 +30,17 @@ Material:
     m_Ints: []
     m_Floats:
     - _Cutoff: 0.5
+    - _FadeDstBlend: 0
+    - _FadeSplit: 0
+    - _FadeSrcBlend: 1
+    - _FadeTransparent: 0
+    - _FadeZWrite: 1
     - _GridSize: 1
     - _MajorEvery: 5
     - _MajorLineWidth: 2
     - _MinorLineWidth: 1
+    - _OccluderFadeAmount: 0
+    - _OccluderFadeMinAlpha: 0.55
     - _Smoothness: 0.1
     m_Colors:
     - _BaseColor: {r: 0.86, g: 0.86, b: 0.86, a: 1}

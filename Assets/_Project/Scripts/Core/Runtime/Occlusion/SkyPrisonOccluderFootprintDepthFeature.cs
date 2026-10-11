@@ -447,6 +447,9 @@ public class SkyPrisonOccluderFootprintDepthFeature : ScriptableRendererFeature
                         Renderer r = data.renderers[i];
                         if (r == null || !r.enabled || !r.gameObject.activeInHierarchy)
                             continue;
+                        // 正在渐隐成半透明的墙不再算遮挡物：角色在它后面完整渲染，不再画成全息点阵。
+                        if (SkyPrisonOccluderWallFade.IsFading(r))
+                            continue;
 
                         // 落地深度现在逐顶点在 shader 里现算（世界坐标 X/Z 保留、Y 清零），
                         // 不再需要 CPU 每次 DrawRenderer 之前额外传一个根节点坐标。

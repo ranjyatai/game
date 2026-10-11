@@ -57,6 +57,7 @@ MonoBehaviour:
               assetReference: {fileID: 11400000, guid: 322e4bd24b2c0a74098834aae404bfb9, type: 2}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           - slotId: amount
             value:
               valueType: 1
@@ -74,6 +75,7 @@ MonoBehaviour:
               assetReference: {fileID: 0}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           conditionChildren: []
           thenChildren: []
           elseChildren: []
@@ -98,6 +100,7 @@ MonoBehaviour:
               assetReference: {fileID: 11400000, guid: cf5baf4a9d586aa4ab53c515b5d10886, type: 2}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           - slotId: amount
             value:
               valueType: 1
@@ -115,6 +118,7 @@ MonoBehaviour:
               assetReference: {fileID: 0}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           conditionChildren: []
           thenChildren: []
           elseChildren: []
@@ -139,6 +143,7 @@ MonoBehaviour:
               assetReference: {fileID: 11400000, guid: 64a101e4a60a1504889a5c237831c4ea, type: 2}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           - slotId: amount
             value:
               valueType: 1
@@ -156,6 +161,7 @@ MonoBehaviour:
               assetReference: {fileID: 0}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           conditionChildren: []
           thenChildren: []
           elseChildren: []
@@ -177,15 +183,16 @@ MonoBehaviour:
               enumDisplayName: 
               variableKey: 
               contextKey: 
-              assetReference: {fileID: 11400000, guid: b459fb48982e64d4ba9e477846f10c5a, type: 2}
+              assetReference: {fileID: 11400000, guid: ea116cf9647d8dd43b768c49e02e2de5, type: 2}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           - slotId: amount
             value:
               valueType: 1
               sourceType: 0
               boolValue: 0
-              intValue: 2
+              intValue: 1
               intValueMax: 0
               floatValue: 0
               floatValueMax: 0
@@ -197,6 +204,7 @@ MonoBehaviour:
               assetReference: {fileID: 0}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           conditionChildren: []
           thenChildren: []
           elseChildren: []
@@ -221,6 +229,7 @@ MonoBehaviour:
               assetReference: {fileID: 11400000, guid: fc9adaa2b8db57847ac9293baba2ed42, type: 2}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           - slotId: amount
             value:
               valueType: 1
@@ -238,6 +247,7 @@ MonoBehaviour:
               assetReference: {fileID: 0}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           conditionChildren: []
           thenChildren: []
           elseChildren: []
@@ -262,6 +272,7 @@ MonoBehaviour:
               assetReference: {fileID: 11400000, guid: b5d45b5d7a5da464caa7ec6fa58a0f0c, type: 2}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           - slotId: amount
             value:
               valueType: 1
@@ -279,6 +290,7 @@ MonoBehaviour:
               assetReference: {fileID: 0}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           conditionChildren: []
           thenChildren: []
           elseChildren: []
@@ -303,6 +315,7 @@ MonoBehaviour:
               assetReference: {fileID: 11400000, guid: 4e1d4544a6c830a469a168f4805b7085, type: 2}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           - slotId: amount
             value:
               valueType: 1
@@ -320,6 +333,7 @@ MonoBehaviour:
               assetReference: {fileID: 0}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           conditionChildren: []
           thenChildren: []
           elseChildren: []
@@ -341,15 +355,16 @@ MonoBehaviour:
               enumDisplayName: 
               variableKey: 
               contextKey: 
-              assetReference: {fileID: 11400000, guid: ae4322e69aa8b564bb3221c07ee184e9, type: 2}
+              assetReference: {fileID: 11400000, guid: b459fb48982e64d4ba9e477846f10c5a, type: 2}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           - slotId: amount
             value:
               valueType: 1
               sourceType: 0
               boolValue: 0
-              intValue: 5
+              intValue: 1
               intValueMax: 0
               floatValue: 0
               floatValueMax: 0
@@ -361,6 +376,7 @@ MonoBehaviour:
               assetReference: {fileID: 0}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           conditionChildren: []
           thenChildren: []
           elseChildren: []
@@ -382,15 +398,16 @@ MonoBehaviour:
               enumDisplayName: 
               variableKey: 
               contextKey: 
-              assetReference: {fileID: 11400000, guid: c964812e7471bdc4395a1e52d1a598bb, type: 2}
+              assetReference: {fileID: 11400000, guid: f06b17b6144790d47b4b13bdb9f0d530, type: 2}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           - slotId: amount
             value:
               valueType: 1
               sourceType: 0
               boolValue: 0
-              intValue: 5
+              intValue: 150
               intValueMax: 0
               floatValue: 0
               floatValueMax: 0
@@ -402,6 +419,32 @@ MonoBehaviour:
               assetReference: {fileID: 0}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
+          conditionChildren: []
+          thenChildren: []
+          elseChildren: []
+          bodyChildren: []
+        - templateId: act_show_dialogue_line
+          enabled: 1
+          slotAssignments:
+          - slotId: line
+            value:
+              valueType: 16
+              sourceType: 3
+              boolValue: 0
+              intValue: 0
+              intValueMax: 0
+              floatValue: 0
+              floatValueMax: 0
+              stringValue: Chapter 1-001
+              enumValue: 
+              enumDisplayName: 
+              variableKey: 
+              contextKey: 
+              assetReference: {fileID: 11400000, guid: 81d950266c72ba141885ba04e6776111, type: 2}
+              sceneObjectId: 
+              sceneObjectName: 
+              expressionOperator: 0
           conditionChildren: []
           thenChildren: []
           elseChildren: []

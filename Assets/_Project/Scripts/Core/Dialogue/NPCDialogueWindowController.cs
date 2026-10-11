@@ -628,6 +628,18 @@ public class NPCDialogueWindowController : SkyPrisonBaseWindowController
                 ShowQuestListView();
                 break;
 
+            case DialogueOptionActionType.Heal:
+                // 医疗站NPC的"进行治疗"：刷新玩家全部状态，然后照"显示句子"的方式给个回应台词
+                SkyPrisonMedicalTreatment.TreatPlayer();
+                SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Confirm);
+                goto case DialogueOptionActionType.ShowSentence;
+
+            case DialogueOptionActionType.TacticalTraining:
+                // 先关对话再开窗口：战术研修窗口自己接管输入/HUD，关掉后直接回到世界
+                Close();
+                SkyPrisonTrainingWindow.Show();
+                break;
+
             case DialogueOptionActionType.Close:
             default:
                 Close();
@@ -2299,7 +2311,8 @@ public class NPCDialogueWindowController : SkyPrisonBaseWindowController
         img.raycastTarget = false;
     }
 
-    private static void AddPopupCornerBrackets(RectTransform parent, float arm = 26f, float thickness = 2f)
+    private static void AddPopupCornerBrackets(RectTransform parent,
+        float arm = SkyPrisonFloatingWindowKit.CornerBracketLength, float thickness = SkyPrisonFloatingWindowKit.CornerBracketThickness)
     {
         Vector2[] corners = { new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(1f, 0f) };
         foreach (var c in corners)

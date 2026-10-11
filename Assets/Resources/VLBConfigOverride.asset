@@ -15,7 +15,7 @@ MonoBehaviour:
   geometryOverrideLayer: 1
   geometryLayerID: 7
   geometryTag: Untagged
-  geometryRenderQueue: 3000
+  geometryRenderQueue: 3050
   geometryRenderQueueHD: 3100
   m_RenderPipeline: 1
   m_RenderingMode: 1

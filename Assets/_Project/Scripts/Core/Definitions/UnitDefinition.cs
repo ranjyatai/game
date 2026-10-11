@@ -143,7 +143,10 @@ public enum UnitActionAnimationSlot
     DodgeForward = 12,
 
     [InspectorName("向后闪避")]
-    DodgeBack = 13
+    DodgeBack = 13,
+
+    [InspectorName("换弹")]
+    Reload = 14
 }
 [Serializable]
 public class UnitAnimationKeySet
@@ -169,6 +172,7 @@ public class UnitAnimationKeySet
     public string dodgeForwardKey = "dodge_forward";
     public string dodgeBackKey = "dodge_back";
     public string deathKey = "die";
+    public string reloadKey = "Reload";
 
     [Header("播放规则")]
     public bool driveMovementAnimation = true;
@@ -193,6 +197,7 @@ public class UnitAnimationKeySet
             case UnitActionAnimationSlot.DodgeForward: return GetFirstNonEmpty(dodgeForwardKey, dodgeKey);
             case UnitActionAnimationSlot.DodgeBack: return GetFirstNonEmpty(dodgeBackKey, dodgeKey);
             case UnitActionAnimationSlot.Death: return deathKey;
+            case UnitActionAnimationSlot.Reload: return reloadKey;
             default: return string.Empty;
         }
     }
@@ -514,6 +519,10 @@ public class UnitDefinition : ScriptableObject
 
     [Header("掉落配置")]
     public List<DropProfile> dropProfiles = new List<DropProfile>();
+
+    [Header("局内 AFP 产出")]
+    [Tooltip("击杀该单位获得的 AFP（适应系数积分）。仅对 Enemy / Elite / Boss 有效，其余身份填 0 即可。")]
+    public int afpYield = 50;
 
     [Header("属性数值容器")]
     public List<UnitParameterValue> parameterValues = new List<UnitParameterValue>();

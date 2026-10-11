@@ -223,6 +223,10 @@ public class SkyPrisonVisionManager : MonoBehaviour
         if (ud.ignoreFogOfWar)
             return false;
 
+        // 夜视仪开启期间迷雾失效：只影响"玩家看到什么"，不影响 AI 的视线判定。
+        if (SkyPrisonNightVisionMode.IsActive)
+            return false;
+
         RuntimeFaction faction = ResolveFaction(ud);
         if (faction == RuntimeFaction.PlayerFaction)
             return false;
@@ -660,6 +664,9 @@ public class SkyPrisonVisionManager : MonoBehaviour
         }
     }
 
+    /// <summary>夜间副本里玩家阵营的视野半径倍率（AXIA 11 → 7）。敌人视野不变，AI 判定不动；夜视仪开着时迷雾整体失效，不受影响。</summary>
+    public const float NightPlayerVisionMultiplier = 7f / 11f;
+
     private VisionUnitEntry BuildEntry(UnitDefinitionRuntimeBinder binder, UnitDefinition ud)
     {
         RuntimeFaction faction = ResolveFaction(ud);
@@ -676,7 +683,7 @@ public class SkyPrisonVisionManager : MonoBehaviour
             faction = faction,
             originWorld = origin,
             forwardWorld = forward,
-            radius = Mathf.Max(0f, ud.visionRadius),
+            radius = Mathf.Max(0f, ud.visionRadius) * (faction == RuntimeFaction.PlayerFaction && SkyPrisonRaidRunContext.Night ? NightPlayerVisionMultiplier : 1f),
             angle = useCircle ? 360f : Mathf.Clamp(ud.visionAngle, 1f, 360f),
             useCircle = useCircle,
             useFacingDirection = useFacing,

@@ -13,15 +13,12 @@ MonoBehaviour:
   m_Name: SK_GunAttack2
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   skillKey: gun_attack_2
-  displayName: "双枪射击"
-  description:
+  displayName: "\u53CC\u67AA\u5C04\u51FB"
+  description: 
   category: 0
   spineAnimationKey: Attack/Attack_Gun_2
   spineEventKey: hit
   isChargeSkill: 0
-  playOnUpperBodyOverlay: 1
-  loopWhileHeld: 1
-  loopWindowSeconds: 0.3333333
   charge:
     chargeHoldEventKey: charge_hold
     releaseTimeScale: 1
@@ -36,6 +33,9 @@ MonoBehaviour:
     dashVfx: {fileID: 0}
     dashVfxAnchor: 0
     dashVfxCharacterAnchorOffset: {x: 0, y: 0, z: 0}
+  playOnUpperBodyOverlay: 1
+  loopWhileHeld: 1
+  loopWindowSeconds: 0.3333333
   hitbox:
     shape: 0
     offset: {x: 0, y: 0}
@@ -45,7 +45,7 @@ MonoBehaviour:
   isProjectileSkill: 1
   projectile:
     speed: 30
-    maxLifetimeSeconds: 0.43
+    maxLifetimeSeconds: 0.55
     launchAngleDownDegrees: 0
     hitRadius: 0.2
     destroyOnHit: 1
@@ -56,13 +56,13 @@ MonoBehaviour:
   damageMultiplier: 1
   damageTypeKey: bullet
   attributeHits: []
-  lpCost: 2
+  lpCost: 1
   knockbackForce: 2
   stunDuration: 0.1
   startupTime: 0.05
   activeTime: 0.05
   recoveryTime: 0.15
-  nextComboSkillKey:
+  nextComboSkillKey: 
   swingVFX: {fileID: 0}
   swingVfxOffset: {x: 0, y: 0, z: 0}
   travelVfx: {fileID: 0}
@@ -78,20 +78,20 @@ MonoBehaviour:
   whiffSE: []
   seVolume: 1
   localizedNames:
-  - languageCode:
-    text:
+  - languageCode: 
+    text: 
   - languageCode: zh-CN
-    text:
+    text: 
   - languageCode: ja
-    text:
+    text: 
   - languageCode: en
-    text:
+    text: 
   localizedDescriptions:
-  - languageCode:
-    text:
+  - languageCode: 
+    text: 
   - languageCode: zh-CN
-    text:
+    text: 
   - languageCode: ja
-    text:
+    text: 
   - languageCode: en
-    text:
+    text: 

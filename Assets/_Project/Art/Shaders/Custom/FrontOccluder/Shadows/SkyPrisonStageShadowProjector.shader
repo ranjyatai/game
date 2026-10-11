@@ -77,6 +77,7 @@ Shader "Custom/FrontOccluder/Shadows/Projector"
             #pragma vertex vert
             #pragma fragment frag
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
 
             TEXTURE2D(_MainTex);
             SAMPLER(sampler_MainTex);
@@ -126,6 +127,7 @@ Shader "Custom/FrontOccluder/Shadows/Projector"
                 float2 uv         : TEXCOORD0;
                 float4 color      : COLOR;
                 float4 screenPos  : TEXCOORD1;
+                float3 positionWS : TEXCOORD2;
             };
 
             Varyings vert(Attributes IN)
@@ -135,6 +137,7 @@ Shader "Custom/FrontOccluder/Shadows/Projector"
                 OUT.uv = IN.uv;
                 OUT.color = IN.color;
                 OUT.screenPos = ComputeScreenPos(OUT.positionCS);
+                OUT.positionWS = TransformObjectToWorld(IN.positionOS.xyz);
                 return OUT;
             }
 
@@ -208,6 +211,27 @@ Shader "Custom/FrontOccluder/Shadows/Projector"
 
                 float2 screenUV = IN.screenPos.xy / max(IN.screenPos.w, 0.00001);
                 screenUV = saturate(screenUV);
+
+                // 深度高度护栏：这块接触影只属于「角色脚下这一层地面」。
+                // 这个像素实际看到的不透明表面（由场景深度重建）如果比影子所在平面高出一截（挡在前面的高台顶面、台阶侧面），
+                // 或者低很多（影子伸出高台边缘、悬在半空），都不画。
+                // 以前靠模板挡：高台写模板，影子就整块被拒绝，可站在高台上时脚下的影子也被一起拒绝，所以我把可踩结构从模板里拿掉了；
+                // 拿掉之后站在高台后面时影子会盖在高台上——这里用深度高度差补回来，两种情况都对。
+                {
+                    float rawDepth = SampleSceneDepth(screenUV).x;
+                    #if !UNITY_REVERSED_Z
+                    rawDepth = lerp(UNITY_NEAR_CLIP_VALUE, 1, rawDepth);
+                    #endif
+                    float3 surfaceWS = ComputeWorldSpacePosition(screenUV, rawDepth, UNITY_MATRIX_I_VP);
+                    // 比的是影子「脚下那层地面」的高度（物体原点 = 脚），不是这个像素在影子片上的高度：
+                    // 影子片是竖直的（高约 2.4 米，原点在脚），片上越靠上的像素世界 y 越高，按像素 y 比
+                    // 会让渐变的上下两头都落到容差带外，被切成一条平头。
+                    float dy = surfaceWS.y - UNITY_MATRIX_M._m13;
+                    // 上限 0.7：环形台阶这类低台阶每级 0.2 米，原来 0.35 只放过第一级，影子压到第二级就被整块切掉。
+                    // 0.7 能盖住三级；更高的台面/墙面仍然拒绝，不会爬上墙或盖在高台顶上。
+                    if (dy > 0.7 || dy < -0.6)
+                        discard;
+                }
 
                 // RT mask remains as a secondary soft guard. Stencil is the primary hard pixel guard.
                 if (_UseOcclusionMask > 0.5h)

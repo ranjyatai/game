@@ -53,6 +53,21 @@ namespace SkyPrison.Runtime.UI
         // 组上限
         private TMP_Text _stackLimitText;
 
+        /// <summary>场景里找不到背包的全局样式时，挑一个材质完好的 TMP 字体：优先项目的默认中文字体（周方），再退到 TMP 默认字体。</summary>
+        private static TMP_FontAsset ResolveFallbackFont()
+        {
+            TMP_FontAsset any = null;
+            foreach (var f in Resources.FindObjectsOfTypeAll<TMP_FontAsset>())
+            {
+                if (f == null || f.material == null) continue;
+                if (f.name.Contains("ZhouFang")) return f;
+                if (any == null) any = f;
+            }
+            var d = TMP_Settings.defaultFontAsset;
+            if (d != null && d.material != null) return d;
+            return any;
+        }
+
         private bool      _built;
         private bool      _open;
         private Coroutine _anim;
@@ -275,7 +290,7 @@ namespace SkyPrison.Runtime.UI
         {
             if (_stackLimitText == null) return;
             string label = GetLocalized("ui_item_stack_limit", "组上限");
-            _stackLimitText.text = $"{label}  <color=#42EB8E>{def.maxStackCount}</color>";
+            _stackLimitText.text = $"{label}  <color=#42EB8E>{def.EffectiveMaxStack}</color>";
         }
 
         // ── 装备专属信息（耐久 / 改装槽 / 词条）────────────────────────────
@@ -670,6 +685,7 @@ namespace SkyPrison.Runtime.UI
             // 从场景中的背包 prefab 取 GlobalStyleSettings → 中文字体
             var style = Object.FindObjectOfType<SkyPrison.Runtime.UI.SkyPrisonUIGlobalStyleSettings_V1>();
             _font = style?.defaultTextFont;
+            if (_font == null || _font.material == null) _font = ResolveFallbackFont();   // 场景里没有背包样式（比如选关界面）时的兜底
 
             // 找背包面板的磨砂 RawImage（共享模糊纹理）
             RawImage panelBlur = FindPanelBlurImage();
@@ -841,7 +857,9 @@ namespace SkyPrison.Runtime.UI
             _descText.supportRichText    = true;
             _descText.raycastTarget      = false;
             // 优先从 Resources 加载项目内字体（Build 安全）；找不到退回 OS 字体
-            Font descFont = Resources.Load<Font>("Fonts/msyh")
+            // 统一用项目当前语言的系统字体(跟窗口其他文字同一套，随语言切换)，取不到才退回微软雅黑/OS 字体
+            Font descFont = (LocalizationRuntime.Instance != null ? LocalizationRuntime.Instance.GetCurrentFont() : null)
+                         ?? Resources.Load<Font>("Fonts/msyh")
                          ?? Resources.Load<Font>("Fonts/msyhbd")
                          ?? Font.CreateDynamicFontFromOSFont(
                                 new[] { "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Arial" }, 19);

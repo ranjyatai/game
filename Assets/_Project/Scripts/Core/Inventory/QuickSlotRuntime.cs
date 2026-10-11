@@ -16,6 +16,9 @@ public class QuickSlotRuntime : MonoBehaviour
 
     public const int SlotCount = 4;
 
+    /// <summary>当前开放的快捷槽数量：一开始只有 1 个，科技树「战略家·快捷槽」每级 +1(最多到 SlotCount)。没开放的槽不显示、不能指定、不能用(绑定的东西还留着，开放后恢复)。</summary>
+    public static int ActiveCount => Mathf.Clamp(1 + Mathf.RoundToInt(TechTreePerks.Get("quickSlotCount")), 1, SlotCount);
+
     /// <summary>槽位绑定变化（index, 新绑定的物品定义，null=清空）。</summary>
     public static event Action<int, ItemDefinition> OnSlotChanged;
 
@@ -26,11 +29,21 @@ public class QuickSlotRuntime : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        TechTreeRuntime.OnNodeLevelUp += OnTechNodeLevelUp;
+        SaveManager.OnSaveLoaded += PushAllToHud;
+    }
+
+    private void OnTechNodeLevelUp(string _, int __) => PushAllToHud();
+
+    private void OnDestroy()
+    {
+        TechTreeRuntime.OnNodeLevelUp -= OnTechNodeLevelUp;
+        SaveManager.OnSaveLoaded -= PushAllToHud;
     }
 
     public ItemDefinition GetSlot(int index)
     {
-        if (index < 0 || index >= SlotCount) return null;
+        if (index < 0 || index >= SlotCount || index >= ActiveCount) return null;
         return _slots[index];
     }
 
@@ -58,7 +71,7 @@ public class QuickSlotRuntime : MonoBehaviour
 
     public void AssignSlot(int index, ItemDefinition definition)
     {
-        if (index < 0 || index >= SlotCount || definition == null) return;
+        if (index < 0 || index >= SlotCount || index >= ActiveCount || definition == null) return;
 
         // 同一种物品最多只占一个快捷槽——不然背包格子右上角的"绑在几号"角标没法优雅
         // 显示（同种物品可能同时绑1/2/3/4，角标要塞下"1,2,3,4"这种文字，怎么调都难看）。
@@ -99,7 +112,16 @@ public class QuickSlotRuntime : MonoBehaviour
     // 具体的 Image 物体，自己设置 sprite/enabled，不经过那个方法。
     private static void PushToHud(int index, ItemDefinition definition)
     {
-        var view = UnityEngine.Object.FindObjectOfType<SkyPrisonPlayerHUDView_V4_StyleDriven>();
+        bool slotActive = index < ActiveCount;
+        if (!slotActive) definition = null;
+        // 场景里不止一个 SkyPrisonPlayerHUDView_V4_StyleDriven(AFP 面板也是这个组件)：FindObjectOfType 只返回第一个，
+        // 可能是 AFPPanel，底下没有快捷槽，设置了快捷物品左下角却不刷新。挑「真的带有 CleanFG_Slot_XX」的那个。
+        SkyPrisonPlayerHUDView_V4_StyleDriven view = null;
+        string slotName = $"CleanFG_Slot_{index + 1:00}";
+        foreach (var v in UnityEngine.Object.FindObjectsOfType<SkyPrisonPlayerHUDView_V4_StyleDriven>(true))
+        {
+            if (v != null && v.transform.Find(slotName) != null) { view = v; break; }
+        }
         if (view == null)
         {
             Debug.LogWarning($"[QuickSlotRuntime] PushToHud({index})：场景里没找到 SkyPrisonPlayerHUDView_V4_StyleDriven，图标推不过去。");
@@ -117,6 +139,17 @@ public class QuickSlotRuntime : MonoBehaviour
             Debug.LogWarning($"[QuickSlotRuntime] PushToHud({index})：在 {view.name} 底下没找到 {wrapperName}。");
             return;
         }
+
+        // 没开放的槽：整个包装物 + 底下的槽框一起隐藏
+        wrapper.gameObject.SetActive(slotActive);
+        // 槽框(带槽号 1/2/3/4)
+        string frameName = $"Slot_{index + 1:00}";
+        // 色差渲染的源节点是场景里一个独立的顶层物体(__SkyPrisonHUDModuleRTSource_xxx)，不在 HUD 根底下，所以要全场景找
+        foreach (var t in UnityEngine.Object.FindObjectsOfType<Transform>(true))
+            if (t.name == frameName && t.parent != null && t.parent.name == "QuickSlotsContent")
+                t.gameObject.SetActive(slotActive);
+        Transform bracket = view.transform.Find($"CleanBG_{index + 1:00}");      // 四角方块 + 左右细线的框
+        if (bracket != null) bracket.gameObject.SetActive(slotActive);
 
         Transform iconTf = wrapper.Find("IconImage");
         Image icon = iconTf != null ? iconTf.GetComponent<Image>() : null;

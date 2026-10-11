@@ -87,7 +87,15 @@ public static class SkyPrisonDistanceBlurDepthSetup
     // （按 unity_OrthoParams.w 分流，早上写落地深度遮挡时就顺手做好了），现在正好用上。
     // targetMode 继续用 World3DOnlyBeforeOverlays（Base 相机，Overlay 画 UI 之前），
     // 这台相机本来就渲染世界几何体、有正确深度，不需要再绕开哪个坑。
-    [MenuItem("Tools/Sky Prison/Map/距离模糊：场景深度（透视用）")]
+    // 2026-08-14 二次校准：切透视之后相机跟着玩家平移，"相机到玩家距离"不再是
+    // 固定值——之前这里没写 focusDistance/blurRange，资产里一直存着切透视之前
+    // 量出来的旧值 70，跟当前实测的 55.1 差了 15，导致玩家周围大片区域被卡在
+    // "完全清晰"那一段，模糊看起来像是"消失了"。这两个常量不是永久精确值，
+    // 只是当前实测的校准起点，后续如果相机跟随的偏移量再调，要重新实测。
+    private const float FocusDistance = 50f; // 略小于实测的55.1，确保玩家自身不被糊到
+    private const float BlurRange = 45f;
+
+    [MenuItem("天空囚笼/地图/距离模糊：场景深度（透视用）", false, 120)]
     public static void RunSceneDepth()
     {
         var rendererData = AssetDatabase.LoadAssetAtPath<ScriptableRendererData>(RendererPath);
@@ -109,6 +117,8 @@ public static class SkyPrisonDistanceBlurDepthSetup
             s.FindPropertyRelative("targetMode").enumValueIndex = 0; // World3DOnlyBeforeOverlays
             s.FindPropertyRelative("maskMode").enumValueIndex = 0;   // SceneDepth
             s.FindPropertyRelative("intensity").floatValue = 1f;
+            s.FindPropertyRelative("focusDistance").floatValue = FocusDistance;
+            s.FindPropertyRelative("blurRange").floatValue = BlurRange;
 
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(blur);
@@ -116,9 +126,10 @@ public static class SkyPrisonDistanceBlurDepthSetup
             AssetDatabase.SaveAssets();
 
             Debug.Log(
-                $"{LogPrefix} 已切到场景深度模式。\n" +
-                "Focus Distance / Blur Range 现在才会真正生效——进 Play 站在角色当前位置，" +
-                "调 Focus Distance 让角色本身保持清晰，再调 Blur Range 控制过渡多快糊满。\n" +
+                $"{LogPrefix} 已切到场景深度模式，并按实测距离(55.1)重新校准。" +
+                $"Focus Distance={FocusDistance}，Blur Range={BlurRange}。\n" +
+                "如果相机跟随玩家的偏移量之后又调整过，这两个数字要重新用[BlurGate]诊断" +
+                "实测校准，不是一次写死永久有效的。\n" +
                 "Screen Blur Start Y / End Y 那几项在这个模式下不参与计算，改了没反应。");
             return;
         }

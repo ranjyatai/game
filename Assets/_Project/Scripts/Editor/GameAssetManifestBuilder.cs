@@ -56,6 +56,17 @@ public class GameAssetManifestBuilder : AssetPostprocessor
         // TechTreeGraphAsset：取第一个找到的
         manifest.techTreeGraph = FindFirst<TechTreeGraphAsset>("t:TechTreeGraphAsset");
 
+        // 全部科技树：按资产名排序(TT_Seeker 在 TT_Strategist 前面)，战术研修窗口按这个顺序做标签页
+        var graphs = new System.Collections.Generic.List<TechTreeGraphAsset>();
+        foreach (var guid in AssetDatabase.FindAssets("t:TechTreeGraphAsset"))
+        {
+            var g = AssetDatabase.LoadAssetAtPath<TechTreeGraphAsset>(AssetDatabase.GUIDToAssetPath(guid));
+            if (g != null && !graphs.Contains(g)) graphs.Add(g);
+        }
+        graphs.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
+        manifest.techTreeGraphs = graphs;
+        if (graphs.Count > 0) manifest.techTreeGraph = graphs[0];
+
         // ── 后续新增 asset 类型在这里加一行 FindFirst ──
     }
 

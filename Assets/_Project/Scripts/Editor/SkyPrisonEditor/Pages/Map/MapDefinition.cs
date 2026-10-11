@@ -19,6 +19,20 @@ public class MapDefinition : ScriptableObject
     public List<LocalizedTextEntry> localizedNames = new List<LocalizedTextEntry>();
     public List<LocalizedTextEntry> localizedDescriptions = new List<LocalizedTextEntry>();
 
+    [Header("进图地名牌")]
+    [Tooltip("地名牌副标行右端的经纬度小字，原样显示，例如 35°41′29″N  139°46′12″E。留空：RAID 自动用选关标记的坐标，其他地图不显示这一行。")]
+    public string coordinates = "";
+
+    [Header("RAID 选关显示")]
+    [Tooltip("选关界面右侧窗口里，白天版本显示的主要物资产出。顺序就是显示顺序。")]
+    public List<ItemDefinition> raidDayOutputs = new List<ItemDefinition>();
+    [Tooltip("夜间版本的主要物资产出；留空 = 沿用白天的。")]
+    public List<ItemDefinition> raidNightOutputs = new List<ItemDefinition>();
+
+    [Header("资源箱（进图时从手摆的候选点位里随机抽）")]
+    [Tooltip("每一行是一种箱子：这一把最多出几个、同种之间最小间距。每种箱子只从自己的候选点位里抽，互不占用名额。")]
+    public List<MapLootBoxConfig> lootBoxes = new List<MapLootBoxConfig>();
+
     [Header("Scene Binding")]
     public string scenePath = "";
     public string sceneGuid = "";

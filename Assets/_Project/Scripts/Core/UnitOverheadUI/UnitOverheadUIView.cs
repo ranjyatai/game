@@ -195,8 +195,17 @@ public class UnitOverheadUIView : MonoBehaviour
         Debug.Log(report, this);
     }
 
+    // 头顶锚点高度改成"生成后测几帧就锁死"，不再逐帧跟着当前姿势走——用户明确
+    // 指出这条line该绑的是角色的站立身高(脚底到头顶的固定距离)，不该跟着走路/挥手
+    // 这类姿势变化实时起伏("头点不点头不该影响血条高低")。等几帧而不是第一帧就锁
+    // 是为了绕开 Spine 骨骼还没摆好姿势那个已知坑(见下面方法里的历史注释)。
+    private float _smoothedAnchorHeight = -1f;
+    private int _anchorHeightSettleFramesRemaining = 12;
+
     private void OnEnable()
     {
+        _smoothedAnchorHeight = -1f;
+        _anchorHeightSettleFramesRemaining = 12;
         OverheadBarStyleAsset.OnStyleChanged += HandleStyleChanged;
         // 见HandleBeforeCameraRenders的注释——朝向摄像机这一步必须挂在渲染管线的
         // 逐相机回调上，不能留在LateUpdate里。注意：Camera.onPreCull是内置渲染管线
@@ -257,6 +266,7 @@ public class UnitOverheadUIView : MonoBehaviour
 
     private void LateUpdate()
     {
+        FitOutlineToScreenPixels();
         // 高度计算跟"要不要转向摄像机"是两件不相关的事——高度只依赖角色自己的渲染
         // 网格，每帧持续测量没问题("只测一次就锁死"试过，已经证明有更严重的漏洞：
         // 角色刚生成时Spine骨骼还没摆好姿势就被锁死，永久卡在脚底)。朝向摄像机
@@ -329,6 +339,12 @@ public class UnitOverheadUIView : MonoBehaviour
         if (overheadAnchor == null)
             return;
 
+        // 已经锁死过（settle帧数用完、且已经成功对齐过一次）就不再重测——这才是
+        // 用户要的"绑脚底身高，不跟着姿势抖"：站立身高只在生成后的头十几帧内确定
+        // 一次，之后挥手/走路/攻击动作让渲染器包围盒怎么变都不会再影响这条line。
+        if (_anchorHeightSettleFramesRemaining <= 0 && _smoothedAnchorHeight >= 0f)
+            return;
+
         Transform spineRoot = transform.Find("VisualRoot/SpineRoot");
         Transform searchRoot = spineRoot != null ? spineRoot : transform;
 
@@ -356,8 +372,11 @@ public class UnitOverheadUIView : MonoBehaviour
 
             Bounds lb = r.localBounds;
             float worldTopY = r.transform.position.y + (lb.center.y + lb.extents.y) * r.transform.lossyScale.y;
-            float localTop = transform.InverseTransformPoint(new Vector3(0f, worldTopY, 0f)).y
-                            - transform.InverseTransformPoint(Vector3.zero).y;
+            // 模型最高点相对根节点脚底的高度。以前这里是
+            //   InverseTransformPoint((0, worldTopY, 0)).y - InverseTransformPoint(Vector3.zero).y
+            // 两项里根节点的世界 Y 恰好抵消成"+rootY"，结果等于 worldTopY（绝对高度）而不是相对高度：
+            // 角色站在 y=0 的地上看不出来，站在 y=1 的白模地面 / y=2 的高台上，名字就整整高出 1~2 米。
+            float localTop = transform.InverseTransformPoint(new Vector3(transform.position.x, worldTopY, transform.position.z)).y;
             if (localTop > maxLocalTop)
                 maxLocalTop = localTop;
         }
@@ -378,6 +397,19 @@ public class UnitOverheadUIView : MonoBehaviour
         float headroom = maxLocalTop * 0.04f;
         float height = maxLocalTop + headroom;
 
+        // settle阶段（生成后头12帧）内每帧继续现测+平滑收敛到稳定值，帧数用完之后
+        // 上面的早退直接锁死这个值，不会再进到这里——蹲下/攻击这类姿势变化不会再
+        // 让血条跟着抖，代价是这12帧里如果角色一进场就在做大动作，测到的"站立身高"
+        // 可能不是真正静止站立的姿势，但这比"永远跟着姿势抖"要符合预期。
+        float dt = Application.isPlaying ? Time.deltaTime : 1f / 60f;
+        if (_smoothedAnchorHeight < 0f)
+            _smoothedAnchorHeight = height; // 第一次直接对齐，不从0平滑上来（否则出生瞬间会有一下明显的往上飘）
+        else
+            _smoothedAnchorHeight = Mathf.Lerp(_smoothedAnchorHeight, height, 1f - Mathf.Exp(-10f * dt));
+
+        if (_anchorHeightSettleFramesRemaining > 0)
+            _anchorHeightSettleFramesRemaining--;
+
         // 2026-08-14：改回 localPosition，用户明确指出这条line应该沿billboard自己
         // 的"上"轴走，不是世界竖直方向——这正是最初"把人物和HUD一起billboard"这个
         // 思路本身：HUD要摆在角色billboard自己的那条线上，而这条线只有在父节点是
@@ -387,7 +419,7 @@ public class UnitOverheadUIView : MonoBehaviour
         //
         // "太高了"这个反馈针对的是height这个标量本身，不是它该沿哪个轴走——
         // 量级问题应该调headroom/maxLocalTop这个数值，不该把轴改回世界空间。
-        overheadAnchor.localPosition = new Vector3(0f, height, 0f);
+        overheadAnchor.localPosition = new Vector3(0f, _smoothedAnchorHeight, 0f);
     }
 
     /// <summary>找到真正的根因：这个场景的Main Camera挂了CinemachineBrain，
@@ -426,7 +458,7 @@ public class UnitOverheadUIView : MonoBehaviour
         // 还是"找到了但VisualRoot本身没有被CameraFacingBillboard转到位"，
         // 还是"两个旋转其实一致，问题出在别的地方（比如runtimeUiRoot下面某个
         // 子节点又带了自己的旋转)"。每5秒打一次，够定位又不刷屏。
-        if (Time.frameCount % 300 == 0)
+        if (DebugBillboardLogs && Time.frameCount % 300 == 0)
         {
             Transform visualRoot = transform.Find("VisualRoot");
             var billboard = visualRoot != null ? visualRoot.GetComponent<CameraFacingBillboard>() : null;
@@ -457,6 +489,10 @@ public class UnitOverheadUIView : MonoBehaviour
     // EnsureStructure 里记录：overheadAnchor 是否成功挂到了 VisualRoot 下面共享朝向，
     // 还是退化到了逻辑根节点（没有 VisualRoot 时的兜底）。
     private bool anchorSharesVisualRootRotation;
+
+    /// <summary>[OverheadBillboardDiag] 诊断日志开关，默认关。每个单位每 300 帧一组、每条带长堆栈，
+    /// 开着会把 Editor.log 写爆。需要时在代码或调试器里临时置 true。</summary>
+    public static bool DebugBillboardLogs;
 
     // 场景里明确存在一个专属的"OverheadUICamera"(Overlay类型，只渲染头顶UI所在的
     // 层，叠加合成在主摄像机画面上面)——之前这里一直用Camera.main，间接依赖
@@ -747,6 +783,13 @@ public class UnitOverheadUIView : MonoBehaviour
         ConfigureBracketRect(bracketRightText, TextAlignmentOptions.Left, new Vector2(1f, 0.5f), new Vector2(2f, 0f));
         ApplyAlwaysOnTopFontMaterial(bracketLeftText);
         ApplyAlwaysOnTopFontMaterial(bracketRightText);
+        ApplyThinBlackTextOutline(bracketLeftText);
+        ApplyThinBlackTextOutline(bracketRightText);
+        CenterBracketVertically(bracketLeftText);
+        CenterBracketVertically(bracketRightText);
+        // 括号改用线条绘制（宽度可按屏幕像素换算，保证至少 1px），文字括号保留对象但不显示
+        if (bracketLeftText != null) bracketLeftText.enabled = false;
+        if (bracketRightText != null) bracketRightText.enabled = false;
 
         statusRoot = EnsureRectChild(runtimeUiRoot, "StatusRoot");
         statusAreaRoot = EnsureRectChild(statusRoot, "StatusAreaRoot");
@@ -923,6 +966,32 @@ public class UnitOverheadUIView : MonoBehaviour
     /// <summary>名字文字也要能穿透墙体显示——TMP自带的"Distance Field Overlay"
     /// 变体就是ZTest Always版本，直接从当前字体的默认材质复制一份、换成Overlay
     /// shader即可，贴图/参数都跟原字体保持一致，不用自己再配一份字体材质。</summary>
+    /// <summary>括号字形不是正好落在文字行框中央（"["上下并不对称），按实际字形包围盒把括号竖直居中到血条。</summary>
+    private static void CenterBracketVertically(TextMeshProUGUI text)
+    {
+        if (text == null) return;
+        text.ForceMeshUpdate();
+        // textBounds 是按"行框"算的，括号字形（上下并不对称）的实际墨迹中心要从字符几何里取
+        var info = text.textInfo;
+        if (info == null || info.characterCount < 1) return;
+        var ch = info.characterInfo[0];
+        float cy = (ch.topLeft.y + ch.bottomLeft.y) * 0.5f;
+        if (float.IsNaN(cy) || Mathf.Abs(cy) < 0.0001f) return;
+        RectTransform rt = text.rectTransform;
+        rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, rt.anchoredPosition.y - cy);
+    }
+
+    /// <summary>给文字加一圈极细黑描边（跟血条描边一致），亮地面上括号才看得清。</summary>
+    private void ApplyThinBlackTextOutline(TextMeshProUGUI text)
+    {
+        if (text == null) return;
+        Material m = text.fontMaterial;
+        if (m == null) return;
+        m.EnableKeyword(ShaderUtilities.Keyword_Outline);
+        m.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.18f);
+        m.SetColor(ShaderUtilities.ID_OutlineColor, new Color(0f, 0f, 0f, 0.95f));
+    }
+
     private void ApplyAlwaysOnTopFontMaterial(TextMeshProUGUI text)
     {
         if (text == null || text.font == null || text.font.material == null)
@@ -935,6 +1004,9 @@ public class UnitOverheadUIView : MonoBehaviour
         if (text.fontMaterial == null || text.fontMaterial.shader != overlayShader)
         {
             Material overlayMaterial = new Material(text.font.material) { shader = overlayShader };
+            // 面色固定为白：实际颜色由 text.color（顶点色）决定。之前夜视仪调试时有一段代码改过实例材质的面色，
+            // 会和顶点色相乘把名字染暗；这里每次建实例都显式复位，不依赖字体材质的当前状态。
+            overlayMaterial.SetColor(ShaderUtilities.ID_FaceColor, Color.white);
             text.fontMaterial = overlayMaterial;
         }
     }
@@ -961,6 +1033,7 @@ public class UnitOverheadUIView : MonoBehaviour
         ConfigureMaskRoot(fillMaskRoot, layout.barSize);
         ConfigureBarImage(damageReferenceImage.rectTransform, layout.barSize);
         ConfigureBarImage(fillImage.rectTransform, layout.barSize);
+        ApplyBarOutline(style, layout.barSize);
 
         if (style != null)
         {
@@ -1016,6 +1089,7 @@ public class UnitOverheadUIView : MonoBehaviour
             ConfigureMaskRoot(fillMaskRoot, layout.barSize);
             ConfigureBarImage(damageReferenceImage.rectTransform, layout.barSize);
             ConfigureBarImage(fillImage.rectTransform, layout.barSize);
+            ApplyBarOutline(style, layout.barSize);
         }
 
         if (style != null)
@@ -1245,7 +1319,7 @@ public class UnitOverheadUIView : MonoBehaviour
     }
 
 
-    public void ShowDamageNumber(float amount, Color color, bool isHeal, bool isPositiveCrit = false, bool isNegativeCrit = false)
+    public void ShowDamageNumber(float amount, Color color, bool isHeal, bool isPositiveCrit = false, bool isNegativeCrit = false, bool isLethalShot = false)
     {
         if (amount <= 0f)
         {
@@ -1268,7 +1342,7 @@ public class UnitOverheadUIView : MonoBehaviour
 
         Vector2 bodyLocalPos = GetRandomBodyDamageNumberPosition();
         bool preferSoft = false;
-        view.Play(amount, color, isHeal, bodyLocalPos, preferSoft, isPositiveCrit, isNegativeCrit);
+        view.Play(amount, color, isHeal, bodyLocalPos, preferSoft, isPositiveCrit, isNegativeCrit, isLethalShot);
         view.transform.SetAsLastSibling();
     }
 
@@ -1910,6 +1984,159 @@ public class UnitOverheadUIView : MonoBehaviour
         rect.pivot = new Vector2(0f, 0.5f);
         rect.anchoredPosition = Vector2.zero;
         rect.sizeDelta = size;
+    }
+
+    private RawImage barOutlineImage;
+
+    // ── 线条绘制的括号 "[ ]"：白线 + 黑描边，两者宽度都按屏幕像素换算 ──
+    private class DrawnBracketPart { public RectTransform white; public RectTransform outline; public int side; public int kind; } // kind 0=竖 1=上臂 2=下臂
+    private readonly System.Collections.Generic.List<DrawnBracketPart> drawnBracketParts = new System.Collections.Generic.List<DrawnBracketPart>();
+    private RectTransform drawnBracketRoot;
+    private const float BracketGap = 2f;       // 括号离血条边缘的距离(UI单位)
+    private const float BracketArmLength = 2.5f;
+    private const float BracketExtraHeight = 2.5f;
+
+    private void EnsureDrawnBrackets()
+    {
+        if (slotView01 == null) return;
+        if (drawnBracketRoot != null && drawnBracketParts.Count > 0) return;
+
+        drawnBracketRoot = EnsureRectChild(slotView01, "DrawnBrackets");
+        drawnBracketRoot.anchorMin = drawnBracketRoot.anchorMax = new Vector2(0.5f, 0.5f);
+        drawnBracketRoot.pivot = new Vector2(0.5f, 0.5f);
+        drawnBracketRoot.anchoredPosition = Vector2.zero;
+        drawnBracketRoot.sizeDelta = Vector2.zero;
+
+        drawnBracketParts.Clear();
+        // 先全部描边，再全部白线：避免相邻部件的黑边盖到白线上
+        var outlines = new System.Collections.Generic.List<DrawnBracketPart>();
+        for (int side = -1; side <= 1; side += 2)
+            for (int kind = 0; kind < 3; kind++)
+            {
+                var part = new DrawnBracketPart { side = side, kind = kind };
+                var oi = EnsureRawImageChild(drawnBracketRoot, "BrO_" + side + "_" + kind);
+                ApplyAlwaysOnTopMaterial(oi); oi.texture = null; oi.color = new Color(0f, 0f, 0f, 0.95f);
+                part.outline = oi.rectTransform;
+                outlines.Add(part);
+                drawnBracketParts.Add(part);
+            }
+        foreach (var part in drawnBracketParts)
+        {
+            var wi = EnsureRawImageChild(drawnBracketRoot, "BrW_" + part.side + "_" + part.kind);
+            ApplyAlwaysOnTopMaterial(wi); wi.texture = null; wi.color = new Color(1f, 1f, 1f, 0.9f);
+            part.white = wi.rectTransform;
+        }
+        // 保证白线都在黑线之后（兄弟序）
+        foreach (var part in drawnBracketParts) part.white.SetAsLastSibling();
+    }
+
+    private static void SetPartRect(RectTransform rt, Vector2 center, Vector2 size)
+    {
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = center;
+        rt.sizeDelta = size;
+    }
+
+    private void UpdateDrawnBrackets(float strokeUnits, float outlineUnits)
+    {
+        if (drawnBracketParts.Count == 0) return;
+        float barW = outlineBarSize.x;
+        float barH = outlineBarSize.y;
+        float h = barH + BracketExtraHeight;
+        float w = strokeUnits;
+        float o = outlineUnits;
+
+        foreach (var part in drawnBracketParts)
+        {
+            // 竖线中心 x：血条边缘外 BracketGap，再往外半个线宽
+            float vx = part.side * (barW * 0.5f + BracketGap + w * 0.5f);
+            Vector2 center, size;
+            if (part.kind == 0)
+            {
+                center = new Vector2(vx, 0f);
+                size = new Vector2(w, h);
+            }
+            else
+            {
+                // 上/下臂：从竖线向血条方向伸出 BracketArmLength
+                float armCenterX = vx - part.side * (BracketArmLength * 0.5f - w * 0.5f);
+                float armY = (part.kind == 1 ? 1f : -1f) * (h * 0.5f - w * 0.5f);
+                center = new Vector2(armCenterX, armY);
+                size = new Vector2(BracketArmLength, w);
+            }
+            SetPartRect(part.white, center, size);
+            SetPartRect(part.outline, center, size + new Vector2(o * 2f, o * 2f));
+        }
+    }
+    private float outlineStyleThickness = 1f;
+    private float outlineMinScreenPixels = 1.5f;
+    private Vector2 outlineBarSize;
+
+    /// <summary>血条外围一圈极细黑色描边：放在血条所有层的最底下，比血条每边多出 thickness。</summary>
+    private void ApplyBarOutline(OverheadBarStyleAsset style, Vector2 barSize)
+    {
+        if (slotView01 == null) return;
+
+        bool enabled = style == null || style.enableBarOutline;
+        if (!enabled)
+        {
+            if (barOutlineImage != null) barOutlineImage.gameObject.SetActive(false);
+            return;
+        }
+
+        if (barOutlineImage == null)
+        {
+            barOutlineImage = EnsureRawImageChild(slotView01, "BarOutline");
+            ApplyAlwaysOnTopMaterial(barOutlineImage);
+        }
+
+        float t = style != null ? Mathf.Max(0f, style.barOutlineThickness) : 1f;
+        outlineStyleThickness = t;
+        outlineMinScreenPixels = style != null ? Mathf.Max(0f, style.barOutlineMinScreenPixels) : 1.5f;
+        outlineBarSize = barSize;
+        EnsureDrawnBrackets();
+        Color c = style != null ? style.barOutlineColor : new Color(0f, 0f, 0f, 0.95f);
+
+        barOutlineImage.gameObject.SetActive(true);
+        barOutlineImage.texture = null;
+        barOutlineImage.color = c;
+        var rt = barOutlineImage.rectTransform;
+        // 以血条左缘对齐(血条图都是左锚点)，向四周各多出 t
+        rt.anchorMin = new Vector2(0f, 0.5f);
+        rt.anchorMax = new Vector2(0f, 0.5f);
+        rt.pivot = new Vector2(0f, 0.5f);
+        rt.anchoredPosition = new Vector2(-t, 0f);
+        rt.sizeDelta = new Vector2(barSize.x + t * 2f, barSize.y + t * 2f);
+        rt.SetAsFirstSibling();
+    }
+
+    /// <summary>
+    /// 每帧按镜头距离换算：保证描边在屏幕上至少有 outlineMinScreenPixels 个像素。
+    /// 世界空间 UI 的"1 个 UI 单位"离镜头远时不足 1 像素，不补的话描边会细到看不见。
+    /// </summary>
+    private void FitOutlineToScreenPixels()
+    {
+        if (barOutlineImage == null || !barOutlineImage.gameObject.activeSelf || slotView01 == null) return;
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        float unitWorld = slotView01.lossyScale.x;
+        if (unitWorld <= 0.00001f) return;
+
+        Vector3 a = cam.WorldToScreenPoint(slotView01.position);
+        Vector3 b = cam.WorldToScreenPoint(slotView01.position + cam.transform.right * unitWorld);
+        float pxPerUnit = Mathf.Abs(b.x - a.x);
+        if (pxPerUnit <= 0.0001f) return;
+
+        float t = Mathf.Clamp(Mathf.Max(outlineStyleThickness, outlineMinScreenPixels / pxPerUnit), 0f, 8f);
+        var rt = barOutlineImage.rectTransform;
+        rt.anchoredPosition = new Vector2(-t, 0f);
+        rt.sizeDelta = new Vector2(outlineBarSize.x + t * 2f, outlineBarSize.y + t * 2f);
+
+        // 括号：白线宽度同样保证至少 outlineMinScreenPixels 像素，黑描边用同一个 t
+        float stroke = Mathf.Clamp(Mathf.Max(1f, outlineMinScreenPixels / pxPerUnit), 0f, 8f);
+        UpdateDrawnBrackets(stroke, t);
     }
 
     private void ConfigureBarImage(RectTransform rect, Vector2 size)

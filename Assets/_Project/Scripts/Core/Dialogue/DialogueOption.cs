@@ -21,6 +21,13 @@ public enum DialogueOptionActionType
 
     [InspectorName("关闭对话")]
     Close,
+
+    // 追加在最末尾：不改动已有选项的序列化数值。
+    [InspectorName("进行治疗(刷新全部状态)")]
+    Heal,
+
+    [InspectorName("打开战术研修(科技树)")]
+    TacticalTraining,
 }
 
 /// <summary>

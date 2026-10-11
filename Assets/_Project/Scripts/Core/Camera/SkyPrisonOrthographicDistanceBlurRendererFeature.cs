@@ -62,6 +62,8 @@ public class SkyPrisonOrthographicDistanceBlurRendererFeature : ScriptableRender
 
         [Header("Debug")]
         public bool debugShowBlurMask = false;
+        [Tooltip("打开后每隔 180 帧输出一组 [BlurGate] 诊断日志。默认关：这些日志每条带 30 多行堆栈，开着跑几个小时能把 Editor.log 写到十几 GB 直接写满 C 盘。")]
+        public bool debugLogs = false;
     }
 
     public Settings settings = new Settings();
@@ -102,7 +104,8 @@ public class SkyPrisonOrthographicDistanceBlurRendererFeature : ScriptableRender
         pass = new DistanceBlurPass();
 
         // Create 是否被调用、材质有没有建起来 —— 这两点决定后面所有分支是否有意义。
-        Debug.Log($"[BlurGate] Create() 被调用。shader={(settings.shader != null ? settings.shader.name : "NULL")} " +
+        if (settings.debugLogs)
+            Debug.Log($"[BlurGate] Create() 被调用。shader={(settings.shader != null ? settings.shader.name : "NULL")} " +
                   $"material={(material != null ? "已创建" : "NULL")}");
     }
 
@@ -114,7 +117,7 @@ public class SkyPrisonOrthographicDistanceBlurRendererFeature : ScriptableRender
         // 诊断放在最开头，任何 early return 都拦不住它。
         // 上一版放在两个 return 之后，结果一条日志都没有 —— 而「从没被调用」和
         // 「被提前返回」需要完全不同的排查方向，那样的空结果什么也说明不了。
-        if (Time.frameCount % 180 == 0)
+        if (settings.debugLogs && Time.frameCount % 180 == 0)
         {
             Debug.Log($"[BlurGate] 进入 AddRenderPasses。相机={renderingData.cameraData.camera?.name} " +
                       $"类型={renderingData.cameraData.cameraType} " +
@@ -167,12 +170,27 @@ public class SkyPrisonOrthographicDistanceBlurRendererFeature : ScriptableRender
         // 诊断：这个 Feature 至今没在游戏里生效过，而失败可能发生在四个互不相同的地方
         // （材质没建 / 相机类型不匹配 / shouldRun 为假 / RecordRenderGraph 里提前返回），
         // 它们在画面上表现完全一样，都是「没有模糊」。逐个报出来。
-        if (Time.frameCount % 180 == 0)
+        if (settings.debugLogs && Time.frameCount % 180 == 0)
         {
             Debug.Log($"[BlurGate] 相机={camera?.name} 类型={renderingData.cameraData.renderType} " +
                       $"targetMode={settings.targetMode} shouldRun={shouldRun} " +
                       $"maskMode={settings.maskMode} intensity={settings.intensity} " +
                       $"maxRadius={settings.maxRadius}");
+
+            // 排查"模糊消失"：focusDistance是切透视之前、相机固定距离玩家时量出来的
+            // 一次性数值，写死在配置里。切成跟随玩家的真透视相机后，相机到玩家的
+            // 距离会随时变化，这个写死的数字不会跟着自动更新——如果当前实际距离
+            // 跟它差得远，要么全屏都在对焦范围内看不出模糊，要么全屏糊死看不出
+            // 层次。直接打出实测距离，一次性确认是不是这个原因。
+            var playerUnit = SkyPrisonPlayerAuthority.CurrentPlayerUnit;
+            if (camera != null && playerUnit != null)
+            {
+                float actualDistance = Vector3.Distance(camera.transform.position, playerUnit.transform.position);
+                Debug.Log($"[BlurGate] 相机到玩家实测距离={actualDistance:F1}，" +
+                          $"当前配置focusDistance={settings.focusDistance:F1}，" +
+                          $"blurRange={settings.blurRange:F1}（对焦范围大约是 " +
+                          $"{settings.focusDistance:F1}~{settings.focusDistance + settings.blurRange:F1}）");
+            }
         }
 
         if (!shouldRun)
@@ -285,7 +303,7 @@ public class SkyPrisonOrthographicDistanceBlurRendererFeature : ScriptableRender
             {
                 // 直接渲染到后备缓冲时这个 pass 无法工作。这是最容易被忽略的一条：
                 // 它静默返回，画面上和「pass 压根没排队」一模一样。
-                if (Time.frameCount % 180 == 0)
+                if (settings.debugLogs && Time.frameCount % 180 == 0)
                     Debug.LogWarning("[BlurGate] RecordRenderGraph 提前返回：目标是后备缓冲" +
                                      "（渲染器的 Intermediate Texture 需要设为 Always）");
                 return;
@@ -294,12 +312,12 @@ public class SkyPrisonOrthographicDistanceBlurRendererFeature : ScriptableRender
             TextureHandle source = resourceData.activeColorTexture;
             if (!source.IsValid())
             {
-                if (Time.frameCount % 180 == 0)
+                if (settings.debugLogs && Time.frameCount % 180 == 0)
                     Debug.LogWarning("[BlurGate] RecordRenderGraph 提前返回：activeColorTexture 无效");
                 return;
             }
 
-            if (Time.frameCount % 180 == 0)
+            if (settings.debugLogs && Time.frameCount % 180 == 0)
                 Debug.Log("[BlurGate] RecordRenderGraph 正常执行，已排入模糊 pass");
 
             PushMaterialParameters();

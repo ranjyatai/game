@@ -63,6 +63,12 @@ namespace SkyPrison.Runtime.UI
             SetTargets(graphics);
         }
 
+        /// <summary>调用方自己已经按点击结果决定要播哪个音效(比如放弃任务用Cancel、
+        /// 确认放弃用另一个专属音效)时用这个关掉组件自带的默认Confirm音效，不然会
+        /// 双重播放。运行时纯代码搭UI(没有prefab烘焙阶段可以在Inspector里勾掉)的
+        /// 场景专用。</summary>
+        public void SetPlayClickSE(bool value) => playClickSE = value;
+
         private void AutoCollect()
         {
             Graphic[] all = GetComponentsInChildren<Graphic>(true);

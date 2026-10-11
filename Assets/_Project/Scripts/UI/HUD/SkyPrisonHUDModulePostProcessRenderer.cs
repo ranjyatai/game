@@ -86,10 +86,18 @@ namespace SkyPrison.Runtime.UI
                 renderer = moduleRoot.AddComponent<SkyPrisonHUDModulePostProcessRenderer_V87>();
 
             renderer.Configure(postProcessSourceMaterial, mode);
+            // 运行时才挂上来的组件：AddComponent 那一刻 sourceMaterial 还是空的，OnEnable 会把自己关掉；
+            // Configure 之后要重新打开，LateUpdate 才会每帧刷新尺寸 / 材质。
+            if (CanMutateForPostProcess && postProcessSourceMaterial != null && !renderer.enabled)
+                renderer.enabled = true;
             if (CanMutateForPostProcess)
                 renderer.BuildOrRebuild();
             return renderer;
         }
+
+        /// <summary>供别的 HUD 块「和 HP / LP 一样」套同一套色差：读出这个模块用的源材质 / 混合模式。</summary>
+        public Material SourceMaterial => sourceMaterial;
+        public SkyPrisonHUDBlendModeV1 BlendMode => blendMode;
 
         public void Configure(Material postProcessSourceMaterial, SkyPrisonHUDBlendModeV1 mode)
         {
@@ -148,28 +156,48 @@ namespace SkyPrison.Runtime.UI
             // V93:
             // Keep the source hierarchy live. Children may be moved to sourceRoot after the component
             // is built; when that happens, PlayerHUDView references must be rebound to the source tree.
-            bool movedChildren = MoveExistingVisualChildrenToSource();
-            DisableMasksInSourceRoot();
-            DisableSourceQuickPromptOverlays();
-            BringDisplayQuickPromptOverlayToFront();
-            if (movedChildren || !runtimeLiveBindingRefreshed)
-                RefreshLiveRuntimeBindingsToSource();
+            // 性能（每帧热点）：下面这些「整理层级」的活原来每帧都做——对全场景所有 Transform 取名字找残留根、
+            // 反复 GetComponentsInChildren、重复 ForceUpdateCanvases，单这个脚本每帧约 40ms、数万次 GC 分配。
+            // 现在只在显示根的层级数量变了（有东西被加进来 / 挪走）或每隔 1 秒兜底时才整理；没变化的帧只做轻量的尺寸 / 材质刷新。
+            int displayCount = displayRoot != null ? displayRoot.hierarchyCount : -1;
+            int sourceCount = sourceRoot != null ? sourceRoot.hierarchyCount : -1;
+            bool structureChanged = transform.childCount != tidyChildCount || displayCount != tidyDisplayCount || sourceCount != tidySourceCount;
+            bool tidyNow = structureChanged || Time.unscaledTime >= nextTidyTime;
 
-            HideStrayDisplayGraphicsExceptOutput();
+            bool movedChildren = false;
+            if (tidyNow)
+            {
+                movedChildren = MoveExistingVisualChildrenToSource();
+                if (movedChildren) DisableMasksInSourceRoot();
+                else if (sourceCount != tidySourceCount) DisableMasksInSourceRoot();
+                DisableSourceQuickPromptOverlays();
+                BringDisplayQuickPromptOverlayToFront();
+                if (movedChildren || !runtimeLiveBindingRefreshed)
+                    RefreshLiveRuntimeBindingsToSource();
+                HideStrayDisplayGraphicsExceptOutput();
+
+                tidyChildCount = transform.childCount;
+                tidyDisplayCount = displayRoot != null ? displayRoot.hierarchyCount : -1;
+                tidySourceCount = sourceRoot != null ? sourceRoot.hierarchyCount : -1;
+                nextTidyTime = Time.unscaledTime + TidyIntervalSeconds;
+            }
+            else if (!runtimeLiveBindingRefreshed)
+            {
+                RefreshLiveRuntimeBindingsToSource();
+            }
 
             if (sourceCamera == null || moduleRT == null)
                 return;
 
             EnsureSize();
             EnsureOutputMaterial();
-            DisableSourceQuickPromptOverlays();
-            BringDisplayQuickPromptOverlayToFront();
-            RefreshSourceCameraBinding();
-
-            // The RT output is not a baked snapshot. Force UI layout before the enabled source camera
-            // captures the live source canvas for this frame.
-            Canvas.ForceUpdateCanvases();
+            RefreshSourceCameraBinding();   // 里面已经有一次 ForceUpdateCanvases，不再在这里重复调用
         }
+
+        private const float TidyIntervalSeconds = 1f;
+        private int overlayTidyCount = -1; private float nextOverlayTidyTime;
+        private int tidyChildCount = -1, tidyDisplayCount = -1, tidySourceCount = -1;
+        private float nextTidyTime;
 
         private void BuildOrRebuild()
         {
@@ -511,7 +539,15 @@ namespace SkyPrison.Runtime.UI
             if (!overlayObject.activeSelf)
                 overlayObject.SetActive(true);
 
-            overlay.SetAsLastSibling();
+            // 已经在最后就不要再动它：SetAsLastSibling 每次都会标脏层级和画布
+            if (overlay.GetSiblingIndex() != overlay.parent.childCount - 1)
+                overlay.SetAsLastSibling();
+
+            // 叠加层里的图形取消剔除：只在叠加层的层级数量变了（或每秒兜底）时才重新遍历
+            int overlayCount = overlay.hierarchyCount;
+            if (overlayCount == overlayTidyCount && Time.unscaledTime < nextOverlayTidyTime)
+                return;
+            overlayTidyCount = overlayCount; nextOverlayTidyTime = Time.unscaledTime + TidyIntervalSeconds;
 
             Graphic[] graphics = overlay.GetComponentsInChildren<Graphic>(true);
             for (int i = 0; i < graphics.Length; i++)
@@ -536,42 +572,63 @@ namespace SkyPrison.Runtime.UI
             // __SkyPrisonHUDModuleRTSource_V87 roots and suppresses any prompt overlay/prompt icons
             // found inside them.  Never Destroy here: this renderer may tick while Unity is rebuilding
             // canvases or serializing prefabs.
-            List<Transform> roots = new List<Transform>();
-            if (sourceRoot != null)
-                roots.Add(sourceRoot);
-
-            Transform[] allTransforms = Resources.FindObjectsOfTypeAll<Transform>();
-            for (int i = 0; i < allTransforms.Length; i++)
+            // 性能：全场景扫描（Resources.FindObjectsOfTypeAll + 逐个取名字）只做一次，结果记进静态的根列表；
+            // 之后各模块新建的源根自己登记进来，不再每帧遍历所有对象。每个根只在它的层级数量变了、或每 2 秒兜底时才重新检查。
+            if (!s_globalScanned)
             {
-                Transform candidate = allTransforms[i];
-                if (candidate == null)
-                    continue;
-                if (!candidate.name.Contains(SourceRootName))
-                    continue;
+                s_globalScanned = true;
+                Transform[] allTransforms = Resources.FindObjectsOfTypeAll<Transform>();
+                for (int i = 0; i < allTransforms.Length; i++)
+                {
+                    Transform candidate = allTransforms[i];
+                    if (candidate == null)
+                        continue;
+                    if (!candidate.name.Contains(SourceRootName))
+                        continue;
 
-                GameObject go = candidate.gameObject;
-                if (go == null)
-                    continue;
+                    GameObject go = candidate.gameObject;
+                    if (go == null)
+                        continue;
 
-                // Ignore persistent project assets; only touch scene/runtime objects.
-                if (!go.scene.IsValid())
-                    continue;
+                    // Ignore persistent project assets; only touch scene/runtime objects.
+                    if (!go.scene.IsValid())
+                        continue;
 
-                if (!roots.Contains(candidate))
-                    roots.Add(candidate);
+                    if (!s_sourceRoots.Contains(candidate))
+                        s_sourceRoots.Add(candidate);
+                }
             }
 
-            for (int rootIndex = 0; rootIndex < roots.Count; rootIndex++)
+            if (sourceRoot != null && !s_sourceRoots.Contains(sourceRoot))
+                s_sourceRoots.Add(sourceRoot);
+
+            bool force = Time.unscaledTime >= s_nextForceSweep;
+            if (force) s_nextForceSweep = Time.unscaledTime + 2f;
+
+            for (int rootIndex = s_sourceRoots.Count - 1; rootIndex >= 0; rootIndex--)
             {
-                Transform root = roots[rootIndex];
+                Transform root = s_sourceRoots[rootIndex];
                 if (root == null)
+                {
+                    s_sourceRoots.RemoveAt(rootIndex);
                     continue;
+                }
+
+                int count = root.hierarchyCount;
+                s_sourceRootCounts.TryGetValue(root, out int lastCount);
+                if (!force && count == lastCount)
+                    continue;
+                s_sourceRootCounts[root] = count;
 
                 Transform[] children = root.GetComponentsInChildren<Transform>(true);
                 for (int i = 0; i < children.Length; i++)
                 {
                     Transform child = children[i];
                     if (child == null || child == root)
+                        continue;
+
+                    // 已经处理过（停用并改过名）的残留提示不要再重复处理
+                    if (!child.gameObject.activeSelf && child.name.StartsWith(DisabledStalePrefix, System.StringComparison.Ordinal))
                         continue;
 
                     if (!IsQuickPromptObjectName(child.name))
@@ -581,6 +638,15 @@ namespace SkyPrison.Runtime.UI
                 }
             }
         }
+
+        // 关了「进入 Play 模式时重载域」的话静态变量会跨次保留，这里每次进 Play 前清掉
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() { s_globalScanned = false; s_nextForceSweep = 0f; s_sourceRoots.Clear(); s_sourceRootCounts.Clear(); }
+
+        private static bool s_globalScanned;
+        private static float s_nextForceSweep;
+        private static readonly List<Transform> s_sourceRoots = new List<Transform>();
+        private static readonly Dictionary<Transform, int> s_sourceRootCounts = new Dictionary<Transform, int>();
 
         private void SuppressQuickPromptInSource(Transform promptTransform)
         {
@@ -680,26 +746,29 @@ namespace SkyPrison.Runtime.UI
         {
             Vector3 offscreenWorldPosition = GetOffscreenWorldPosition();
 
+            // 这个函数每帧都会被调用：值没变就不要写（SetParent / position 之类每次写入都会标脏变换层级）
             if (sourceRoot != null)
             {
-                sourceRoot.SetParent(null, true);
-                sourceRoot.position = offscreenWorldPosition;
-                sourceRoot.rotation = Quaternion.identity;
-                sourceRoot.localScale = Vector3.one;
-                sourceRoot.anchorMin = Vector2.zero;
-                sourceRoot.anchorMax = Vector2.zero;
-                sourceRoot.pivot = new Vector2(0.5f, 0.5f);
+                if (sourceRoot.parent != null) sourceRoot.SetParent(null, true);
+                if (sourceRoot.position != offscreenWorldPosition) sourceRoot.position = offscreenWorldPosition;
+                if (sourceRoot.rotation != Quaternion.identity) sourceRoot.rotation = Quaternion.identity;
+                if (sourceRoot.localScale != Vector3.one) sourceRoot.localScale = Vector3.one;
+                if (sourceRoot.anchorMin != Vector2.zero) sourceRoot.anchorMin = Vector2.zero;
+                if (sourceRoot.anchorMax != Vector2.zero) sourceRoot.anchorMax = Vector2.zero;
+                var pivotWanted = new Vector2(0.5f, 0.5f);
+                if (sourceRoot.pivot != pivotWanted) sourceRoot.pivot = pivotWanted;
             }
 
             if (sourceCamera != null)
             {
-                sourceCamera.transform.position = offscreenWorldPosition + new Vector3(0f, 0f, -1f);
-                sourceCamera.transform.rotation = Quaternion.identity;
-                sourceCamera.orthographic = true;
-                sourceCamera.nearClipPlane = -100f;
-                sourceCamera.farClipPlane = 100f;
-                sourceCamera.clearFlags = CameraClearFlags.SolidColor;
-                sourceCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
+                Vector3 camPos = offscreenWorldPosition + new Vector3(0f, 0f, -1f);
+                if (sourceCamera.transform.position != camPos) sourceCamera.transform.position = camPos;
+                if (sourceCamera.transform.rotation != Quaternion.identity) sourceCamera.transform.rotation = Quaternion.identity;
+                if (!sourceCamera.orthographic) sourceCamera.orthographic = true;
+                if (sourceCamera.nearClipPlane != -100f) sourceCamera.nearClipPlane = -100f;
+                if (sourceCamera.farClipPlane != 100f) sourceCamera.farClipPlane = 100f;
+                if (sourceCamera.clearFlags != CameraClearFlags.SolidColor) sourceCamera.clearFlags = CameraClearFlags.SolidColor;
+                if (sourceCamera.backgroundColor != new Color(0f, 0f, 0f, 0f)) sourceCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
             }
         }
 
@@ -733,7 +802,7 @@ namespace SkyPrison.Runtime.UI
             {
                 ReleaseRTOnly();
                 rtSize = wanted;
-                moduleRT = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32)
+                moduleRT = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32)
                 {
                     name = $"RT_HUDModule_{name}_V87",
                     hideFlags = HideFlags.HideAndDontSave,

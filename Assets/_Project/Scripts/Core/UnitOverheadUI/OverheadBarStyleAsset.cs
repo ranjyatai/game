@@ -43,6 +43,13 @@ public class OverheadBarStyleAsset : ScriptableObject
     public Color damageReferenceColor = new Color(0.42f, 0.12f, 0.12f, 1f);
 
     public Vector2 barSize = new Vector2(150f, 14f);
+
+    [Header("血条描边（极细黑边，让白色血条在亮地面上也看得清）")]
+    public bool enableBarOutline = true;
+    public float barOutlineThickness = 1f;
+    [Tooltip("描边在屏幕上至少要有多少像素，远了/缩小了也不会细到看不见。")]
+    public float barOutlineMinScreenPixels = 1.5f;
+    public Color barOutlineColor = new Color(0f, 0f, 0f, 0.95f);
     public Vector2 hpBarOffset = Vector2.zero;
     public Vector2 nameOffset = new Vector2(0f, 16f);
     public float rotationZ = 0f;

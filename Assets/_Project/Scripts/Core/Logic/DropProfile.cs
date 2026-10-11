@@ -19,7 +19,7 @@ public class DropProfile : ScriptableObject
         public bool enabled = true;
 
         [Header("掉落物品")]
-        public ScriptableObject itemDefinition;
+        public ItemDefinition itemDefinition;
 
         [Header("独立判定参数")]
         [Range(0f, 1f)]

@@ -136,6 +136,9 @@ public class UnitFootstepAudioEmitter : MonoBehaviour
     [SerializeField] private float defaultMinDistance = 1f;
     [SerializeField] private float defaultMaxDistance = 12f;
     [SerializeField] private float globalVolumeMultiplier = 1f;
+    [Tooltip("非玩家单位（敌人/NPC）的脚步声输出音量倍率：0.5 = 比玩家小一半。只影响播放出来的音量，不影响给 AI 听觉用的噪声强度。")]
+    [SerializeField, Range(0f, 1f)] private float nonPlayerOutputMultiplier = 0.5f;
+    private int _ownerIsPlayerCache = -1;   // -1 未解析 / 0 不是玩家 / 1 是玩家
     [SerializeField] private Vector2 fallbackRandomPitchRange = new Vector2(0.98f, 1.03f);
 
     [Header("Authoritative 3D / Hearing Sync")]
@@ -1577,10 +1580,20 @@ public class UnitFootstepAudioEmitter : MonoBehaviour
     private float GetEffectiveFootstepOutputMasterMultiplier()
     {
         SkyPrisonAudioGlobalSettings settings = GetGlobalAudioSettings();
-        if (settings != null && settings.useGlobalFootstepSettings)
-            return settings.GetFootstepOutputMultiplier(globalVolumeMultiplier);
+        float master = settings != null && settings.useGlobalFootstepSettings
+            ? settings.GetFootstepOutputMultiplier(globalVolumeMultiplier)
+            : Mathf.Max(0f, globalVolumeMultiplier);
+        return OwnerIsPlayer() ? master : master * nonPlayerOutputMultiplier;
+    }
 
-        return Mathf.Max(0f, globalVolumeMultiplier);
+    // 单位定义还没绑定好时按"玩家"处理（不压音量）且不缓存，等下次再判。
+    private bool OwnerIsPlayer()
+    {
+        if (_ownerIsPlayerCache >= 0) return _ownerIsPlayerCache == 1;
+        UnitDefinitionRuntimeBinder binder = GetComponent<UnitDefinitionRuntimeBinder>() ?? GetComponentInParent<UnitDefinitionRuntimeBinder>(true);
+        if (binder == null || binder.UnitDefinitionAsset == null) return true;
+        _ownerIsPlayerCache = binder.UnitDefinitionAsset.characterIdentity == CharacterIdentity.Player ? 1 : 0;
+        return _ownerIsPlayerCache == 1;
     }
 
     private float GetEffectiveFootstepNoiseMasterMultiplier()

@@ -29,15 +29,20 @@ public sealed class HologramCoverageFeature : ScriptableRendererFeature
     [Tooltip("扫描 Character2D 层渲染器的间隔帧数。材质切换每帧都会检查，这里只管新生成/销毁的角色。")]
     [SerializeField] private int scanIntervalFrames = 30;
 
+    private static readonly int k_ShadowActiveId = Shader.PropertyToID("_SP_LampShadowCoverageActive");
+
     private HologramCoveragePass _holoPass;
     private GhostCoveragePass _ghostPass;
+    private LampShadowCoveragePass _shadowPass;
     private RenderTexture _holoRt;
     private RenderTexture _ghostRt;
+    private RenderTexture _shadowRt;
 
     public override void Create()
     {
         _holoPass = new HologramCoveragePass { renderPassEvent = RenderPassEvent.BeforeRenderingTransparents };
         _ghostPass = new GhostCoveragePass { renderPassEvent = RenderPassEvent.BeforeRenderingTransparents };
+        _shadowPass = new LampShadowCoveragePass { renderPassEvent = RenderPassEvent.BeforeRenderingTransparents };
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
@@ -50,6 +55,7 @@ public sealed class HologramCoverageFeature : ScriptableRendererFeature
         {
             Shader.SetGlobalFloat(k_HoloActiveId, 0f);
             Shader.SetGlobalFloat(k_GhostActiveId, 0f);
+            Shader.SetGlobalFloat(k_ShadowActiveId, 0f);
             return;
         }
 
@@ -59,6 +65,7 @@ public sealed class HologramCoverageFeature : ScriptableRendererFeature
         // 先关掉，Pass 真正执行完才在命令缓冲里打开——这一帧没入队就保持旧行为。
         Shader.SetGlobalFloat(k_HoloActiveId, 0f);
         Shader.SetGlobalFloat(k_GhostActiveId, 0f);
+        Shader.SetGlobalFloat(k_ShadowActiveId, 0f);
 
         var desc = renderingData.cameraData.cameraTargetDescriptor;
         int w = desc.width, h = desc.height;
@@ -77,6 +84,14 @@ public sealed class HologramCoverageFeature : ScriptableRendererFeature
             EnsureRT(ref _ghostRt, w, h, RenderTextureFormat.ARGBHalf, "RT_GhostCoverage");
             _ghostPass.SetTarget(_ghostRt);
             renderer.EnqueuePass(_ghostPass);
+        }
+
+        var shadowDraws = SkyPrisonCharacterEnvironmentLightReceiver.CurrentSilhouetteDraws;
+        if (shadowDraws.Count > 0)
+        {
+            EnsureRT(ref _shadowRt, w, h, RenderTextureFormat.RHalf, "RT_LampShadowCoverage");
+            _shadowPass.Setup(_shadowRt, shadowDraws);
+            renderer.EnqueuePass(_shadowPass);
         }
     }
 
@@ -99,8 +114,10 @@ public sealed class HologramCoverageFeature : ScriptableRendererFeature
     {
         Shader.SetGlobalFloat(k_HoloActiveId, 0f);
         Shader.SetGlobalFloat(k_GhostActiveId, 0f);
+        Shader.SetGlobalFloat(k_ShadowActiveId, 0f);
         if (_holoRt != null) { _holoRt.Release(); _holoRt = null; }
         if (_ghostRt != null) { _ghostRt.Release(); _ghostRt = null; }
+        if (_shadowRt != null) { _shadowRt.Release(); _shadowRt = null; }
     }
 
     private struct DrawEntry
@@ -268,5 +285,80 @@ public sealed class HologramCoverageFeature : ScriptableRendererFeature
 
             return _draws.Count > 0;
         }
+    }
+
+    /// <summary>灯光轮廓影子的计数：SkyPrisonCharacterEnvironmentLightReceiver 本帧登记的影子网格，
+    /// 用影子材质的 LampShadowCoverage Pass 画进 _SP_LampShadowCoverage。乘法混合下的去重公式见
+    /// SkyPrisonLampSilhouetteShadow.shader 头部。</summary>
+    private sealed class LampShadowCoveragePass : ScriptableRenderPass
+    {
+        private static readonly int k_TexId = Shader.PropertyToID("_SP_LampShadowCoverage");
+
+        private readonly List<SkyPrisonCharacterEnvironmentLightReceiver.SilhouetteDraw> _draws =
+            new List<SkyPrisonCharacterEnvironmentLightReceiver.SilhouetteDraw>();
+        private RenderTexture _rt;
+        private int _passIndex = -1;
+        private Shader _passShader;
+
+        public void Setup(RenderTexture rt, IReadOnlyList<SkyPrisonCharacterEnvironmentLightReceiver.SilhouetteDraw> draws)
+        {
+            _rt = rt;
+            _draws.Clear();
+            for (int i = 0; i < draws.Count; i++)
+                _draws.Add(draws[i]);
+        }
+
+        private class PassData
+        {
+            public List<SkyPrisonCharacterEnvironmentLightReceiver.SilhouetteDraw> draws;
+            public RenderTexture rt;
+            public int pass;
+        }
+
+        public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
+        {
+            if (_rt == null || _draws.Count == 0 || _draws[0].material == null)
+                return;
+
+            Shader shader = _draws[0].material.shader;
+            if (shader != _passShader)
+            {
+                _passShader = shader;
+                _passIndex = _draws[0].material.FindPass("LampShadowCoverage");
+            }
+            if (_passIndex < 0)
+                return;
+
+            using (var builder = renderGraph.AddUnsafePass<PassData>("LampShadowCoverage", out var data))
+            {
+                data.draws = _draws;
+                data.rt = _rt;
+                data.pass = _passIndex;
+                builder.AllowPassCulling(false);
+                builder.AllowGlobalStateModification(true);
+
+                builder.SetRenderFunc(static (PassData d, UnsafeGraphContext ctx) =>
+                {
+                    ctx.cmd.SetRenderTarget(d.rt);
+                    ctx.cmd.SetViewport(new Rect(0, 0, d.rt.width, d.rt.height));
+                    ctx.cmd.ClearRenderTarget(false, true, Color.clear);
+
+                    for (int i = 0; i < d.draws.Count; i++)
+                    {
+                        var e = d.draws[i];
+                        if (e.mesh == null || e.material == null)
+                            continue;
+                        ctx.cmd.DrawMesh(e.mesh, e.matrix, e.material, e.submesh, d.pass, e.block);
+                    }
+
+                    ctx.cmd.SetGlobalTexture(k_TexId, d.rt);
+                    ctx.cmd.SetGlobalFloat(k_ShadowActiveId, 1f);
+                });
+            }
+        }
+
+#pragma warning disable CS0618
+        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData) { }
+#pragma warning restore CS0618
     }
 }

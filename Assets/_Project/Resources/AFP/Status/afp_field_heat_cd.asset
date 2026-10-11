@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a59a8e3c3a10b8549b3d66632ce92121, type: 3}
+  m_Name: afp_field_heat_cd
+  m_EditorClassIdentifier: Assembly-CSharp::StatusDefinition
+  statusId: afp_field_heat_cd
+  displayName: "\u7279\u6548\u529B\u573A\uFF1A\u707C\u70ED\xB7\u6062\u590D\u4E2D"
+  note: 
+  description: "\u529B\u573A\u5DF2\u8C41\u514D\u4E00\u6B21\u5F02\u5E38\uFF0C\u6062\u590D\u4E2D\uFF0C\u7ED3\u675F\u540E\u91CD\u65B0\u751F\u6548\u3002"
+  localizedNames:
+  - languageCode: zh-CN
+    text: "\u7279\u6548\u529B\u573A\uFF1A\u707C\u70ED\xB7\u6062\u590D\u4E2D"
+  - languageCode: ja
+    text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u707C\u71B1\xB7\u56DE\u5FA9\u4E2D"
+  - languageCode: en
+    text: "Effect Field: Heat \xB7 Recharging"
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: "\u529B\u573A\u5DF2\u8C41\u514D\u4E00\u6B21\u5F02\u5E38\uFF0C\u6062\u590D\u4E2D\uFF0C\u7ED3\u675F\u540E\u91CD\u65B0\u751F\u6548\u3002"
+  - languageCode: ja
+    text: "\u30D5\u30A3\u30FC\u30EB\u30C9\u304C\u7570\u5E38\u3092\u7121\u52B9\u5316\u3057\u305F\u3002\u56DE\u5FA9\u5F8C\u306B\u518D\u3073\u6709\u52B9\u306B\u306A\u308B\u3002"
+  - languageCode: en
+    text: The field negated an anomaly and is recharging.
+  isStandard: 0
+  isBuff: 0
+  isHidden: 0
+  showInHud: 1
+  icon: {fileID: 21300000, guid: fa8c066c81b9ac04dbcac2f05e03266c, type: 3}
+  grantMode: 0
+  accumulationSourceKey: 
+  accumulationThreshold: 0
+  durationType: 1
+  baseDuration: 150
+  durationUpdateMode: 0
+  maxDuration: 0
+  canStack: 0
+  baseStack: 1
+  maxStack: 1
+  stackUpdateMode: 0
+  attributeModifiers: []
+  enableDot: 0
+  dotTickInterval: 1
+  dotTargetResource: 0
+  dotValueMode: 0
+  dotBaseValue: 0
+  dotPercentValue: 0
+  dotReferenceAttributeKey: 
+  dotReferenceAttributeDisplayName: 
+  dotReferenceAttributeValueType: 1
+  dotAttributeRatio: 1
+  dotStackMode: 0
+  dotStackAddValue: 0
+  dotAffectedByResistance: 1
+  dotCanKill: 1
+  dotDamageTypeKey: 
+  dotDamageTypeDisplayName: 
+  onApplyTriggerKey: 
+  onTickTriggerKey: 
+  tickInterval: 0
+  onRemoveTriggerKey: 
+  onExpireTriggerKey: 
+  onApplyVfxKey: 
+  persistentVfxKey: 
+  tickVfxKey: 
+  tickVfxInterval: 0
+  onRemoveVfxKey: 
+  onExpireVfxKey: 
+  onApplySfxKey: 
+  onRemoveSfxKey: 
+  onExpireSfxKey: 
+  enableRegain: 0
+  regainRatio: 0
+  useStatusOutline: 0
+  statusOutlineColor: {r: 4, g: 0.25, b: 0.03, a: 1}
+  statusOutlineWidthPixels: 3
+  statusOutlineWidthVariance: 0.6
+  statusOutlineFlowSpeed: 0.6
+  statusOutlineNoiseScale: 0.3
+  statusOutlineFadeInSeconds: 0.35
+  statusOutlineFadeOutSeconds: 0.6
+  statusGlowRadiusPixels: 12
+  statusGlowIntensity: 1
+  statusGlowInnerColor: {r: 1, g: 0.6, b: 0.12, a: 1}
+  statusGlowOuterColor: {r: 1, g: 0.3, b: 0.06, a: 1}
+  statusGlowVariance: 0.7
+  statusGlowNoiseScale: 5
+  useStatusFlash: 0
+  statusFlashColor: {r: 1, g: 0.45, b: 0.45, a: 1}
+  statusFlashDuration: 0.3
+  statusFlashAlphaDip: 0.35

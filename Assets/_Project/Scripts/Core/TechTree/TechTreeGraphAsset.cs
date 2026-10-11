@@ -36,6 +36,8 @@ public class TechTreeNodeData
     [Header("Tree")]
     public int primaryParentIndex = -1;
     public List<TechTreeSecondaryRequirement> secondaryRequirements = new List<TechTreeSecondaryRequirement>();
+    [Tooltip("游戏进度类的外部条件，满足了这个节点才能点（和前置节点的条件同时要满足）。")]
+    public TechTreeExternalCondition externalCondition = TechTreeExternalCondition.None;
 
     [Header("Display")]
     public Sprite icon;
@@ -45,6 +47,13 @@ public class TechTreeNodeData
     [Header("Level")]
     public int maxLevel = 1;
     public List<TechTreeLevelData> levels = new List<TechTreeLevelData>();
+}
+
+public enum TechTreeExternalCondition
+{
+    None = 0,
+    /// <summary>夜间模式已出现（任意夜版被开放过）。</summary>
+    NightModeAppeared = 1,
 }
 
 [Serializable]

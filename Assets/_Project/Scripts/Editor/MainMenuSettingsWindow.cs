@@ -654,6 +654,10 @@ public class MainMenuSettingsWindow : EditorWindow
             EditorUtility.SetDirty(_mainSettings);
             AssetDatabase.SaveAssets();
         }
+
+        EditorGUILayout.Space(8);
+        DrawLogoLanguageSection();
+
         EditorGUILayout.EndScrollView();
 
         // ── 新游戏起点 ────────────────────────────────────────────────────
@@ -738,6 +742,52 @@ public class MainMenuSettingsWindow : EditorWindow
                 EditorUtility.DisplayDialog("找不到", "Build Settings 里没有名为 MainMenu 的场景。", "OK");
         }
         EditorGUILayout.Space(4);
+    }
+
+    // 多语言 LOGO——不想让人手填 languageCode 拼错，直接按项目已配置的语言列表
+    // （跟商店名字多语言用同一个 LocalizationProjectSettings 来源）逐个显示一行
+    // 语言名 + 贴图槽位，选完自动写回 MainMenuSettings.logoTextures，找不到就新建。
+    private void DrawLogoLanguageSection()
+    {
+        EditorGUILayout.LabelField("多语言 LOGO", EditorStyles.boldLabel);
+
+        var settings = LocalizationSettingsUtility.GetOrCreateSettings();
+        if (settings == null || settings.languages.Count == 0)
+        {
+            EditorGUILayout.HelpBox("找不到 LocalizationProjectSettings，或者里面还没配置语言。", MessageType.Warning);
+            return;
+        }
+
+        bool changed = false;
+        foreach (var lang in settings.languages)
+        {
+            if (lang == null || !lang.enabled) continue;
+
+            var entry = _mainSettings.logoTextures.Find(e => e != null && e.languageCode == lang.languageCode);
+            if (entry == null)
+            {
+                entry = new LocalizedLogoEntry { languageCode = lang.languageCode };
+                _mainSettings.logoTextures.Add(entry);
+                changed = true;
+            }
+
+            EditorGUI.BeginChangeCheck();
+            string label = string.IsNullOrEmpty(lang.displayName)
+                ? lang.languageCode
+                : $"{lang.displayName} ({lang.languageCode})";
+            var newTex = (Texture2D)EditorGUILayout.ObjectField(label, entry.texture, typeof(Texture2D), false);
+            if (EditorGUI.EndChangeCheck())
+            {
+                entry.texture = newTex;
+                changed = true;
+            }
+        }
+
+        if (changed)
+        {
+            EditorUtility.SetDirty(_mainSettings);
+            AssetDatabase.SaveAssets();
+        }
     }
 
     // ── Tab 1：读条设置 ───────────────────────────────────────────────────

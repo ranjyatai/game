@@ -126,13 +126,13 @@ MonoBehaviour:
     triggerMode: 1
     primaryKey: 109
     secondaryKey: 0
-    gamepadKey: 337
+    gamepadKey: 0
   - action: 32
     displayName: "\u83DC\u5355"
     triggerMode: 1
     primaryKey: 27
     secondaryKey: 0
-    gamepadKey: 337
+    gamepadKey: 0
   - action: 40
     displayName: "\u5FEB\u6377\u7269\u54C1 1"
     triggerMode: 1
@@ -162,10 +162,16 @@ MonoBehaviour:
     triggerMode: 1
     primaryKey: 99
     secondaryKey: 0
-    gamepadKey: 340
+    gamepadKey: 0
   - action: 25
     displayName: "\u6362\u5F39"
     triggerMode: 1
     primaryKey: 114
     secondaryKey: 0
     gamepadKey: 341
+  - action: 34
+    displayName: "\u4EFB\u52A1\u65E5\u5FD7"
+    triggerMode: 1
+    primaryKey: 108
+    secondaryKey: 0
+    gamepadKey: 0

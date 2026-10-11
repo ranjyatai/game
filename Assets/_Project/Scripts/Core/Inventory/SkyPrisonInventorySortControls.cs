@@ -133,7 +133,7 @@ namespace SkyPrison.Runtime.UI
             _font = FindUsableFont();
 
             // 下拉框：加文字标签 + 点击弹列表
-            _dropdownLabel = EnsureLabel(sortDropdown, "Label", 22);
+            _dropdownLabel = EnsureLabel(sortDropdown, "Label", 28);
             Button ddBtn = sortDropdown.GetComponent<Button>() ?? sortDropdown.gameObject.AddComponent<Button>();
             ddBtn.transition = Selectable.Transition.None;
             ddBtn.onClick.RemoveAllListeners();
@@ -325,7 +325,7 @@ namespace SkyPrison.Runtime.UI
             var go = new GameObject("[InvSort] Popup", typeof(RectTransform));
             var canvas = go.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 1102;
+            { var rc = GetComponentInParent<Canvas>(); canvas.sortingOrder = Mathf.Max(1102, (rc != null ? rc.rootCanvas.sortingOrder : 1100) + 2); }       // 跟着背包窗口当前的层级
             go.AddComponent<GraphicRaycaster>();
             // CanvasGroup：用于 Update 里逐帧镜像父窗口 alpha，确保随窗口淡出完全同步。
             _popupCg = go.AddComponent<CanvasGroup>();
@@ -441,7 +441,7 @@ namespace SkyPrison.Runtime.UI
             trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
             trt.offsetMin = Vector2.zero; trt.offsetMax = Vector2.zero;
             var tint = tintGo.AddComponent<Image>();
-            tint.color = new Color(0.06f, 0.08f, 0.10f, 0.18f); // 极淡冷调，不黑
+            tint.color = new Color(0f, 0f, 0f, 0f); // 不再叠色调：弹层跟窗口本体必须同一个底色(之前叠了 18% 深色，内外有色差)；只保留它吸收空白点击的作用
             tint.raycastTarget = true;
 
             // 底部描边：固定在 Backdrop 底部（fullH 处），随 RectMask2D 裁剪消失，不会向上扫。

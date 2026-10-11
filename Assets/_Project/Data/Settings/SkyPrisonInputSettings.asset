@@ -169,3 +169,9 @@ MonoBehaviour:
     primaryKey: 114
     secondaryKey: 0
     gamepadKey: 341
+  - action: 34
+    displayName: "\u4EFB\u52A1\u65E5\u5FD7"
+    triggerMode: 1
+    primaryKey: 108
+    secondaryKey: 0
+    gamepadKey: 0

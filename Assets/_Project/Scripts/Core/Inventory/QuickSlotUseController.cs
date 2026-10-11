@@ -102,7 +102,7 @@ public class QuickSlotUseController : MonoBehaviour
         if (def.cooldown > 0f) ItemCooldownTracker.StartCooldown(def.itemKey, def.cooldown);
 
         ItemEffectExecutor.Execute(def.effects, playerGo, def);
-        if (def.general.consumeOnUse) inv.DiscardSlot(slotIndex, 1);
+        if (def.general.consumeOnUse && TechTreePerks.OnConsumableUsed()) inv.DiscardSlot(slotIndex, 1);
 
         SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Confirm);
     }

@@ -165,7 +165,8 @@ public class UnitOverheadHealthBridge : MonoBehaviour
         // 改成走GetLocalizedDisplayName()，跟对话窗口标题名字同一套走法。
         string localizedName = ud.GetLocalizedDisplayName();
         overheadView.SetDisplayName(string.IsNullOrWhiteSpace(localizedName) ? ud.name : localizedName);
-        overheadView.SetNameVisible(ud.autoOverheadNameVisibility ? (ud.characterIdentity == CharacterIdentity.Ally) : ud.manualShowOverheadName);
+        bool nameVisible = ud.autoOverheadNameVisibility ? (ud.characterIdentity == CharacterIdentity.Ally) : ud.manualShowOverheadName;
+        overheadView.SetNameVisible(nameVisible && ud.characterIdentity != CharacterIdentity.Boss);
     }
 
     private void SyncAllNow()
@@ -199,6 +200,9 @@ public class UnitOverheadHealthBridge : MonoBehaviour
         bool showName = false;
         if (ud != null)
             showName = ud.autoOverheadNameVisibility ? (ud.characterIdentity == CharacterIdentity.Ally) : ud.manualShowOverheadName;
+        // BOSS 用屏幕顶部的 BOSS 血条(SkyPrisonBossHealthBar)，头顶不显示名字和血条
+        bool isBoss = ud != null && ud.characterIdentity == CharacterIdentity.Boss;
+        if (isBoss) showName = false;
 
         // 名字如果已经切到"靠近淡入/远离淡出"模式(NPCDialogueInteractable)，这里就
         // 别再抢着SetActive了——死亡还是要强制隐藏(deadLike优先)，正常情况下的显隐
@@ -209,7 +213,22 @@ public class UnitOverheadHealthBridge : MonoBehaviour
 
         CanvasGroup cg = overheadView.slotRoot01 != null ? overheadView.slotRoot01.GetComponent<CanvasGroup>() : null;
 
-        if (deadLike)
+        if (isBoss)
+        {
+            // 跟玩家一样：整个头顶 UI 根节点的 CanvasGroup 透明度压成 0。
+            // 光关 slotRoot01 不够：头顶 UI 走了模块离屏 RT，它的输出图(白方块)不在 slotRoot01 下面，关不掉。
+            var rootCg = overheadView.GetComponent<CanvasGroup>();
+            if (rootCg == null) rootCg = overheadView.gameObject.AddComponent<CanvasGroup>();
+            rootCg.alpha = 0f;
+            // 再把头顶 UI 的 Canvas 直接关掉(它的模块 RT 输出图会在 CanvasGroup 之外残留成白方块)
+            if (overheadView.runtimeUiRoot != null)
+            {
+                var cv = overheadView.runtimeUiRoot.GetComponent<Canvas>();
+                if (cv != null) cv.enabled = false;
+            }
+            if (overheadView.slotRoot01 != null) overheadView.slotRoot01.gameObject.SetActive(false);
+        }
+        else if (deadLike)
         {
             // 死亡期间：虚血还在衰减就保持显示（让血条空/虚血慢慢消退），
             // 虚血彻底归零后才隐藏整个 slotRoot01
@@ -289,14 +308,14 @@ public class UnitOverheadHealthBridge : MonoBehaviour
     }
 
     public void ShowDamageNumberByKey(string damageTypeKey, float amount, bool isHeal = false,
-        bool isPositiveCrit = false, bool isNegativeCrit = false)
+        bool isPositiveCrit = false, bool isNegativeCrit = false, bool isLethalShot = false)
     {
         if (overheadView == null || amount <= 0f)
             return;
 
         EnsureBattleParameterDatabase();
         Color color = ResolveDamageNumberColor(damageTypeKey, isHeal);
-        overheadView.ShowDamageNumber(amount, color, isHeal, isPositiveCrit, isNegativeCrit);
+        overheadView.ShowDamageNumber(amount, color, isHeal, isPositiveCrit, isNegativeCrit, isLethalShot);
     }
 
     private Color ResolveDamageNumberColor(string damageTypeKey, bool isHeal)

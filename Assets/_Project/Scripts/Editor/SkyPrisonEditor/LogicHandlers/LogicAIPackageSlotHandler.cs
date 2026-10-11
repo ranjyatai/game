@@ -36,7 +36,7 @@ public class LogicAIPackageSlotHandler : ILogicSlotHandler
                 break;
 
             case LogicValueSourceType.Variable:
-                value.variableKey = EditorGUILayout.TextField("变量Key", value.variableKey);
+                LogicVariablePickerGUI.DrawVariablePicker(value, LogicSlotValueType.AIBehaviorPackage);
                 break;
 
             case LogicValueSourceType.ContextReference:

@@ -425,6 +425,62 @@ public class UnitDeathController : MonoBehaviour
             animator.SetTrigger(deathTriggerName);
     }
 
+    // 空中死亡：马达（管重力的）一死就被禁用，尸体会定在空中。这里在禁用之前先量好地面高度，
+    // 之后用一小段简易重力把尸体落到地面。
+    private const float DeathFallGravity = 30f;
+    private const float DeathFallMinHeight = 0.15f;
+    private Coroutine _deathFallRoutine;
+
+    private void BeginDeathFallIfAirborne(UnitMovementController move)
+    {
+        if (move == null) return;
+        Rigidbody rb = move.CachedRigidbody != null ? move.CachedRigidbody : GetComponentInParent<Rigidbody>();
+        Transform body = rb != null ? rb.transform : move.transform;
+
+        float groundY;
+        if (move.CurrentGroundHasGround) groundY = move.CurrentGroundY;
+        else if (!TryRaycastGround(body, out groundY)) return;
+
+        if (body.position.y - groundY < DeathFallMinHeight) return;
+        move.SetJumpVerticalPhysicsFrozen(false);              // 解除"空中悬停"之类的冻结，别影响落地
+        if (_deathFallRoutine != null) StopCoroutine(_deathFallRoutine);
+        _deathFallRoutine = StartCoroutine(DeathFallRoutine(body, rb, groundY));
+    }
+
+    private bool TryRaycastGround(Transform body, out float groundY)
+    {
+        groundY = 0f;
+        Vector3 origin = body.position + Vector3.up * 0.3f;
+        RaycastHit[] hits = Physics.RaycastAll(origin, Vector3.down, 40f, ~0, QueryTriggerInteraction.Ignore);
+        float best = float.NegativeInfinity;
+        for (int i = 0; i < hits.Length; i++)
+        {
+            if (hits[i].collider == null) continue;
+            if (hits[i].collider.transform.IsChildOf(body) || body.IsChildOf(hits[i].collider.transform)) continue;
+            if (hits[i].point.y > best) best = hits[i].point.y;
+        }
+        if (float.IsNegativeInfinity(best)) return false;
+        groundY = best;
+        return true;
+    }
+
+    private System.Collections.IEnumerator DeathFallRoutine(Transform body, Rigidbody rb, float groundY)
+    {
+        float vy = 0f;
+        for (float t = 0f; t < 2f; t += Time.deltaTime)
+        {
+            if (body == null) yield break;
+            vy -= DeathFallGravity * Time.deltaTime;
+            Vector3 p = body.position;
+            p.y = Mathf.Max(groundY, p.y + vy * Time.deltaTime);
+            body.position = p;
+            if (rb != null) rb.position = p;
+            if (p.y <= groundY + 0.001f) break;
+            yield return null;
+        }
+        _deathFallRoutine = null;
+    }
+
     private void ApplyDeathState()
     {
         if (disableMovementOnDeath)
@@ -432,6 +488,7 @@ public class UnitDeathController : MonoBehaviour
             UnitMovementController move = GetComponent<UnitMovementController>()
                                        ?? GetComponentInParent<UnitMovementController>(true)
                                        ?? GetComponentInChildren<UnitMovementController>(true);
+            BeginDeathFallIfAirborne(move);          // 必须在禁用 move/motor 之前：要读它们记录的地面高度
             if (move != null)
                 move.enabled = false;
 
@@ -483,6 +540,7 @@ public class UnitDeathController : MonoBehaviour
 
     private void RestoreAliveState()
     {
+        if (_deathFallRoutine != null) { StopCoroutine(_deathFallRoutine); _deathFallRoutine = null; }
         if (disableMovementOnDeath)
         {
             UnitMovementController move = GetComponent<UnitMovementController>();

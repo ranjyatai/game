@@ -14,6 +14,10 @@ public enum TerrainDecorationCategory
     Pipe = 7,
     Occluder = 8,
     Mechanism = 9,
+    /// <summary>门（自动门、交互门、演出门）。新增项用显式数值，不影响已有数据。</summary>
+    Door = 10,
+    Stairs = 11,
+    Platform = 12,
     Custom = 100,
 }
 

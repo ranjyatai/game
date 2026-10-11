@@ -544,6 +544,12 @@ public sealed class SkyPrisonQuickItemPromptStrip : MonoBehaviour
                 continue;
             }
 
+            if (i >= QuickSlotRuntime.ActiveCount)      // 没开放的快捷槽：按键提示也不显示
+            {
+                image.gameObject.SetActive(false);
+                continue;
+            }
+
             RectTransform slot = slotRects != null && i < slotRects.Length ? slotRects[i] : null;
             if (slot == null)
             {

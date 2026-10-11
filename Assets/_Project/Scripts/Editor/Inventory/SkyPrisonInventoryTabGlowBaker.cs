@@ -15,7 +15,7 @@ namespace SkyPrison.EditorTools
     {
         private const string MainPrefabPath     = "Assets/_Project/Prefabs/UI/Window/PF_SkyPrisonInventory.prefab";
         private const string MirrorPrefabPath   = "Assets/Resources/UI/Window/PF_SkyPrisonInventory.prefab";
-        public  const string FontPath           = "Assets/_Project/UIUX/Fonts/TMP/msyh SDF.asset";
+        public  const string FontPath           = "Assets/_Project/Resources/Fonts & Materials/ZhouFangRiMingTi-2 SDF.asset";
         private const string GlowMaterialPath   = "Assets/_Project/Materials/UI/Window/M_Inventory_TabGlow.mat";
 
         public  const int    SelectedTabIndex = 0;

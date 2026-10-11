@@ -3274,6 +3274,9 @@ public class SkyPrisonTerrainDecorationDefinitionPage : SkyPrisonEditorPageBase
             case TerrainDecorationCategory.Pipe: return "管线";
             case TerrainDecorationCategory.Occluder: return "遮挡体";
             case TerrainDecorationCategory.Mechanism: return "机关";
+            case TerrainDecorationCategory.Door: return "门";
+            case TerrainDecorationCategory.Stairs: return "楼梯与斜坡";
+            case TerrainDecorationCategory.Platform: return "台体";
             case TerrainDecorationCategory.Custom: return "自定义";
             default: return "未分类";
         }

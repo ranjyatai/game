@@ -105,8 +105,80 @@ public class CharacterPanelController : MonoBehaviour
         catch { return 0f; }
     }
 
+    // ── 第二页「战局能力」：Q / E(手柄 LB / RB)切页，标题栏右侧两个页签也能点 ──────────────────────
+    private int _page;                                   // 0=属性与装备  1=战局能力
+    private CharacterPanelAbilityBlock _abilityBlock;
+    private CharacterPanelAbilityPage _abilityPage;
+    private readonly List<TMP_Text> _pageTabLabels = new List<TMP_Text>();
+    private readonly List<Image> _pageTabLines = new List<Image>();
+
+    private void BuildPageTabs()
+    {
+        string[] names = { L("charpanel_page_stats", "属性"), L("charpanel_page_abilities_v2", "适应系统") };
+        float tabW = 260f, h = SkyPrisonFloatingWindowKit.TitleBarHeight;
+        float right = SkyPrisonFloatingWindowKit.CloseButtonSize + SkyPrisonFloatingWindowKit.CloseButtonMargin * 2f + 24f;
+        var host = MakeRect("PageTabs", _boxRt, new Vector2(1f, 1f), new Vector2(1f, 1f));
+        host.pivot = new Vector2(1f, 1f); host.sizeDelta = new Vector2(tabW * names.Length, h); host.anchoredPosition = new Vector2(-right, 0f);
+        for (int i = 0; i < names.Length; i++)
+        {
+            int captured = i;
+            var tab = MakeRect("Tab" + i, host, new Vector2(0f, 0f), new Vector2(0f, 1f));
+            tab.pivot = new Vector2(0f, 0.5f); tab.sizeDelta = new Vector2(tabW, 0f); tab.anchoredPosition = new Vector2(i * tabW, 0f);
+            var hit = tab.gameObject.AddComponent<Image>(); hit.color = Color.clear;
+            var trig = tab.gameObject.AddComponent<EventTrigger>();
+            var click = new EventTrigger.Entry { eventID = EventTriggerType.PointerClick };
+            click.callback.AddListener(_ => SwitchPage(captured));
+            trig.triggers.Add(click);
+            var label = MakeText(tab, "Label", names[i], SkyPrisonFloatingWindowKit.DecorativeFontSize * 1.15f, FontStyles.Bold, _font);
+            label.alignment = TextAlignmentOptions.Center; label.raycastTarget = false;
+            var lrt = label.rectTransform; lrt.anchorMin = Vector2.zero; lrt.anchorMax = Vector2.one; lrt.offsetMin = lrt.offsetMax = Vector2.zero;
+            var line = MakeRect("Line", tab, new Vector2(0.15f, 0f), new Vector2(0.85f, 0f));
+            line.pivot = new Vector2(0.5f, 0f); line.sizeDelta = new Vector2(0f, 3f);
+            var li = line.gameObject.AddComponent<Image>(); li.raycastTarget = false;
+            _pageTabLabels.Add(label); _pageTabLines.Add(li);
+        }
+        RefreshPageTabs();
+    }
+
+    private void RefreshPageTabs()
+    {
+        for (int i = 0; i < _pageTabLabels.Count; i++)
+        {
+            bool on = i == _page;
+            _pageTabLabels[i].color = on ? Color.white : new Color(1f, 1f, 1f, 0.45f);
+            _pageTabLines[i].color = on ? new Color(0.42f, 0.92f, 0.68f, 1f) : new Color(1f, 1f, 1f, 0f);
+        }
+    }
+
+    private void SwitchPage(int page)
+    {
+        page = Mathf.Clamp(page, 0, 1);
+        if (page == _page) return;
+        _page = page;
+        SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Switch);
+        ApplyPageVisibility();
+    }
+
+    // 第一页的东西(属性行 / 装备列 / 战局能力摘要)和第二页互斥显示；属性行会被事件整块销毁重建，所以重建后也要再调一次
+    private void ApplyPageVisibility()
+    {
+        bool first = _page == 0;
+        if (_statsRoot != null) _statsRoot.gameObject.SetActive(first);
+        if (_equipColumnRt != null) _equipColumnRt.gameObject.SetActive(first);
+        if (_abilityBlock != null) _abilityBlock.gameObject.SetActive(first);     // 没有能力时它自己不生成任何子物体，所以保持激活让它能继续轮询
+        if (_abilityPage != null) _abilityPage.gameObject.SetActive(!first);
+        RefreshPageTabs();
+    }
+
+    private void HandlePageKeys()
+    {
+        if (Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.JoystickButton4)) SwitchPage(_page - 1);
+        if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.JoystickButton5)) SwitchPage(_page + 1);
+    }
+
     private void Update()
     {
+        HandlePageKeys();
         SkyPrisonFloatingWindowKit.DriveHintBarAvoidance(_boxRt, _boxWorldCorners);
         PollEquipInventoryStillOpen();
         HandleEquipCursorNavigation();
@@ -117,6 +189,7 @@ public class CharacterPanelController : MonoBehaviour
         // 本身变成每帧持续校正：只是几个属性赋值+一次小字典遍历，开销可以忽略，
         // 但能保证不管背后是什么时序问题，下一帧必然会被纠正回真实装备状态。
         if (_equipSlotsBuilt) RefreshEquipmentSlotColors();
+        RefreshEquipWeightText();
     }
 
     // 光标在背包里悬浮武器/装备格子时，实时算"换上它会怎么变化"——轮询式，跟
@@ -421,6 +494,7 @@ public class CharacterPanelController : MonoBehaviour
 
         EquipmentRuntime.OnEquipped += HandleEquipmentChanged;
         EquipmentRuntime.OnUnequipped += HandleEquipmentChanged;
+        DurabilitySystem.OnDurabilityChanged += HandleDurabilityChanged;
         QuickSlotRuntime.OnSlotChanged += HandleQuickSlotChanged;
         // 快捷物品行要感知"数量用没了"——绑定关系本身不会因为用光而改变（见
         // QuickSlotRuntime 头注释），只有背包数量真的变了（用掉/捡到）才需要重新刷这一行
@@ -441,6 +515,8 @@ public class CharacterPanelController : MonoBehaviour
             SkyPrisonWindowHint.Icon("mouse/left", "点击", L("ui_hint_open_equip", "选择装备")),
             SkyPrisonWindowHint.GamepadIcon("gamepad/up",     "↕", L("ui_hint_move",        "移动")),
             SkyPrisonWindowHint.GamepadIcon("gamepad/xbox/a", "A", L("ui_hint_open_equip",  "打开装备")),
+            new SkyPrisonWindowHint { iconKey = "keyboard/q", gamepadIconKey = "gamepad/xbox/lb", fallbackText = "Q", label = L("charpanel_hint_prev_page", "上一页") },
+            new SkyPrisonWindowHint { iconKey = "keyboard/e", gamepadIconKey = "gamepad/xbox/rb", fallbackText = "E", label = L("charpanel_hint_next_page", "下一页") },
             SkyPrisonWindowHint.Action(SkyPrisonInputAction.CharacterPanel, L("ui_hint_close", "关闭")),
         });
     }
@@ -803,6 +879,11 @@ public class CharacterPanelController : MonoBehaviour
     // 装备槽一起摧毁重建，如果角色身上挂着持续跳的 HP/LP 恢复，鼠标正悬停旋转到
     // 一半的弧线会被这个重建打断、瞬间弹回初始角度再重新转起来，看着就是"转一圈
     // 抽搐一下"。HP/属性变化只需要重建文字这几行，跟装备槽的悬停旋转状态无关。
+    private void HandleDurabilityChanged(InventoryItemEntry entry, int oldDurability, int newDurability)
+    {
+        if (_equipSlotsBuilt) RefreshEquipmentSlotColors();
+    }
+
     private void HandleEquipmentChanged(EquipmentSlotType slot, InventoryItemEntry entry)
     {
         BuildStatsAndEquipment(animate: false);
@@ -958,6 +1039,7 @@ public class CharacterPanelController : MonoBehaviour
         rootRt.offsetMax = new Vector2(-EquipColumnReserve, -TopReserve); // 顶上让出标题栏高度，右边让出装备槽
         _statsRoot = rootRt;
         _statsRootCg = rootRt.gameObject.AddComponent<CanvasGroup>();
+        rootRt.gameObject.SetActive(_page == 0);
 
         _scanLineRt = MakeRect("ScanLine", rootRt, new Vector2(0f, 1f), new Vector2(0f, 1f));
         _scanLineRt.pivot = new Vector2(0.5f, 1f);
@@ -1356,6 +1438,8 @@ public class CharacterPanelController : MonoBehaviour
     private readonly Dictionary<EquipmentSlotType, Image> _equipRowIcons = new Dictionary<EquipmentSlotType, Image>();
     private readonly Dictionary<EquipmentSlotType, Image> _equipRowGhosts = new Dictionary<EquipmentSlotType, Image>();
     private readonly Dictionary<EquipmentSlotType, TMP_Text> _equipRowNameTexts = new Dictionary<EquipmentSlotType, TMP_Text>();
+    // 装备行右侧的耐久读数（武器/防具有耐久时显示"耐久 87/100"，颜色跟耐久状态走）
+    private readonly Dictionary<EquipmentSlotType, TMP_Text> _equipRowDurabilityTexts = new Dictionary<EquipmentSlotType, TMP_Text>();
     private readonly Dictionary<int, Image> _quickSlotRowIcons = new Dictionary<int, Image>();
     private readonly Dictionary<int, Image> _quickSlotRowGhosts = new Dictionary<int, Image>();
     private readonly Dictionary<int, TMP_Text> _quickSlotRowNameTexts = new Dictionary<int, TMP_Text>();
@@ -1417,6 +1501,21 @@ public class CharacterPanelController : MonoBehaviour
                     kv.Value.font  = _placeholderFont;
                     var rainbow = kv.Value.GetComponent<RainbowTextEffect>();
                     if (rainbow != null) rainbow.enabled = false;
+                }
+            }
+
+            if (_equipRowDurabilityTexts.TryGetValue(kv.Key, out var durText) && durText != null)
+            {
+                var ext = hasItem ? entry.definition.equipment : null;
+                bool showDur = ext != null && ext.maxDurability > 0 && entry.currentDurability >= 0;
+                durText.gameObject.SetActive(showDur);
+                if (showDur)
+                {
+                    durText.text = $"耐久 {entry.currentDurability}/{ext.maxDurability}";
+                    // 白色；耐久比例 ≤ 30%（磨损以下）变淡红，提醒该修了
+                    durText.color = DurabilitySystem.GetRatio(entry) <= 0.3f
+                        ? new Color(1f, 0.55f, 0.55f, 1f)
+                        : Color.white;
                 }
             }
 
@@ -1531,11 +1630,13 @@ public class CharacterPanelController : MonoBehaviour
         y += EquipGroupGap;
         BuildEquipGroupHeader(columnRt, y, L("charpanel_group_quickitem", "快捷物品"));
         y += EquipHeaderHeight;
-        for (int i = 0; i < QuickItemSlotCount; i++)
+        for (int i = 0; i < QuickSlotRuntime.ActiveCount; i++)      // 只列已开放的快捷槽
         {
             BuildEquipRow(columnRt, y, $"{L("charpanel_group_quickitem", "快捷物品")} {i + 1}", null, i);
             y += EquipRowHeight + EquipRowGap;
         }
+
+        BuildEquipWeightText(columnRt);   // 右下角：装备总重(含武器) + 档位
     }
 
     private const float EquipRowCornerSize = 6f * M * W;
@@ -1577,7 +1678,7 @@ public class CharacterPanelController : MonoBehaviour
         img.raycastTarget = false;
     }
 
-    private void BuildEquipGroupHeader(RectTransform column, float y, string label)
+    private RectTransform BuildEquipGroupHeader(RectTransform column, float y, string label)
     {
         var headerRt = MakeRect("Header_" + label, column, new Vector2(0f, 1f), new Vector2(1f, 1f));
         headerRt.pivot = new Vector2(0f, 1f);
@@ -1596,6 +1697,67 @@ public class CharacterPanelController : MonoBehaviour
         var lineImg = lineRt.gameObject.AddComponent<Image>();
         lineImg.color = new Color(1f, 1f, 1f, 0.25f);
         lineImg.raycastTarget = false;
+        return headerRt;
+    }
+
+    // ── 装备总重 / 档位（装备区标题右端）：重装兵器线按装备总重(石英)判档，只算身上装备，不算背包 ─────────────
+    private TMP_Text _equipWeightText;
+    private EquipmentWeightController.WeightTier _shownWeightTier = EquipmentWeightController.WeightTier.Normal;
+    private bool _shownWeightTierInit;
+    private float _weightTierFlash;
+
+    private void BuildEquipWeightText(RectTransform column)
+    {
+        // 列容器底部再往下的留白里，贴右下角
+        var rt = MakeRect("WeightLabelRoot", column, new Vector2(0f, 0f), new Vector2(1f, 0f));   // 横向铺满列宽(宽度为 0 会让文字一字一行竖排)
+        rt.pivot = new Vector2(1f, 1f);
+        rt.anchoredPosition = new Vector2(0f, -6f + EquipHeaderHeight * 1.3f);   // 往上离开右下角的边框
+        rt.sizeDelta = new Vector2(0f, EquipHeaderHeight);
+        var text = MakeText(rt, "WeightLabel", "", SkyPrisonFloatingWindowKit.DecorativeFontSize, FontStyles.Bold, _font);
+        text.alignment = TextAlignmentOptions.MidlineRight;
+        text.raycastTarget = false;
+        text.enableWordWrapping = false;
+        text.overflowMode = TextOverflowModes.Overflow;
+        _equipWeightText = text;
+        _shownWeightTierInit = false;
+    }
+
+    private static string WeightTierName(EquipmentWeightController.WeightTier t, System.Func<string, string, string> L)
+    {
+        switch (t)
+        {
+            case EquipmentWeightController.WeightTier.Light:    return L("charpanel_tier_light", "轻装");
+            case EquipmentWeightController.WeightTier.Heavy:    return L("charpanel_tier_heavy", "重装");
+            case EquipmentWeightController.WeightTier.Overload: return L("charpanel_tier_overload", "超重装");
+            default:                                            return L("charpanel_tier_normal", "标准");
+        }
+    }
+
+    private static Color WeightTierColor(EquipmentWeightController.WeightTier t)
+    {
+        switch (t)
+        {
+            case EquipmentWeightController.WeightTier.Light:    return new Color(0.64f, 1f, 0.78f, 0.95f);
+            case EquipmentWeightController.WeightTier.Heavy:    return new Color(1f, 0.78f, 0.5f, 0.95f);
+            case EquipmentWeightController.WeightTier.Overload: return new Color(1f, 0.62f, 0.58f, 0.95f);
+            default:                                            return new Color(1f, 1f, 1f, 0.7f);
+        }
+    }
+
+    private void RefreshEquipWeightText()
+    {
+        if (_equipWeightText == null) return;
+        var tier = WeightTier;
+        if (!_shownWeightTierInit) { _shownWeightTier = tier; _shownWeightTierInit = true; }
+        else if (tier != _shownWeightTier)
+        {
+            SkyPrisonSystemSEPlayer.Play(tier > _shownWeightTier ? SkyPrisonSystemSEType.EquipTierUp : SkyPrisonSystemSEType.EquipTierDown);
+            _shownWeightTier = tier; _weightTierFlash = 1f;       // 换了装备进入新一档：闪一下 + 一声
+        }
+        _weightTierFlash = Mathf.MoveTowards(_weightTierFlash, 0f, Time.unscaledDeltaTime * 1.6f);
+
+        _equipWeightText.text = $"{L("charpanel_equip_weight", "装备总重")} {TotalEquipWeight:0.#} {L("unit_weight", "石英")}　{WeightTierName(tier, L)}";
+        _equipWeightText.color = Color.Lerp(WeightTierColor(tier), Color.white, _weightTierFlash);
     }
 
     private void BuildEquipRow(RectTransform column, float y, string label, EquipmentSlotType? slot, int? quickSlotIndex)
@@ -1686,6 +1848,15 @@ public class CharacterPanelController : MonoBehaviour
             nameText.font = _placeholderFont;
         }
         if (slot.HasValue) _equipRowNameTexts[slot.Value] = nameText;
+        if (slot.HasValue)
+        {
+            var durRt = MakeRect("Durability", textRt, new Vector2(0f, 0f), new Vector2(1f, 0.5f));
+            var durText = MakeText(durRt, "Durability", "", SkyPrisonFloatingWindowKit.PrimaryFontSize * 0.8f, FontStyles.Normal, _font);
+            durText.alignment = TextAlignmentOptions.TopRight;
+            durText.enableWordWrapping = false;
+            durText.raycastTarget = false;
+            _equipRowDurabilityTexts[slot.Value] = durText;
+        }
         if (quickSlotIndex.HasValue) _quickSlotRowNameTexts[quickSlotIndex.Value] = nameText;
 
         var hover = rowRt.gameObject.AddComponent<CharacterPanelEquipRowHover>();
@@ -1866,8 +2037,15 @@ public class CharacterPanelController : MonoBehaviour
         _dragHandle = titleBarRt.GetComponent<SkyPrisonUIWindowDragHandle>();
         SkyPrisonFloatingWindowKit.BuildCloseButton(_boxRt, Hide, _font);
         BuildSystemCodeDecoration(_boxRt);
+        // 战局能力区块：放在中间那列最下面的空位(属性行下面、系统日志装饰的右边)，跟属性第二列文字左对齐
+        _abilityBlock = CharacterPanelAbilityBlock.Create(_boxRt, _font,
+            new Vector2(40f + StatColumnWidth + StatColumnGap + StatTextInset, 14f * M * W),
+            StatColumnWidth, M * W);
+        _abilityPage = CharacterPanelAbilityPage.Create(_boxRt, _font, new Vector2(40f, 40f), new Vector2(-40f, -TopReserve), M * W, _placeholderFont);
+        BuildPageTabs();
 
         BuildStatsAndEquipment(animate: true);
+        ApplyPageVisibility();
 
         // 开窗动画：从中间一条横线（scaleY=0）展开到完整高度。
         _boxRt.localScale = new Vector3(1f, 0f, 1f);
@@ -1953,6 +2131,7 @@ public class CharacterPanelController : MonoBehaviour
 
         EquipmentRuntime.OnEquipped -= HandleEquipmentChanged;
         EquipmentRuntime.OnUnequipped -= HandleEquipmentChanged;
+        DurabilitySystem.OnDurabilityChanged -= HandleDurabilityChanged;
         QuickSlotRuntime.OnSlotChanged -= HandleQuickSlotChanged;
         if (_inventory != null) _inventory.OnInventoryChanged -= RefreshQuickSlotRows;
         if (_health != null)

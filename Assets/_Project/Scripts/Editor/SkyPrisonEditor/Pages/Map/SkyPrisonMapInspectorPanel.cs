@@ -47,6 +47,9 @@ public class SkyPrisonMapInspectorPanel
 
         page.DrawFoldoutSection("多语言名称", DrawLocalizedNames);
         page.DrawFoldoutSection("多语言描述", DrawLocalizedDescriptions);
+        page.DrawFoldoutSection("进图地名牌 · 经纬度", DrawNameCardSection);
+        page.DrawFoldoutSection("选关显示 · 昼夜主要物资产出", DrawRaidOutputsSection);
+        page.DrawFoldoutSection("资源箱 · 每把最多出几个", DrawLootBoxSection);
         page.DrawFoldoutSection("地图边界", DrawMapBoundsSection);
         page.DrawFoldoutSection("战争迷雾", DrawFogSection);
         page.DrawFoldoutSection("天空与环境", DrawEnvironmentSection);
@@ -157,7 +160,7 @@ public class SkyPrisonMapInspectorPanel
         if (map == null)
             return;
 
-        EditorGUILayout.HelpBox("当前阶段这里只预览 MapBounds 的 XZ 边界比例。后续真正小地图会使用专用美术素材生成。", MessageType.None);
+        EditorGUILayout.HelpBox("俯视快照：正交相机从上往下拍 MapBounds 范围（存到 Art/MapSnapshots）。地图改了之后点「刷新俯视快照」。", MessageType.None);
 
         Vector3 center = map.mapBoundsCenter;
         Vector3 size = map.mapBoundsSize;
@@ -202,6 +205,20 @@ public class SkyPrisonMapInspectorPanel
 
         GUILayout.Space(4f);
 
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("刷新俯视快照", GUILayout.Width(openButtonWidth), GUILayout.Height(24f)))
+        {
+            ApplySelectedMapPropertiesNow();
+            if (!SkyPrisonMapSnapshot.Capture(page.SelectedMap, center, size, out string snapErr))
+                EditorUtility.DisplayDialog("俯视快照", snapErr, "好");
+            GUIUtility.ExitGUI();
+        }
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.EndHorizontal();
+
+        GUILayout.Space(4f);
+
         // 第二行：边界操作
         EditorGUILayout.BeginHorizontal();
         GUILayout.FlexibleSpace();
@@ -237,18 +254,30 @@ public class SkyPrisonMapInspectorPanel
         float scale = Mathf.Min(maxW / safeX, maxH / safeZ);
         Rect mapRect = new Rect(rect.center.x - safeX * scale * 0.5f, rect.center.y - safeZ * scale * 0.5f, safeX * scale, safeZ * scale);
 
-        EditorGUI.DrawRect(mapRect, new Color(0.33f, 0.70f, 0.52f, 0.18f));
-        DrawRectBorder(mapRect, new Color(0.33f, 0.90f, 0.68f, 0.95f));
-
-        EditorGUI.DrawRect(new Rect(mapRect.center.x - 12f, mapRect.center.y, 24f, 1f), new Color(1f, 1f, 1f, 0.28f));
-        EditorGUI.DrawRect(new Rect(mapRect.center.x, mapRect.center.y - 12f, 1f, 24f), new Color(1f, 1f, 1f, 0.28f));
+        Texture2D snap = SkyPrisonMapSnapshot.Load(page.SelectedMap);
+        if (snap != null)
+        {
+            GUI.DrawTexture(mapRect, snap, ScaleMode.StretchToFill, false);
+            DrawRectBorder(mapRect, new Color(0.33f, 0.90f, 0.68f, 0.6f));
+        }
+        else
+        {
+            EditorGUI.DrawRect(mapRect, new Color(0.33f, 0.70f, 0.52f, 0.18f));
+            DrawRectBorder(mapRect, new Color(0.33f, 0.90f, 0.68f, 0.95f));
+            GUIStyle hint = new GUIStyle(EditorStyles.miniLabel)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = new Color(0.88f, 0.92f, 0.90f, 1f) }
+            };
+            GUI.Label(rect, "尚无快照，点下方「刷新俯视快照」", hint);
+        }
 
         GUIStyle style = new GUIStyle(EditorStyles.miniLabel)
         {
-            alignment = TextAnchor.MiddleCenter,
-            normal = { textColor = new Color(0.88f, 0.92f, 0.90f, 1f) }
+            alignment = TextAnchor.LowerRight,
+            normal = { textColor = new Color(0.88f, 0.92f, 0.90f, 0.85f) }
         };
-        GUI.Label(rect, $"MapBounds  X {safeX:0.#} / Z {safeZ:0.#}", style);
+        GUI.Label(new Rect(rect.x, rect.y, rect.width - 4f, rect.height - 2f), $"X {safeX:0.#} / Z {safeZ:0.#}", style);
     }
 
     private void DrawRectBorder(Rect rect, Color color)
@@ -399,6 +428,201 @@ public class SkyPrisonMapInspectorPanel
             string defaultTextValue = defaultTextProp != null ? defaultTextProp.stringValue ?? "" : "";
             if (descriptionPropSync != null && descriptionPropSync.stringValue != defaultTextValue)
                 descriptionPropSync.stringValue = defaultTextValue;
+        }
+    }
+
+    // ── 资源箱：每种箱子这一把最多出几个（候选点位在场景里手摆，进图时随机抽这么多）──
+    private void DrawLootBoxSection()
+    {
+        EditorGUILayout.HelpBox("场景里用放置工具「资源箱点位」手摆候选点位（可以比这里的数量多很多，比如摆 144 个、这里设 85）。\n" +
+            "每一把进图时，每种箱子只从自己的点位里随机抽「昼 / 夜各最多几个」，同种被抽中的点之间保持最小间距；A 和 B 的名额互不占用。", MessageType.None);
+        var so = page.SelectedMapSO; var list = so != null ? so.FindProperty("lootBoxes") : null;
+        if (list == null) { EditorGUILayout.LabelField("字段不存在"); return; }
+
+        int removeAt = -1;
+        for (int i = 0; i < list.arraySize; i++)
+        {
+            var el = list.GetArrayElementAtIndex(i);
+            EditorGUILayout.BeginHorizontal("box");
+            var boxProp = el.FindPropertyRelative("box");
+            var boxUnit = boxProp.objectReferenceValue as UnitDefinition;
+            // 选箱子：直接弹物品池风格的专用选择窗口（带搜索、缩略图），不用 Unity 默认那个只按文件名搜的小选择器
+            if (GUILayout.Button(boxUnit != null ? UnitPickerPopupContent.GetLabel(boxUnit) : "（点此选择箱子）", EditorStyles.popup, GUILayout.MinWidth(160f)))
+            {
+                int rowIndex = i; var map = page.SelectedMap;
+                SkyPrisonItemPickerPopup.OpenFiltered(boxUnit, picked =>
+                {
+                    var u = picked as UnitDefinition; if (u == null || map == null) return;
+                    var so2 = new SerializedObject(map);
+                    var l2 = so2.FindProperty("lootBoxes");
+                    if (rowIndex < 0 || rowIndex >= l2.arraySize) return;
+                    l2.GetArrayElementAtIndex(rowIndex).FindPropertyRelative("box").objectReferenceValue = u;
+                    so2.ApplyModifiedProperties(); EditorUtility.SetDirty(map); AssetDatabase.SaveAssets();
+                    page.EnsureSelectedSerializedObject();
+                    if (EditorWindow.focusedWindow != null) EditorWindow.focusedWindow.Repaint();
+                }, o => o is UnitDefinition ud0 && ud0.defineType == UnitDefineType.Destructible, nameof(UnitDefinition));   // 只列单位里的「可破坏物品」
+            }
+            EditorGUILayout.LabelField("昼", GUILayout.Width(16f));
+            EditorGUILayout.PropertyField(el.FindPropertyRelative("dayCount"), GUIContent.none, GUILayout.Width(44f));
+            EditorGUILayout.LabelField("夜", GUILayout.Width(16f));
+            EditorGUILayout.PropertyField(el.FindPropertyRelative("nightCount"), GUIContent.none, GUILayout.Width(44f));
+            EditorGUILayout.LabelField("间距(米)", GUILayout.Width(54f));
+            EditorGUILayout.PropertyField(el.FindPropertyRelative("minSpacing"), GUIContent.none, GUILayout.Width(52f));
+            var unit = el.FindPropertyRelative("box").objectReferenceValue as UnitDefinition;
+            int pts = unit == null ? 0 : CountLootPointsInOpenScenes(unit);
+            GUILayout.Label("场景点位 " + pts, EditorStyles.miniLabel, GUILayout.Width(74f));
+            if (unit != null && pts > 0)
+            {   // 按当前场景里已摆的点位，用同一套抽选逻辑模拟 20 把：看这个间距实际能抽到多少
+                var pool = new System.Collections.Generic.List<SkyPrisonLootPoint>();
+                foreach (var lp in Object.FindObjectsByType<SkyPrisonLootPoint>(FindObjectsInactive.Include, FindObjectsSortMode.None)) if (lp.box == unit) pool.Add(lp);
+                int mcD = el.FindPropertyRelative("dayCount").intValue, mcN = el.FindPropertyRelative("nightCount").intValue; float sp = el.FindPropertyRelative("minSpacing").floatValue; int sumD = 0, sumN = 0;
+                for (int r = 0; r < 10; r++) { sumD += SkyPrisonLootDirector.Pick(pool, mcD, sp).Count; sumN += SkyPrisonLootDirector.Pick(pool, mcN, sp).Count; }
+                GUILayout.Label("模拟 昼" + (sumD / 10f).ToString("F0") + "/" + mcD + " 夜" + (sumN / 10f).ToString("F0") + "/" + mcN, EditorStyles.miniLabel, GUILayout.Width(120f));
+            }
+            if (GUILayout.Button("×", GUILayout.Width(22f))) removeAt = i;
+            EditorGUILayout.EndHorizontal();
+        }
+        if (removeAt >= 0) { list.DeleteArrayElementAtIndex(removeAt); so.ApplyModifiedProperties(); GUIUtility.ExitGUI(); }
+        EditorGUILayout.LabelField("没在这里添加的箱子 = 这一把出 0 个；添加后数量默认也是 0，需要自己填。", EditorStyles.miniLabel);
+        if (GUILayout.Button("从场景里已摆的点位补全箱子种类（数量 0）", GUILayout.Width(300f)))
+        {
+            var existing = new System.Collections.Generic.HashSet<UnitDefinition>();
+            for (int i = 0; i < list.arraySize; i++) { var u = list.GetArrayElementAtIndex(i).FindPropertyRelative("box").objectReferenceValue as UnitDefinition; if (u != null) existing.Add(u); }
+            foreach (var p in Object.FindObjectsByType<SkyPrisonLootPoint>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (p.box == null || existing.Contains(p.box)) continue;
+                existing.Add(p.box);
+                list.InsertArrayElementAtIndex(list.arraySize);
+                var el2 = list.GetArrayElementAtIndex(list.arraySize - 1);
+                el2.FindPropertyRelative("box").objectReferenceValue = p.box; el2.FindPropertyRelative("dayCount").intValue = 0; el2.FindPropertyRelative("nightCount").intValue = 0; el2.FindPropertyRelative("minSpacing").floatValue = 12f;
+            }
+            so.ApplyModifiedProperties();
+        }
+        if (GUILayout.Button("＋ 添加一种箱子", GUILayout.Width(150f)))
+        {
+            list.InsertArrayElementAtIndex(list.arraySize);
+            var el = list.GetArrayElementAtIndex(list.arraySize - 1);
+            el.FindPropertyRelative("box").objectReferenceValue = null; el.FindPropertyRelative("dayCount").intValue = 0; el.FindPropertyRelative("nightCount").intValue = 0; el.FindPropertyRelative("minSpacing").floatValue = 12f;
+            so.ApplyModifiedProperties();
+        }
+    }
+
+    private static int CountLootPointsInOpenScenes(UnitDefinition unit)
+    {
+        int n = 0;
+        foreach (var p in Object.FindObjectsByType<SkyPrisonLootPoint>(FindObjectsInactive.Include, FindObjectsSortMode.None)) if (p.box == unit) n++;
+        return n;
+    }
+
+    private void DrawNameCardSection()
+    {
+        var so = page.SelectedMapSO;
+        var prop = so != null ? so.FindProperty("coordinates") : null;
+        if (prop == null) { EditorGUILayout.LabelField("字段不存在"); return; }
+        EditorGUILayout.HelpBox("进入这张地图时，左上角地名牌副标行的右端会淡入一行经纬度小字。原样显示，例如 35°41′29″N  139°46′12″E。留空：RAID 自动用选关标记上的坐标，主城、塔等其他地图不显示这一行。", MessageType.None);
+        EditorGUI.BeginChangeCheck();
+        EditorGUILayout.PropertyField(prop, new GUIContent("经纬度"));
+        if (EditorGUI.EndChangeCheck()) { so.ApplyModifiedProperties(); EditorUtility.SetDirty(page.SelectedMap); }
+    }
+
+    private void DrawRaidOutputsSection()
+    {
+        EditorGUILayout.HelpBox("RAID 选关界面（右侧窗口）会读这里：白天 / 夜间各自的「主要物资产出」，显示成一排图标，鼠标放上去可以看物品详情。把物品资产拖进列表即可，顺序就是显示顺序。夜间留空 = 沿用白天的。地图名称和介绍也读上面的多语言字段。", MessageType.None);
+        DrawOutputCards("白天主要产出", "raidDayOutputs");
+        EditorGUILayout.Space(8f);
+        DrawOutputCards("夜间主要产出", "raidNightOutputs");
+    }
+
+    // ── 物品池风格的产出卡片：图标 + 名字，点「＋」弹出专用的物品拾取窗口 ──
+    private const float OutCardW = 84f, OutCardH = 108f, OutIcon = 56f;
+
+    private void DrawOutputCards(string label, string propName)
+    {
+        var so = page.SelectedMapSO;
+        var list = so != null ? so.FindProperty(propName) : null;
+        if (list == null) { EditorGUILayout.LabelField(label, "字段不存在"); return; }
+
+        EditorGUILayout.LabelField(label + "  （" + list.arraySize + " 件）", EditorStyles.boldLabel);
+        float avail = Mathf.Max(OutCardW + 8f, EditorGUIUtility.currentViewWidth - 260f);
+        int perRow = Mathf.Max(1, Mathf.FloorToInt(avail / (OutCardW + 8f)));
+        int total = list.arraySize + 1;                       // 最后一格是「＋」
+        int removeAt = -1, moveFrom = -1, moveTo = -1;
+
+        for (int rowStart = 0; rowStart < total; rowStart += perRow)
+        {
+            EditorGUILayout.BeginHorizontal();
+            for (int i = rowStart; i < Mathf.Min(total, rowStart + perRow); i++)
+            {
+                Rect r = GUILayoutUtility.GetRect(OutCardW, OutCardH, GUILayout.Width(OutCardW), GUILayout.Height(OutCardH));
+                GUILayout.Space(8f);
+                if (i == list.arraySize) { DrawAddCard(r, propName); continue; }
+
+                var def = list.GetArrayElementAtIndex(i).objectReferenceValue as ItemDefinition;
+                GUI.Box(r, GUIContent.none);
+                var iconRect = new Rect(r.x + (OutCardW - OutIcon) * 0.5f, r.y + 8f, OutIcon, OutIcon);
+                DrawItemIcon(iconRect, def);
+                var nameRect = new Rect(r.x + 3f, r.y + 8f + OutIcon + 4f, OutCardW - 6f, 32f);
+                GUI.Label(nameRect, def != null ? def.GetLocalizedDisplayName() : "（空）", new GUIStyle(EditorStyles.miniLabel) { alignment = TextAnchor.UpperCenter, wordWrap = true, clipping = TextClipping.Clip });
+                if (Event.current.type == EventType.MouseDown && iconRect.Contains(Event.current.mousePosition) && def != null) { EditorGUIUtility.PingObject(def); }
+                // 右上角 × 删除；底部 ◀ ▶ 调顺序
+                if (GUI.Button(new Rect(r.xMax - 18f, r.y + 2f, 16f, 16f), "×", EditorStyles.miniButton)) removeAt = i;
+                if (i > 0 && GUI.Button(new Rect(r.x + 2f, r.yMax - 17f, 18f, 15f), "◀", EditorStyles.miniButton)) { moveFrom = i; moveTo = i - 1; }
+                if (i < list.arraySize - 1 && GUI.Button(new Rect(r.xMax - 20f, r.yMax - 17f, 18f, 15f), "▶", EditorStyles.miniButton)) { moveFrom = i; moveTo = i + 1; }
+            }
+            EditorGUILayout.EndHorizontal();
+            GUILayout.Space(6f);
+        }
+
+        if (removeAt >= 0)
+        {
+            if (list.GetArrayElementAtIndex(removeAt).objectReferenceValue != null) list.DeleteArrayElementAtIndex(removeAt);   // 第一次先清空引用
+            list.DeleteArrayElementAtIndex(removeAt);
+            so.ApplyModifiedProperties();
+            GUIUtility.ExitGUI();
+        }
+        else if (moveFrom >= 0)
+        {
+            list.MoveArrayElement(moveFrom, moveTo);
+            so.ApplyModifiedProperties();
+            GUIUtility.ExitGUI();
+        }
+    }
+
+    private void DrawAddCard(Rect r, string propName)
+    {
+        if (GUI.Button(r, "＋\n添加物品", new GUIStyle(GUI.skin.button) { fontSize = 12, alignment = TextAnchor.MiddleCenter }))
+        {
+            var map = page.SelectedMap;
+            SkyPrisonItemPickerPopup.Open(null, picked =>
+            {
+                var def = picked as ItemDefinition;
+                if (def == null || map == null) return;
+                var so2 = new SerializedObject(map);
+                var lp = so2.FindProperty(propName);
+                for (int k = 0; k < lp.arraySize; k++) if (lp.GetArrayElementAtIndex(k).objectReferenceValue == def) return;   // 已经有了就不重复加
+                lp.InsertArrayElementAtIndex(lp.arraySize);
+                lp.GetArrayElementAtIndex(lp.arraySize - 1).objectReferenceValue = def;
+                so2.ApplyModifiedProperties();
+                EditorUtility.SetDirty(map); AssetDatabase.SaveAssets();          // 存盘会触发地图注册表重建，选关界面才读得到
+                page.EnsureSelectedSerializedObject();
+                if (EditorWindow.focusedWindow != null) EditorWindow.focusedWindow.Repaint();
+            }, nameof(ItemDefinition));
+        }
+    }
+
+    private static void DrawItemIcon(Rect rect, ItemDefinition def)
+    {
+        Sprite s = def != null ? def.icon : null;
+        if (s != null && s.texture != null)
+        {
+            var tr = s.textureRect; var tex = s.texture;
+            GUI.DrawTextureWithTexCoords(rect, tex, new Rect(tr.x / tex.width, tr.y / tex.height, tr.width / tex.width, tr.height / tex.height));
+        }
+        else
+        {
+            var th = def != null ? (AssetPreview.GetAssetPreview(def) ?? AssetPreview.GetMiniThumbnail(def)) : null;
+            if (th != null) GUI.DrawTexture(rect, th, ScaleMode.ScaleToFit);
+            else EditorGUI.DrawRect(rect, new Color(0f, 0f, 0f, 0.25f));
         }
     }
 

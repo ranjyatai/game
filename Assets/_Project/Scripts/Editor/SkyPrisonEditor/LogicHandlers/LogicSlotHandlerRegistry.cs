@@ -18,6 +18,11 @@ public static class LogicSlotHandlerRegistry
         Register(new LogicItemSlotHandler());
         Register(new LogicCurrencySlotHandler());
         Register(new LogicAudioClipSlotHandler());
+        Register(new LogicDialogueLibrarySlotHandler());
+        Register(new LogicAreaSlotHandler());
+        Register(new LogicShopSlotHandler());
+        Register(new LogicQuestSlotHandler());
+        Register(new LogicUnitAssetSlotHandler());
     }
 
     public static void Register(ILogicSlotHandler handler)

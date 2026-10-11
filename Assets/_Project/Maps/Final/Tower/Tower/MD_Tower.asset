@@ -1,0 +1,108 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37600d2b343ea0847ac945ea73927454, type: 3}
+  m_Name: MD_Tower
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::MapDefinition
+  mapKey: tower
+  fileName: Tower
+  displayName: "\u5854"
+  description: "\u56DE\u6536\u4EF7\u503C\uFF1A\u65E0\u6CD5\u8BC4\u4F30\u3002\n\u5168\u533A\u57DF\u7684MEMENTO\u4FB5\u8680\u53CD\u5E94\u5747\u6307\u5411\u6B64\u5904\u3002\n\u5185\u90E8\u7ED3\u6784\u53CA\u7269\u8D44\u65E0\u6CD5\u626B\u63CF\u3002\nMEMENTO\u4FB5\u8680\u5A01\u80C1\u8BC4\u4F30\uFF1A\u6781\u9AD8\u3002"
+  localizedNames:
+  - languageCode: zh-CN
+    text: "\u5854"
+  - languageCode: ja
+    text: "\u5854"
+  - languageCode: en
+    text: The Tower
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: "\u56DE\u6536\u4EF7\u503C\uFF1A\u65E0\u6CD5\u8BC4\u4F30\u3002\n\u5168\u533A\u57DF\u7684MEMENTO\u4FB5\u8680\u53CD\u5E94\u5747\u6307\u5411\u6B64\u5904\u3002\n\u5185\u90E8\u7ED3\u6784\u53CA\u7269\u8D44\u65E0\u6CD5\u626B\u63CF\u3002\nMEMENTO\u4FB5\u8680\u5A01\u80C1\u8BC4\u4F30\uFF1A\u6781\u9AD8\u3002"
+  - languageCode: ja
+    text: "\u56DE\u53CE\u4FA1\u5024\uFF1A\u8A55\u4FA1\u4E0D\u80FD\u3002\n\u5168\u533A\u57DF\u306EMEMENTO\u4FB5\u8755\u53CD\u5FDC\u304C\u3001\u3053\u306E\u5730\u70B9\u3092\u6307\u5411\u3002\n\u5185\u90E8\u69CB\u9020\u304A\u3088\u3073\u7269\u8CC7\u306F\u30B9\u30AD\u30E3\u30F3\u4E0D\u80FD\u3002\nMEMENTO\u4FB5\u8755\u8105\u5A01\u8A55\u4FA1\uFF1A\u6975\u3081\u3066\u9AD8\u3044\u3002"
+  - languageCode: en
+    text: 'Salvage value: cannot be assessed.
+
+      MEMENTO erosion readings from
+      all zones converge on this location.
+
+      Internal structure and contents
+      cannot be scanned.
+
+      MEMENTO erosion threat assessment: extreme.'
+  raidDayOutputs: []
+  raidNightOutputs: []
+  scenePath: Assets/_Project/Maps/Final/Tower/Tower/Tower.unity
+  sceneGuid: 8805b972ce8cbfd439a4a5edd40f55a4
+  mapBoundsCenter: {x: 0, y: 0, z: 0}
+  mapBoundsSize: {x: 64, y: 6, z: 64}
+  enablePhysicalMapBounds: 1
+  mapBoundsWallThickness: 2
+  mapBoundsWallHeight: 12
+  mapBoundsUseCeiling: 0
+  mapBoundsCeilingThickness: 1
+  enableFogOfWar: 1
+  fogStrength: 0.72
+  fogSoftEdgeWidth: 3.5
+  environmentPreset: 1
+  skyRenderModel: {fileID: 0}
+  skyboxMaterial: {fileID: 0}
+  ambientColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
+  environmentReflectionIntensity: 1
+  environmentAreaLightColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
+  environmentAreaLightIntensity: 0.45
+  environmentAreaLightSize: 16
+  environmentAreaLightPosition: {x: 0, y: 8, z: 0}
+  environmentAreaLightEuler: {x: 90, y: 0, z: 0}
+  mainLightColor: {r: 1, g: 1, b: 1, a: 1}
+  mainLightIntensity: 0.6
+  mainLightEuler: {x: 50, y: -30, z: 0}
+  enableSceneFog: 0
+  sceneFogColor: {r: 0.55, g: 0.58, b: 0.62, a: 1}
+  fogStartDistance: 20
+  fogEndDistance: 80
+  enableHeightFog: 0
+  heightFogColorStart: {r: 0.05, g: 0.06, b: 0.08, a: 1}
+  heightFogColorEnd: {r: 0.1, g: 0.12, b: 0.16, a: 1}
+  heightFogIntensity: 1
+  heightFogColorDuo: 1
+  heightFogDistanceStart: -60
+  heightFogDistanceEnd: 60
+  heightFogDistanceFalloff: 1
+  heightFogHeightStart: 0
+  heightFogHeightEnd: 15
+  heightFogHeightFalloff: 1
+  heightFogNoiseSpeed: {x: 0.5, y: 0.5, z: 0}
+  heightFogNoiseDistanceEnd: 30
+  postProcessProfile: {fileID: 0}
+  environmentFxPrefab: {fileID: 0}
+  enableDayNightCycle: 0
+  startTimeOfDay: 12
+  enableWeather: 0
+  weatherType: 0
+  dustWeather:
+    intensity: 5
+  rainWeather:
+    intensity: 5
+    lensWetnessIntensity: 0
+  snowWeather:
+    intensity: 5
+  weatherFog:
+    intensity: 5
+  enableDepthOfField: 0
+  focusDistance: 8
+  blurStrength: 0.4
+  triggerPackages: []
+  exploreBgmClips: []
+  combatBgmClips: []
+  bgmPlayMode: 0
+  bgmCrossfadeDuration: 3
+  bgmVolume: 1

@@ -24,26 +24,31 @@ public static class ItemEffectExecutor
         UnitStatusController status = user.GetComponentInParent<UnitStatusController>();
         TriggerPackageRuntime triggers = null;
 
+        // 科技树「战略家」：消耗品效果 / 持续时间加成，只对玩家自己用的道具生效
+        bool byPlayer = IsPlayerUser(user);
+        float effMult = byPlayer ? TechTreePerks.Mult("consumableEffectMult") : 1f;
+        float durMult = byPlayer ? TechTreePerks.Mult("consumableDurationMult") : 1f;
+
         foreach (ItemEffectEntry e in effects)
         {
             if (e == null) continue;
             switch (e.effectType)
             {
                 case ItemEffectType.ResourceImmediate:
-                    ApplyResourceImmediate(e, health, user);
+                    ApplyResourceImmediate(e, health, user, effMult);
                     break;
 
                 case ItemEffectType.ResourceOverTime:
                     MonoBehaviour host = user.GetComponent<MonoBehaviour>()
                                         ?? user.GetComponentInParent<MonoBehaviour>();
                     if (host != null)
-                        host.StartCoroutine(ResourceOverTimeRoutine(e, health, user));
+                        host.StartCoroutine(ResourceOverTimeRoutine(e, health, user, effMult, durMult));
                     else
                         Debug.LogWarning("[ItemEffect] 找不到 MonoBehaviour 宿主，无法开启 DoT 协程", user);
                     break;
 
                 case ItemEffectType.ApplyStatus:
-                    ApplyStatusEffect(e, status, user);
+                    ApplyStatusEffect(e, status, user, durMult);
                     break;
 
                 case ItemEffectType.RemoveStatus:
@@ -141,8 +146,18 @@ public static class ItemEffectExecutor
 
     // ── 资源立即 ──────────────────────────────────────────────────────────────
 
-    private static void ApplyResourceImmediate(ItemEffectEntry e, UnitHealthController health, GameObject user)
+    private static bool IsPlayerUser(GameObject user)
     {
+        var player = SkyPrisonPlayerAuthority.CurrentPlayerUnit;
+        if (player == null || user == null) return false;
+        var pt = player.transform; var ut = user.transform;
+        return ut == pt || ut.IsChildOf(pt) || pt.IsChildOf(ut);
+    }
+
+    private static void ApplyResourceImmediate(ItemEffectEntry e, UnitHealthController health, GameObject user, float valueScale = 1f)
+    {
+        // 效果加成只放大「增益」(正值)，扣血类(负值)不跟着放大
+        float v = e.value >= 0f ? e.value * valueScale : e.value;
         switch (e.resourceTarget)
         {
             case ItemEffectResourceTarget.HP:
@@ -152,8 +167,8 @@ public static class ItemEffectExecutor
                     return;
                 }
                 float hpAmount = e.valueMode == ItemEffectValueMode.Percent
-                    ? health.MaxHealth * e.value * 0.01f
-                    : e.value;
+                    ? health.MaxHealth * v * 0.01f
+                    : v;
                 if (hpAmount >= 0f) health.ApplyHeal(hpAmount);
                 else                health.ApplyDamage(-hpAmount);
                 break;
@@ -165,20 +180,21 @@ public static class ItemEffectExecutor
 
             case ItemEffectResourceTarget.Currency:
                 if (CurrencyRuntime.Instance == null || string.IsNullOrEmpty(e.currencyId)) return;
-                CurrencyRuntime.Instance.Add(e.currencyId, Mathf.RoundToInt(e.value));
+                CurrencyRuntime.Instance.Add(e.currencyId, Mathf.RoundToInt(v));
                 break;
         }
     }
 
     // ── 资源持续（DoT / HoT）──────────────────────────────────────────────────
 
-    private static IEnumerator ResourceOverTimeRoutine(ItemEffectEntry e, UnitHealthController health, GameObject user)
+    private static IEnumerator ResourceOverTimeRoutine(ItemEffectEntry e, UnitHealthController health, GameObject user, float valueScale = 1f, float durationScale = 1f)
     {
         float interval = Mathf.Max(0.1f, e.dotInterval);
         float elapsed = 0f;
-        while (elapsed < e.dotDuration)
+        float total = e.value >= 0f ? e.dotDuration * durationScale : e.dotDuration;      // 持续时间加成只给持续回复(增益)，持续伤害不延长
+        while (elapsed < total)
         {
-            ApplyResourceImmediate(e, health, user);
+            ApplyResourceImmediate(e, health, user, valueScale);
             yield return new WaitForSeconds(interval);
             elapsed += interval;
         }
@@ -186,7 +202,7 @@ public static class ItemEffectExecutor
 
     // ── 施加状态 ───────────────────────────────────────────────────────────────
 
-    private static void ApplyStatusEffect(ItemEffectEntry e, UnitStatusController status, GameObject user)
+    private static void ApplyStatusEffect(ItemEffectEntry e, UnitStatusController status, GameObject user, float durationScale = 1f)
     {
         if (e.statusToApply == null)
         {
@@ -198,7 +214,13 @@ public static class ItemEffectExecutor
             Debug.LogWarning("[ItemEffect] 找不到 UnitStatusController，状态无法施加", user);
             return;
         }
-        status.ApplyStatus(e.statusToApply, user, e.statusStacks, e.statusDurationOverride);
+        float dur = e.statusDurationOverride;
+        if (durationScale > 1.0001f && e.statusToApply.isBuff)
+        {
+            float baseDur = dur >= 0f ? dur : e.statusToApply.baseDuration;      // 只放大「增益类」状态的持续时间
+            if (baseDur > 0f) dur = baseDur * durationScale;
+        }
+        status.ApplyStatus(e.statusToApply, user, e.statusStacks, dur);
     }
 
     // ── 移除状态 ───────────────────────────────────────────────────────────────

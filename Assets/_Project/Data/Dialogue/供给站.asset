@@ -1,0 +1,142 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbd21fdfff5a36846b983a822cb5180b, type: 3}
+  m_Name: "\u4F9B\u7ED9\u7AD9"
+  m_EditorClassIdentifier: Assembly-CSharp::NPCDialogueDefinition
+  sentenceLibrary: {fileID: 11400000, guid: 0c976482194591544a484d76ebecd002, type: 2}
+  npcName:
+  - languageCode: zh-CN
+    text: 
+  - languageCode: ja
+    text: 
+  - languageCode: en
+    text: 
+  variants:
+  - conditions: []
+    greetingSentenceIds:
+    - Chapter 1-001
+    options:
+    - label:
+      - languageCode: zh-CN
+        text: "\u6709\u4E8B\u60C5\u8981\u8C08..."
+      - languageCode: ja
+        text: "\u8A71\u3057\u305F\u3044\u3053\u3068\u304C\u3042\u308B\u2026"
+      - languageCode: en
+        text: Something to talk about...
+      actionType: 3
+      visibilityConditions: []
+      targetSentenceIds: []
+      closeAfterShow: 0
+      targetWindowPrefab: {fileID: 0}
+      returnToDialogueAfterWindowClose: 0
+      targetWindowPayload: {fileID: 0}
+      questFlag: 
+      questToAccept: {fileID: 11400000, guid: c048c5f0416aab34f801f7191d8e73fc, type: 2}
+      subOptions: []
+    - label:
+      - languageCode: zh-CN
+        text: "\u6CA1\u6709\u4E8B\u60C5\uFF0C\u53EA\u662F\u95F2\u8C08"
+      - languageCode: ja
+        text: "\u7279\u306B\u7528\u306F\u306A\u3044\u3001\u6687\u3064\u3076\u3057\u3060\u3051"
+      - languageCode: en
+        text: Nothing in particular, just chatting
+      actionType: 0
+      visibilityConditions: []
+      targetSentenceIds: []
+      closeAfterShow: 0
+      targetWindowPrefab: {fileID: 0}
+      returnToDialogueAfterWindowClose: 0
+      targetWindowPayload: {fileID: 0}
+      questFlag: 
+      questToAccept: {fileID: 0}
+      subOptions:
+      - label: []
+        actionType: 4
+        visibilityConditions: []
+        targetSentenceIds: []
+        closeAfterShow: 0
+        targetWindowPrefab: {fileID: 0}
+        returnToDialogueAfterWindowClose: 0
+        targetWindowPayload: {fileID: 0}
+        questFlag: 
+        questToAccept: {fileID: 0}
+        subOptions: []
+      - label: []
+        actionType: 4
+        visibilityConditions: []
+        targetSentenceIds: []
+        closeAfterShow: 0
+        targetWindowPrefab: {fileID: 0}
+        returnToDialogueAfterWindowClose: 0
+        targetWindowPayload: {fileID: 0}
+        questFlag: 
+        questToAccept: {fileID: 0}
+        subOptions: []
+    - label:
+      - languageCode: zh-CN
+        text: "\u8FDB\u884C\u4EA4\u6613"
+      - languageCode: ja
+        text: "\u53D6\u5F15\u3059\u308B"
+      - languageCode: en
+        text: Trade
+      actionType: 1
+      visibilityConditions: []
+      targetSentenceIds: []
+      closeAfterShow: 0
+      targetWindowPrefab: {fileID: 3000700496659463912, guid: 68b6e0b8288d9aa4a8edf0a5cfe42062, type: 3}
+      returnToDialogueAfterWindowClose: 1
+      targetWindowPayload: {fileID: 11400000, guid: 86780f9f7334b764fb10c83e531003fd, type: 2}
+      questFlag: 
+      questToAccept: {fileID: 0}
+      subOptions: []
+    - label:
+      - languageCode: zh-CN
+        text: "\u5347\u7EA7\u8BBE\u65BD"
+      - languageCode: ja
+        text: "\u65BD\u8A2D\u3092\u30A2\u30C3\u30D7\u30B0\u30EC\u30FC\u30C9"
+      - languageCode: en
+        text: Upgrade Facility
+      actionType: 1
+      visibilityConditions: []
+      targetSentenceIds: []
+      closeAfterShow: 0
+      targetWindowPrefab: {fileID: 0}
+      returnToDialogueAfterWindowClose: 1
+      targetWindowPayload: {fileID: 0}
+      questFlag: 
+      questToAccept: {fileID: 0}
+      subOptions: []
+    - label:
+      - languageCode: zh-CN
+        text: "\u8981\u8D70\u4E86"
+      - languageCode: ja
+        text: "\u3082\u3046\u884C\u304F\u3088"
+      - languageCode: en
+        text: Leaving
+      actionType: 0
+      visibilityConditions: []
+      targetSentenceIds:
+      - Chapter 1-002
+      closeAfterShow: 1
+      targetWindowPrefab: {fileID: 0}
+      returnToDialogueAfterWindowClose: 0
+      targetWindowPayload: {fileID: 0}
+      questFlag: 
+      questToAccept: {fileID: 0}
+      subOptions: []
+  idleChatterDelaySeconds: 18
+  idleChatterSentenceIds:
+  - Chapter 1-004
+  - Chapter 1-003
+  references:
+    version: 2
+    RefIds: []

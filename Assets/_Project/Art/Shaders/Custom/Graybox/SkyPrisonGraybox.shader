@@ -21,6 +21,21 @@ Shader "SkyPrison/Graybox"
         _MajorLineWidth ("粗线宽度(像素)", Range(0.5, 6)) = 2
         _Smoothness ("光滑度", Range(0, 1)) = 0.1
 
+        // 整面墙半透明：由 SkyPrisonOccluderWallFade 在"这面墙正挡着玩家"时按距离写入 0~1，
+        // 整面墙所有像素用同一个量做抖动裁切（不是在玩家周围抠洞），最透时留 _OccluderFadeMinAlpha 的残影。
+        // 默认 0：Scene 视图和没被触发的墙完全不受影响。
+        [HideInInspector] _OccluderFadeAmount ("遮挡渐隐量(脚本写入)", Range(0, 1)) = 0
+        _OccluderFadeMinAlpha ("最透时保留的不透明度", Range(0, 1)) = 0.12
+        // 渐隐中的墙由脚本换成"真半透明"材质克隆（混合、不写深度、队列在角色之前）：
+        // 这样它不进深度图，角色逐像素遮挡判定就不会把角色判成"被挡"而画成全息点阵。平时全部保持下面的默认值。
+        [HideInInspector] _FadeTransparent ("渐隐用真半透明(脚本写入)", Float) = 0
+        [HideInInspector] _FadeSrcBlend ("Src", Float) = 1
+        [HideInInspector] _FadeDstBlend ("Dst", Float) = 0
+        [HideInInspector] _FadeZWrite ("ZWrite", Float) = 1
+        // 渐隐时同一个网格画两遍：原材质（不透明、写深度）只画「不渐隐」的像素，真半透明克隆只画「在渐隐」的像素。
+        // 这样玩家背后那一段墙保持写深度的实心（不会被后画的迷雾覆盖层盖黑），渐隐的那一段不进深度。脚本写入。
+        [HideInInspector] _FadeSplit ("渐隐拆分(脚本写入)", Float) = 0
+
         // URP 共用 pass 需要的字段，白模本身不用。
         [HideInInspector] _BaseMap ("BaseMap", 2D) = "white" {}
         [HideInInspector] _Cutoff ("Cutoff", Float) = 0.5
@@ -50,7 +65,16 @@ Shader "SkyPrison/Graybox"
             float _MajorLineWidth;
             half _Smoothness;
             half _Cutoff;
+            float _OccluderFadeAmount;
+            float _OccluderFadeMinAlpha;
+            float _FadeTransparent;
+            float _FadeSplit;
         CBUFFER_END
+
+        // 由 SkyPrisonOccluderWallFade 每帧写入：xy = 玩家 XZ，zw = 相机朝向压平后的单位向量 XZ。
+        // 用来让一面墙「只有玩家前面（镜头一侧）的部分」渐隐，玩家背后的部分保持不透明
+        // （弧形墙是整瓣一个实例，玩家站在弧线上时，一半在身前一半在身后）。
+        float4 _SkyPrison_WallFadePlayer;
 
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/SurfaceInput.hlsl"
         ENDHLSL
@@ -59,6 +83,8 @@ Shader "SkyPrison/Graybox"
         {
             Name "ForwardLit"
             Tags { "LightMode" = "UniversalForward" }
+            Blend [_FadeSrcBlend] [_FadeDstBlend]
+            ZWrite [_FadeZWrite]
 
             HLSLPROGRAM
             #pragma target 2.0
@@ -84,6 +110,13 @@ Shader "SkyPrison/Graybox"
             #pragma instancing_options renderinglayer
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+
+            // 屏幕空间抖动噪声（和 SkyPrisonSightlineFade.hlsl 同一个公式，不引整个文件以免依赖全局玩家位置）。
+            float OccluderFadeDither(float2 screenPixelPos)
+            {
+                float3 magic = float3(0.06711056, 0.00583715, 52.9829189);
+                return frac(magic.z * frac(dot(screenPixelPos, magic.xy)));
+            }
 
             struct Attributes
             {
@@ -149,6 +182,24 @@ Shader "SkyPrison/Graybox"
                 UNITY_SETUP_INSTANCE_ID(IN);
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
 
+                // 整面墙半透明：这面墙的所有像素共用同一个渐隐量。
+                // 这个像素在玩家身后多远（沿镜头水平朝向）：只有在玩家前面（镜头一侧）的才渐隐，一到玩家身后（0 米）就完全不透明。
+                // 注意：墙很高，紧贴在玩家身后的那段，在画面里会出现在玩家头顶上方，那是「背后的墙」，必须保持实心。
+                float2 toPix = IN.positionWS.xz - _SkyPrison_WallFadePlayer.xy;
+                float behindPlayer = dot(toPix, _SkyPrison_WallFadePlayer.zw);
+                // 横向（垂直于镜头朝向）离玩家多远：整面墙里只有正对着玩家的那一段才真的挡住人，
+                // 离得远的段（弧墙的两端、长墙的两头）不该跟着变透明。4 米内全透，10 米外不透。
+                float lateral = abs(toPix.x * _SkyPrison_WallFadePlayer.w - toPix.y * _SkyPrison_WallFadePlayer.z);
+                float fadeAmt = _OccluderFadeAmount
+                              * (1.0 - smoothstep(-0.6, 0.0, behindPlayer))
+                              * (1.0 - smoothstep(4.0, 10.0, lateral));
+                if (_FadeTransparent > 0.5)
+                    clip(fadeAmt - 0.001);                    // 半透明克隆：只画在渐隐的像素
+                else if (_FadeSplit > 0.5)
+                    clip(0.001 - fadeAmt);                    // 拆分模式下的原材质：只画不渐隐的像素
+                else if (fadeAmt > 0.001)
+                    clip(OccluderFadeDither(IN.positionCS.xy) - fadeAmt * (1.0 - _OccluderFadeMinAlpha));
+
                 float3 normalWS = normalize(IN.normalWS);
 
                 InputData inputData = (InputData)0;
@@ -172,7 +223,7 @@ Shader "SkyPrison/Graybox"
 
                 half4 color = UniversalFragmentBlinnPhong(inputData, surface);
                 color.rgb = MixFog(color.rgb, inputData.fogCoord);
-                color.a = 1;
+                color.a = _FadeTransparent > 0.5 ? lerp(1.0, _OccluderFadeMinAlpha, saturate(fadeAmt)) : 1;
                 return color;
             }
             ENDHLSL

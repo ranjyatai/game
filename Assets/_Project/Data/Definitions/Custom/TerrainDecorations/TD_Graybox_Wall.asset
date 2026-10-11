@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TerrainDecorationDefinition
   decorationId: graybox_wall
   displayName: "\u767D\u6A21\xB7\u5899\u4F53"
-  category: 100
+  category: 2
   subCategory: "\u767D\u6A21"
   tags: []
   icon: {fileID: 0}

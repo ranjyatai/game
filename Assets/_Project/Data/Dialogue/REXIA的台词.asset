@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcef4979f273ebc4084e1da01b2d10ae, type: 3}
+  m_Name: "REXIA\u7684\u53F0\u8BCD"
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueSentenceLibrary
+  chapterGroup: REXIA
+  entries:
+  - sentenceId: REXIA-001
+    chapter: REXIA
+    note: 
+    speakerUnit: {fileID: 11400000, guid: d6741bf56b340c1489853788b5eb2452, type: 2}
+    speakerAnonymous: 0
+    speakerAliasOverride: []
+    texts:
+    - languageCode: zh-CN
+      text: "\u5916\u9762\u4E0D\u4F1A\u7ED9\u4F60\u91CD\u6765\u7684\u673A\u4F1A\u3002\u60F3\u6D3B\u7740\u56DE\u6765\uFF0C\u5C31\u5148\u628A\u8BE5\u5B66\u7684\u5B66\u4F1A\u3002"
+    - languageCode: ja
+      text: "\u5916\u306B\u51FA\u305F\u3089\u3084\u308A\u76F4\u3057\u306F\u5229\u304B\u306A\u3044\u3002\u751F\u304D\u3066\u623B\u308A\u305F\u3044\u306A\u3089\u3001\u307E\u305A\u5B66\u3076\u3079\u304D\u3053\u3068\u3092\u5B66\u3073\u306A\u3055\u3044\u3002"
+    - languageCode: en
+      text: Out there, you don't get a second try. If you want to come back alive,
+        learn what needs learning first.
+    voices: []
+  - sentenceId: REXIA-002
+    chapter: REXIA
+    note: 
+    speakerUnit: {fileID: 11400000, guid: d6741bf56b340c1489853788b5eb2452, type: 2}
+    speakerAnonymous: 0
+    speakerAliasOverride: []
+    texts:
+    - languageCode: zh-CN
+      text: "\u53BB\u5427\u3002\u522B\u901E\u5F3A\u3002"
+    - languageCode: ja
+      text: "\u884C\u304D\u306A\u3055\u3044\u3002\u7121\u7406\u306F\u3057\u306A\u3044\u3067\u3002"
+    - languageCode: en
+      text: Go on. Don't push your luck.
+    voices: []

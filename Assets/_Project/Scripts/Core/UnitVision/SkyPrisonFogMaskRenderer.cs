@@ -79,12 +79,27 @@ public class SkyPrisonFogMaskRenderer : MonoBehaviour
     private static readonly int TerrainRevealSoftnessId = Shader.PropertyToID("_TerrainRevealSoftness");
     private static readonly int TerrainRevealVisibilityId = Shader.PropertyToID("_TerrainRevealVisibility");
 
+    // 战争迷雾曾经完全不显示，实测原因是 overlayRenderer.sharedMaterial 在运行时
+    // 被换成了跟这个系统毫无关系的第三方插件占位材质（VLBDummyMaterialHD，来自
+    // VolumetricLightBeam 插件，和战争迷雾没有任何调用关系）。场景文件里保存的
+    // 材质本身是对的（着色器 GUID 正确指向 SkyPrisonFogOfWarOverlay），说明污染
+    // 发生在运行时，来源没有定位到——但 MaterialPropertyBlock 的值全部正常写入，
+    // 只是作用在了错误的着色器上，所以看起来"整条链路都对但没有任何效果"。
+    //
+    // 不再去追查是谁改的，改成 Awake 时（早于绝大多数其它系统跑）把当前材质缓存下来，
+    // 之后每帧发现材质被换掉就恢复，不依赖找到并修好那个未知的污染源。
+    private Material expectedMaterial;
+
     private void Awake()
     {
         ResolveReferences();
         EnsurePropertyBlock();
         RefreshOverlayBounds();
         RefreshTerrainRevealCache(force: true);
+
+        if (overlayRenderer != null && overlayRenderer.sharedMaterial != null)
+            expectedMaterial = overlayRenderer.sharedMaterial;
+
         ApplyMaterialState();
     }
 
@@ -237,6 +252,36 @@ public class SkyPrisonFogMaskRenderer : MonoBehaviour
         if (overlayRenderer == null)
             return;
 
+        // 自愈：材质被换掉就换回来。见 Awake 里的说明。
+        if (expectedMaterial != null && overlayRenderer.sharedMaterial != expectedMaterial)
+        {
+            if (!_loggedMaterialHijack)
+            {
+                _loggedMaterialHijack = true;
+                Debug.LogWarning($"[SkyPrisonFogMaskRenderer] 材质被外部换成了 " +
+                    $"{(overlayRenderer.sharedMaterial != null ? overlayRenderer.sharedMaterial.name : "NULL")}，" +
+                    $"已恢复为 {expectedMaterial.name}。污染源未定位，这里只做自愈。", this);
+            }
+            overlayRenderer.sharedMaterial = expectedMaterial;
+        }
+
+        // 夜视仪：迷雾遮罩整张关掉；退出夜视仪时只恢复"是我们关的"那一次，
+        // 不去覆盖别处对 enabled 的设置。
+        if (SkyPrisonNightVisionMode.IsActive)
+        {
+            if (overlayRenderer.enabled)
+            {
+                overlayRenderer.enabled = false;
+                suppressedByNightVision = true;
+            }
+            return;
+        }
+        if (suppressedByNightVision)
+        {
+            overlayRenderer.enabled = true;
+            suppressedByNightVision = false;
+        }
+
         EnsurePropertyBlock();
 
         mpb.Clear();
@@ -283,7 +328,25 @@ public class SkyPrisonFogMaskRenderer : MonoBehaviour
         mpb.SetVectorArray(TerrainRevealForwardFlagsId, terrainRevealForwardFlags);
 
         overlayRenderer.SetPropertyBlock(mpb);
+
+        // 一次性诊断：查"战争迷雾没显示"。静态检查场景文件排除不了运行时才会出现的
+        // 空引用/空数据情况（这类问题只能看运行时状态，参见项目规矩），
+        // 不受 debugLogs 序列化开关影响，只跑一次不会刷屏。
+        if (!_loggedFogDiagnostic)
+        {
+            _loggedFogDiagnostic = true;
+            Debug.Log($"[FogDiag] visionManager={(visionManager != null ? "有" : "NULL")} " +
+                      $"sources={count} globalFogStrength={globalFogStrength} " +
+                      $"fogColor={fogColor} overlayRenderer.enabled={overlayRenderer.enabled} " +
+                      $"gameObject.activeInHierarchy={gameObject.activeInHierarchy} " +
+                      $"material={(overlayRenderer.sharedMaterial != null ? overlayRenderer.sharedMaterial.name : "NULL")}",
+                      this);
+        }
     }
+
+    private bool suppressedByNightVision;
+    private bool _loggedFogDiagnostic;
+    private bool _loggedMaterialHijack;
 
     private int BuildTerrainRevealSources()
     {

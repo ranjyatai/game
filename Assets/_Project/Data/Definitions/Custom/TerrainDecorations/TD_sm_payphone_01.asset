@@ -51,6 +51,8 @@ MonoBehaviour:
   visualRandomRotationMin: {x: 0, y: 0, z: 0}
   visualRandomRotationMax: {x: 0, y: 0, z: 0}
   visualRandomRotationAffectsRules: 0
+  sortPriority: 0
+  editorOnlyVisual: 0
   collisionMode: 0
   collisionSize: {x: 0.25089592, y: 0.35221434, z: 0.32434154}
   collisionOffset: {x: 0.0001938194, y: 0.174402, z: -0.04631476}
@@ -80,6 +82,7 @@ MonoBehaviour:
   frontBackOcclusionHorizontalOffset: 0
   frontBackOcclusionHeightOffset: 0
   frontBackOcclusionDepthOffset: 0
+  generateOccluderProbeCollider: 1
   frontOccluderProxyMode: 2
   frontOccluderProxyMaterial: {fileID: 0}
   frontOccluderAlphaCutoff: 0.35

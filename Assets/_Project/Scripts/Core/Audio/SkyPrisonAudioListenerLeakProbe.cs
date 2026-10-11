@@ -49,6 +49,11 @@ public sealed class SkyPrisonAudioListenerLeakProbe : MonoBehaviour
         AudioListener[] all = FindObjectsByType<AudioListener>(
             FindObjectsInactive.Include, FindObjectsSortMode.None);
 
+        // 全量统计已移到 SkyPrisonRuntimeAudioBootstrap.ReportInvisibleListeners。
+        // 本探针靠 RuntimeInitializeOnLoadMethod 创建，Play 期间一旦重编译就会被
+        // Domain Reload 销毁且不再重建——它「只数到 1 个」正是这样来的，而不是真的
+        // 只有 1 个。诊断得放在不会失明的地方。
+
         if (all.Length == lastCount)
             return;
 

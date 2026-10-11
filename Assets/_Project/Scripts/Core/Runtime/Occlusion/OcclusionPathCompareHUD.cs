@@ -50,7 +50,7 @@ public sealed class OcclusionPathCompareHUD : MonoBehaviour
     // 着色器却仍被 HUD 摁在深度路径上，结果是「算了没人用」——和当初切 GPU 时
     // 「用了没人算」正好对称的同一类 bug。开关必须只有一个来源。
     private bool useSceneDepth = SkyPrisonOcclusionMode.UseGpuDepthOcclusion;
-    private bool showPanel = true;
+    private bool showPanel = false;   // 默认藏起来（不挡画面）；要调深度参数时按 F8 调出来
     private float bias = 0.05f;
     private float softness = 0.15f;
     // 0：深度路径下 worldPos 已含高度，视矩阵会自己算出「头比脚离相机近」，

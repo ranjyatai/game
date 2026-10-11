@@ -48,6 +48,31 @@ public static class GameAssetLoader
         }
     }
 
+    /// <summary>全部科技树(探索者、战略家…)，按资产名排序。清单里没有时(没重建清单)退回单张图。</summary>
+    public static System.Collections.Generic.List<TechTreeGraphAsset> TechTrees
+    {
+        get
+        {
+            var list = new System.Collections.Generic.List<TechTreeGraphAsset>();
+            var m = Manifest;
+            if (m != null && m.techTreeGraphs != null)
+                foreach (var g in m.techTreeGraphs) if (g != null && !list.Contains(g)) list.Add(g);
+#if UNITY_EDITOR
+            if (list.Count == 0)
+            {
+                foreach (var guid in UnityEditor.AssetDatabase.FindAssets("t:TechTreeGraphAsset"))
+                {
+                    var g = UnityEditor.AssetDatabase.LoadAssetAtPath<TechTreeGraphAsset>(UnityEditor.AssetDatabase.GUIDToAssetPath(guid));
+                    if (g != null && !list.Contains(g)) list.Add(g);
+                }
+                list.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
+            }
+#endif
+            if (list.Count == 0 && TechTree != null) list.Add(TechTree);
+            return list;
+        }
+    }
+
     // ── 编辑器回退（仅 Editor 编译）──────────────────────────────────────
 #if UNITY_EDITOR
     private static T EditorFallback<T>(string filter) where T : UnityEngine.Object

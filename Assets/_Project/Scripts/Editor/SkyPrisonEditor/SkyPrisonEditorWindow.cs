@@ -144,7 +144,9 @@ public class SkyPrisonEditorWindow : EditorWindow
         pages.Add(new SkyPrisonTerrainDecorationDefinitionPage(context));
         pages.Add(new SkyPrisonGroundSurfaceMaterialPage(context));
         pages.Add(new SkyPrisonMapEditorPage(context));
-        pages.Add(new SkyPrisonPlaceholderPage(context, "特效", "特效页面开发中。"));
+        pages.Add(new SkyPrisonDialogueScriptPage(context));
+        pages.Add(new SkyPrisonInteractionPackagePage(context));
+        pages.Add(new SkyPrisonQuestPage(context));
         pages.Add(new SkyPrisonAudioWorkshopPage(context));
         pages.Add(new SkyPrisonTechTreePage(context));
         pages.Add(new SkyPrisonTriggerPage(context));
@@ -498,13 +500,15 @@ public class SkyPrisonEditorWindow : EditorWindow
             case "地形装饰物": return 34;
             case "地表材质": return 46;
             case "地图编辑器": return 24;
-            case "特效": return 5;
+            case "台本编辑器": return 5;
+            case "交互包编辑器": return 47;
             case "音声合成": return 25;
             case "科技树": return 6;
             case "触发器": return 7;
             case "AI": return 8;
             case "战斗参数": return 9;
             case "字典表": return 10;
+            case "任务编辑器": return 48;
             default: return fallback;
         }
     }

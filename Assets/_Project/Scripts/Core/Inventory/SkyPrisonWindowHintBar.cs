@@ -66,7 +66,27 @@ namespace SkyPrison.Runtime.UI
         private const float EdgeMargin = 48f; // 距屏幕上/下边的像素
         private static RectTransform s_barRect;
         private static bool s_atTop;
+        private static bool s_alignLeft;   // 靠左（选关界面用）：默认居中
         private static SkyPrisonWindowHintBar s_shared;
+
+#if UNITY_EDITOR
+        /// <summary>
+        /// 编辑器专用：提示条是 HideAndDontSave 创建的，退出 Play 时不会被销毁。上一次 Play 结束时如果提示条还亮着，
+        /// 它会一直留在编辑器里，下一次 Play 再新建一条，几层叠在同一个位置（表现为文字叠影）。
+        /// 每次进 Play 前把残留的全部清掉。打包后每次启动都是干净的，不需要这一步。
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ClearStaleEditorInstances()
+        {
+            s_shared = null; s_instance = null; s_barRect = null; s_atTop = false; s_alignLeft = false;
+            foreach (var old in Resources.FindObjectsOfTypeAll<SkyPrisonWindowHintBar>())
+                if (old != null && old.gameObject.scene.name == null || old != null && !old.gameObject.scene.IsValid()) { }
+            foreach (var old in Resources.FindObjectsOfTypeAll<SkyPrisonWindowHintBar>())
+                if (old != null && old.hideFlags != HideFlags.None && old.gameObject != null) DestroyImmediate(old.gameObject);
+            foreach (var cv in Resources.FindObjectsOfTypeAll<Canvas>())
+                if (cv != null && cv.name == "[WindowHintBar]") DestroyImmediate(cv.gameObject);
+        }
+#endif
 
         /// <summary>
         /// 拿到全项目共用的那一条提示条——不经过 SkyPrisonWindowManager_V1 的窗口
@@ -98,18 +118,24 @@ namespace SkyPrison.Runtime.UI
         {
             if (s_barRect == null || s_atTop == top) return;
             s_atTop = top;
-            if (top)
-            {
-                s_barRect.anchorMin = s_barRect.anchorMax = new Vector2(0.5f, 1f);
-                s_barRect.pivot = new Vector2(0.5f, 1f);
-                s_barRect.anchoredPosition = new Vector2(0f, -EdgeMargin);
-            }
-            else
-            {
-                s_barRect.anchorMin = s_barRect.anchorMax = new Vector2(0.5f, 0f);
-                s_barRect.pivot = new Vector2(0.5f, 0f);
-                s_barRect.anchoredPosition = new Vector2(0f, EdgeMargin);
-            }
+            ApplyBarAnchor();
+        }
+
+        /// <summary>提示条靠左 / 居中。靠左时贴着屏幕左边缘（和上下边距一致）。选关界面右侧有窗口，提示条靠左就不会被挡。幂等。</summary>
+        public static void SetAlignLeft(bool left)
+        {
+            if (s_alignLeft == left) return;
+            s_alignLeft = left;
+            ApplyBarAnchor();
+        }
+
+        private static void ApplyBarAnchor()
+        {
+            if (s_barRect == null) return;
+            float x = s_alignLeft ? 0f : 0.5f, y = s_atTop ? 1f : 0f;
+            s_barRect.anchorMin = s_barRect.anchorMax = new Vector2(x, y);
+            s_barRect.pivot = new Vector2(x, y);
+            s_barRect.anchoredPosition = new Vector2(s_alignLeft ? EdgeMargin : 0f, s_atTop ? -EdgeMargin : EdgeMargin);
         }
 
         /// <summary>提示条「底部位置」的固定屏幕矩形（不论它当前在上还是在下），用于稳定的重叠判定。</summary>
@@ -271,6 +297,13 @@ namespace SkyPrison.Runtime.UI
             if (_bar != null) return;
 
             _font = LocalizationRuntime.Instance != null ? LocalizationRuntime.Instance.GetCurrentFont() : null;
+            if (_font == null)   // 运行时单例没起来时：直接读本地化配置的默认字体；再不行用内置字体（代码里新建的 Text 不指定字体就什么都不画）
+            {
+                var cfg = Resources.Load<LocalizationRuntimeConfig>("SkyPrison/LocalizationRuntimeConfig");
+                var def = cfg != null && cfg.settings != null ? cfg.settings.GetDefaultLanguage() : null;
+                _font = def != null ? def.primaryFont : null;
+                if (_font == null) _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            }
 
             var canvasGo = new GameObject("[WindowHintBar]") { hideFlags = HideFlags.HideAndDontSave };
             var canvas = canvasGo.AddComponent<Canvas>();
@@ -298,6 +331,7 @@ namespace SkyPrison.Runtime.UI
             _bar.anchoredPosition = new Vector2(0f, EdgeMargin);
             s_barRect = _bar;
             s_atTop = false;
+            ApplyBarAnchor();   // 先设过 SetAlignLeft 的话，这里套用
 
             // 左右渐变淡出的半透明底（更透）。
             var bg = barGo.AddComponent<Image>();

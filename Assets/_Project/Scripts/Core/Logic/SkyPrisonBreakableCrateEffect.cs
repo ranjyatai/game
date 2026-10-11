@@ -47,11 +47,54 @@ public sealed class SkyPrisonBreakableCrateEffect : MonoBehaviour
     // 碎块共用同一个材质实例，不用每块单独 new 一个——省内存也省 SetPass Call。
     private static Material _sharedDebrisMaterial;
 
+    [Header("受击体深度（好不好打到）")]
+    [Tooltip("子弹只沿 X 飞、固定在射手脚底那一层深度(Z)；命中窗口 = 受击体深度 + 子弹直径。角色的受击体是直径约 3 米的大胶囊，窗口很宽，所以敌人好打；箱子原来的受击体只有它自己 1.74 米见方，窗口窄一半，站位稍微差一点就从旁边穿过去。这里给箱子加一块世界轴对齐、和角色一样厚的深度受击体。")]
+    [SerializeField] private float hurtboxDepth = 2.98f;
+    [Tooltip("受击体在 X / Y 方向比原来多出的余量，保证子弹先碰到受击体、再碰到箱子自己的实体挡板（否则两个碰撞体同一距离时先后不确定，可能被挡板先吞掉）。")]
+    [SerializeField] private float hurtboxMargin = 0.05f;
+
     private UnitDeathController _deathController;
 
     private void Awake()
     {
         _deathController = GetComponent<UnitDeathController>();
+    }
+
+    private IEnumerator Start()
+    {
+        yield return null;   // 等 UnitDefinitionRuntimeBinder 把受击框 / 实体挡板这些建完
+        BuildDepthHurtbox();
+    }
+
+    /// <summary>
+    /// 在原受击框的包围盒上，造一个世界轴对齐的盒形触发器当「深度受击体」：X / Y 跟原来一样（略放大一点），
+    /// Z 方向加厚到 hurtboxDepth。原来的受击框碰撞体关掉，避免一发穿透弹同时打中两个碰撞体算两次伤害。
+    /// 死亡时 HandleDeathStarted 会把所有子碰撞体一起关掉，这个新的也包含在内。
+    /// </summary>
+    private void BuildDepthHurtbox()
+    {
+        UnitCombatHurtbox original = GetComponentInChildren<UnitCombatHurtbox>(true);
+        if (original == null) return;
+        Collider originalCollider = original.GetComponent<Collider>();
+        if (originalCollider == null) return;
+
+        Bounds b = originalCollider.bounds;
+        var go = new GameObject("DepthHurtbox");
+        go.layer = original.gameObject.layer;
+        go.transform.SetParent(transform, false);
+        go.transform.SetPositionAndRotation(b.center, Quaternion.identity);   // 世界轴对齐：箱子怎么转，深度都沿世界 Z 加厚
+        Vector3 s = transform.lossyScale;
+        go.transform.localScale = new Vector3(
+            s.x != 0f ? 1f / s.x : 1f, s.y != 0f ? 1f / s.y : 1f, s.z != 0f ? 1f / s.z : 1f);   // 抵消父级缩放，下面的 size 直接按世界米数写
+
+        var box = go.AddComponent<BoxCollider>();
+        box.isTrigger = true;
+        box.size = new Vector3(b.size.x + hurtboxMargin * 2f, b.size.y + hurtboxMargin * 2f, Mathf.Max(b.size.z, hurtboxDepth));
+
+        var hurtbox = go.AddComponent<UnitCombatHurtbox>();
+        hurtbox.SetHealthController(GetComponent<UnitHealthController>());
+
+        originalCollider.enabled = false;
     }
 
     private void OnEnable()

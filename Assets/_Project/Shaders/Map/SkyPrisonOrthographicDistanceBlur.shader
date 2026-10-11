@@ -57,11 +57,31 @@ Shader "Hidden/SkyPrison/OrthographicDistanceBlur"
             return lerp(persp, ortho, unity_OrthoParams.w);
         }
 
+        /// 是不是天空盒像素——天空盒在不透明物体画完之后才画、不写深度，采样到的是
+        /// 深度缓冲清空后的哨兵值。理论上跟"真有个物体正好摆在远裁剪面上"没法用
+        /// 深度值区分，但游戏里不会真有装饰物摆在1000单位外，这个判定在实际场景里
+        /// 是安全的。
+        bool SkyPrisonIsSkyboxRawDepth(float rawDepth)
+        {
+        #if defined(UNITY_REVERSED_Z)
+            return rawDepth < 0.0001;
+        #else
+            return rawDepth > 0.9999;
+        #endif
+        }
+
         /// 只虚后景，不虚前景 —— 比对焦面近的一律保持清晰。
         /// 这是按参考画面定的：那种观感里近处几乎没有虚化，虚的是远景。
         float GetDepthBlurMask(float2 uv)
         {
             float rawDepth = SampleSceneDepth(uv);
+
+            // 天空盒不该被当成"全场最远的东西"糊到最大——纯黑天空盒像素本来就是
+            // 纯色，模糊不模糊肉眼看不出差异，但如果参与遮罩计算会被判成"最远"，
+            // 间接助长了它在模糊核里往邻近像素"渗黑"的问题（另一半在下采样那一步修）。
+            if (SkyPrisonIsSkyboxRawDepth(rawDepth))
+                return 0.0;
+
             float eyeDepth = SkyPrisonSceneEyeDepth(rawDepth);
             return saturate((eyeDepth - _SkyPrisonFocusDistance) / max(0.0001, _SkyPrisonBlurRange));
         }
@@ -137,12 +157,37 @@ Shader "Hidden/SkyPrison/OrthographicDistanceBlur"
 
                 // 4-tap box prefilter. This creates a real low-frequency blur buffer base
                 // before the gaussian pass, avoiding the harsh full-res soft-filter look.
-                float4 c = 0.0;
-                c += SampleBlit(uv + t * float2(-0.5, -0.5));
-                c += SampleBlit(uv + t * float2( 0.5, -0.5));
-                c += SampleBlit(uv + t * float2(-0.5,  0.5));
-                c += SampleBlit(uv + t * float2( 0.5,  0.5));
-                return c * 0.25;
+                //
+                // 天空盒像素不参与这次平均——这是整条模糊链路的入口，往下所有的高斯
+                // 模糊都是在这一步产出的缓冲上滚雪球式地继续模糊。天空盒是纯黑，
+                // 如果任由它跟旁边的地面/角色像素一起被平均，纯黑会顺着这条链路
+                // 一路"渗"进邻近像素的模糊结果里——贴着地平线站的角色因此会看起来
+                // 像局部融进了黑色，这不是想要的景深效果，是两套系统撞在一起的副作用。
+                // 只用真实几何体的颜色做平均，天空盒本身反正是纯色，跳过它看不出差异。
+                float2 offsets[4] = {
+                    float2(-0.5, -0.5), float2(0.5, -0.5),
+                    float2(-0.5,  0.5), float2(0.5,  0.5)
+                };
+
+                float4 sum = 0.0;
+                float weight = 0.0;
+                UNITY_UNROLL
+                for (int i = 0; i < 4; i++)
+                {
+                    float2 sampleUV = uv + t * offsets[i];
+                    float rawDepth = SampleSceneDepth(sampleUV);
+                    if (!SkyPrisonIsSkyboxRawDepth(rawDepth))
+                    {
+                        sum += SampleBlit(sampleUV);
+                        weight += 1.0;
+                    }
+                }
+
+                // 四个采样点全是天空盒——原样返回，反正是纯色，不需要模糊。
+                if (weight < 0.5)
+                    return SampleBlit(uv);
+
+                return sum / weight;
             }
             ENDHLSL
         }

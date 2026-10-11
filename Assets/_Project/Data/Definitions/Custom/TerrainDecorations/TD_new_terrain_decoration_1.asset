@@ -69,7 +69,7 @@ MonoBehaviour:
   allowVisualOverlap: 1
   allowCollisionOverlap: 1
   defaultPlacementRotation: {x: 0, y: 0, z: 0}
-  defaultScale: {x: 1.5, y: 1.5, z: 1.5}
+  defaultScale: {x: 2, y: 2, z: 2}
   footprintSize: {x: 1, y: 1}
   enableRandomScale: 0
   uniformRandomScale: 1
@@ -79,6 +79,8 @@ MonoBehaviour:
   visualRandomRotationMin: {x: 0, y: 0, z: 0}
   visualRandomRotationMax: {x: 0, y: 0, z: 0}
   visualRandomRotationAffectsRules: 0
+  sortPriority: 0
+  editorOnlyVisual: 0
   collisionMode: 2
   collisionSize: {x: 1, y: 1, z: 1}
   collisionOffset: {x: 0, y: 0, z: 0}
@@ -108,6 +110,7 @@ MonoBehaviour:
   frontBackOcclusionHorizontalOffset: 0
   frontBackOcclusionHeightOffset: 0
   frontBackOcclusionDepthOffset: 0
+  generateOccluderProbeCollider: 0
   frontOccluderProxyMode: 2
   frontOccluderProxyMaterial: {fileID: 0}
   frontOccluderAlphaCutoff: 0.35

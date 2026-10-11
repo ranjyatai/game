@@ -129,6 +129,16 @@ MonoBehaviour:
     readOnlyInUnitDefinition: 0
     isStandard: 1
     defaultValue: 0
+  - key: moveSpeedRate
+    displayName: "\u79FB\u52A8\u901F\u5EA6\u500D\u7387"
+    note: 
+    valueType: 2
+    scope: 0
+    showInUnitDefinition: 1
+    showInBuildEvaluation: 1
+    readOnlyInUnitDefinition: 0
+    isStandard: 1
+    defaultValue: 100
   - key: heatDamage
     displayName: "\u707C\u70ED\u4F24\u5BB3"
     note: 
@@ -430,8 +440,8 @@ MonoBehaviour:
     isStandard: 1
     defaultValue: 0
   actionModules:
-  - key: one_hand_sword
-    displayName: "\u5355\u624B\u5251\u6A21\u7EC4"
+  - key: sword
+    displayName: "\u5251\u6A21\u7EC4"
     note: 
     isStandard: 1
     moveSpeed: 5.4
@@ -448,22 +458,22 @@ MonoBehaviour:
     poiseBase: 0
     staggerRecovery: 1
     hitRecovery: 1
-  - key: hammer
-    displayName: "\u5927\u9524\u6A21\u7EC4"
+  - key: gun
+    displayName: "\u53CC\u67AA\u6A21\u7EC4"
     note: 
     isStandard: 1
-    moveSpeed: 4.5
-    sprintSpeed: 6.4
+    moveSpeed: 5.2
+    sprintSpeed: 7.4
     dodgeDistance: 3
     weightInfluence: 1
-    attackSpeedBase: 0.78
-    lightAttackStartup: 0.18
-    lightAttackRecovery: 0.28
-    heavyAttackStartup: 0.36
-    heavyAttackRecovery: 0.46
-    comboInterval: 0.14
-    chargeTime: 0.62
-    poiseBase: 10
+    attackSpeedBase: 1
+    lightAttackStartup: 0.06
+    lightAttackRecovery: 0.2
+    heavyAttackStartup: 0.18
+    heavyAttackRecovery: 0.3
+    comboInterval: 0.1
+    chargeTime: 0.5
+    poiseBase: 0
     staggerRecovery: 1
     hitRecovery: 1
   damageTypes:
@@ -530,11 +540,11 @@ MonoBehaviour:
     icon: {fileID: 0}
     defaultAnomalyAccumulationRate: 1
     isStandard: 1
-    enableAnomalyStatusOnFull: 0
+    enableAnomalyStatusOnFull: 1
     enableAnomalyStatusOnResolve: 0
     enableAnomalyStatusOnResolved: 0
     enableAnomalyStatusOnTrigger: 0
-    grantedStatusDefinition: {fileID: 0}
+    grantedStatusDefinition: {fileID: 11400000, guid: 49dbac172627e694db66a2b57494bd6f, type: 2}
     grantedStatusKey: 
     grantedStatusDisplayName: 
     statusKey: 
@@ -566,11 +576,11 @@ MonoBehaviour:
     icon: {fileID: 0}
     defaultAnomalyAccumulationRate: 1
     isStandard: 1
-    enableAnomalyStatusOnFull: 0
+    enableAnomalyStatusOnFull: 1
     enableAnomalyStatusOnResolve: 0
     enableAnomalyStatusOnResolved: 0
     enableAnomalyStatusOnTrigger: 0
-    grantedStatusDefinition: {fileID: 0}
+    grantedStatusDefinition: {fileID: 11400000, guid: e2d3d4ff1a1163e48af4cb539e066054, type: 2}
     grantedStatusKey: 
     grantedStatusDisplayName: 
     statusKey: 
@@ -602,11 +612,11 @@ MonoBehaviour:
     icon: {fileID: 0}
     defaultAnomalyAccumulationRate: 1
     isStandard: 1
-    enableAnomalyStatusOnFull: 0
+    enableAnomalyStatusOnFull: 1
     enableAnomalyStatusOnResolve: 0
     enableAnomalyStatusOnResolved: 0
     enableAnomalyStatusOnTrigger: 0
-    grantedStatusDefinition: {fileID: 0}
+    grantedStatusDefinition: {fileID: 11400000, guid: 986d877a3cbd1f146bb43b1413d1adc1, type: 2}
     grantedStatusKey: 
     grantedStatusDisplayName: 
     statusKey: 

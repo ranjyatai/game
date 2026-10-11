@@ -101,7 +101,23 @@ public class SkyPrisonAfterimageEmitter : MonoBehaviour
             s_Emitters.Add(this);
     }
 
-    private void OnDisable() => s_Emitters.Remove(this);
+    private void OnDisable()
+    {
+        s_Emitters.Remove(this);
+        // 发射器被停用后 Update 不再跑，在途的残影淡出就推进不了，会定在半透明状态永远不消失——停用时立刻收掉。
+        ReleaseAllGhosts();
+    }
+
+    private void ReleaseAllGhosts()
+    {
+        for (int i = 0; i < _pool.Count; i++)
+        {
+            Ghost ghost = _pool[i];
+            if (ghost == null || !ghost.active) continue;
+            ghost.active = false;
+            if (ghost.go != null) ghost.go.SetActive(false);
+        }
+    }
 
     private void AutoResolve()
     {
@@ -125,6 +141,9 @@ public class SkyPrisonAfterimageEmitter : MonoBehaviour
 
     private void Update()
     {
+        // 淡出推进放在最前面、不依赖下面的空检查：骨架/移动控制器被销毁或失效时，在途残影也必须能淡完。
+        UpdateGhostFades();
+
         if (movementController == null || skeletonAnimation == null)
             return;
 
@@ -152,8 +171,6 @@ public class SkyPrisonAfterimageEmitter : MonoBehaviour
         }
 
         _wasActive = active;
-
-        UpdateGhostFades();
     }
 
     private void SpawnGhost()
@@ -191,7 +208,9 @@ public class SkyPrisonAfterimageEmitter : MonoBehaviour
         }
         System.Array.Copy(sourceColors, ghost.baseVertexColors, sourceColors.Length);
 
-        EnsureMaterials(ghost, sourceMesh.subMeshCount);
+        // 材质建不出来（着色器没进包等）就整个不生成这个残影——否则渲染器没有材质，会显示成粉紫色剪影
+        if (!EnsureMaterials(ghost, sourceMesh.subMeshCount))
+            return;
 
         // 去重计数图的通道：按池序号轮流占 RGBA，相邻的残影各用各的通道——
         // 残影和残影之间照常叠加，只去掉同一个残影内部的部件重叠。
@@ -214,17 +233,23 @@ public class SkyPrisonAfterimageEmitter : MonoBehaviour
         ApplyGhostAlpha(ghost, ghostStartAlpha);
     }
 
-    private void EnsureMaterials(Ghost ghost, int subMeshCount)
+    private static bool _warnedMissingShader;
+
+    private bool EnsureMaterials(Ghost ghost, int subMeshCount)
     {
         if (ghost.materials != null && ghost.materials.Length == subMeshCount)
-            return;
+            return true;
 
         if (_fillShaderCache == null)
             _fillShaderCache = Shader.Find(FillShaderName);
         if (_fillShaderCache == null)
         {
-            Debug.LogWarning($"[SkyPrisonAfterimageEmitter] 找不到 Shader「{FillShaderName}」，残影不会显示。");
-            return;
+            if (!_warnedMissingShader)
+            {
+                _warnedMissingShader = true;
+                Debug.LogWarning($"[SkyPrisonAfterimageEmitter] 找不到 Shader「{FillShaderName}」，残影不会显示。打包时要把它加进 Always Included Shaders。");
+            }
+            return false;
         }
 
         Renderer sourceRenderer = skeletonAnimation.GetComponent<Renderer>();
@@ -250,6 +275,7 @@ public class SkyPrisonAfterimageEmitter : MonoBehaviour
 
         ghost.materials = materials;
         ghost.meshRenderer.sharedMaterials = materials;
+        return true;
     }
 
     private void UpdateGhostFades()

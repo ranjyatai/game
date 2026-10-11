@@ -75,7 +75,7 @@ public class UnitLoadRuntime : MonoBehaviour
     {
         get
         {
-            if (SprintLoadCostPerSecond <= 0f)
+            if (SprintLoadCostPerSecond <= 0f || IsLpFreeInHub())
                 return true;
 
             if (exhaustedSprintLock)
@@ -83,6 +83,20 @@ public class UnitLoadRuntime : MonoBehaviour
 
             return HasAnyLoad;
         }
+    }
+
+    private UnitDefinitionRuntimeBinder _ownerBinder;
+
+    /// <summary>主城安全状态下，玩家的 LP 不消耗（奔跑、闪避、出招都免费）。出招/受击会让主城进入战斗，
+    /// 之后恢复正常消耗，见 SkyPrisonHubCombatGate。局内地图和非玩家单位永远是 false。</summary>
+    private bool IsLpFreeInHub()
+    {
+        if (!SkyPrisonHubCombatGate.IsSafeNow)
+            return false;
+        if (_ownerBinder == null)
+            _ownerBinder = GetComponentInParent<UnitDefinitionRuntimeBinder>(true);
+        UnitDefinition def = _ownerBinder != null ? _ownerBinder.UnitDefinitionAsset : null;
+        return def != null && def.characterIdentity == CharacterIdentity.Player;
     }
 
     private void Awake()
@@ -259,7 +273,7 @@ public class UnitLoadRuntime : MonoBehaviour
     public bool CanSpend(float amount)
     {
         amount = Mathf.Max(0f, amount);
-        if (amount <= 0f)
+        if (amount <= 0f || IsLpFreeInHub())
             return true;
 
         return CurrentLoad > 0.0001f;
@@ -274,7 +288,7 @@ public class UnitLoadRuntime : MonoBehaviour
     public bool CanSpendLoadAction(float amount)
     {
         amount = Mathf.Max(0f, amount);
-        if (amount <= 0f)
+        if (amount <= 0f || IsLpFreeInHub())
             return true;
 
         if (exhaustedSprintLock)
@@ -293,6 +307,12 @@ public class UnitLoadRuntime : MonoBehaviour
     {
         amount = Mathf.Max(0f, amount);
         lastSpendReason = reason;
+
+        if (IsLpFreeInHub())
+        {
+            lastSpendSucceeded = true;
+            return true;   // 主城安全状态：免费，不扣
+        }
 
         if (!CanSpendLoadAction(amount))
         {
@@ -318,7 +338,7 @@ public class UnitLoadRuntime : MonoBehaviour
     public bool TrySpendSprint(float deltaTime)
     {
         float costPerSecond = SprintLoadCostPerSecond;
-        if (costPerSecond <= 0f)
+        if (costPerSecond <= 0f || IsLpFreeInHub())
             return true;
 
         if (!CanSprint)

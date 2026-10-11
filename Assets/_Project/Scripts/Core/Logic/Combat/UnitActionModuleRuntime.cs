@@ -136,7 +136,9 @@ public class UnitActionModuleRuntime : MonoBehaviour
     // 冻结播放速度；ReleaseChargeAttack() 被调用时如果还是这个TrackEntry（没被别的
     // 动作打断掉），就把播放速度恢复，让动画继续播完剩下的部分。
     private TrackEntry _chargeHeldTrackEntry;
-    public bool IsChargeHeld => _chargeHeldTrackEntry != null;
+    // 只有"确实还处在攻击状态"才算在蓄力：被打进受击硬直/被闪避打断后，蓄力定格的动画句柄还留在字段里，
+    // 光判断句柄非空会把"已经被打断"误当成"仍在蓄力"。
+    public bool IsChargeHeld => _chargeHeldTrackEntry != null && (actionController == null || actionController.IsAttacking);
 
     // 玩家点得很快时，松开蓄力键那一刻动画可能还没播到charge_hold定格帧
     // （_chargeHeldTrackEntry还是null），ReleaseChargeAttack会直接空跑返回——之后
@@ -459,8 +461,38 @@ public class UnitActionModuleRuntime : MonoBehaviour
         }
     }
 
+    // 弹匣打空、背包里还有备用弹药时自动换弹，不用每次都手动按 R。只对玩家生效；
+    // 正在攻击/换弹中不触发（等这一枪的动画打完）；检查间隔 0.15 秒，不每帧查背包。
+    [Header("自动换弹")]
+    [Tooltip("玩家弹匣打空、背包里还有备用弹药时自动换弹。关掉就回到手动按换弹键。")]
+    [SerializeField] private bool autoReloadWhenEmpty = true;
+    private float _autoReloadCheckAt;
+    private int _ownerIsPlayerCache = -1;
+
+    private bool IsPlayerOwned()
+    {
+        if (_ownerIsPlayerCache >= 0) return _ownerIsPlayerCache == 1;
+        var binder = GetComponent<UnitDefinitionRuntimeBinder>() ?? GetComponentInParent<UnitDefinitionRuntimeBinder>(true);
+        if (binder == null || binder.UnitDefinitionAsset == null) return false;
+        _ownerIsPlayerCache = binder.UnitDefinitionAsset.characterIdentity == CharacterIdentity.Player ? 1 : 0;
+        return _ownerIsPlayerCache == 1;
+    }
+
+    private void TickAutoReload()
+    {
+        if (!autoReloadWhenEmpty || Time.time < _autoReloadCheckAt) return;
+        _autoReloadCheckAt = Time.time + 0.15f;
+        if (_currentWeaponExt == null || !_currentWeaponExt.usesAmmo || actionController == null) return;
+        if (!IsPlayerOwned()) return;
+        if (actionController.IsReloading || actionController.IsAttacking) return;
+        InventoryItemEntry entry = ResolveCurrentWeaponEntry();
+        if (entry == null || entry.currentMagazineAmmo >= _currentWeaponExt.ammoPerShot) return;
+        TryPlayerRequestReload();      // 内部会检查：背包有没有备用弹、当前状态能不能进换弹
+    }
+
     private void Update()
     {
+        TickAutoReload();
         if (_comboIndex > 0 && Time.time > _comboResetTime)
         {
             _comboIndex = 0;
@@ -557,7 +589,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
         var inventory = InventoryRuntimeBootstrap.Instance?.Inventory;
         if (ext == null || inventory == null) return;
 
-        int room = Mathf.Max(0, ext.magazineSize - entry.currentMagazineAmmo);
+        int room = Mathf.Max(0, ext.EffectiveMagazineSize - entry.currentMagazineAmmo);
         int available = inventory.GetAmmoCount(ext.ammoCaliber);
         int take = Mathf.Min(room, available);
         if (take <= 0) return;
@@ -604,7 +636,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
         InventoryItemEntry weaponEntry = ResolveCurrentWeaponEntry();
         ItemEquipmentExtension ext = weaponEntry?.definition?.equipment;
         if (ext == null || !ext.usesAmmo) return false;
-        if (weaponEntry.currentMagazineAmmo >= ext.magazineSize) return false; // 弹匣已满，不用换
+        if (weaponEntry.currentMagazineAmmo >= ext.EffectiveMagazineSize) return false; // 弹匣已满，不用换
 
         var inventory = InventoryRuntimeBootstrap.Instance?.Inventory;
         if (inventory == null || inventory.GetAmmoCount(ext.ammoCaliber) <= 0) return false; // 背包没备用弹药
@@ -1061,17 +1093,17 @@ public class UnitActionModuleRuntime : MonoBehaviour
 
     public SkillDefinition RequestLightAttack()
     {
-        if (_currentModule == null || actionController == null) return null;
-        if (!actionController.CanEnterAttackPublic())          return null;
+        if (_currentModule == null || actionController == null) { if (debugLogs) Debug.LogWarning($"[LightAtk] {name}: 无模组/无控制器 module={(_currentModule != null)} ctrl={(actionController != null)}", this); return null; }
+        if (!actionController.CanEnterAttackPublic())          { if (debugLogs) Debug.LogWarning($"[LightAtk] {name}: 当前状态不能进攻击", this); return null; }
 
         var combo = _currentModule.lightAttackCombo;
-        if (combo == null || combo.Count == 0) return null;
+        if (combo == null || combo.Count == 0) { if (debugLogs) Debug.LogWarning($"[LightAtk] {name}: 连段为空", this); return null; }
 
         _comboIndex = _comboIndex % combo.Count;
         SkillDefinition skill = combo[_comboIndex];
-        if (skill == null) return null;
+        if (skill == null) { if (debugLogs) Debug.LogWarning($"[LightAtk] {name}: 连段[{_comboIndex}]是空技能", this); return null; }
 
-        if (!TryConsumeSkillLP(skill)) return null;
+        if (!TryConsumeSkillLP(skill)) { if (debugLogs) Debug.LogWarning($"[LightAtk] {name}: LP 不够(技能{skill.skillKey} lp={skill.lpCost})", this); return null; }
 
         _chargeHeldTrackEntry = null; // 新的一次攻击开始，清掉上一次可能残留的蓄力定格状态
         _chargeHeldSkill = null;
@@ -1604,6 +1636,39 @@ public class UnitActionModuleRuntime : MonoBehaviour
         return s_ResourcesModuleCache.TryGetValue(key, out var found) ? found : null;
     }
 
+    // ── 占位骨架兜底：按时间开关近战判定框 ───────────────────────────────
+    // 近战判定框原本只由 Spine 的 hit_start/hit_end 事件开关。还没做美术的占位骨架(比如归巢者、
+    // 守卫者共用的那套)根本没有这两个事件，挥拳再多次也不会产生判定。AI 发起近战攻击后，
+    // 如果当前单位所有可见骨架里都找不到 hit_start 事件，就改按技能的 startupTime/activeTime 开关判定框。
+    // 真骨架带事件之后这里自动不生效，不用回来改。
+    public bool SkeletonHasHitEvent()
+    {
+        foreach (var sa in GetComponentsInChildren<Spine.Unity.SkeletonAnimation>(false))
+        {
+            var data = sa != null && sa.Skeleton != null ? sa.Skeleton.Data : null;
+            if (data != null && data.FindEvent(hitStartEventKey) != null) return true;
+        }
+        return false;
+    }
+
+    public void BeginPlaceholderHitWindow(SkillDefinition skill)
+    {
+        if (skill == null || hitbox == null || skill.isProjectileSkill) return;
+        if (SkeletonHasHitEvent()) return;
+        StartCoroutine(PlaceholderHitWindowRoutine(skill));
+    }
+
+    private System.Collections.IEnumerator PlaceholderHitWindowRoutine(SkillDefinition skill)
+    {
+        yield return new WaitForSeconds(Mathf.Max(0.01f, skill.startupTime));
+        if (_currentSkill != skill) yield break;          // 中途被打断/换招了
+        _hitLandedThisActive = false;
+        _attackActivePhaseStarted = true;
+        hitbox.Activate(skill);
+        yield return new WaitForSeconds(Mathf.Max(0.05f, skill.activeTime));
+        hitbox.Deactivate();
+    }
+
     // ── Spine Event ───────────────────────────────────────────────────────
 
     private void HandleSpineEvent(TrackEntry trackEntry, Spine.Event e)
@@ -1873,6 +1938,17 @@ public class UnitActionModuleRuntime : MonoBehaviour
     /// </summary>
     public void ReleaseChargeAttack()
     {
+        // 蓄力被打断(受击硬直/闪避等)后，定格的动画句柄不会自动清掉。此时松手不能再放出突刺位移——
+        // 之前只靠"句柄非空"判断，被打断后一松手仍然会冲出去，看起来像"蓄力被打后反而放出突刺"。
+        if (_chargeHeldTrackEntry != null && actionController != null && !actionController.IsAttacking)
+        {
+            _chargeHeldTrackEntry = null;
+            _chargeHeldSkill = null;
+            _chargeReleaseRequestedEarly = false;
+            actionController.SetChargeMovementAllowed(false);
+            return;
+        }
+
         if (_chargeHeldTrackEntry == null || _chargeHeldSkill == null)
         {
             // 这个项目有两套并行的输入路径（主输入+兜底按键）都会调用这个方法，不是
@@ -2017,9 +2093,12 @@ public class UnitActionModuleRuntime : MonoBehaviour
         if (targetHealth == null) return;
         if (targetHealth.IsDead) return;
 
+        SkyPrisonShattererLeg hitLeg = other != null ? other.GetComponent<SkyPrisonShattererLeg>() : null;
+
         UnitBattleStatRuntime attackerStats = ResolveAttackerStats();
         UnitBattleStatRuntime targetStats = targetHealth.GetComponent<UnitBattleStatRuntime>()
                                          ?? targetHealth.GetComponentInParent<UnitBattleStatRuntime>();
+        bool killWasAlive = !targetHealth.IsDead;           // AFP「回转」：这一击把活着的敌人打死才算击杀
         float atk = ResolveAttackPower(attackerStats);
         if (_pendingAttackWasFullyCharged && skill.isChargeSkill) atk *= skill.charge.fullChargeDamageMultiplier;
 
@@ -2037,6 +2116,13 @@ public class UnitActionModuleRuntime : MonoBehaviour
         float physicalDamage = atk * skill.damageMultiplier * critMultiplier * ResolveDamageVariance();
         physicalDamage *= ResolveDefenseMultiplier(targetStats);
         physicalDamage *= ResolveResistMultiplier(targetStats, skill.damageTypeKey + "Resist");
+        physicalDamage *= SkyPrisonAfpUpgrades.AttackMultiplier(attackerStats, true);      // AFP「物理攻击强化」(只对玩家生效)
+        bool lethalShot = SkyPrisonAfpPhysicalMastery.ApplyToHit(attackerStats, _currentWeaponExt, ResolveCurrentWeaponEntry(), targetHealth, ref physicalDamage);   // AFP「物理专精」：大剑斩杀 / 枪械致命弹药
+        physicalDamage *= SkyPrisonAfpAnomalyBurst.VulnerabilityMultiplier(attackerStats, targetHealth);                                           // AFP「异常增伤」
+
+        // 受击修正（守卫者的盾等）：目标身上有 IIncomingHitModifier 就让它改一下这笔物理伤害
+        IncomingHitModifiers.Apply(targetHealth, true, skill.damageTypeKey, transform.position.x, ref physicalDamage);
+        if (hitLeg != null) hitLeg.AbsorbHit(ref physicalDamage);      // 打腿：先扣腿的血，本体只吃一部分
 
         // 伤害数字、命中SE、hitLanded 标记必须在 ApplyDamage 之前完成，
         // 否则 ApplyDamage 同步触发 Kill() → ApplyDeathVisual 会把头顶 UI 隐藏，
@@ -2045,7 +2131,12 @@ public class UnitActionModuleRuntime : MonoBehaviour
             targetHealth.GetComponent<UnitOverheadHealthBridge>()
          ?? targetHealth.GetComponentInChildren<UnitOverheadHealthBridge>(true);
 
-        healthBridge?.ShowDamageNumberByKey(skill.damageTypeKey, physicalDamage, false, isPositiveCrit, isNegativeCrit);
+        healthBridge?.ShowDamageNumberByKey(skill.damageTypeKey, physicalDamage, false, isPositiveCrit, isNegativeCrit, lethalShot);
+        if (lethalShot)                                  // 致命子弹：命中点闪光 + 冷绿冲击环 + 脆响
+        {
+            var lethalCol = targetHealth.GetComponentInChildren<Collider>();
+            SkyPrisonAfpLethalFx.Play(lethalCol != null ? lethalCol.bounds.center : targetHealth.transform.position + Vector3.up);
+        }
 
         _hitLandedThisActive = true;
 
@@ -2063,7 +2154,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
                               && selfIdentityBinder.UnitDefinitionAsset.characterIdentity == CharacterIdentity.Player;
             if (selfIsPlayer)
             {
-                var weaponEntry = EquipmentRuntime.Instance.GetWeapon();
+                var weaponEntry = EquipmentRuntime.Instance.GetEquipped(EquipmentRuntime.Instance.ActiveWeaponSlot);   // 磨损的是当前生效的那把，不是永远磨主武器槽
                 if (weaponEntry != null)
                     DurabilitySystem.Wear(weaponEntry);
             }
@@ -2100,6 +2191,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
         }
 
         targetHealth.ApplyDamage(physicalDamage);
+        float usurpDealt = physicalDamage;                    // 科技树「篡夺者」：这一击造成的总伤害(物理 + 属性)，结算完转成生命回复
 
         // 受击语音——只在这一下没有直接打死目标时播（打死了的话 UnitDeathController.
         // Kill() 会播死亡语音，同一下命中不该同时听到"受击闷哼"又听到"死亡惨叫"）。
@@ -2121,9 +2213,14 @@ public class UnitActionModuleRuntime : MonoBehaviour
                 // 防御是物理概念，属性伤害走自己独立的抗性通道。
                 float attributeDamage = atk * hit.attributeDamageMultiplier * critMultiplier * ResolveDamageVariance();
                 attributeDamage *= ResolveResistMultiplier(targetStats, hit.attributeKey + "Resist");
+                attributeDamage *= SkyPrisonAfpUpgrades.AttackMultiplier(attackerStats, false);   // AFP「属性攻击强化」(只对玩家生效)
+                attributeDamage *= SkyPrisonAfpAnomalyBurst.VulnerabilityMultiplier(attackerStats, targetHealth);   // AFP「异常增伤」
+                IncomingHitModifiers.Apply(targetHealth, false, hit.attributeKey, transform.position.x, ref attributeDamage);
+                if (hitLeg != null) hitLeg.AbsorbHit(ref attributeDamage);
                 if (attributeDamage > 0f)
                 {
                     targetHealth.ApplyDamage(attributeDamage);
+                    usurpDealt += attributeDamage;
                     healthBridge?.ShowDamageNumberByKey(hit.attributeKey, attributeDamage, false, isPositiveCrit, isNegativeCrit);
                 }
 
@@ -2133,6 +2230,10 @@ public class UnitActionModuleRuntime : MonoBehaviour
                     targetAnomaly?.ApplyAccumulation(hit.attributeKey, buildupAmount, gameObject);
             }
         }
+
+        SkyPrisonAfpUsurper.OnDealDamage(attackerStats, _currentWeaponExt, targetHealth, usurpDealt);
+
+        if (killWasAlive && targetHealth.IsDead) SkyPrisonAfpPhysicalMastery.OnKill(attackerStats, targetHealth, _currentWeaponExt);
 
         // 硬直 + 击退（死亡后不施加）
         if (!targetHealth.IsDead)
@@ -2145,10 +2246,17 @@ public class UnitActionModuleRuntime : MonoBehaviour
                 targetHealth.GetComponent<UnitMovementController>()
              ?? targetHealth.GetComponentInParent<UnitMovementController>();
 
-            if (skill.stunDuration > 0f)
-                targetAction?.ForceHitStun(skill.stunDuration);
+            // 重装兵器：目标装备总重进入超重 / 过载档（或科技树加成）时，硬直和击退按比例减免
+            EquipmentWeightController targetWeight =
+                targetHealth.GetComponent<EquipmentWeightController>()
+             ?? targetHealth.GetComponentInParent<EquipmentWeightController>();
+            float stunFinal = skill.stunDuration * (targetWeight != null ? targetWeight.StunMultiplier : 1f);
+            float knockbackFinal = skill.knockbackForce * (targetWeight != null ? targetWeight.KnockbackMultiplier : 1f);
 
-            if (skill.knockbackForce > 0f)
+            if (stunFinal > 0.02f)
+                targetAction?.ForceHitStun(stunFinal);
+
+            if (knockbackFinal > 0.01f)
             {
                 if (targetMovement == null)
                 {
@@ -2158,8 +2266,8 @@ public class UnitActionModuleRuntime : MonoBehaviour
                 {
                     float dirX = Mathf.Sign(targetHealth.transform.position.x - transform.position.x);
                     if (dirX == 0f) dirX = 1f;
-                    Vector3 impulse = new Vector3(dirX * skill.knockbackForce, 0f, 0f);
-                    if (debugLogs) Debug.Log($"[Knockback] 施加击退 dir={dirX} force={skill.knockbackForce} impulse={impulse} → {targetHealth.name}", this);
+                    Vector3 impulse = new Vector3(dirX * knockbackFinal, 0f, 0f);
+                    if (debugLogs) Debug.Log($"[Knockback] 施加击退 dir={dirX} force={knockbackFinal} impulse={impulse} → {targetHealth.name}", this);
                     targetMovement.ApplyKnockback(impulse);
                 }
             }
@@ -2227,7 +2335,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
     // 跟"伤害-防御"直接相减不一样，防御再高也只会让倍率无限逼近0，不会出现直接扣成0伤害。
     private const float DefenseMitigationK = 100f;
 
-    private static float ResolveDefenseMultiplier(UnitBattleStatRuntime targetStats)
+    public static float ResolveDefenseMultiplier(UnitBattleStatRuntime targetStats)
     {
         if (targetStats == null) return 1f;
         float def = Mathf.Max(0f, targetStats.GetFinalValue("def", 0f));
@@ -2239,7 +2347,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
     // 同一套读取逻辑，只是 key 不同。封顶 90%，不让抗性叠加到 100% 变成免疫。
     private const float MaxResistClamp = 0.9f;
 
-    private static float ResolveResistMultiplier(UnitBattleStatRuntime targetStats, string resistKey)
+    public static float ResolveResistMultiplier(UnitBattleStatRuntime targetStats, string resistKey)
     {
         if (targetStats == null || string.IsNullOrWhiteSpace(resistKey)) return 1f;
         float resist = targetStats.GetFinalValue(resistKey, 0f) / PercentScale; // 抗性也是 Percentage 字段，同样要 /100
@@ -2259,6 +2367,8 @@ public class UnitActionModuleRuntime : MonoBehaviour
 
     private bool TryConsumeSkillLP(SkillDefinition skill)
     {
+        // 主城里出招就算进入战斗：HUD 显示 HP/LP，LP 从这一刻起正常扣（见 SkyPrisonHubCombatGate）。
+        if (skill != null) SkyPrisonHubCombatGate.NotifyCombat();
         if (skill == null || skill.lpCost <= 0f) return true;
         if (_loadRuntime == null) return true;
         return _loadRuntime.TrySpendLoadAction(skill.lpCost, $"Skill:{skill.skillKey}");
@@ -2269,6 +2379,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
     /// 避免快速点击、还没等到第一发就松手时被提前扣掉一次进场费却什么都没打出去。</summary>
     private bool HasAnyLPForAttack()
     {
+        SkyPrisonHubCombatGate.NotifyCombat();
         return _loadRuntime == null || _loadRuntime.CurrentLoad > 0.0001f;
     }
 

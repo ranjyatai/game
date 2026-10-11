@@ -48,7 +48,7 @@ public class LogicEnumSlotHandler : ILogicSlotHandler
                 break;
 
             case LogicValueSourceType.Variable:
-                value.variableKey = EditorGUILayout.TextField("变量Key", value.variableKey);
+                LogicVariablePickerGUI.DrawVariablePicker(value, LogicSlotValueType.Enum);
                 break;
 
             case LogicValueSourceType.ContextReference:

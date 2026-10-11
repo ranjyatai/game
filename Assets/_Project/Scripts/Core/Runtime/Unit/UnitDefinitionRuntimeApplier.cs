@@ -348,6 +348,7 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
         ApplyToCollisionShape(ud);
         ScheduleOrRunCapsuleAutoCalibration(ud);
         ApplyToShadowProjector(ud);
+        ScheduleShadowProjectorReapplyAfterVisualSettles(ud);
         ApplyToMovement(ud);
         ApplyToLoadRuntime(ud);
         ApplyToDeath(ud);
@@ -1823,9 +1824,13 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
 
         Material[] current = primaryRenderer.sharedMaterials;
         int slotCount = current != null && current.Length > 0 ? current.Length : 1;
+        // 必须每个单位自己克隆一份：FindBestOcclusionCompositeMaterial 按贴图匹配会把"共用同一套 Spine 视觉"
+        // 的玩家和 NPC 扫到同一个材质资产，直接把资产引用塞给每个单位的话，后面 ApplyHiddenOutlineColorForFaction
+        // 给 NPC 上阵营色（友方蓝）就会把玩家的遮挡色（黄）一起改掉——谁最后初始化谁说了算，
+        // 场景里 NPC 多了以后玩家的遮挡全息就变成蓝色。和上面 existing 分支、CloneMaterials 的注释同一个根因。
         Material[] result = new Material[slotCount];
         for (int i = 0; i < result.Length; i++)
-            result[i] = composite;
+            result[i] = new Material(composite);
 
         return result;
     }
@@ -2232,6 +2237,33 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
         pendingCapsuleCalibrationRoutine = StartCoroutine(CoAutoCalibrateCapsuleAfterVisualSettles());
     }
 
+    private Coroutine pendingShadowProjectorReapplyRoutine;
+
+    // ApplyToShadowProjector 里量 TryGetRealVisualWorldBounds 跟胶囊体自动量取用的是
+    // 同一个数据源，也有同一个时序风险——ApplyDefinition 这一轮跑的时候 Spine 网格
+    // 可能还没真正摆过一次姿势，量出来的包围盒不可靠。复用跟胶囊体一样的"等几帧再
+    // 补量一次"策略，不必再造一套新的定时逻辑。
+    private void ScheduleShadowProjectorReapplyAfterVisualSettles(UnitDefinition ud)
+    {
+        if (!ud.lockShadowProjectorTransform || !Application.isPlaying || !isActiveAndEnabled)
+            return;
+
+        if (pendingShadowProjectorReapplyRoutine != null)
+            StopCoroutine(pendingShadowProjectorReapplyRoutine);
+
+        pendingShadowProjectorReapplyRoutine = StartCoroutine(CoReapplyShadowProjectorAfterVisualSettles(ud));
+    }
+
+    private IEnumerator CoReapplyShadowProjectorAfterVisualSettles(UnitDefinition ud)
+    {
+        int frames = Mathf.Max(0, capsuleVisualSettleFrames);
+        for (int i = 0; i < frames; i++)
+            yield return null;
+
+        ApplyToShadowProjector(ud);
+        pendingShadowProjectorReapplyRoutine = null;
+    }
+
     private IEnumerator CoAutoCalibrateCapsuleAfterVisualSettles()
     {
         int frames = Mathf.Max(0, capsuleVisualSettleFrames);
@@ -2438,7 +2470,26 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
         if (shadowProjector == null)
             return;
 
-        shadowProjector.localPosition = ud.shadowLocalPosition;
+        // shadowLocalPosition 之前是纯手填的固定数字，跟角色实际脚底位置毫无关系——
+        // Spine 骨架一改（换模型、调比例、重新导出），角色视觉上的脚底跟着变，这个写
+        // 死的数字就对不上了，只能每次手动重新拖。改成先用跟胶囊体自动量取同一个
+        // 数据源（TryGetRealVisualWorldBounds 的真实渲染包围盒）算出脚底世界位置，
+        // 自动跟着 Spine 走；shadowLocalPosition 保留下来，但含义变成"在自动算出的
+        // 脚底基础上再手动微调多少"，默认值本来就接近 0，正好符合这个新语义，不用
+        // 改任何已有资产上的数值。
+        Vector3 autoLocalPosition = ud.shadowLocalPosition;
+        if (shadowProjector.parent != null && TryGetRealVisualWorldBounds(out Bounds visualBounds))
+        {
+            // 脚底的 Z 取单位根节点的 Z，不取渲染包围盒中心的 Z：角色的 Spine 面片向后倾斜 45°，
+            // 包围盒中心在世界 Z 上比脚底靠后约半个"倾斜深度"（身高 × sin45° / 2 ≈ 1.5 米），
+            // 取中心会让脚下那块接触影整块跑到角色背后（屏幕上方）——西拉斯 / 琪亚拉 / AEGIA 都踩过这个坑。
+            // X 仍用包围盒中心（左右不倾斜）；Y 用包围盒最低点（倾斜面片的最低点就是脚）。
+            Vector3 feetWorld = new Vector3(visualBounds.center.x, visualBounds.min.y, transform.position.z);
+            Vector3 feetLocal = shadowProjector.parent.InverseTransformPoint(feetWorld);
+            autoLocalPosition = feetLocal + ud.shadowLocalPosition;
+        }
+
+        shadowProjector.localPosition = autoLocalPosition;
         shadowProjector.localRotation = Quaternion.Euler(ud.shadowLocalEuler);
         shadowProjector.localScale = ud.shadowLocalScale;
     }

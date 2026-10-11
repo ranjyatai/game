@@ -324,7 +324,7 @@ public class UnitActionController : MonoBehaviour
         // 玩家会听到"闪避音效响了但人没动"。2026-08-25：这个检查之前排在
         // TrySpendDodge()后面——超重时这里直接return，但LP在上一行已经被扣掉了，
         // 变成"超重闪避没效果但白扣LP"。改成先判超重，通过了再花LP。
-        if (movement != null && !movement.CanDodge)
+        if (movement != null && !movement.CanStartDodgeNow)
             return;
 
         if (loadRuntime != null && !loadRuntime.TrySpendDodge())
@@ -350,7 +350,7 @@ public class UnitActionController : MonoBehaviour
 
         // 同上——超重时提前拦截，不让SFX抢跑在真正的负重判定前面，也不能让LP在
         // 超重拒绝之前就先被扣掉。
-        if (movement != null && !movement.CanDodge)
+        if (movement != null && !movement.CanStartDodgeNow)
             return;
 
         if (loadRuntime != null && !loadRuntime.TrySpendDodge())
@@ -504,7 +504,7 @@ public class UnitActionController : MonoBehaviour
         // PushMovementIntent里奔跑那处已经修过的同一类坑(先判超重、超重就直接跳过
         // 资源消耗，压根不调用TrySpendDodge)，这里当时漏改。改成先判超重，通过了
         // 再花LP。
-        if (!movement.CanDodge)
+        if (!movement.CanStartDodgeNow)
             return false;
 
         // 攻击取消闪避跟普通闪避(RequestDodge/RequestDodge(Vector2,...))是同一类位移
@@ -689,8 +689,45 @@ public class UnitActionController : MonoBehaviour
             EnterAttack(kind);
     }
 
+    // ── 防硬直锁（仅非玩家单位）──────────────────────────────────
+    // 连发的枪每发都带一点硬直，而且每次进硬直都 ImmediateStop() 清速度：连续命中时单位永远处在硬直里、
+    // 击退刚推出去就被下一发清掉，看上去像被定身、抽不了身。
+    // 规则：连续硬直累计超过 StunChainMaxSeconds，就进入 StunChainImmuneSeconds 的保护期，保护期内不再吃硬直，
+    // 单位能动、击退也能走完。玩家自己不受这个影响（保留原来的受击手感）。
+    private const float StunChainMaxSeconds = 0.45f;
+    private const float StunChainImmuneSeconds = 0.8f;
+    private float _stunChainStart = -1f;
+    private float _stunImmuneUntil = -1f;
+    private int _isPlayerCache = -1;
+
+    private bool IsPlayerUnitForStun()
+    {
+        if (_isPlayerCache >= 0) return _isPlayerCache == 1;
+        var binder = GetComponent<UnitDefinitionRuntimeBinder>() ?? GetComponentInParent<UnitDefinitionRuntimeBinder>(true);
+        if (binder == null || binder.UnitDefinitionAsset == null) return false;
+        _isPlayerCache = binder.UnitDefinitionAsset.characterIdentity == CharacterIdentity.Player ? 1 : 0;
+        return _isPlayerCache == 1;
+    }
+
     public void ForceHitStun(float seconds)
     {
+        if (!IsPlayerUnitForStun())
+        {
+            float now = Time.time;
+            if (now < _stunImmuneUntil) return;                         // 保护期内：不吃硬直
+            if (currentState == UnitActionState.HitStun)
+            {
+                if (_stunChainStart < 0f) _stunChainStart = now;
+                if (now - _stunChainStart > StunChainMaxSeconds)         // 连锁太久：断开，进入保护期
+                {
+                    _stunImmuneUntil = now + StunChainImmuneSeconds;
+                    _stunChainStart = -1f;
+                    return;
+                }
+            }
+            else _stunChainStart = now;                                 // 新的一串硬直从现在开始
+        }
+
         currentState = UnitActionState.HitStun;
         currentJumpPhase = JumpPhase.None;
         currentDodgeKind = UnitMovementController.DodgeRuntimeState.None;
@@ -700,6 +737,7 @@ public class UnitActionController : MonoBehaviour
         // 被打中打断攻击不该"记仇"——硬直是玩家攻击途中挨的这一下，不是玩家自己
         // 手速跟不上，硬直结束后不应该替玩家自动补发一次攻击。
         _bufferedAttackKind = AttackRequestKind.None;
+        movement?.CancelChargeDash(); // 突刺位移不是闪避，CancelActionState 清不掉；被打断(大硬直/击飞)时必须一起停
         movement?.CancelActionState();
         movement?.ImmediateStop(); // 清零 motor 水平速度，防止受击时脚底继续滑动
     }

@@ -141,11 +141,12 @@ Material:
     - _TessValue: 15
     - _UVSec: 0
     - _WorkflowMode: 1
+    - _XRMotionVectorsPass: 1
     - _ZWrite: 0
     - __dirty: 0
     m_Colors:
     - _BaseColor: {r: 0.57241374, g: 1, b: 0, a: 0.903}
-    - _Color: {r: 0.5724137, g: 1, b: 0, a: 0.903}
+    - _Color: {r: 0.57241374, g: 1, b: 0, a: 0.903}
     - _EmissionColor: {r: 0.06659424, g: 0.21404114, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _TreeInstanceColor: {r: 0, g: 0, b: 0, a: 0}

@@ -15,17 +15,17 @@ MonoBehaviour:
   statusId: status_corruption
   displayName: "\u8150\u8680"
   note: 
-  description: 
+  description: "\u8150\u8680\u4FB5\u8680\uFF1A\u671F\u95F4\u9632\u5FA1\u5927\u5E45\u4E0B\u964D\u3001\u653B\u51FB\u4E0B\u964D\uFF0C\u88C5\u5907\u8010\u4E45\u78E8\u635F\u52A0\u5FEB\u3002"
   localizedNames:
   - languageCode: zh-CN
     text: "\u8150\u8680"
   - languageCode: ja
-    text: 
+    text: "\u8150\u98DF"
   - languageCode: en
-    text: 
+    text: Corroded
   localizedDescriptions:
   - languageCode: zh-CN
-    text: 
+    text: "\u8150\u8680\u4FB5\u8680\uFF1A\u671F\u95F4\u9632\u5FA1\u5927\u5E45\u4E0B\u964D\u3001\u653B\u51FB\u4E0B\u964D\uFF0C\u88C5\u5907\u8010\u4E45\u78E8\u635F\u52A0\u5FEB\u3002"
   - languageCode: ja
     text: 
   - languageCode: en
@@ -35,18 +35,36 @@ MonoBehaviour:
   isHidden: 0
   showInHud: 1
   icon: {fileID: 21300000, guid: 1ce5ed1d4827e054cadf363569230781, type: 3}
-  grantMode: 0
-  accumulationSourceKey: 
-  accumulationThreshold: 0
+  grantMode: 1
+  accumulationSourceKey: accum_status_corruption
+  accumulationThreshold: 100
   durationType: 1
-  baseDuration: 0
+  baseDuration: 12
   durationUpdateMode: 0
   maxDuration: 0
   canStack: 0
   baseStack: 1
   maxStack: 1
   stackUpdateMode: 2
-  attributeModifiers: []
+  attributeModifiers:
+  - enabled: 1
+    attributeKey: def
+    attributeDisplayName: "\u9632\u5FA1\u529B"
+    attributeValueType: 1
+    attributeOperator: 1
+    stackScaling: 1
+    value: 0.4
+    boolValue: 0
+    note: "\u9632\u5FA1\u5927\u5E45\u4E0B\u964D"
+  - enabled: 1
+    attributeKey: atk
+    attributeDisplayName: "\u653B\u51FB\u529B"
+    attributeValueType: 1
+    attributeOperator: 1
+    stackScaling: 1
+    value: 0.75
+    boolValue: 0
+    note: "\u653B\u51FB\u4E0B\u964D"
   enableDot: 0
   dotTickInterval: 1
   dotTargetResource: 0
@@ -79,3 +97,21 @@ MonoBehaviour:
   onExpireSfxKey: 
   enableRegain: 0
   regainRatio: 0
+  useStatusOutline: 0
+  statusOutlineColor: {r: 4, g: 0.25, b: 0.03, a: 1}
+  statusOutlineWidthPixels: 3
+  statusOutlineWidthVariance: 0.6
+  statusOutlineFlowSpeed: 0.6
+  statusOutlineNoiseScale: 0.3
+  statusOutlineFadeInSeconds: 0.35
+  statusOutlineFadeOutSeconds: 0.6
+  statusGlowRadiusPixels: 12
+  statusGlowIntensity: 1
+  statusGlowInnerColor: {r: 1, g: 0.6, b: 0.12, a: 1}
+  statusGlowOuterColor: {r: 1, g: 0.3, b: 0.06, a: 1}
+  statusGlowVariance: 0.7
+  statusGlowNoiseScale: 5
+  useStatusFlash: 0
+  statusFlashColor: {r: 1, g: 0.45, b: 0.45, a: 1}
+  statusFlashDuration: 0.3
+  statusFlashAlphaDip: 0.35

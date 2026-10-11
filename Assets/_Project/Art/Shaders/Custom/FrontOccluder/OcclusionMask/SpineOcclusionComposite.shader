@@ -163,6 +163,11 @@ Shader "Spine/SpineOcclusionComposite"
         _SkyPrison_DissolveNoiseScale ("Sky Prison Dissolve Noise Scale", Float) = 0.6
         _SkyPrison_DissolveEdgeWidth ("Sky Prison Dissolve Edge Width", Range(0.001,1)) = 0.12
         [HDR] _SkyPrison_DissolveEdgeColor ("Sky Prison Dissolve Edge Color", Color) = (0.5,0.04,0.02,1)
+        // 从下到上溶解（脱战淡出用）：BottomUp>0.5 时把噪声换成"世界高度渐变"，脚先消失、头最后消失。
+        _SkyPrison_DissolveBottomUp ("Sky Prison Dissolve Bottom Up", Range(0,1)) = 0
+        _SkyPrison_DissolveBaseY ("Sky Prison Dissolve Base World Y", Float) = 0
+        _SkyPrison_DissolveHeight ("Sky Prison Dissolve Height", Float) = 2.5
+        _SkyPrison_DissolveBottomUpNoise ("Sky Prison Dissolve Bottom Up Noise Mix", Range(0,1)) = 0.15
 
         _SkyPrison_StatusOutlineIntensity ("Sky Prison Status Outline Intensity", Range(0,1)) = 0
         [HDR] _SkyPrison_StatusOutlineColor ("Sky Prison Status Outline Color", Color) = (2.2,0.7,0.05,1)
@@ -257,6 +262,14 @@ Shader "Spine/SpineOcclusionComposite"
         fixed4 _SkyPrison_EnvTint;
         float _SkyPrison_EnvTintStrength;
         float _SkyPrison_EnvDarken;
+        // 逐像素灯光（由 SkyPrisonCharacterEnvironmentLightReceiver 通过 MaterialPropertyBlock 填），
+        // 和 Spine-Skeleton.shader 里同名那套完全一致。数量为 0 时和原来完全一致。
+        float4 _SkyPrison_EnvLampPos[4];    // xyz 世界位置, w 范围
+        float4 _SkyPrison_EnvLampDir[4];    // xyz 朝向, w cos(外角)；点光源 w = -2
+        float4 _SkyPrison_EnvLampParam[4];  // x 强度×颜色亮度, y cos(内角)
+        float4 _SkyPrison_EnvLampColor[4];  // rgb 灯色相（按亮度归一）
+        float _SkyPrison_EnvLampCount;
+        float _SkyPrison_EnvLampDarkenGain;
         float _SkyPrison_EnvSaturation;
         float _SkyPrison_EnvContrast;
         float _SkyPrison_EnvExposure;
@@ -264,10 +277,65 @@ Shader "Spine/SpineOcclusionComposite"
 
         // 跟 Spine-Skeleton.shader 里 SkyPrisonApplyOverlayEnvironment 完全一致的实现，
         // 保持两边行为统一——角色不管走哪条渲染路径，同样的环境参数应该出同样的效果。
-        float3 SkyPrisonApplyOverlayEnvironment(float3 rgb)
+        // 受光按角色「逻辑上垂直站立」的位置算：Spine 网格为了正对镜头整体绕 X 轴倾斜了 45°
+        // （头往后仰），直接用倾斜后的像素位置，头部会被算得更低、更靠后，和灯的距离/角度都不对。
+        // 按网格自己的上/右轴拆出离脚高度和左右偏移，重建成垂直站立的位置（灯光投影着色器同一套）。
+        float3 SkyPrisonUprightWorldPos(float3 wp)
+        {
+            if (_SkyPrison_Force3DPropOpaqueAlpha > 0.5)
+                return wp; // 3D 道具是真实立体网格，不需要扶正
+            float3 root = float3(unity_ObjectToWorld._m03, unity_ObjectToWorld._m13, unity_ObjectToWorld._m23);
+            float3 upW = normalize(float3(unity_ObjectToWorld._m01, unity_ObjectToWorld._m11, unity_ObjectToWorld._m21));
+            float3 rightW = normalize(float3(unity_ObjectToWorld._m00, unity_ObjectToWorld._m10, unity_ObjectToWorld._m20));
+            float3 d = wp - root;
+            return root + rightW * dot(d, rightW) + float3(0.0, dot(d, upW), 0.0);
+        }
+
+        float SkyPrisonLampLevelAt(float3 worldPos, out float3 lampHue)
+        {
+            worldPos = SkyPrisonUprightWorldPos(worldPos);
+            // 和地面、灯光投影同一套 URP 物理衰减（强度/距离² + 范围末端平滑 + 聚光内外角）。
+            // 以前用的是「范围前 55% 满亮度」的风格化曲线，再乘上为了照亮地面而调得很大的强度
+            // （挂 14 米高的灯强度 200+），光锥边缘衰减只剩 1% 也能把角色照满——地面已经黑了，
+            // 人却是亮的。现在强度在 C# 里按「满亮度门槛」归一化，level = 1 就是照满。
+            float level = 0.0;
+            float3 colorSum = float3(0.0, 0.0, 0.0);
+            int n = (int)_SkyPrison_EnvLampCount;
+            [unroll] for (int k = 0; k < 4; k++)
+            {
+                if (k < n)
+                {
+                    float3 toP = worldPos - _SkyPrison_EnvLampPos[k].xyz;
+                    float d2 = max(dot(toP, toP), 0.0001);
+                    float range = max(_SkyPrison_EnvLampPos[k].w, 0.0001);
+                    float q = d2 / (range * range);
+                    float f = saturate(1.0 - q * q);
+                    float atten = f * f / d2;
+                    float cosOuter = _SkyPrison_EnvLampDir[k].w;
+                    if (cosOuter > -1.5)
+                    {
+                        float cosA = dot(_SkyPrison_EnvLampDir[k].xyz, toP * rsqrt(d2));
+                        float u = saturate((cosA - cosOuter) / max(_SkyPrison_EnvLampParam[k].y - cosOuter, 0.0001));
+                        atten *= u * u;
+                    }
+                    float c = _SkyPrison_EnvLampParam[k].x * atten;
+                    level += c;
+                    colorSum += _SkyPrison_EnvLampColor[k].rgb * c;
+                }
+            }
+            lampHue = level > 0.0001 ? colorSum / level : float3(1.0, 1.0, 1.0);
+            return level;
+        }
+
+        float3 SkyPrisonApplyOverlayEnvironment(float3 rgb, float3 worldPos)
         {
             float tintStrength = saturate(_SkyPrison_EnvTintStrength);
-            float darken = saturate(_SkyPrison_EnvDarken);
+            float3 lampHue;
+            float lampLevel = SkyPrisonLampLevelAt(worldPos, lampHue);
+            float darken = saturate(_SkyPrison_EnvDarken - lampLevel * _SkyPrison_EnvLampDarkenGain);
+            // 灯色逐像素：被灯照到多少，色调就往灯色靠多少。以前色相是 C# 在腰部一个点算的，
+            // 光锥越往上越窄，走到光圈边缘时腰部先出锥，腿还亮着却没有灯色。
+            float3 tintColor = lerp(_SkyPrison_EnvTint.rgb, lampHue, saturate(lampLevel));
             float saturation = max(0.0, _SkyPrison_EnvSaturation);
             float contrast = max(0.0, _SkyPrison_EnvContrast);
             float exposure = _SkyPrison_EnvExposure;
@@ -278,11 +346,11 @@ Shader "Spine/SpineOcclusionComposite"
             rgb = lerp(luminance.xxx, rgb, saturation);
             rgb = (rgb - 0.5) * contrast + 0.5;
 
-            float3 envTinted = rgb * _SkyPrison_EnvTint.rgb;
+            float3 envTinted = rgb * tintColor;
             rgb = lerp(rgb, envTinted, tintStrength);
 
             float shadowMask = saturate(1.0 - luminance);
-            float3 shadowTinted = rgb * _SkyPrison_EnvTint.rgb;
+            float3 shadowTinted = rgb * tintColor;
             rgb = lerp(rgb, shadowTinted, shadowMask * shadowTintStrength);
 
             rgb *= (1.0 - darken);
@@ -300,6 +368,10 @@ Shader "Spine/SpineOcclusionComposite"
         float _SkyPrison_DissolveNoiseScale;
         float _SkyPrison_DissolveEdgeWidth;
         fixed4 _SkyPrison_DissolveEdgeColor;
+        float _SkyPrison_DissolveBottomUp;
+        float _SkyPrison_DissolveBaseY;
+        float _SkyPrison_DissolveHeight;
+        float _SkyPrison_DissolveBottomUpNoise;
 
         float _SkyPrison_StatusOutlineIntensity;
         fixed4 _SkyPrison_StatusOutlineColor;
@@ -572,6 +644,12 @@ Shader "Spine/SpineOcclusionComposite"
             float3 anchorPos = _SkyPrison_UseRootAnchorDepth > 0.5
                 ? SkyPrisonRootWorldPos()
                 : worldPos;
+            // 落地深度图里每个遮挡物顶点是「X/Z 保留、Y 清零」投到世界 y=0 的深度。
+            // 角色这一侧必须用同一个基准：只比 X/Z（谁的脚在前面），不能带上角色自己的世界高度。
+            // 否则站在高 1 米的甲板上的角色，眼深度会无端比同一块甲板上的遮挡物近 0.7 米（45° 俯视下 1 米高度约折合 0.7 米深度），
+            // 低矮的遮挡物（1 米高的高台）就永远遮不住角色脚——整个余穹的地面都在 y=1，这个偏差处处都有。
+            if (_SkyPrison_UseRootAnchorDepth > 0.5)
+                anchorPos.y = 0.0;
             float charEye = SkyPrisonFragmentEyeDepth(anchorPos);
 
             float occluderEye = tex2D(_SkyPrison_OccluderFootprintDepth, screenUV).r;
@@ -970,6 +1048,8 @@ Shader "Spine/SpineOcclusionComposite"
                 if (dissolveAmount > 0.0001)
                 {
                     dissolveNoiseValue = tex2D(_SkyPrison_DissolveNoiseTex, i.worldPos.xy * _SkyPrison_DissolveNoiseScale).r;
+                    if (_SkyPrison_DissolveBottomUp > 0.5)
+                        dissolveNoiseValue = saturate(((i.worldPos.y - _SkyPrison_DissolveBaseY) / max(_SkyPrison_DissolveHeight, 0.01)) * (1.0 - saturate(_SkyPrison_DissolveBottomUpNoise)) + dissolveNoiseValue * saturate(_SkyPrison_DissolveBottomUpNoise));
                     clip(dissolveNoiseValue - dissolveAmount);
                 }
                 float dissolveDarken = saturate(_SkyPrison_DissolveDarken);
@@ -1012,7 +1092,7 @@ Shader "Spine/SpineOcclusionComposite"
                 // 缩放，直接套在预乘颜色上在半透明边缘会算错，必须先还原成straight颜色
                 // 处理完再乘回alpha，跟 Spine-Skeleton.shader 的处理顺序保持一致。
                 float3 straightRgb = alpha > 0.0001 ? c.rgb / alpha : 0;
-                straightRgb = SkyPrisonApplyOverlayEnvironment(straightRgb);
+                straightRgb = SkyPrisonApplyOverlayEnvironment(straightRgb, i.worldPos);
 
                 // alpha 在这里已经是 CleanupAlpha() 处理过的结果（图集接缝边缘平滑过渡到0），
                 // 直接拿来给阴影遮罩的生效强度做边缘淡出，跟 Spine-Skeleton.shader 那边用
@@ -1202,6 +1282,8 @@ Shader "Spine/SpineOcclusionComposite"
                 if (dissolveAmount > 0.0001)
                 {
                     float dissolveNoiseValue = tex2D(_SkyPrison_DissolveNoiseTex, i.worldPos.xy * _SkyPrison_DissolveNoiseScale).r;
+                    if (_SkyPrison_DissolveBottomUp > 0.5)
+                        dissolveNoiseValue = saturate(((i.worldPos.y - _SkyPrison_DissolveBaseY) / max(_SkyPrison_DissolveHeight, 0.01)) * (1.0 - saturate(_SkyPrison_DissolveBottomUpNoise)) + dissolveNoiseValue * saturate(_SkyPrison_DissolveBottomUpNoise));
                     clip(dissolveNoiseValue - dissolveAmount);
                 }
 

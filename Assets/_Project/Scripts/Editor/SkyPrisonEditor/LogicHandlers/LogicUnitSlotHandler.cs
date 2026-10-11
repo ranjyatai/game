@@ -65,7 +65,7 @@ public class LogicUnitSlotHandler : ILogicSlotHandler, IAIScenePickCapableSlotHa
                 break;
 
             case LogicValueSourceType.Variable:
-                value.variableKey = EditorGUILayout.TextField("变量Key", value.variableKey);
+                LogicVariablePickerGUI.DrawVariablePicker(value, LogicSlotValueType.Unit);
                 break;
 
             case LogicValueSourceType.AssetReference:

@@ -820,7 +820,8 @@ public class SaveSlotSelectorUI : MonoBehaviour
         box.sizeDelta = new Vector2(1040f, 520f);
 
         box.gameObject.AddComponent<Image>().color = PanelOverlay;
-        AddCornerBrackets(box, Color.white, 40f, 4f);
+        AddCornerBrackets(box, Color.white,
+            SkyPrisonFloatingWindowKit.CornerBracketLength, SkyPrisonFloatingWindowKit.CornerBracketThickness);
 
         string overwriteTitle = string.Format(
             L("ui_saveslot_overwrite_title_format", "覆盖 {0}？"), SlotLabel(meta));
@@ -861,7 +862,8 @@ public class SaveSlotSelectorUI : MonoBehaviour
         box.sizeDelta = new Vector2(1040f, 520f);
 
         box.gameObject.AddComponent<Image>().color = PanelOverlay;
-        AddCornerBrackets(box, Color.white, 40f, 4f);
+        AddCornerBrackets(box, Color.white,
+            SkyPrisonFloatingWindowKit.CornerBracketLength, SkyPrisonFloatingWindowKit.CornerBracketThickness);
 
         string deleteTitle = string.Format(
             L("ui_saveslot_delete_title_format", "删除 {0}？"), SlotLabel(meta));

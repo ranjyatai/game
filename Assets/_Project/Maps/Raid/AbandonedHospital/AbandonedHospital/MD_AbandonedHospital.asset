@@ -1,0 +1,110 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37600d2b343ea0847ac945ea73927454, type: 3}
+  m_Name: MD_AbandonedHospital
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::MapDefinition
+  mapKey: abandoned_hospital
+  fileName: AbandonedHospital
+  displayName: "\u5E9F\u75C5\u9662"
+  description: "\u56DE\u6536\u4EF7\u503C\uFF1A\u4E2D\u3002\n\u539F\u533B\u7597\u8BBE\u65BD\uFF0C\u75C5\u623F\u533A\u53CA\u836F\u54C1\u50A8\u5B58\u533A\u4FDD\u7559\u90E8\u5206\u7ED3\u6784\u3002\n\u68C0\u51FA\u533B\u7597\u5668\u68B0\u3001\u836F\u54C1\u53CA\u751F\u7269\u6837\u672C\u6B8B\u5B58\uFF0C\u90E8\u5206\u72B6\u6001\u4E0D\u660E\u3002\nMEMENTO\u4FB5\u8680\u5A01\u80C1\u8BC4\u4F30\uFF1A\u9AD8\u3002"
+  localizedNames:
+  - languageCode: zh-CN
+    text: "\u5E9F\u75C5\u9662"
+  - languageCode: ja
+    text: "\u5EC3\u75C5\u9662"
+  - languageCode: en
+    text: Abandoned Hospital
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: "\u56DE\u6536\u4EF7\u503C\uFF1A\u4E2D\u3002\n\u539F\u533B\u7597\u8BBE\u65BD\uFF0C\u75C5\u623F\u533A\u53CA\u836F\u54C1\u50A8\u5B58\u533A\u4FDD\u7559\u90E8\u5206\u7ED3\u6784\u3002\n\u68C0\u51FA\u533B\u7597\u5668\u68B0\u3001\u836F\u54C1\u53CA\u751F\u7269\u6837\u672C\u6B8B\u5B58\uFF0C\u90E8\u5206\u72B6\u6001\u4E0D\u660E\u3002\nMEMENTO\u4FB5\u8680\u5A01\u80C1\u8BC4\u4F30\uFF1A\u9AD8\u3002"
+  - languageCode: ja
+    text: "\u56DE\u53CE\u4FA1\u5024\uFF1A\u4E2D\u3002\n\u65E7\u533B\u7642\u65BD\u8A2D\u3002\u75C5\u68DF\u533A\u753B\u304A\u3088\u3073\u85AC\u54C1\u4FDD\u7BA1\u533A\u753B\u306F\u4E00\u90E8\u69CB\u9020\u304C\u6B8B\u5B58\u3002\n\u533B\u7642\u6A5F\u5668\u3001\u85AC\u54C1\u3001\u751F\u4F53\u30B5\u30F3\u30D7\u30EB\u306E\u6B8B\u5B58\u3092\u691C\u51FA\u3002\u72B6\u614B\u4E0D\u660E\u306E\u3082\u306E\u3092\u542B\u3080\u3002\nMEMENTO\u4FB5\u8755\u8105\u5A01\u8A55\u4FA1\uFF1A\u9AD8\u3002"
+  - languageCode: en
+    text: 'Salvage value: moderate.
+
+      Former medical facility. Ward areas and
+      pharmaceutical storage partially intact.
+
+      Medical equipment, pharmaceuticals,
+      and biological samples detected. Some in unknown condition.
+
+      MEMENTO
+      erosion threat assessment: high.'
+  raidDayOutputs: []
+  raidNightOutputs: []
+  lootBoxes: []
+  scenePath: Assets/_Project/Maps/Raid/AbandonedHospital/AbandonedHospital/AbandonedHospital.unity
+  sceneGuid: 6b856053ecfd88d43ab226c51bf4c8f3
+  mapBoundsCenter: {x: 0, y: 0, z: 0}
+  mapBoundsSize: {x: 64, y: 6, z: 64}
+  enablePhysicalMapBounds: 1
+  mapBoundsWallThickness: 2
+  mapBoundsWallHeight: 12
+  mapBoundsUseCeiling: 0
+  mapBoundsCeilingThickness: 1
+  enableFogOfWar: 0
+  fogStrength: 0.72
+  fogSoftEdgeWidth: 3.5
+  environmentPreset: 1
+  skyRenderModel: {fileID: 0}
+  skyboxMaterial: {fileID: 0}
+  ambientColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
+  environmentReflectionIntensity: 1
+  environmentAreaLightColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
+  environmentAreaLightIntensity: 0.45
+  environmentAreaLightSize: 16
+  environmentAreaLightPosition: {x: 0, y: 8, z: 0}
+  environmentAreaLightEuler: {x: 90, y: 0, z: 0}
+  mainLightColor: {r: 1, g: 1, b: 1, a: 1}
+  mainLightIntensity: 0.6
+  mainLightEuler: {x: 50, y: -30, z: 0}
+  enableSceneFog: 0
+  sceneFogColor: {r: 0.55, g: 0.58, b: 0.62, a: 1}
+  fogStartDistance: 20
+  fogEndDistance: 80
+  enableHeightFog: 0
+  heightFogColorStart: {r: 0.05, g: 0.06, b: 0.08, a: 1}
+  heightFogColorEnd: {r: 0.1, g: 0.12, b: 0.16, a: 1}
+  heightFogIntensity: 1
+  heightFogColorDuo: 1
+  heightFogDistanceStart: -60
+  heightFogDistanceEnd: 60
+  heightFogDistanceFalloff: 1
+  heightFogHeightStart: 0
+  heightFogHeightEnd: 15
+  heightFogHeightFalloff: 1
+  heightFogNoiseSpeed: {x: 0.5, y: 0.5, z: 0}
+  heightFogNoiseDistanceEnd: 30
+  postProcessProfile: {fileID: 0}
+  environmentFxPrefab: {fileID: 0}
+  enableDayNightCycle: 0
+  startTimeOfDay: 12
+  enableWeather: 0
+  weatherType: 0
+  dustWeather:
+    intensity: 5
+  rainWeather:
+    intensity: 5
+    lensWetnessIntensity: 0
+  snowWeather:
+    intensity: 5
+  weatherFog:
+    intensity: 5
+  enableDepthOfField: 0
+  focusDistance: 8
+  blurStrength: 0.4
+  triggerPackages: []
+  exploreBgmClips: []
+  combatBgmClips: []
+  bgmPlayMode: 0
+  bgmCrossfadeDuration: 3
+  bgmVolume: 1

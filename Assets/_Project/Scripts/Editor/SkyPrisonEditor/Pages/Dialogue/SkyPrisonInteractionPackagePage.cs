@@ -917,6 +917,22 @@ public class SkyPrisonInteractionPackagePage : SkyPrisonEditorPageBase
                 break;
             }
 
+            case DialogueOptionActionType.Heal:
+            {
+                EditorGUILayout.HelpBox(
+                    "点这个选项会立刻刷新玩家全部状态：清掉所有异常/状态效果和灰色损失，血量与LP补满。" +
+                    "下面的台词是治疗完后NPC的回应(可不配，不配就没有回应台词)。",
+                    MessageType.None);
+                dirty |= DrawOptionTargetSentence(option);
+                bool newCloseHeal = EditorGUILayout.ToggleLeft("回应讲完后关闭对话", option.closeAfterShow);
+                if (newCloseHeal != option.closeAfterShow) { option.closeAfterShow = newCloseHeal; dirty = true; }
+                break;
+            }
+
+            case DialogueOptionActionType.TacticalTraining:
+                EditorGUILayout.HelpBox("点这个选项会关闭对话并打开「战术研修」窗口(永久科技树)。无需其他配置。", MessageType.None);
+                break;
+
             case DialogueOptionActionType.SetQuestFlag:
             {
                 dirty |= DrawOptionTargetSentence(option);

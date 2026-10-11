@@ -30,6 +30,10 @@ public class ShopDefinition : ScriptableObject
     [Tooltip("商店名字的本地化 Key，实际多语言文字存在 UILocalizationTable 里（跟界面设置窗口的\"商店\"页联动编辑）")]
     public string displayNameKey = "";
 
+    [Tooltip("这家店的老板——详情区立绘从这个单位的 UnitDefinition.portraits 里取图" +
+             "(按表情key取，比如\"default\"/\"happy\")。留空就不显示立绘。")]
+    public UnitDefinition vendorUnitDefinition;
+
     [Header("默认货币（商品未单独配置时使用）")]
     public string defaultCurrencyId = "token";
 

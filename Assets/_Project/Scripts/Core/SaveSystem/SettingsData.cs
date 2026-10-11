@@ -30,6 +30,9 @@ public class SettingsData
     // ── 语言 ──────────────────────────────────────────────────────────────
     public string languageCode = "zh-CN";
 
+    /// <summary>语音语言——独立于文字语言的设置，允许文字看中文、语音听日文这种组合。</summary>
+    public string voiceLanguageCode = "zh-CN";
+
     // ── 游戏玩法 ──────────────────────────────────────────────────────────
     public float mouseSensitivity   = 1f;
     public bool  showDamageNumbers  = true;
@@ -37,6 +40,11 @@ public class SettingsData
     public bool  harmonyMode        = false;   // 和谐模式：隐藏血腥特效
     public bool  autoSaveEnabled    = true;    // 关掉后 SaveManager.Save() 只在玩家手动存档时才落盘
     public int   sellConfirmRarityThreshold = 5; // 商店出售稀有物品二次确认阈值：itemLevel>=此值弹二次确认；-1=不提示
+
+    /// <summary>台本对话自动播放。true=没有真正分支选项时自动按文字/语音时长推进；
+    /// false(默认)=每句都要玩家手动点选项才推进。出现2个以上分支选项时无论如何都会
+    /// 停下来等玩家手动选，不会自动帮玩家决定剧情走向。</summary>
+    public bool  dialogueAutoPlay = false;
 
     // ── 手柄 ──────────────────────────────────────────────────────────────
     public float gamepadDeadzone    = 0.25f;   // 同步到 PlayerAimFacingController.GamepadDeadZone

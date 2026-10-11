@@ -90,8 +90,18 @@ public class UnitDefinitionRuntimeBinder : MonoBehaviour
         RefreshSceneMarkerCache();
         EnsureRuntimeIdentityForCurrentDefinition();
 
+        // 不能在 OnValidate 里直接建物体 / 加组件（Unity 会报 "SendMessage cannot be called during
+        // Awake, CheckConsistency, or OnValidate"，而且预制体资产被导入 / 重载时 OnValidate 也会跑，
+        // 当时 SetParent 进预制体资产会失败，新建的 SolidBlocker 就留在当前场景根上，越攒越多）。
+        // 推迟到编辑器空闲时再刷新。
         if (!Application.isPlaying)
-            RefreshVisualChannelBindingsIfPossible();
+        {
+            UnityEditor.EditorApplication.delayCall += () =>
+            {
+                if (this != null && !Application.isPlaying)
+                    RefreshVisualChannelBindingsIfPossible();
+            };
+        }
     }
 #endif
 
@@ -287,12 +297,20 @@ public class UnitDefinitionRuntimeBinder : MonoBehaviour
             return;
         }
 
+        if (!instance.scene.IsValid() || !gameObject.scene.IsValid())
+            return;   // 预制体资产：SetParent 会失败，物体会掉在场景根上
+
         MeshFilter meshFilter = instance.GetComponentInChildren<MeshFilter>(true);
         if (meshFilter == null || meshFilter.sharedMesh == null)
             return;
 
         GameObject hurtboxGo = new GameObject("CombatHurtbox");
         hurtboxGo.transform.SetParent(meshFilter.transform, false);
+        if (hurtboxGo.transform.parent != meshFilter.transform)
+        {
+            DestroyModel3DChild(hurtboxGo);
+            return;
+        }
 
         MeshCollider meshCollider = hurtboxGo.AddComponent<MeshCollider>();
         meshCollider.sharedMesh = meshFilter.sharedMesh;
@@ -319,15 +337,27 @@ public class UnitDefinitionRuntimeBinder : MonoBehaviour
     // World3D 已经在里面，不用额外配置。
     private void EnsureModel3DSolidBlocker(GameObject instance)
     {
-        if (instance.transform.Find("SolidBlocker") != null)
+        // 预制体资产本身（不是场景里的实例 / 预制体编辑模式）：scene 无效。往里 SetParent 会失败，
+        // 新建的物体就留在场景根上——这就是"节点外一堆没意义的 SolidBlocker"的来源。
+        if (!instance.scene.IsValid() || !gameObject.scene.IsValid())
             return;
 
         MeshFilter meshFilter = instance.GetComponentInChildren<MeshFilter>(true);
         if (meshFilter == null || meshFilter.sharedMesh == null)
             return;
 
+        // 以前查的是 instance.transform.Find（只看 instance 的直接子节点），但 blocker 实际挂在
+        // meshFilter 所在节点下——FBX 里网格常在更深一层，查不到就每刷新一次建一个新的。
+        if (meshFilter.transform.Find("SolidBlocker") != null)
+            return;
+
         GameObject blockerGo = new GameObject("SolidBlocker");
         blockerGo.transform.SetParent(meshFilter.transform, false);
+        if (blockerGo.transform.parent != meshFilter.transform)
+        {   // 挂不上去就不要留在场景根上
+            DestroyModel3DChild(blockerGo);
+            return;
+        }
 
         int world3DLayer = LayerMask.NameToLayer("World3D");
         blockerGo.layer = world3DLayer >= 0 ? world3DLayer : instance.layer;

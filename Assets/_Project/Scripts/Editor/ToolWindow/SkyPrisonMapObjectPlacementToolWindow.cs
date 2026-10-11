@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
+public partial class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 {
     private const string MenuPath = "天空囚笼/地图对象放置工具 %&m";
     private const string LegacyMenuPath = "Tools/Sky Prison/Map/地形装饰物放置工具";
@@ -78,7 +78,11 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         Region,
         Trigger,
         SpawnPoint,
-        Effect,
+        RaidDeploy,
+        LootPoint,
+        AfpZone,
+        // 光源：从 Prefabs/Lights 里挑预制体点击摆放（见 SkyPrisonMapObjectPlacementToolWindow.Light.cs）。
+        Light,
         AudioArea,
         // 白模：放置流程与地形装饰物完全共用（同一个 TerrainDecorationDefinition / Builder），
         // 只是列表按 isGraybox 分开、父节点固定为 GrayboxRoot，并多一组整体隐藏/停用开关。
@@ -178,8 +182,11 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         new ToolBookmark(PlacementObjectKind.Item, "道具", true),
         new ToolBookmark(PlacementObjectKind.Region, "区域", true),
         new ToolBookmark(PlacementObjectKind.Graybox, "白模", true),
-        new ToolBookmark(PlacementObjectKind.SpawnPoint, "出生点", false),
-        new ToolBookmark(PlacementObjectKind.Effect, "特效", false),
+        new ToolBookmark(PlacementObjectKind.SpawnPoint, "出生点", true),
+        new ToolBookmark(PlacementObjectKind.RaidDeploy, "RAID出发点", true),
+        new ToolBookmark(PlacementObjectKind.LootPoint, "资源箱点位", true),
+        new ToolBookmark(PlacementObjectKind.AfpZone, "AFP购买区", true),
+        new ToolBookmark(PlacementObjectKind.Light, "光源", true),
         new ToolBookmark(PlacementObjectKind.AudioArea, "声音区域", false),
     };
 
@@ -727,10 +734,17 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
                 OpenCurrentKindEditor();
         }
 
-        DrawSceneTopViewToolbarButton();
-
         GUILayout.FlexibleSpace();
         DrawPlacementModeToolbarButton(72f);
+        EditorGUILayout.EndHorizontal();
+
+        // 第二行：场景视图辅助和对选中物体的操作，放不下时不会把第一行挤乱。
+        EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+        GUILayout.Label("视图/工具", EditorStyles.miniLabel, GUILayout.Width(54f));
+        DrawSceneTopViewToolbarButton();
+        DrawSceneBrightViewToolbarButton();
+        DrawGroundSnapToolbarButton();
+        GUILayout.FlexibleSpace();
         EditorGUILayout.EndHorizontal();
     }
 
@@ -743,6 +757,17 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             EditorStyles.toolbarButton, GUILayout.Width(60f));
         if (pressed != active)
             SkyPrisonSceneTopView.Toggle();
+    }
+
+    /// <summary>场景视图全局照明开关（仅 Scene 视图，不改场景数据）。</summary>
+    private void DrawSceneBrightViewToolbarButton()
+    {
+        bool active = SkyPrisonSceneBrightView.IsActive;
+        bool pressed = GUILayout.Toggle(active, new GUIContent(active ? "关全局照明" : "全局照明",
+            "只在场景视图里用辅助光把地图照亮，方便暗图摆放；不改场景灯光，Game 视图和游戏里不受影响。再按一次恢复。"),
+            EditorStyles.toolbarButton, GUILayout.Width(72f));
+        if (pressed != active)
+            SkyPrisonSceneBrightView.SetActive(pressed);
     }
 
     private bool CanTogglePlacementMode()
@@ -760,6 +785,16 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
                 return selectedItemDefinition != null;
             case PlacementObjectKind.Region:
                 return !string.IsNullOrWhiteSpace(regionNameInput);
+            case PlacementObjectKind.Light:
+                return selectedLightPrefab != null;
+            case PlacementObjectKind.SpawnPoint:
+                return CanPlaceSpawnPoint();
+            case PlacementObjectKind.RaidDeploy:
+                return CanPlaceRaidDeploy();
+            case PlacementObjectKind.LootPoint:
+                return CanPlaceLootPoint();
+            case PlacementObjectKind.AfpZone:
+                return true;
             default:
                 return false;
         }
@@ -918,6 +953,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 
             DrawPlacementModeToolbarButton(64f);
             DrawSceneTopViewToolbarButton();
+            DrawSceneBrightViewToolbarButton();
 
             if (GUILayout.Button("已摆放", EditorStyles.toolbarButton, GUILayout.Width(64f)))
             {
@@ -1112,6 +1148,9 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             RefreshPlacedItemCache();
         }
 
+        if (currentKind == PlacementObjectKind.Light)
+            LoadLightPrefabs();
+
         Repaint();
     }
 
@@ -1192,6 +1231,36 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             return;
         }
 
+        if (currentKind == PlacementObjectKind.Light)
+        {
+            DrawLightPlacePage();
+            return;
+        }
+
+        if (currentKind == PlacementObjectKind.SpawnPoint)
+        {
+            DrawSpawnPointPlacePage();
+            return;
+        }
+
+        if (currentKind == PlacementObjectKind.RaidDeploy)
+        {
+            DrawRaidDeployPlacePage();
+            return;
+        }
+
+        if (currentKind == PlacementObjectKind.AfpZone)
+        {
+            DrawAfpZonePlacePage();
+            return;
+        }
+
+        if (currentKind == PlacementObjectKind.LootPoint)
+        {
+            DrawLootPointPlacePage();
+            return;
+        }
+
         if (currentKind != PlacementObjectKind.TerrainDecoration)
         {
             DrawFutureKindPlaceholder();
@@ -1213,6 +1282,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
 
         EditorGUILayout.BeginVertical("box");
         search = EditorGUILayout.TextField("搜索", search);
+        DrawMultiFilter("类型筛选", grayboxFilter, definitions.Where(d => d != null && d.isGraybox).Select(d => GetCategoryLabel(d)).Distinct().ToList());
         EditorGUILayout.EndVertical();
 
         DrawDefinitionList();
@@ -1338,7 +1408,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         EditorGUILayout.BeginVertical("box");
         EditorGUILayout.LabelField("筛选", EditorStyles.boldLabel);
         search = EditorGUILayout.TextField("搜索", search);
-        categoryIndex = EditorGUILayout.Popup("主分类", categoryIndex, categoryLabels);
+        DrawMultiFilter("主分类", terrainCategoryFilter, definitions.Where(d => d != null && !d.isGraybox).Select(d => GetCategoryLabel(d)).Distinct().ToList());
         List<string> subCategories = GetSubCategoryOptions();
         subCategoryIndex = Mathf.Clamp(subCategoryIndex, 0, Mathf.Max(0, subCategories.Count - 1));
         subCategoryIndex = EditorGUILayout.Popup("子分类", subCategoryIndex, subCategories.ToArray());
@@ -1463,8 +1533,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         EditorGUILayout.LabelField("筛选", EditorStyles.boldLabel);
         surfaceMaterialSearch = EditorGUILayout.TextField("搜索", surfaceMaterialSearch);
         List<string> categories = GetSurfaceMaterialCategoryOptions();
-        surfaceMaterialCategoryIndex = Mathf.Clamp(surfaceMaterialCategoryIndex, 0, Mathf.Max(0, categories.Count - 1));
-        surfaceMaterialCategoryIndex = EditorGUILayout.Popup("分类", surfaceMaterialCategoryIndex, categories.ToArray());
+        DrawMultiFilter("分类", surfaceCategoryFilter, categories.Where(c => c != "全部").ToList());
         EditorGUILayout.EndVertical();
     }
 
@@ -1886,7 +1955,259 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             return;
         }
 
+        if (currentKind == PlacementObjectKind.Light)
+        {
+            DrawLightPlacedPage();
+            return;
+        }
+
+        if (currentKind == PlacementObjectKind.SpawnPoint)
+        {
+            DrawSpawnPlacedPage();
+            return;
+        }
+
+        if (currentKind == PlacementObjectKind.RaidDeploy)
+        {
+            DrawRaidDeployPlacedPage();
+            return;
+        }
+
+        if (currentKind == PlacementObjectKind.AfpZone)
+        {
+            DrawAfpZonePlacedPage();
+            return;
+        }
+
+        if (currentKind == PlacementObjectKind.LootPoint)
+        {
+            DrawLootPointPlacedPage();
+            return;
+        }
+
         DrawFutureKindPlaceholder();
+    }
+
+    // ===== 已摆放列表的通用「分类 → 定义」两级折叠 =====
+    // 平铺列表里杂草这类散布物一多，电车、箱子这种要逐个找的东西就被淹没了。
+    // 地形装饰物 / 单位 / 道具三个页面共用这一套，各自只提供取分组键和画单行的回调。
+    private class PlacedGroupState
+    {
+        public readonly Dictionary<string, bool> foldouts = new Dictionary<string, bool>();
+        public bool forceExpand;
+        // 点选聚焦：下一次绘制时展开它所在的分组并把列表滚到它那一行。
+        public GameObject focusTarget;
+        // 框选：这批物体所在的分组都要展开。
+        public HashSet<int> expandSet;
+    }
+
+    private class GroupedRow<T>
+    {
+        public int kind; // 0 分类头 / 1 定义头 / 2 实例
+        public string key;
+        public string title;
+        public List<T> members;
+        public T item;
+        public int visibleIndex;
+        public int indent;
+        public bool open;
+        public float Height(float itemStep) => kind == 2 ? itemStep : 28f;
+    }
+
+    private readonly PlacedGroupState terrainPlacedGroups = new PlacedGroupState();
+    private readonly PlacedGroupState unitPlacedGroups = new PlacedGroupState();
+    private readonly PlacedGroupState itemPlacedGroups = new PlacedGroupState();
+    private readonly PlacedGroupState surfacePlacedGroups = new PlacedGroupState();
+    private readonly PlacedGroupState lightPlacedGroups = new PlacedGroupState();
+
+    private static void DrawPlacedGroupExpandButtons(PlacedGroupState state)
+    {
+        if (GUILayout.Button("全部展开", GUILayout.Width(70f)))
+            state.forceExpand = true;
+        if (GUILayout.Button("全部收起", GUILayout.Width(70f)))
+        {
+            state.forceExpand = false;
+            state.foldouts.Clear();
+        }
+    }
+
+    private static bool IsPlacedGroupOpen(PlacedGroupState state, string key, bool defaultOpen, bool force)
+    {
+        if (force || state.forceExpand)
+            return true;
+        return state.foldouts.TryGetValue(key, out bool v) ? v : defaultOpen;
+    }
+
+    private void SelectPlacedGroupObjects(HashSet<int> ids, List<GameObject> gos)
+    {
+        ids.Clear();
+        foreach (GameObject go in gos)
+        {
+            if (go != null)
+                ids.Add(go.GetInstanceID());
+        }
+        Selection.objects = ids
+            .Select(EditorUtility.InstanceIDToObject)
+            .Where(o => o != null)
+            .ToArray();
+        Repaint();
+    }
+
+    /// <summary>
+    /// keyOf 返回 (分类排序键, 分类标题, 定义键, 定义标题)。同一定义只有一个实例时不画定义头，直接显示实例行。
+    /// </summary>
+    private void DrawGroupedPlacedList<T>(
+        List<T> items,
+        PlacedGroupState state,
+        bool searching,
+        ref Vector2 scroll,
+        float itemStep,
+        Func<T, GameObject> goOf,
+        Func<T, (string catKey, string catTitle, string defKey, string defTitle)> keyOf,
+        HashSet<int> selectionIds,
+        Action<List<GameObject>> onSelectGroup,
+        Action<List<GameObject>> onDeleteGroup,
+        Action<Rect, T, int, List<T>> drawItem,
+        float fixedHeight = 0f)
+    {
+        var rows = new List<GroupedRow<T>>();
+        var visible = new List<T>();
+        GameObject active = Selection.activeGameObject;
+
+        var keyed = items
+            .Where(x => x != null && goOf(x) != null)
+            .Select(x => (item: x, k: keyOf(x)))
+            .ToList();
+        foreach (var cat in keyed.GroupBy(x => x.k.catKey).OrderBy(g => g.Key, StringComparer.Ordinal))
+        {
+            string catKey = "c:" + cat.Key;
+            var catMembers = cat.Select(x => x.item).ToList();
+            if ((state.focusTarget != null && catMembers.Any(x => goOf(x) == state.focusTarget))
+                || (state.expandSet != null && catMembers.Any(x => state.expandSet.Contains(goOf(x).GetInstanceID()))))
+                state.foldouts[catKey] = true;
+            bool catOpen = IsPlacedGroupOpen(state, catKey, true, searching);
+            rows.Add(new GroupedRow<T> { kind = 0, key = catKey, title = cat.First().k.catTitle, members = catMembers, open = catOpen });
+            if (!catOpen)
+                continue;
+
+            foreach (var dg in cat.GroupBy(x => x.k.defKey).OrderBy(g => g.First().k.defTitle, StringComparer.OrdinalIgnoreCase))
+            {
+                var members = dg.Select(x => x.item).OrderBy(x => goOf(x).name, StringComparer.OrdinalIgnoreCase).ToList();
+                if (members.Count == 1)
+                {
+                    rows.Add(new GroupedRow<T> { kind = 2, item = members[0], indent = 1, visibleIndex = visible.Count });
+                    visible.Add(members[0]);
+                    continue;
+                }
+
+                string defKey = "d:" + cat.Key + ":" + dg.Key;
+                bool hasActive = active != null && members.Any(x => goOf(x) == active);
+                if ((state.focusTarget != null && members.Any(x => goOf(x) == state.focusTarget))
+                    || (state.expandSet != null && members.Any(x => state.expandSet.Contains(goOf(x).GetInstanceID()))))
+                    state.foldouts[defKey] = true;
+                bool defOpen = IsPlacedGroupOpen(state, defKey, hasActive, searching);
+                rows.Add(new GroupedRow<T> { kind = 1, key = defKey, title = dg.First().k.defTitle, members = members, open = defOpen, indent = 1 });
+                if (!defOpen)
+                    continue;
+                foreach (T m in members)
+                {
+                    rows.Add(new GroupedRow<T> { kind = 2, item = m, indent = 2, visibleIndex = visible.Count });
+                    visible.Add(m);
+                }
+            }
+        }
+
+        Rect rect = fixedHeight > 0f
+            ? GUILayoutUtility.GetRect(0f, 100000f, fixedHeight, fixedHeight, GUILayout.ExpandWidth(true))
+            : GUILayoutUtility.GetRect(0f, 100000f, 220f, 100000f, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+        EditorGUI.DrawRect(rect, panelBg);
+        Rect viewRect = new Rect(rect.x + 6f, rect.y + 6f, rect.width - 12f, rect.height - 12f);
+        float total = 8f;
+        foreach (var r in rows)
+            total += r.Height(itemStep) + (r.kind == 2 ? 0f : 2f);
+        Rect contentRect = new Rect(0f, 0f, Mathf.Max(10f, viewRect.width - 14f), Mathf.Max(viewRect.height, total));
+
+        if (state.focusTarget != null || state.expandSet != null)
+        {
+            float fy = 0f;
+            foreach (var r in rows)
+            {
+                if (state.focusTarget != null && r.kind == 2 && goOf(r.item) == state.focusTarget)
+                {
+                    scroll.y = Mathf.Clamp(fy - viewRect.height * 0.4f, 0f, Mathf.Max(0f, contentRect.height - viewRect.height));
+                    break;
+                }
+                fy += r.Height(itemStep) + (r.kind == 2 ? 0f : 2f);
+            }
+            state.focusTarget = null;
+            state.expandSet = null;
+        }
+
+        scroll = GUI.BeginScrollView(viewRect, scroll, contentRect, false, true);
+        float y = 0f;
+        foreach (var r in rows)
+        {
+            float indent = r.indent * 14f;
+            float h = r.Height(itemStep);
+            if (r.kind == 2)
+            {
+                Rect row = new Rect(indent, y, contentRect.width - indent, h - 4f);
+                drawItem(row, r.item, r.visibleIndex, visible);
+            }
+            else
+            {
+                DrawPlacedGroupHeader(new Rect(indent, y, contentRect.width - indent, h), r, state, goOf, selectionIds, onSelectGroup, onDeleteGroup);
+            }
+            y += h + (r.kind == 2 ? 0f : 2f);
+        }
+        GUI.EndScrollView();
+    }
+
+    private void DrawPlacedGroupHeader<T>(
+        Rect rect,
+        GroupedRow<T> row,
+        PlacedGroupState state,
+        Func<T, GameObject> goOf,
+        HashSet<int> selectionIds,
+        Action<List<GameObject>> onSelectGroup,
+        Action<List<GameObject>> onDeleteGroup)
+    {
+        bool isCat = row.kind == 0;
+        EditorGUI.DrawRect(rect, isCat ? new Color(1f, 1f, 1f, 0.09f) : new Color(1f, 1f, 1f, 0.05f));
+        EditorGUI.DrawRect(new Rect(rect.x, rect.y, 3f, rect.height), accent);
+
+        List<GameObject> gos = row.members.Select(goOf).Where(g => g != null).ToList();
+        int selectedInGroup = gos.Count(g => selectionIds.Contains(g.GetInstanceID()));
+        string count = selectedInGroup > 0 ? $"×{gos.Count}（已选 {selectedInGroup}）" : $"×{gos.Count}";
+        string label = (row.open ? "▾  " : "▸  ") + row.title + "  " + count;
+
+        float actionsWidth = isCat ? 0f : 190f;
+        Rect toggleRect = new Rect(rect.x, rect.y, rect.width - actionsWidth, rect.height);
+        GUI.Label(new Rect(rect.x + 8f, rect.y + 4f, toggleRect.width - 8f, 20f), label, isCat ? EditorStyles.boldLabel : EditorStyles.label);
+        if (GUI.Button(toggleRect, GUIContent.none, GUIStyle.none))
+        {
+            state.forceExpand = false;
+            state.foldouts[row.key] = !row.open;
+        }
+
+        if (isCat)
+            return;
+        float x = rect.xMax - actionsWidth;
+        if (GUI.Button(new Rect(x, rect.y + 3f, 64f, 22f), "选中全部"))
+            onSelectGroup(gos);
+        if (GUI.Button(new Rect(x + 68f, rect.y + 3f, 54f, 22f), "定位"))
+        {
+            onSelectGroup(gos);
+            FocusSceneView();
+            SceneView.lastActiveSceneView?.FrameSelected();
+        }
+        GUI.backgroundColor = new Color(0.85f, 0.22f, 0.12f, 1f);
+        if (GUI.Button(new Rect(x + 126f, rect.y + 3f, 54f, 22f), "删除全部"))
+        {
+            onSelectGroup(gos);
+            onDeleteGroup(gos);
+        }
+        GUI.backgroundColor = Color.white;
     }
 
     private void DrawTerrainDecorationPlacedPage()
@@ -1897,29 +2218,37 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         EditorGUILayout.BeginVertical("box");
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField(currentKind == PlacementObjectKind.Graybox ? "已摆放白模" : "已摆放地形装饰物", EditorStyles.boldLabel);
+        DrawPlacedPickToggle();
+        DrawPlacedGroupExpandButtons(terrainPlacedGroups);
         if (GUILayout.Button("刷新", GUILayout.Width(60f)))
             RefreshPlacedCache();
         EditorGUILayout.EndHorizontal();
         placedSearch = EditorGUILayout.TextField("搜索", placedSearch);
-        EditorGUILayout.HelpBox("支持 Ctrl 离散多选、Shift 连续多选。多选后点击任意已选项的删除，会一次删除全部已选地形装饰物根节点。", MessageType.Info);
+        EditorGUILayout.HelpBox("按「分类 → 定义」折叠，搜索时自动展开。支持 Ctrl 离散多选、Shift 连续多选（在已展开的行里）；组头可整组选中 / 定位 / 删除。", MessageType.Info);
         EditorGUILayout.EndVertical();
 
-        List<TerrainDecorationRuntimeBinder> list = GetFilteredPlacedBinders();
-        Rect rect = GUILayoutUtility.GetRect(0f, 100000f, 220f, 100000f, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-        EditorGUI.DrawRect(rect, panelBg);
-        Rect viewRect = new Rect(rect.x + 6f, rect.y + 6f, rect.width - 12f, rect.height - 12f);
-        float contentHeight = Mathf.Max(viewRect.height, list.Count * 72f + 8f);
-        Rect contentRect = new Rect(0f, 0f, Mathf.Max(10f, viewRect.width - 14f), contentHeight);
+        DrawDoorPropertiesOnPlacedPage();
 
-        placedScroll = GUI.BeginScrollView(viewRect, placedScroll, contentRect, false, true);
-        float y = 0f;
-        for (int i = 0; i < list.Count; i++)
-        {
-            Rect row = new Rect(0f, y, contentRect.width, 68f);
-            DrawPlacedRow(row, list[i], i, list);
-            y += 72f;
-        }
-        GUI.EndScrollView();
+        DrawGroupedPlacedList(
+            GetFilteredPlacedBinders(),
+            terrainPlacedGroups,
+            !string.IsNullOrWhiteSpace(placedSearch),
+            ref placedScroll,
+            72f,
+            b => b.gameObject,
+            b => (b.definition != null ? ((int)b.definition.category).ToString("D3") : "999",
+                  b.definition != null ? GetCategoryLabel(b.definition.category) : "定义丢失",
+                  b.definition != null ? b.definition.GetInstanceID().ToString() : "null",
+                  b.definition != null ? GetDisplayName(b.definition) : "Definition 丢失"),
+            placedSelectionIds,
+            gos =>
+            {
+                SelectPlacedGroupObjects(placedSelectionIds, gos);
+                placedLastClickedIndex = -1;
+                placedLastClickedSurfaceList = false;
+            },
+            gos => DeleteSelectedPlacedObjectsWithConfirm(false),
+            DrawPlacedRow);
 
         DrawPlacedToolbar(false);
     }
@@ -1929,6 +2258,8 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         EditorGUILayout.BeginVertical("box");
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("已摆放地表视觉物", EditorStyles.boldLabel);
+        DrawPlacedPickToggle();
+        DrawPlacedGroupExpandButtons(surfacePlacedGroups);
         if (GUILayout.Button("刷新", GUILayout.Width(60f)))
             RefreshPlacedCache();
         EditorGUILayout.EndHorizontal();
@@ -1936,22 +2267,23 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         EditorGUILayout.HelpBox("这里记录地图上的 GroundStamp / RoadLine / GroundSpline。它们是地面视觉物，不参与角色前后遮挡。支持 Ctrl 离散多选、Shift 连续多选，多选后点击任意已选项删除可一起删除。", MessageType.Info);
         EditorGUILayout.EndVertical();
 
-        List<PlacedSurfaceObject> list = GetFilteredPlacedSurfaceObjects();
-        Rect rect = GUILayoutUtility.GetRect(0f, 100000f, 220f, 100000f, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-        EditorGUI.DrawRect(rect, panelBg);
-        Rect viewRect = new Rect(rect.x + 6f, rect.y + 6f, rect.width - 12f, rect.height - 12f);
-        float contentHeight = Mathf.Max(viewRect.height, list.Count * 72f + 8f);
-        Rect contentRect = new Rect(0f, 0f, Mathf.Max(10f, viewRect.width - 14f), contentHeight);
-
-        placedScroll = GUI.BeginScrollView(viewRect, placedScroll, contentRect, false, true);
-        float y = 0f;
-        for (int i = 0; i < list.Count; i++)
-        {
-            Rect row = new Rect(0f, y, contentRect.width, 68f);
-            DrawGroundSurfacePlacedRow(row, list[i], i, list);
-            y += 72f;
-        }
-        GUI.EndScrollView();
+        DrawGroupedPlacedList(
+            GetFilteredPlacedSurfaceObjects(),
+            surfacePlacedGroups,
+            !string.IsNullOrWhiteSpace(placedSearch),
+            ref placedScroll,
+            72f,
+            o => o.gameObject,
+            o => (o.kindLabel ?? "", o.kindLabel ?? "地表视觉物", o.materialName ?? "", string.IsNullOrEmpty(o.materialName) ? "(无材质)" : o.materialName),
+            placedSelectionIds,
+            gos =>
+            {
+                SelectPlacedGroupObjects(placedSelectionIds, gos);
+                placedLastClickedIndex = -1;
+                placedLastClickedSurfaceList = true;
+            },
+            gos => DeleteSelectedPlacedObjectsWithConfirm(true),
+            DrawGroundSurfacePlacedRow);
 
         DrawPlacedToolbar(true);
     }
@@ -2170,11 +2502,27 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             case PlacementObjectKind.Region:
                 canEnable = !string.IsNullOrWhiteSpace(regionNameInput);
                 break;
+            case PlacementObjectKind.Light:
+                canEnable = selectedLightPrefab != null;
+                break;
+            case PlacementObjectKind.SpawnPoint:
+                canEnable = CanPlaceSpawnPoint();
+                break;
+            case PlacementObjectKind.RaidDeploy:
+                canEnable = CanPlaceRaidDeploy();
+                break;
+            case PlacementObjectKind.LootPoint:
+                canEnable = CanPlaceLootPoint();
+                break;
+            case PlacementObjectKind.AfpZone:
+                canEnable = true;
+                break;
         }
 
         placementMode = enabled && canEnable;
         if (placementMode)
         {
+            placedPickMode = false;
             EnsureSceneGuiHook();
             if (currentKind == PlacementObjectKind.TerrainDecoration || currentKind == PlacementObjectKind.Graybox)
             {
@@ -2220,14 +2568,458 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         Repaint();
     }
 
+    private bool placedPickMode;
+
+    private static bool IsPlacedPickKind(PlacementObjectKind kind)
+    {
+        return kind == PlacementObjectKind.TerrainDecoration || kind == PlacementObjectKind.Graybox
+            || kind == PlacementObjectKind.Unit || kind == PlacementObjectKind.Item
+            || kind == PlacementObjectKind.Light || kind == PlacementObjectKind.GroundSurfaceMaterial;
+    }
+
+    private void DrawPlacedPickToggle()
+    {
+        bool pick = GUILayout.Toggle(placedPickMode, new GUIContent("点选聚焦", "在 Scene 里点击物体，自动选中它的根节点并在下面的列表中定位到它（绕开 VisualRoot 等子节点）。Esc 退出。"), "Button", GUILayout.Width(74f));
+        if (pick == placedPickMode)
+            return;
+        placedPickMode = pick;
+        placedPickHover = null;
+        if (pick)
+        {
+            SetPlacementMode(false);
+            EnsureSceneGuiHook();
+        }
+        SceneView.RepaintAll();
+    }
+
+    /// <summary>把 Scene 里点到的任意子物体换算成当前模块「已摆放」列表里的那个根物体；不属于该模块返回 null。</summary>
+    private GameObject ResolvePlacedPickRoot(GameObject hit)
+    {
+        switch (currentKind)
+        {
+            case PlacementObjectKind.TerrainDecoration:
+            case PlacementObjectKind.Graybox:
+            {
+                bool graybox = currentKind == PlacementObjectKind.Graybox;
+                var binder = hit.GetComponentInParent<TerrainDecorationRuntimeBinder>();
+                if (binder != null && placedCache.Contains(binder) && ((binder.definition != null && binder.definition.isGraybox) == graybox))
+                    return binder.gameObject;
+                return null;
+            }
+            case PlacementObjectKind.Unit:
+            {
+                var binder = hit.GetComponentInParent<UnitDefinitionRuntimeBinder>();
+                return binder != null && placedUnitCache.Contains(binder) ? binder.gameObject : null;
+            }
+            case PlacementObjectKind.Item:
+            {
+                var drop = hit.GetComponentInParent<LootDropWorldObject>();
+                return drop != null && placedItemCache.Contains(drop) ? drop.gameObject : null;
+            }
+            case PlacementObjectKind.GroundSurfaceMaterial:
+                for (Transform t = hit.transform; t != null; t = t.parent)
+                {
+                    GameObject candidate = t.gameObject;
+                    if (placedSurfaceCache.Any(x => x != null && x.gameObject == candidate))
+                        return candidate;
+                }
+                return null;
+            case PlacementObjectKind.Light:
+            {
+                Transform root = FindTransformByPath(LightParentPath);
+                if (root == null)
+                    return null;
+                for (Transform t = hit.transform; t != null; t = t.parent)
+                {
+                    if (t.parent == root)
+                        return t.gameObject;
+                }
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private void FocusPlacedPickRoot(GameObject root)
+    {
+        currentPage = ToolPage.Placed;
+        switch (currentKind)
+        {
+            case PlacementObjectKind.TerrainDecoration:
+            case PlacementObjectKind.Graybox:
+                placedSearch = "";
+                terrainPlacedGroups.focusTarget = root;
+                SetPlacedSelectionTo(root, false);
+                break;
+            case PlacementObjectKind.GroundSurfaceMaterial:
+                placedSearch = "";
+                surfacePlacedGroups.focusTarget = root;
+                SetPlacedSelectionTo(root, true);
+                break;
+            case PlacementObjectKind.Unit:
+                placedUnitSearch = "";
+                unitPlacedGroups.focusTarget = root;
+                placedUnitSelectionIds.Clear();
+                placedUnitSelectionIds.Add(root.GetInstanceID());
+                placedUnitLastClickedIndex = -1;
+                Selection.activeGameObject = root;
+                break;
+            case PlacementObjectKind.Item:
+                placedItemSearch = "";
+                itemPlacedGroups.focusTarget = root;
+                placedItemSelectionIds.Clear();
+                placedItemSelectionIds.Add(root.GetInstanceID());
+                Selection.activeGameObject = root;
+                break;
+            case PlacementObjectKind.Light:
+                lightPlacedGroups.focusTarget = root;
+                Selection.activeGameObject = root;
+                break;
+        }
+        EditorGUIUtility.PingObject(root);
+    }
+
+    /// <summary>
+    /// 点选聚焦：Scene 里点哪儿，就沿射线往后找第一个属于当前模块「已摆放」的物体，
+    /// 选中它的根节点（不是 VisualRoot 之类的子节点），并让列表展开、滚动到它那一行。
+    /// 地面、空气墙等不属于该模块的东西会被穿透，不会挡住后面的目标。
+    /// </summary>
+    private GameObject placedPickHover;
+    private double placedPickLastHoverTime;
+    private Material placedPickOverlayMaterial;
+
+    private GameObject PickPlacedRootAt(Vector2 mousePosition)
+    {
+        var ignore = new List<GameObject>();
+        for (int i = 0; i < 16; i++)
+        {
+            GameObject go = HandleUtility.PickGameObject(mousePosition, false, ignore.ToArray());
+            if (go == null)
+                return null;
+            GameObject root = ResolvePlacedPickRoot(go);
+            if (root != null)
+                return root;
+            ignore.Add(go);
+        }
+        return null;
+    }
+
+    /// <summary>悬停反馈：紫色半透明遮罩（按网格形状）+ 紫色包围盒线框 + 名字。</summary>
+    private void DrawPlacedPickHover(SceneView sceneView)
+    {
+        if (placedPickHover == null)
+            return;
+
+        Renderer[] renderers = placedPickHover.GetComponentsInChildren<Renderer>(false);
+        if (renderers.Length == 0)
+            return;
+
+        if (placedPickOverlayMaterial == null)
+        {
+            Shader shader = Shader.Find("Hidden/Internal-Colored");
+            if (shader == null)
+                return;
+            placedPickOverlayMaterial = new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
+            placedPickOverlayMaterial.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            placedPickOverlayMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            placedPickOverlayMaterial.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+            placedPickOverlayMaterial.SetInt("_ZWrite", 0);
+            placedPickOverlayMaterial.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.Always);
+        }
+
+        var purple = new Color(0.62f, 0.25f, 1f, 1f);
+        placedPickOverlayMaterial.SetColor("_Color", new Color(purple.r, purple.g, purple.b, 0.38f));
+
+        Bounds bounds = new Bounds(renderers[0].bounds.center, Vector3.zero);
+        foreach (Renderer r in renderers)
+        {
+            bounds.Encapsulate(r.bounds);
+            var filter = r.GetComponent<MeshFilter>();
+            Mesh mesh = filter != null ? filter.sharedMesh : null;
+            if (mesh == null || !(r is MeshRenderer))
+                continue;
+            placedPickOverlayMaterial.SetPass(0);
+            Graphics.DrawMeshNow(mesh, r.localToWorldMatrix);
+        }
+
+        Color oldColor = Handles.color;
+        UnityEngine.Rendering.CompareFunction oldZ = Handles.zTest;
+        Handles.zTest = UnityEngine.Rendering.CompareFunction.Always;
+        Handles.color = purple;
+        Handles.DrawWireCube(bounds.center, bounds.size);
+        Handles.Label(bounds.center + Vector3.up * (bounds.extents.y + 0.3f), placedPickHover.name, EditorStyles.whiteBoldLabel);
+        Handles.color = oldColor;
+        Handles.zTest = oldZ;
+    }
+
+    private bool placedMarqueeActive;
+    private Vector2 placedMarqueeStart;
+    private Vector2 placedMarqueeEnd;
+    private int placedPickControlId;
+
+    /// <summary>当前模块「已摆放」的全部根物体，框选时逐个做屏幕投影比对。</summary>
+    private List<GameObject> GetPlacedPickCandidates()
+    {
+        var result = new List<GameObject>();
+        switch (currentKind)
+        {
+            case PlacementObjectKind.TerrainDecoration:
+            case PlacementObjectKind.Graybox:
+            {
+                bool graybox = currentKind == PlacementObjectKind.Graybox;
+                foreach (var b in placedCache)
+                    if (b != null && b.gameObject != null && ((b.definition != null && b.definition.isGraybox) == graybox))
+                        result.Add(b.gameObject);
+                break;
+            }
+            case PlacementObjectKind.Unit:
+                foreach (var b in placedUnitCache)
+                    if (b != null && b.gameObject != null)
+                        result.Add(b.gameObject);
+                break;
+            case PlacementObjectKind.Item:
+                foreach (var d in placedItemCache)
+                    if (d != null && d.gameObject != null)
+                        result.Add(d.gameObject);
+                break;
+            case PlacementObjectKind.GroundSurfaceMaterial:
+                foreach (var o in placedSurfaceCache)
+                    if (o != null && o.gameObject != null)
+                        result.Add(o.gameObject);
+                break;
+            case PlacementObjectKind.Light:
+            {
+                Transform root = FindTransformByPath(LightParentPath);
+                if (root != null)
+                    for (int i = 0; i < root.childCount; i++)
+                        result.Add(root.GetChild(i).gameObject);
+                break;
+            }
+        }
+        return result.Where(g => g.activeInHierarchy).ToList();
+    }
+
+    /// <summary>物体包围盒投影到 Scene 视图 GUI 坐标后的外接矩形；没有渲染器就退化成一个点。</summary>
+    private static Rect GetScreenRectOf(GameObject go)
+    {
+        Renderer[] renderers = go.GetComponentsInChildren<Renderer>(false);
+        if (renderers.Length == 0)
+        {
+            Vector2 p = HandleUtility.WorldToGUIPoint(go.transform.position);
+            return new Rect(p.x - 1f, p.y - 1f, 2f, 2f);
+        }
+
+        Bounds bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+            bounds.Encapsulate(renderers[i].bounds);
+
+        Vector3 c = bounds.center, ext = bounds.extents;
+        float minX = float.MaxValue, minY = float.MaxValue, maxX = float.MinValue, maxY = float.MinValue;
+        for (int i = 0; i < 8; i++)
+        {
+            Vector3 corner = c + new Vector3((i & 1) == 0 ? -ext.x : ext.x, (i & 2) == 0 ? -ext.y : ext.y, (i & 4) == 0 ? -ext.z : ext.z);
+            Vector2 sp = HandleUtility.WorldToGUIPoint(corner);
+            minX = Mathf.Min(minX, sp.x); maxX = Mathf.Max(maxX, sp.x);
+            minY = Mathf.Min(minY, sp.y); maxY = Mathf.Max(maxY, sp.y);
+        }
+        return Rect.MinMaxRect(minX, minY, maxX, maxY);
+    }
+
+    private Rect GetPlacedMarqueeRect()
+    {
+        return Rect.MinMaxRect(
+            Mathf.Min(placedMarqueeStart.x, placedMarqueeEnd.x), Mathf.Min(placedMarqueeStart.y, placedMarqueeEnd.y),
+            Mathf.Max(placedMarqueeStart.x, placedMarqueeEnd.x), Mathf.Max(placedMarqueeStart.y, placedMarqueeEnd.y));
+    }
+
+    /// <summary>框选结果：选中整批、展开它们所在的分组，列表滚到第一个。</summary>
+    private void ApplyPlacedPickSelection(List<GameObject> gos)
+    {
+        if (gos.Count == 0)
+            return;
+
+        currentPage = ToolPage.Placed;
+        var ids = new HashSet<int>(gos.Select(g => g.GetInstanceID()));
+        PlacedGroupState group = null;
+        switch (currentKind)
+        {
+            case PlacementObjectKind.TerrainDecoration:
+            case PlacementObjectKind.Graybox:
+                placedSearch = "";
+                group = terrainPlacedGroups;
+                SelectPlacedGroupObjects(placedSelectionIds, gos);
+                placedLastClickedIndex = -1;
+                placedLastClickedSurfaceList = false;
+                break;
+            case PlacementObjectKind.GroundSurfaceMaterial:
+                placedSearch = "";
+                group = surfacePlacedGroups;
+                SelectPlacedGroupObjects(placedSelectionIds, gos);
+                placedLastClickedIndex = -1;
+                placedLastClickedSurfaceList = true;
+                break;
+            case PlacementObjectKind.Unit:
+                placedUnitSearch = "";
+                group = unitPlacedGroups;
+                SelectPlacedGroupObjects(placedUnitSelectionIds, gos);
+                placedUnitLastClickedIndex = -1;
+                break;
+            case PlacementObjectKind.Item:
+                placedItemSearch = "";
+                group = itemPlacedGroups;
+                SelectPlacedGroupObjects(placedItemSelectionIds, gos);
+                break;
+            case PlacementObjectKind.Light:
+                group = lightPlacedGroups;
+                Selection.objects = gos.ToArray();
+                break;
+        }
+
+        if (group != null)
+        {
+            group.expandSet = ids;
+            group.focusTarget = gos[0];
+        }
+        Selection.activeGameObject = gos[0];
+    }
+
+    private void HandlePlacedPickInput(SceneView sceneView, Event e)
+    {
+        placedPickControlId = GUIUtility.GetControlID(FocusType.Passive);
+        HandleUtility.AddDefaultControl(placedPickControlId);
+        if (!sceneView.wantsMouseMove)
+            sceneView.wantsMouseMove = true;
+
+        if (e.type == EventType.KeyDown && e.keyCode == KeyCode.Escape)
+        {
+            placedPickMode = false;
+            placedPickHover = null;
+            placedMarqueeActive = false;
+            if (GUIUtility.hotControl == placedPickControlId)
+                GUIUtility.hotControl = 0;
+            e.Use();
+            Repaint();
+            sceneView.Repaint();
+            return;
+        }
+
+        if (e.type == EventType.Repaint)
+        {
+            if (placedMarqueeActive)
+            {
+                Rect r = GetPlacedMarqueeRect();
+                Handles.BeginGUI();
+                EditorGUI.DrawRect(r, new Color(0.62f, 0.25f, 1f, 0.18f));
+                EditorGUI.DrawRect(new Rect(r.x, r.y, r.width, 1f), new Color(0.62f, 0.25f, 1f, 0.95f));
+                EditorGUI.DrawRect(new Rect(r.x, r.yMax - 1f, r.width, 1f), new Color(0.62f, 0.25f, 1f, 0.95f));
+                EditorGUI.DrawRect(new Rect(r.x, r.y, 1f, r.height), new Color(0.62f, 0.25f, 1f, 0.95f));
+                EditorGUI.DrawRect(new Rect(r.xMax - 1f, r.y, 1f, r.height), new Color(0.62f, 0.25f, 1f, 0.95f));
+                Handles.EndGUI();
+                return;
+            }
+
+            DrawPlacedPickHover(sceneView);
+            if (placedPickHover != null)
+                EditorGUIUtility.AddCursorRect(new Rect(0f, 0f, sceneView.position.width, sceneView.position.height), MouseCursor.Link);
+            return;
+        }
+
+        // Shift + 左键拖拽 = 框选
+        if (e.type == EventType.MouseDown && e.button == 0 && e.shift && !e.alt)
+        {
+            placedMarqueeActive = true;
+            placedMarqueeStart = e.mousePosition;
+            placedMarqueeEnd = e.mousePosition;
+            placedPickHover = null;
+            GUIUtility.hotControl = placedPickControlId;
+            e.Use();
+            sceneView.Repaint();
+            return;
+        }
+
+        if (placedMarqueeActive)
+        {
+            if (e.type == EventType.MouseDrag)
+            {
+                placedMarqueeEnd = e.mousePosition;
+                e.Use();
+                sceneView.Repaint();
+                return;
+            }
+
+            if (e.type == EventType.MouseUp && e.button == 0)
+            {
+                placedMarqueeActive = false;
+                if (GUIUtility.hotControl == placedPickControlId)
+                    GUIUtility.hotControl = 0;
+                placedMarqueeEnd = e.mousePosition;
+                Rect marquee = GetPlacedMarqueeRect();
+                e.Use();
+
+                if (marquee.width < 4f && marquee.height < 4f)
+                {
+                    // 没拖动 = Shift+单击，退化成普通点选。
+                    GameObject single = PickPlacedRootAt(e.mousePosition);
+                    if (single != null)
+                        FocusPlacedPickRoot(single);
+                }
+                else
+                {
+                    var hits = GetPlacedPickCandidates().Where(g => GetScreenRectOf(g).Overlaps(marquee)).ToList();
+                    ApplyPlacedPickSelection(hits);
+                }
+                sceneView.Repaint();
+                Repaint();
+                return;
+            }
+            return;
+        }
+
+        if (e.type == EventType.MouseMove || e.type == EventType.MouseDrag)
+        {
+            // PickGameObject 要逐层穿透，鼠标移动事件很密，限一下频。
+            if (EditorApplication.timeSinceStartup - placedPickLastHoverTime > 0.03)
+            {
+                placedPickLastHoverTime = EditorApplication.timeSinceStartup;
+                GameObject hover = PickPlacedRootAt(e.mousePosition);
+                if (hover != placedPickHover)
+                {
+                    placedPickHover = hover;
+                    sceneView.Repaint();
+                }
+            }
+            return;
+        }
+
+        if (e.type != EventType.MouseDown || e.button != 0 || e.alt)
+            return;
+
+        GameObject root = PickPlacedRootAt(e.mousePosition);
+
+        e.Use();
+        if (root == null)
+            return;
+
+        FocusPlacedPickRoot(root);
+        sceneView.Repaint();
+        Repaint();
+    }
+
     private void OnSceneGUI(SceneView sceneView)
     {
+
         // 2026-08-19：所有放置模式的预览（绿色圆盘/装饰物幽灵/笔刷）共用同一个毛病——
         // SceneView 默认不把没按键的纯鼠标移动当事件发给 OnSceneGUI，预览只能等
         // 点击/拖拽/滚轮这些"真事件"才刷新一次位置，表现为跟不上鼠标、很迟钝。
         // 在这个统一入口开一次，比每个 OnXxxPlacementSceneGUI 分别开更不容易漏。
         if (placementMode && !sceneView.wantsMouseMove)
             sceneView.wantsMouseMove = true;
+
+        if (!placementMode && placedPickMode && IsPlacedPickKind(currentKind))
+        {
+            HandlePlacedPickInput(sceneView, Event.current);
+            return;
+        }
 
         if (currentKind == PlacementObjectKind.GroundSurfaceMaterial)
         {
@@ -2254,6 +3046,41 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         {
             if (placementMode)
                 OnRegionPlacementSceneGUI(sceneView);
+            return;
+        }
+
+        if (currentKind == PlacementObjectKind.Light)
+        {
+            if (placementMode)
+                OnLightPlacementSceneGUI(sceneView);
+            return;
+        }
+
+        if (currentKind == PlacementObjectKind.SpawnPoint)
+        {
+            if (placementMode)
+                OnSpawnPlacementSceneGUI(sceneView);
+            return;
+        }
+
+        if (currentKind == PlacementObjectKind.RaidDeploy)
+        {
+            if (placementMode)
+                OnRaidDeployPlacementSceneGUI(sceneView);
+            return;
+        }
+
+        if (currentKind == PlacementObjectKind.AfpZone)
+        {
+            if (placementMode)
+                OnAfpZonePlacementSceneGUI(sceneView);
+            return;
+        }
+
+        if (currentKind == PlacementObjectKind.LootPoint)
+        {
+            if (placementMode)
+                OnLootPointPlacementSceneGUI(sceneView);
             return;
         }
 
@@ -8150,7 +8977,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
                 && !(def.surfaceId ?? "").ToLowerInvariant().Contains(s)
                 && !(def.category ?? "").ToLowerInvariant().Contains(s))
                 return false;
-            if (selectedCategory != "全部" && def.category != selectedCategory)
+            if (!PassMultiFilter(surfaceCategoryFilter, def.category))
                 return false;
             return true;
         }).ToList();
@@ -8311,8 +9138,8 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
                 return false;
             // 白模模块不画主/子分类筛选，残留的地形装饰物筛选值不能把白模全筛掉。
             if (grayboxKind)
-                return true;
-            if (selectedCategory != "全部" && GetCategoryLabel(def) != selectedCategory)
+                return PassMultiFilter(grayboxFilter, GetCategoryLabel(def));
+            if (!PassMultiFilter(terrainCategoryFilter, GetCategoryLabel(def)))
                 return false;
             if (selectedSub != "全部" && def.subCategory != selectedSub)
                 return false;
@@ -8354,6 +9181,9 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
             case TerrainDecorationCategory.Pipe: return "管线";
             case TerrainDecorationCategory.Occluder: return "遮挡体";
             case TerrainDecorationCategory.Mechanism: return "机关";
+            case TerrainDecorationCategory.Door: return "门";
+            case TerrainDecorationCategory.Stairs: return "楼梯与斜坡";
+            case TerrainDecorationCategory.Platform: return "台体";
             case TerrainDecorationCategory.Custom: return "自定义";
             default: return "其他";
         }
@@ -8426,10 +9256,6 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
                 SkyPrisonEditorWindow.OpenWindowWithTab("触发器", null);
                 break;
 
-            case PlacementObjectKind.Effect:
-                SkyPrisonEditorWindow.OpenWindowWithTab("特效", null);
-                break;
-
             case PlacementObjectKind.AudioArea:
                 SkyPrisonEditorWindow.OpenWindowWithTab("音声合成", null);
                 break;
@@ -8457,10 +9283,11 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
     private List<ItemDefinition> GetFilteredItemDefinitions()
     {
         string q = itemSearch.Trim().ToLower();
-        if (string.IsNullOrEmpty(q)) return itemDefinitions;
+        if (string.IsNullOrEmpty(q) && itemCategoryFilter.Count == 0) return itemDefinitions;
         List<ItemDefinition> result = new List<ItemDefinition>();
         foreach (ItemDefinition d in itemDefinitions)
-            if (d.displayName.ToLower().Contains(q) || d.name.ToLower().Contains(q) || d.itemKey.ToLower().Contains(q))
+            if (!PassMultiFilter(itemCategoryFilter, EnumFilterLabel(d.category))) continue;
+            else if (string.IsNullOrEmpty(q) || d.displayName.ToLower().Contains(q) || d.name.ToLower().Contains(q) || d.itemKey.ToLower().Contains(q))
                 result.Add(d);
         return result;
     }
@@ -8473,6 +9300,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         EditorGUILayout.BeginVertical("box");
         EditorGUILayout.LabelField("筛选", EditorStyles.boldLabel);
         itemSearch = EditorGUILayout.TextField("搜索", itemSearch);
+        DrawMultiFilter("类型", itemCategoryFilter, itemDefinitions.Select(d => EnumFilterLabel(d.category)).Distinct().ToList());
         EditorGUILayout.EndVertical();
 
         List<ItemDefinition> filtered = GetFilteredItemDefinitions();
@@ -8553,6 +9381,8 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         EditorGUILayout.BeginVertical("box");
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("已摆放道具", EditorStyles.boldLabel);
+        DrawPlacedPickToggle();
+        DrawPlacedGroupExpandButtons(itemPlacedGroups);
         if (GUILayout.Button("刷新", GUILayout.Width(60f)))
             RefreshPlacedItemCache();
         EditorGUILayout.EndHorizontal();
@@ -8560,47 +9390,54 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         EditorGUILayout.HelpBox("点击定位，Delete 删除。支持 Ctrl 多选。", MessageType.Info);
         EditorGUILayout.EndVertical();
 
-        List<LootDropWorldObject> filtered = GetFilteredPlacedItems();
-        Rect rect = GUILayoutUtility.GetRect(0f, 100000f, 220f, 100000f, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-        EditorGUI.DrawRect(rect, panelBg);
-        Rect viewRect = new Rect(rect.x + 6f, rect.y + 6f, rect.width - 12f, rect.height - 12f);
-        float contentHeight = Mathf.Max(viewRect.height, filtered.Count * 58f + 8f);
-        Rect contentRect = new Rect(0f, 0f, Mathf.Max(10f, viewRect.width - 14f), contentHeight);
-
-        placedItemScroll = GUI.BeginScrollView(viewRect, placedItemScroll, contentRect, false, true);
-        float y = 0f;
-        for (int i = 0; i < filtered.Count; i++)
-        {
-            Rect row = new Rect(0f, y, contentRect.width, 54f);
-            DrawPlacedItemRow(row, filtered[i], i);
-            y += 58f;
-        }
-        GUI.EndScrollView();
+        DrawGroupedPlacedList(
+            GetFilteredPlacedItems(),
+            itemPlacedGroups,
+            !string.IsNullOrWhiteSpace(placedItemSearch),
+            ref placedItemScroll,
+            58f,
+            d => d.gameObject,
+            d =>
+            {
+                ItemDefinition def = d.Item;
+                return (def != null ? def.category.ToString() : "zzz",
+                        def != null ? def.category.ToString() : "未知",
+                        def != null ? def.GetInstanceID().ToString() : "name:" + d.gameObject.name,
+                        def != null ? def.displayName : d.gameObject.name);
+            },
+            placedItemSelectionIds,
+            gos => SelectPlacedGroupObjects(placedItemSelectionIds, gos),
+            gos => DeleteSelectedPlacedItemsWithConfirm(),
+            (r, d, i, list) => DrawPlacedItemRow(r, d, i));
 
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
         int selCount = placedItemSelectionIds.Count;
         using (new EditorGUI.DisabledScope(selCount <= 0))
         {
             if (GUILayout.Button($"删除已选({selCount})", EditorStyles.toolbarButton, GUILayout.Width(100f)))
-            {
-                if (EditorUtility.DisplayDialog("删除确认", $"删除 {selCount} 个已选道具？", "删除", "取消"))
-                {
-                    List<LootDropWorldObject> toDelete = new List<LootDropWorldObject>();
-                    foreach (LootDropWorldObject d in placedItemCache)
-                        if (d != null && placedItemSelectionIds.Contains(d.gameObject.GetInstanceID()))
-                            toDelete.Add(d);
-                    foreach (LootDropWorldObject d in toDelete)
-                        if (d != null && d.gameObject != null)
-                            Undo.DestroyObjectImmediate(d.gameObject);
-                    placedItemSelectionIds.Clear();
-                    RefreshPlacedItemCache();
-                }
-            }
+                DeleteSelectedPlacedItemsWithConfirm();
             if (GUILayout.Button("清空选择", EditorStyles.toolbarButton, GUILayout.Width(72f)))
                 placedItemSelectionIds.Clear();
         }
         GUILayout.FlexibleSpace();
         EditorGUILayout.EndHorizontal();
+    }
+
+    private void DeleteSelectedPlacedItemsWithConfirm()
+    {
+        int selCount = placedItemSelectionIds.Count;
+        if (selCount <= 0 || !EditorUtility.DisplayDialog("删除确认", $"删除 {selCount} 个已选道具？", "删除", "取消"))
+            return;
+
+        List<LootDropWorldObject> toDelete = new List<LootDropWorldObject>();
+        foreach (LootDropWorldObject d in placedItemCache)
+            if (d != null && placedItemSelectionIds.Contains(d.gameObject.GetInstanceID()))
+                toDelete.Add(d);
+        foreach (LootDropWorldObject d in toDelete)
+            if (d != null && d.gameObject != null)
+                Undo.DestroyObjectImmediate(d.gameObject);
+        placedItemSelectionIds.Clear();
+        RefreshPlacedItemCache();
     }
 
     private void DrawPlacedItemRow(Rect rect, LootDropWorldObject drop, int index)
@@ -9269,12 +10106,14 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
     private List<UnitDefinition> GetFilteredUnitDefinitions()
     {
         string q = unitSearch.Trim().ToLower();
-        if (string.IsNullOrEmpty(q))
+        if (string.IsNullOrEmpty(q) && unitTypeFilter.Count == 0)
             return unitDefinitions;
         List<UnitDefinition> result = new List<UnitDefinition>();
         foreach (UnitDefinition d in unitDefinitions)
         {
-            if (d.displayName.ToLower().Contains(q) || d.name.ToLower().Contains(q))
+            if (!PassMultiFilter(unitTypeFilter, EnumFilterLabel(d.defineType)))
+                continue;
+            if (string.IsNullOrEmpty(q) || d.displayName.ToLower().Contains(q) || d.name.ToLower().Contains(q))
                 result.Add(d);
         }
         return result;
@@ -9338,6 +10177,7 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         EditorGUILayout.BeginVertical("box");
         EditorGUILayout.LabelField("筛选", EditorStyles.boldLabel);
         unitSearch = EditorGUILayout.TextField("搜索", unitSearch);
+        DrawMultiFilter("类型", unitTypeFilter, unitDefinitions.Select(d => EnumFilterLabel(d.defineType)).Distinct().ToList());
         EditorGUILayout.EndVertical();
 
         DrawUnitSpawnerPinnedRow();
@@ -9427,6 +10267,8 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         EditorGUILayout.BeginVertical("box");
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("已摆放单位", EditorStyles.boldLabel);
+        DrawPlacedPickToggle();
+        DrawPlacedGroupExpandButtons(unitPlacedGroups);
         if (GUILayout.Button("刷新", GUILayout.Width(60f)))
             RefreshPlacedUnitCache();
         EditorGUILayout.EndHorizontal();
@@ -9434,22 +10276,29 @@ public class SkyPrisonMapObjectPlacementToolWindow : EditorWindow
         EditorGUILayout.HelpBox("点击定位，Delete 删除。支持 Ctrl 离散多选、Shift 连续多选。", MessageType.Info);
         EditorGUILayout.EndVertical();
 
-        List<UnitDefinitionRuntimeBinder> filtered = GetFilteredPlacedUnits();
-        Rect rect = GUILayoutUtility.GetRect(0f, 100000f, 220f, 100000f, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
-        EditorGUI.DrawRect(rect, panelBg);
-        Rect viewRect = new Rect(rect.x + 6f, rect.y + 6f, rect.width - 12f, rect.height - 12f);
-        float contentHeight = Mathf.Max(viewRect.height, filtered.Count * 58f + 8f);
-        Rect contentRect = new Rect(0f, 0f, Mathf.Max(10f, viewRect.width - 14f), contentHeight);
-
-        placedUnitScroll = GUI.BeginScrollView(viewRect, placedUnitScroll, contentRect, false, true);
-        float y = 0f;
-        for (int i = 0; i < filtered.Count; i++)
-        {
-            Rect row = new Rect(0f, y, contentRect.width, 54f);
-            DrawPlacedUnitRow(row, filtered[i], i, filtered);
-            y += 58f;
-        }
-        GUI.EndScrollView();
+        DrawGroupedPlacedList(
+            GetFilteredPlacedUnits(),
+            unitPlacedGroups,
+            !string.IsNullOrWhiteSpace(placedUnitSearch),
+            ref placedUnitScroll,
+            58f,
+            b => b.gameObject,
+            b =>
+            {
+                UnitDefinition def = b.UnitDefinitionAsset;
+                return (def != null ? def.defineType.ToString() : "zzz",
+                        def != null ? def.defineType.ToString() : "(无定义)",
+                        def != null ? def.GetInstanceID().ToString() : "null",
+                        def != null ? def.displayName : "(无定义)");
+            },
+            placedUnitSelectionIds,
+            gos =>
+            {
+                SelectPlacedGroupObjects(placedUnitSelectionIds, gos);
+                placedUnitLastClickedIndex = -1;
+            },
+            gos => DeleteSelectedPlacedUnitsWithConfirm(),
+            DrawPlacedUnitRow);
 
         // 底部工具栏
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);

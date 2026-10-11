@@ -177,6 +177,18 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
             // 背包叠加打开在上面）。背包键也要尊重这个标记，跟 Esc 键一样。
             // 但角色面板是"可以互相切换"的悬浮窗口（跟设置/暂停菜单那种真·模态不是一类），
             // 面板开着时按背包键应该照样能切过去，不该被面板自己造成的 ExternalBlock 挡住。
+            // AFP 购买窗口跟背包/角色面板/任务日志/地图互斥：开着时按这些键，购买窗口自动关闭(Close 会立刻把 ExternalBlock 还原，
+            // 所以下面的 blockedByRealModal 算出来是 false，同一次按键就能把对应窗口打开)
+            if (SkyPrisonAfpShopWindow.IsOpen
+                && (settingsEarly.GetActionDown(SkyPrisonInputAction.Inventory) || settingsEarly.GetActionDown(SkyPrisonInputAction.CharacterPanel)
+                    || settingsEarly.GetActionDown(SkyPrisonInputAction.QuestLog) || settingsEarly.GetActionDown(SkyPrisonInputAction.Map)))
+                SkyPrisonAfpShopWindow.Hide();
+            // 战术研修窗口同理：开着时按背包/角色面板/任务日志/地图键，自动关闭再打开对应窗口
+            if (SkyPrisonTrainingWindow.IsOpen
+                && (settingsEarly.GetActionDown(SkyPrisonInputAction.Inventory) || settingsEarly.GetActionDown(SkyPrisonInputAction.CharacterPanel)
+                    || settingsEarly.GetActionDown(SkyPrisonInputAction.QuestLog) || settingsEarly.GetActionDown(SkyPrisonInputAction.Map)))
+                SkyPrisonTrainingWindow.Hide();
+
             bool blockedByRealModal = SkyPrison.Runtime.UI.SkyPrisonWindowManager_V1.ExternalBlock
                 && !CharacterPanelController.IsOpen && !QuestLogController.IsOpen;
             // 商店这类"真模态"prefab窗口(metadata.lockGameplayInput=true)开着的时候，
@@ -228,7 +240,11 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
             // 报错弹窗只监听自己的确认键，完全不管 Esc，导致弹窗开着的时候 Esc 还能把
             // 暂停菜单叠开在报错弹窗后面。报错弹窗的优先级应该最高、拦截一切除了它自己
             // 的确认按钮，这里补上跟 Inventory/CharacterPanel 一样的 blockedByRealModal 检查。
-            if (settingsEarly.GetActionDown(SkyPrisonInputAction.Menu) && !PauseMenuController.IsOpen && !blockedByRealModal)
+            // 选关界面（SkyPrisonRaidMapScreen）自己处理 Esc：打开时、以及它这一帧刚被 Esc 关掉时，都不再叠开暂停菜单
+            if (settingsEarly.GetActionDown(SkyPrisonInputAction.Menu) && !PauseMenuController.IsOpen && !blockedByRealModal
+                && !SkyPrisonRaidMapScreen.IsOpen && !SkyPrisonRaidMapScreen.JustClosedThisFrame
+                && !SkyPrisonAfpShopWindow.IsOpen && !SkyPrisonAfpShopWindow.JustClosedThisFrame   // AFP 购买窗口自己处理 Esc
+                && !SkyPrisonTrainingWindow.IsOpen && !SkyPrisonTrainingWindow.JustClosedThisFrame)   // 战术研修窗口也自己处理 Esc
             {
                 // 任何走 SkyPrisonWindowManager_V1 的悬浮窗口开着的时候，Esc 都应该先关
                 // 窗口，不叠加弹出暂停菜单——之前这里只特判了"inventory"，商店/仓库/
@@ -267,7 +283,8 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
         if (actionController == null)
             return;
 
-        if (!playerInputEnabled)
+        // 选关界面打开时，玩家的移动 / 攻击输入一律不处理——在界面里点鼠标左键会被当成开枪（还会触发开枪声音）
+        if (!playerInputEnabled || SkyPrisonRaidMapScreen.IsOpen)
         {
             currentMoveInput = Vector2.zero;
             currentRunHeld = false;
@@ -296,7 +313,9 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
             // 连移动一起冻结（跟背包/角色面板不一样，那两个允许开着照样走）——见
             // SkyPrisonWindowManager_V1.AnyMovementLockingWindowOpen 的注释。
             bool movementBlocking = Time.timeScale <= 0f
-                || SkyPrison.Runtime.UI.SkyPrisonWindowManager_V1.AnyMovementLockingWindowOpen;
+                || SkyPrison.Runtime.UI.SkyPrisonWindowManager_V1.AnyMovementLockingWindowOpen
+                || SkyPrisonTrainingWindow.IsOpen   // 战术研修窗口：同样定住角色，WASD 是选节点
+                || SkyPrisonAfpShopWindow.IsOpen;   // AFP 购买窗口：世界不停但要定住角色，W/S 选行时角色不能同时走(按键冲突)
             currentMoveInput = movementBlocking ? Vector2.zero : settings.GetMoveVector();
 
             currentSneakHeld = windowBlocking

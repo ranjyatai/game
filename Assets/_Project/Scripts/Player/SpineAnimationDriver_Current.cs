@@ -967,9 +967,13 @@ public class SpineAnimationDriver_Current : MonoBehaviour
                 string skillKey = actionModuleRuntime != null && actionModuleRuntime.CurrentSkill != null
                     ? actionModuleRuntime.CurrentSkill.spineAnimationKey
                     : null;
-                key = !string.IsNullOrWhiteSpace(skillKey) ? skillKey : ResolveMovementKey(UnitActionAnimationSlot.Attack, attackAnimation);
+                // 技能写的动画名(比如 AXIA 骨架的 "Attack/Attack")在当前骨架里不存在时，回退到单位自己
+                // 的攻击动画(单位定义里的 attackKey，怪物骨架一般叫 "Attack")。不回退的话动画根本不播，
+                // 控制器卡在 Attack 状态、hit_start 事件永远不触发——怪物就"会挥拳但永远打不到人"。
+                bool skillAnimOk = !string.IsNullOrWhiteSpace(skillKey) && HasAnimation(skillKey);
+                key = skillAnimOk ? skillKey : ResolveMovementKey(UnitActionAnimationSlot.Attack, attackAnimation);
                 loop = false;
-                lastActionAnimationSource = !string.IsNullOrWhiteSpace(skillKey) ? "ActionModuleSkill" : "ActionControllerAttack";
+                lastActionAnimationSource = skillAnimOk ? "ActionModuleSkill" : "ActionControllerAttack";
                 return;
 
             // 2026-07-18：原来这里有一个 case Dodge 分支，但 movement.IsDodging 在这个

@@ -13,19 +13,11 @@ MonoBehaviour:
   m_Name: MapLocalizationRegistry
   m_EditorClassIdentifier: Assembly-CSharp::MapLocalizationRegistry
   entries:
-  - mapKey: new_map
-    sceneName: new_map 1
-    scenePath: Assets/_Project/Scene/Maps/new_map 1.unity
-    localizedNames:
-    - languageCode: zh-CN
-      text: "\u65E7\u5DE5\u5382"
-    - languageCode: ja
-      text: "\u5EC3\u5DE5\u5834"
-    - languageCode: en
-      text: Old Factory
   - mapKey: newmap
     sceneName: MapTemplate_Base
     scenePath: Assets/_Project/Maps/_Templates/MapTemplate_Base/MapTemplate_Base.unity
+    category: _Templates
+    coordinates: 
     localizedNames:
     - languageCode: zh-CN
       text: "\u65B0\u5730\u56FE"
@@ -33,9 +25,49 @@ MonoBehaviour:
       text: 
     - languageCode: en
       text: 
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    raidDayOutputs: []
+    raidNightOutputs: []
+  - mapKey: tower
+    sceneName: Tower
+    scenePath: Assets/_Project/Maps/Final/Tower/Tower/Tower.unity
+    category: Final
+    coordinates: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u5854"
+    - languageCode: ja
+      text: "\u5854"
+    - languageCode: en
+      text: The Tower
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u56DE\u6536\u4EF7\u503C\uFF1A\u65E0\u6CD5\u8BC4\u4F30\u3002\n\u5168\u533A\u57DF\u7684MEMENTO\u4FB5\u8680\u53CD\u5E94\u5747\u6307\u5411\u6B64\u5904\u3002\n\u5185\u90E8\u7ED3\u6784\u53CA\u7269\u8D44\u65E0\u6CD5\u626B\u63CF\u3002\nMEMENTO\u4FB5\u8680\u5A01\u80C1\u8BC4\u4F30\uFF1A\u6781\u9AD8\u3002"
+    - languageCode: ja
+      text: "\u56DE\u53CE\u4FA1\u5024\uFF1A\u8A55\u4FA1\u4E0D\u80FD\u3002\n\u5168\u533A\u57DF\u306EMEMENTO\u4FB5\u8755\u53CD\u5FDC\u304C\u3001\u3053\u306E\u5730\u70B9\u3092\u6307\u5411\u3002\n\u5185\u90E8\u69CB\u9020\u304A\u3088\u3073\u7269\u8CC7\u306F\u30B9\u30AD\u30E3\u30F3\u4E0D\u80FD\u3002\nMEMENTO\u4FB5\u8755\u8105\u5A01\u8A55\u4FA1\uFF1A\u6975\u3081\u3066\u9AD8\u3044\u3002"
+    - languageCode: en
+      text: 'Salvage value: cannot be assessed.
+
+        MEMENTO erosion readings
+        from all zones converge on this location.
+
+        Internal structure and
+        contents cannot be scanned.
+
+        MEMENTO erosion threat assessment: extreme.'
+    raidDayOutputs: []
+    raidNightOutputs: []
   - mapKey: newmap
     sceneName: Still Vault
     scenePath: Assets/_Project/Maps/Hub/StillVault/Still Vault/Still Vault.unity
+    category: Hub
+    coordinates: "35\xB041\u203204\u2033N  139\xB045\u203246\u2033E"
     localizedNames:
     - languageCode: zh-CN
       text: "\u4F59\u7A79"
@@ -43,88 +75,136 @@ MonoBehaviour:
       text: "\u30B9\u30C6\u30A3\u30EB\u30F4\u30A9\u30EB\u30C8"
     - languageCode: en
       text: Stillvault
-  - mapKey: newmap
-    sceneName: NewMap
-    scenePath: Assets/_Project/Maps/Raid/Campus/NewMap/NewMap.unity
-    localizedNames:
+    localizedDescriptions:
     - languageCode: zh-CN
-      text: "\u65B0\u5730\u56FE"
+      text: 
     - languageCode: ja
       text: 
     - languageCode: en
       text: 
-  - mapKey: newmap
-    sceneName: NewMap
-    scenePath: Assets/_Project/Maps/Raid/ElDorado/NewMap/NewMap.unity
+    raidDayOutputs: []
+    raidNightOutputs: []
+  - mapKey: abandoned_hospital
+    sceneName: AbandonedHospital
+    scenePath: Assets/_Project/Maps/Raid/AbandonedHospital/AbandonedHospital/AbandonedHospital.unity
+    category: Raid
+    coordinates: 
     localizedNames:
     - languageCode: zh-CN
-      text: "\u65B0\u5730\u56FE"
+      text: "\u5E9F\u75C5\u9662"
     - languageCode: ja
-      text: 
+      text: "\u5EC3\u75C5\u9662"
     - languageCode: en
-      text: 
-  - mapKey: newmap
-    sceneName: NewMap
-    scenePath: Assets/_Project/Maps/Raid/GoldenKingdom/NewMap/NewMap.unity
+      text: Abandoned Hospital
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u56DE\u6536\u4EF7\u503C\uFF1A\u4E2D\u3002\n\u539F\u533B\u7597\u8BBE\u65BD\uFF0C\u75C5\u623F\u533A\u53CA\u836F\u54C1\u50A8\u5B58\u533A\u4FDD\u7559\u90E8\u5206\u7ED3\u6784\u3002\n\u68C0\u51FA\u533B\u7597\u5668\u68B0\u3001\u836F\u54C1\u53CA\u751F\u7269\u6837\u672C\u6B8B\u5B58\uFF0C\u90E8\u5206\u72B6\u6001\u4E0D\u660E\u3002\nMEMENTO\u4FB5\u8680\u5A01\u80C1\u8BC4\u4F30\uFF1A\u9AD8\u3002"
+    - languageCode: ja
+      text: "\u56DE\u53CE\u4FA1\u5024\uFF1A\u4E2D\u3002\n\u65E7\u533B\u7642\u65BD\u8A2D\u3002\u75C5\u68DF\u533A\u753B\u304A\u3088\u3073\u85AC\u54C1\u4FDD\u7BA1\u533A\u753B\u306F\u4E00\u90E8\u69CB\u9020\u304C\u6B8B\u5B58\u3002\n\u533B\u7642\u6A5F\u5668\u3001\u85AC\u54C1\u3001\u751F\u4F53\u30B5\u30F3\u30D7\u30EB\u306E\u6B8B\u5B58\u3092\u691C\u51FA\u3002\u72B6\u614B\u4E0D\u660E\u306E\u3082\u306E\u3092\u542B\u3080\u3002\nMEMENTO\u4FB5\u8755\u8105\u5A01\u8A55\u4FA1\uFF1A\u9AD8\u3002"
+    - languageCode: en
+      text: 'Salvage value: moderate.
+
+        Former medical facility. Ward areas
+        and pharmaceutical storage partially intact.
+
+        Medical equipment,
+        pharmaceuticals, and biological samples detected. Some in unknown condition.
+
+        MEMENTO
+        erosion threat assessment: high.'
+    raidDayOutputs: []
+    raidNightOutputs: []
+  - mapKey: campus
+    sceneName: Campus
+    scenePath: Assets/_Project/Maps/Raid/Campus/Campus/Campus.unity
+    category: Raid
+    coordinates: 
     localizedNames:
     - languageCode: zh-CN
-      text: "\u65B0\u5730\u56FE"
+      text: "\u5B66\u6821"
     - languageCode: ja
-      text: 
+      text: "\u5B66\u6821"
     - languageCode: en
-      text: 
-  - mapKey: newmap
-    sceneName: Cooling Tower & Exhaust Zone
-    scenePath: Assets/_Project/Maps/Raid/OldFactory/Cooling Tower & Exhaust Zone/Cooling
-      Tower & Exhaust Zone.unity
+      text: School
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u56DE\u6536\u4EF7\u503C\uFF1A\u4E2D\u3002\n\u539F\u6559\u80B2\u8BBE\u65BD\uFF0C\u6559\u5B66\u697C\u53CA\u5B9E\u9A8C\u533A\u57DF\u4FDD\u7559\u8F83\u4E3A\u5B8C\u6574\u3002\n\u68C0\u51FA\u7535\u5B50\u5668\u6750\u3001\u5B9E\u9A8C\u8017\u6750\u53CA\u57FA\u7840\u533B\u7597\u7269\u8D44\u6B8B\u5B58\u3002\nMEMENTO\u4FB5\u8680\u5A01\u80C1\u8BC4\u4F30\uFF1A\u4F4E\u3002"
+    - languageCode: ja
+      text: "\u56DE\u53CE\u4FA1\u5024\uFF1A\u4E2D\u3002\n\u65E7\u6559\u80B2\u65BD\u8A2D\u3002\u6821\u820E\u304A\u3088\u3073\u5B9F\u9A13\u533A\u57DF\u306F\u6BD4\u8F03\u7684\u826F\u597D\u306A\u72B6\u614B\u3067\u6B8B\u5B58\u3002\n\u96FB\u5B50\u6A5F\u5668\u3001\u5B9F\u9A13\u7528\u6D88\u8017\u54C1\u3001\u57FA\u790E\u533B\u7642\u7269\u8CC7\u306E\u6B8B\u5B58\u3092\u691C\u51FA\u3002\nMEMENTO\u4FB5\u8755\u8105\u5A01\u8A55\u4FA1\uFF1A\u4F4E\u3002"
+    - languageCode: en
+      text: 'Salvage value: moderate.
+
+        Former educational facility. Classroom
+        buildings and laboratory areas remain largely intact.
+
+        Electronic
+        equipment, laboratory consumables, and basic medical supplies detected.
+
+        MEMENTO
+        erosion threat assessment: low.'
+    raidDayOutputs: []
+    raidNightOutputs: []
+  - mapKey: el_dorado
+    sceneName: ElDorado
+    scenePath: Assets/_Project/Maps/Raid/ElDorado/ElDorado/ElDorado.unity
+    category: Raid
+    coordinates: 
     localizedNames:
     - languageCode: zh-CN
-      text: "\u7269\u6D41\u8F93\u9001\u5ECA\u9053"
+      text: "\u9EC4\u91D1\u4E61"
     - languageCode: ja
-      text: "\u7269\u6D41\u642C\u9001\u56DE\u5ECA"
+      text: "\u30A8\u30EB\u30C9\u30E9\u30C9"
     - languageCode: en
-      text: Logistics Conveyor Corridor
+      text: El Dorado
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u56DE\u6536\u4EF7\u503C\uFF1A\u6781\u9AD8\u3002\n\u539F\u9AD8\u6863\u5546\u4E1A\u8BBE\u65BD\uFF0C\u5EFA\u7B51\u5916\u89C2\u4FDD\u5B58\u8F83\u4E3A\u5B8C\u6574\u3002\n\u68C0\u51FA\u8D35\u91D1\u5C5E\u3001\u73E0\u5B9D\u53CA\u9AD8\u4EF7\u503C\u6536\u85CF\u54C1\uFF0C\u5206\u5E03\u96C6\u4E2D\u3002\nMEMENTO\u4FB5\u8680\u5A01\u80C1\u8BC4\u4F30\uFF1A\u9AD8\u3002"
+    - languageCode: ja
+      text: "\u56DE\u53CE\u4FA1\u5024\uFF1A\u6975\u3081\u3066\u9AD8\u3044\u3002\n\u65E7\u9AD8\u7D1A\u5546\u696D\u65BD\u8A2D\u3002\u5EFA\u9020\u7269\u306E\u5916\u89B3\u306F\u6BD4\u8F03\u7684\u826F\u597D\u306B\u4FDD\u5B58\u3002\n\u8CB4\u91D1\u5C5E\u3001\u5B9D\u98FE\u54C1\u3001\u9AD8\u984D\u306A\u53CE\u96C6\u54C1\u3092\u691C\u51FA\u3002\u5206\u5E03\u306F\u96C6\u4E2D\u3002\nMEMENTO\u4FB5\u8755\u8105\u5A01\u8A55\u4FA1\uFF1A\u9AD8\u3002"
+    - languageCode: en
+      text: 'Salvage value: very high.
+
+        Former high-end commercial facility.
+        Exterior structures remain largely intact.
+
+        Precious metals, jewelry,
+        and high-value collectibles detected. Distribution: concentrated.
+
+        MEMENTO
+        erosion threat assessment: high.'
+    raidDayOutputs: []
+    raidNightOutputs: []
   - mapKey: newmap
-    sceneName: Core Reactor Zone
-    scenePath: Assets/_Project/Maps/Raid/OldFactory/Core Reactor Zone/Core Reactor
-      Zone.unity
+    sceneName: Old Factory
+    scenePath: Assets/_Project/Maps/Raid/OldFactory/Old Factory/Old Factory.unity
+    category: Raid
+    coordinates: 
     localizedNames:
     - languageCode: zh-CN
-      text: "\u6838\u5FC3\u53CD\u5E94\u7089\u533A"
+      text: "\u65E7\u5DE5\u5382"
     - languageCode: ja
-      text: "\u4E2D\u6838\u7089\u5FC3\u533A\u753B"
+      text: "\u65E7\u5DE5\u5834"
     - languageCode: en
-      text: Core Reactor Zone
-  - mapKey: newmap
-    sceneName: Heavy Machinery Processing Zone
-    scenePath: Assets/_Project/Maps/Raid/OldFactory/Heavy Machinery Processing Zone/Heavy
-      Machinery Processing Zone.unity
-    localizedNames:
+      text: Old Factory
+    localizedDescriptions:
     - languageCode: zh-CN
-      text: "\u91CD\u578B\u673A\u68B0\u52A0\u5DE5\u533A"
+      text: "\u56DE\u6536\u4EF7\u503C\uFF1A\u9AD8\u3002\n\u4EAC\u6781\u91CD\u5DE5\u539F\u4E3B\u8981\u52A0\u5DE5\u751F\u4EA7\u57FA\u5730\uFF0C\u517C\u6709\u519B\u5DE5\u751F\u4EA7\u8BBE\u65BD\u3002\n\u68C0\u51FA\u9AD8\u54C1\u8D28\u91D1\u5C5E\u53CA\u7CBE\u5BC6\u7EC4\u4EF6\uFF0C\u5B58\u91CF\u53EF\u89C2\u3002\nMEMENTO\u4FB5\u8680\u5A01\u80C1\u8BC4\u4F30\uFF1A\u4F4E\u3002"
     - languageCode: ja
-      text: "\u91CD\u6A5F\u68B0\u52A0\u5DE5\u533A\u753B"
+      text: "\u56DE\u53CE\u4FA1\u5024\uFF1A\u9AD8\u3002\n\u4EAC\u6975\u91CD\u5DE5\u306E\u65E7\u4E3B\u8981\u52A0\u5DE5\u30FB\u751F\u7523\u62E0\u70B9\u3002\u8ECD\u9700\u751F\u7523\u8A2D\u5099\u3082\u4F75\u8A2D\u3002\n\u9AD8\u54C1\u8CEA\u306A\u91D1\u5C5E\u6750\u304A\u3088\u3073\u7CBE\u5BC6\u90E8\u54C1\u3092\u691C\u51FA\u3002\u6B8B\u5B58\u91CF\u306F\u591A\u3044\u3002\nMEMENTO\u4FB5\u8755\u8105\u5A01\u8A55\u4FA1\uFF1A\u4F4E\u3002"
     - languageCode: en
-      text: Heavy Machinery Processing Zone
-  - mapKey: newmap
-    sceneName: Logistics Conveyor Corridor
-    scenePath: Assets/_Project/Maps/Raid/OldFactory/Logistics Conveyor Corridor/Logistics
-      Conveyor Corridor.unity
-    localizedNames:
-    - languageCode: zh-CN
-      text: "\u7269\u6D41\u8F93\u9001\u5ECA\u9053"
-    - languageCode: ja
-      text: "\u7269\u6D41\u642C\u9001\u56DE\u5ECA"
-    - languageCode: en
-      text: Logistics Conveyor Corridor
-  - mapKey: newmap
-    sceneName: Storage & Maintenance Zone
-    scenePath: Assets/_Project/Maps/Raid/OldFactory/Storage & Maintenance Zone/Storage
-      & Maintenance Zone.unity
-    localizedNames:
-    - languageCode: zh-CN
-      text: "\u4ED3\u50A8\u7EF4\u62A4\u533A"
-    - languageCode: ja
-      text: "\u8CAF\u8535\u30FB\u4FDD\u5B88\u533A\u753B"
-    - languageCode: en
-      text: Storage & Maintenance Zone
+      text: 'Salvage value: high.
+
+        Formerly the primary processing and production
+        base of Kyogoku Heavy Industries, with military production facilities on
+        site.
+
+        High-grade metals and precision components detected. Stock
+        levels: substantial.
+
+        MEMENTO erosion threat assessment: low.'
+    raidDayOutputs:
+    - {fileID: 11400000, guid: 322e4bd24b2c0a74098834aae404bfb9, type: 2}
+    - {fileID: 11400000, guid: b2dc36bef92bc6741b6d0128b2279d29, type: 2}
+    raidNightOutputs:
+    - {fileID: 11400000, guid: 322e4bd24b2c0a74098834aae404bfb9, type: 2}
+    - {fileID: 11400000, guid: b2dc36bef92bc6741b6d0128b2279d29, type: 2}

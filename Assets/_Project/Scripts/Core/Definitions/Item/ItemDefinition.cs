@@ -185,6 +185,9 @@ public class ItemDefinition : ScriptableObject
 
     [Header("持有与价值")]
     public int maxStackCount = 1;
+    /// <summary>实际生效的堆叠上限：消耗品吃科技树「堆叠」加成(战术研修·战略家)，其他物品就是 maxStackCount。</summary>
+    public int EffectiveMaxStack => (majorCategory == ItemMajorCategory.General && category == ItemCategory.Consumable && maxStackCount > 1)
+        ? maxStackCount + Mathf.RoundToInt(TechTreePerks.Get("stackBonus")) : maxStackCount;
     public int value = 0;
     public int origin = 0;
     public float weightOrQuartz = 0f;
@@ -218,6 +221,17 @@ public class ItemDefinition : ScriptableObject
     // 强化熔炉的输入校验用——只有材料能丢进去，可使用道具/装备/防具/任务物品/
     // 凭证等一律不行，不管它们是不是又是消耗品又是可堆叠物品什么的，只认这一条。
     public bool IsAlchemyMaterial => majorCategory == ItemMajorCategory.General && category == ItemCategory.Material;
+
+    public bool IsQuestItem => majorCategory == ItemMajorCategory.General && category == ItemCategory.Quest;
+
+    // 任务物品/重要物品一律不准卖、不准丢——按分类强制，不看 canSell/canDiscard
+    // 这两个手动勾选框。那两个开关默认都是 true，靠策划记得给每件任务道具挨个取消
+    // 勾选，漏掉一件玩家就能把它卖了/丢了，对应的任务直接永久卡死、没有任何补救
+    // 途径。这种"漏配一个字段就产生不可恢复存档损坏"的设计不能留，规则收敛到这里
+    // 统一判定。canSell/canDiscard 仍然有效，只是降级成"额外再关掉"的手动补充，
+    // 不再是唯一防线。
+    public bool CanBeSold => canSell && !isKeyItem && !IsQuestItem;
+    public bool CanBeDiscarded => canDiscard && !isKeyItem && !IsQuestItem;
 
     public void NormalizeMajorCategoryRules()
     {

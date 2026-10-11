@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25bf8104ff1f5cb41a05dd25fa0eea5e, type: 3}
+  m_Name: DialogueChapterSettings
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueChapterSettings
+  entries:
+  - id: ab9c3dfc61e9445c96cb4fce930080f7
+    displayName: Chapter 1
+  - id: c795bb5c798942acb082cba354834030
+    displayName: Chapter 2
+  - id: 7bc147e236e94a74b442ecc7f0331b28
+    displayName: Chapter 3
+  - id: 04cff9729bd54c6d96294c53297d1655
+    displayName: Chapter 4
+  - id: 79757044894f4c09987ea4e64528f466
+    displayName: Chapter 5
+  - id: 383cdfc0182c4d9498cf695bbcbccb58
+    displayName: Chapter 6
+  - id: 8c0c750906464933995d78089a95fb8f
+    displayName: "\u3010DLC\u3011Chapter 1"
+  - id: 81a43e0c777e4ec0bb22cf23a0a8bbf1
+    displayName: "\u3010DLC\u3011Chapter 2"
+  - id: 2e560f2ead5e467f9a824c29b6372bd0
+    displayName: "\u3010DLC\u3011Chapter 3"
+  chapters: []

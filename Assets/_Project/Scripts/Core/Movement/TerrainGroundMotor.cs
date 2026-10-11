@@ -333,6 +333,9 @@ public class TerrainGroundMotorV5 : MonoBehaviour
     private float lastSweepWanted, lastSweepHitDistance, lastSweepSafeTravel;
     private bool lastSweepOverlapped;
     private string lastSweepHitName = "";
+    private string lastSweepHitOwner = "";
+    private Vector3 lastSweepHitPoint;
+    private Vector3 lastSweepHitNormal;
     /// 归因日志已输出行数，到上限自动关闭，见 LogHorizontalAttribution。
     private int debugAttributionLineCount;
 
@@ -665,6 +668,12 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         horizontalVelocity = Vector3.zero; // 清零控制速度，让击退感更明显
     }
 
+    // 本帧水平位移长度。物理地面的"上台阶高度限制"要按它放宽：快速位移（闪避/冲刺）一帧走得远，
+    // 走上斜坡时一帧内表面升高的量 = tan(坡度) × 水平位移，会超过固定的 0.12，斜面被当成"上不去"，
+    // 脚就从斜面下面穿进去（实测闪避冲向 34° 楼梯斜坡：脚一直停在地形高度，整个人陷进楼梯里）。
+    private float currentHorizontalStepLength;
+    private const float SlopeStepUpAllowanceScale = 1.35f;
+
     private void FixedUpdate()
     {
         float dt = Time.fixedDeltaTime;
@@ -710,6 +719,8 @@ public class TerrainGroundMotorV5 : MonoBehaviour
             inputVelocity *= Mathf.Clamp01(airControlMultiplier);
 
         inputVelocity = FilterInputVelocityBySlope(position, inputVelocity, footOffset, dt);
+
+        currentHorizontalStepLength = Horizontal((inputVelocity + knockbackVelocity) * dt).magnitude;
 
         // 击退冲量衰减（每帧在输入之外独立叠加）
         if (knockbackVelocity.sqrMagnitude > 0.0001f)
@@ -796,6 +807,15 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         // 兜底——任何一处把人推向洞口都会在这里被拦下，不用逐处去改。
         if (blockTerrainHoles)
             candidate = BlockTerrainHoleEntry(position, candidate, footOffset);
+
+        // 守卫者的盾：玩家不管是走、潜行还是闪避都穿不过去（只对玩家生效，怪物之间互不挡）
+        if (_shieldOwnerIdentity == null) _shieldOwnerIdentity = GetComponent<SkyPrisonUnitRuntimeIdentity>() ?? GetComponentInParent<SkyPrisonUnitRuntimeIdentity>(true);
+        if (_shieldOwnerIdentity != null && _shieldOwnerIdentity == SkyPrisonPlayerAuthority.CurrentPlayerUnit)
+        {
+            Vector3 shieldDelta = candidate - position;
+            SkyPrisonGuardianShield.ClampDodgeDelta(position, ref shieldDelta);
+            candidate = position + shieldDelta;
+        }
 
         MoveTo(candidate);
         prevTickEndPosition = candidate;
@@ -1447,10 +1467,10 @@ public class TerrainGroundMotorV5 : MonoBehaviour
             if (IsSelfCollider(hit.collider))
                 continue;
 
-            if (ShouldRejectAsPhysicsGround(hit.collider, footWorld, hit.point, allowStepUp))
+            float slope = Vector3.Angle(hit.normal, Vector3.up);
+            if (ShouldRejectAsPhysicsGround(hit.collider, footWorld, hit.point, allowStepUp, slope))
                 continue;
 
-            float slope = Vector3.Angle(hit.normal, Vector3.up);
             if (!includeSteep && slope > maxWalkableSlope)
                 continue;
 
@@ -1462,6 +1482,16 @@ public class TerrainGroundMotorV5 : MonoBehaviour
 
             float verticalDistance = Mathf.Abs(footWorld.y - hit.point.y);
             float score = verticalDistance + 0.05f;
+
+            // 脚底够得着的、不低于脚底的物理表面（斜坡、路沿）要能赢过脚下的地形。
+            // 原来物理表面一律多罚 0.05，而脚正踩在地形上时地形距离是 0，所以走到斜坡低端时地形永远赢，
+            // 脚的高度不变、斜坡表面越升越高，走出约 0.37 米后比脚高出 maxPhysicsGroundStepUpHeight，
+            // 被判成"上不去"，脚就从斜坡下面穿了进去。
+            // 这里只放宽"不低于脚底 且 在上台阶限制内"这一档：超过限制的墙、横梁、箱体仍然被
+            // ShouldRejectAsPhysicsGround 挡掉，比脚底低的物理表面（走下台阶）也保持原来的打分。
+            if (hit.point.y >= footWorld.y - 0.01f
+                && (hit.point.y - footWorld.y) <= PhysicsGroundStepUpAllowance(slope))
+                score = verticalDistance - 0.2f;
 
             if (score < bestScore)
             {
@@ -1494,7 +1524,20 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         return col.transform == transform || col.transform.IsChildOf(transform);
     }
 
-    private bool ShouldRejectAsPhysicsGround(Collider col, Vector3 footWorld, Vector3 hitPoint, bool allowStepUp = false)
+    /// <summary>
+    /// 这个表面（坡度 slopeDeg）相对脚底最多能高出多少还算"上得去"：固定的 maxPhysicsGroundStepUpHeight，
+    /// 加上"可走坡面在本帧水平位移内自然升高的量"。只对可走坡度的表面放宽——墙、横梁、箱体（接近垂直）不受影响，
+    /// 水平位移为 0 时也退回原来的固定值。
+    /// </summary>
+    private float PhysicsGroundStepUpAllowance(float slopeDeg)
+    {
+        float baseRise = Mathf.Max(0f, maxPhysicsGroundStepUpHeight);
+        if (slopeDeg <= 0.5f || slopeDeg > maxWalkableSlope || currentHorizontalStepLength <= 0f)
+            return baseRise;
+        return baseRise + Mathf.Tan(slopeDeg * Mathf.Deg2Rad) * currentHorizontalStepLength * SlopeStepUpAllowanceScale;
+    }
+
+    private bool ShouldRejectAsPhysicsGround(Collider col, Vector3 footWorld, Vector3 hitPoint, bool allowStepUp = false, float surfaceSlopeDeg = 90f)
     {
         if (col == null)
             return true;
@@ -1515,7 +1558,7 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         if (rejectUnitCollidersAsGround && IsUnitCollider(col))
             return true;
 
-        if (!allowStepUp && limitPhysicsGroundStepUp && hitPoint.y - footWorld.y > Mathf.Max(0f, maxPhysicsGroundStepUpHeight))
+        if (!allowStepUp && limitPhysicsGroundStepUp && hitPoint.y - footWorld.y > PhysicsGroundStepUpAllowance(surfaceSlopeDeg))
             return true;
 
         return false;
@@ -1639,7 +1682,23 @@ public class TerrainGroundMotorV5 : MonoBehaviour
             $"方向=({externalDisplacementSinceLastTick.x:0.###},{externalDisplacementSinceLastTick.z:0.###})\n" +
             $"  扫掠: 想走={lastSweepWanted:0.0000} 撞到={lastSweepHitDistance:0.0000} " +
             $"允许走={lastSweepSafeTravel:0.0000} 起点重叠={lastSweepOverlapped} " +
-            $"撞的是={(string.IsNullOrEmpty(lastSweepHitName) ? "无" : lastSweepHitName)}", this);
+            $"撞的是={(string.IsNullOrEmpty(lastSweepHitName) ? "无" : lastSweepHitName)}\n" +
+            $"  位置: 脚=({transform.position.x:0.00},{transform.position.y:0.00},{transform.position.z:0.00}) " +
+            $"撞点=({lastSweepHitPoint.x:0.00},{lastSweepHitPoint.y:0.00},{lastSweepHitPoint.z:0.00}) " +
+            $"法线=({lastSweepHitNormal.x:0.00},{lastSweepHitNormal.y:0.00},{lastSweepHitNormal.z:0.00}) " +
+            $"归属={(string.IsNullOrEmpty(lastSweepHitOwner) ? "无" : lastSweepHitOwner)}", this);
+    }
+
+    // 碰撞体往上找到带 CollisionRoot 的那一层的父物体名，用来区分同名碰撞体。
+    private static string GetColliderOwnerName(Collider col)
+    {
+        Transform t = col.transform;
+        for (int i = 0; i < 6 && t != null; i++, t = t.parent)
+        {
+            if (t.name == "CollisionRoot" && t.parent != null)
+                return t.parent.name;
+        }
+        return col.transform.root.name;
     }
 
     // 地板块之间的高度差容差——同一片地面拼接出来的相邻碰撞体，中心高度差应该很小
@@ -1851,6 +1910,11 @@ public class TerrainGroundMotorV5 : MonoBehaviour
                 lastSweepHitDistance = hit.distance;
                 lastSweepSafeTravel = safeTravel;
                 lastSweepHitName = hit.collider != null ? hit.collider.name : "";
+                // 碰撞体名字（__PhysicsMeshCollider_00_Mesh）全场景有十几个同名的，光看名字分不出是哪个物体。
+                // 带上往上三级的归属物体名、碰撞点和法线：法线 Y 大说明撞的是斜面，接近 0 说明是竖直面。
+                lastSweepHitOwner = hit.collider != null ? GetColliderOwnerName(hit.collider) : "";
+                lastSweepHitPoint = hit.point;
+                lastSweepHitNormal = hit.normal;
                 lastSweepOverlapped = startsOverlapped;
             }
             resolved += direction * safeTravel;
@@ -2444,6 +2508,8 @@ public class TerrainGroundMotorV5 : MonoBehaviour
 
         return resolved;
     }
+
+    private SkyPrisonUnitRuntimeIdentity _shieldOwnerIdentity;
 
     private void MoveTo(Vector3 targetPosition)
     {

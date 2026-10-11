@@ -96,7 +96,9 @@ namespace SkyPrison.Runtime.UI
         {
             ResolveTargetCanvasGroup();
             CaptureAuthoredAlphaFromGroup(false);
-            visibilityAlpha = ShouldShowNow(out runtimeReason) ? 1f : Mathf.Clamp01(minimumAlpha);
+            visibilityAlpha = ShouldShowNow(out runtimeReason)
+                ? 1f
+                : (SkyPrisonHubCombatGate.IsHubScene ? 0f : Mathf.Clamp01(minimumAlpha));
             ApplyAlpha();
         }
 
@@ -194,7 +196,9 @@ namespace SkyPrison.Runtime.UI
             bool show = ShouldShowNow(out runtimeReason);
             runtimeShouldShow = show;
 
-            float target = show ? 1f : Mathf.Clamp01(minimumAlpha);
+            // 主城安全状态完全隐藏（alpha 0）；局内的"弱化"仍然是 minimumAlpha。
+            float hiddenAlpha = SkyPrisonHubCombatGate.IsHubScene ? 0f : Mathf.Clamp01(minimumAlpha);
+            float target = show ? 1f : hiddenAlpha;
             float duration = show ? fadeInDuration : fadeOutDuration;
             if (duration <= 0.0001f)
                 visibilityAlpha = target;
@@ -206,6 +210,16 @@ namespace SkyPrison.Runtime.UI
 
         private bool ShouldShowNow(out string reason)
         {
+            // 主城（Hub 地图）：平时整块隐藏，出招/受击进入"主城战斗"才显示（见 SkyPrisonHubCombatGate）。
+            // 必须放在最前面：预制体里 enableAutoFadeWhenNonCombatFull 是关着的，放在它后面会被"Auto fade disabled"
+            // 直接短路成常显。也不看血量是否满——主城里的 HP/LP 条没有意义，战斗结束就收起来。
+            if (Application.isPlaying && !forceVisible && SkyPrisonHubCombatGate.IsHubScene)
+            {
+                bool hubCombat = SkyPrisonHubCombatGate.HubCombatActive;
+                reason = hubCombat ? "Hub combat" : "Hub safe zone";
+                return hubCombat;
+            }
+
             if (!enableAutoFadeWhenNonCombatFull)
             {
                 reason = "Auto fade disabled";

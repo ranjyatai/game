@@ -136,6 +136,8 @@ namespace SkyPrison.Runtime.UI
             public Image silhouette;
             public TMP_Text ammoText;
             public CanvasGroup canvasGroup;
+            public RectTransform lethalRoot;      // 致命子弹进度：十个小格，第 N 格亮 = 这一轮已经命中 N 发
+            public Image[] lethalCells;
         }
 
         private void OnEnable()
@@ -150,6 +152,8 @@ namespace SkyPrison.Runtime.UI
             // 弹匣消耗(开火)/换弹补充都不会触发上面那几个"换装备"事件——同一把枪连续
             // 开火/换弹时xx/xx数字必须实时跟着变，靠这个专门的弹药变化事件刷新。
             UnitActionModuleRuntime.OnWeaponAmmoChanged += RefreshContentImmediate;
+            SkyPrisonAfpPhysicalMastery.OnHitsChanged += RefreshContentImmediate;
+            SkyPrisonAfpUpgrades.OnChanged += RefreshContentImmediate;
         }
 
         private void OnDisable()
@@ -159,6 +163,8 @@ namespace SkyPrison.Runtime.UI
             EquipmentRuntime.OnActiveWeaponChanged -= HandleActiveWeaponChanged;
             DurabilitySystem.OnDurabilityChanged -= HandleDurabilityChanged;
             UnitActionModuleRuntime.OnWeaponAmmoChanged -= RefreshContentImmediate;
+            SkyPrisonAfpPhysicalMastery.OnHitsChanged -= RefreshContentImmediate;
+            SkyPrisonAfpUpgrades.OnChanged -= RefreshContentImmediate;
 
             if (_subscribedInventory != null)
             {
@@ -407,8 +413,55 @@ namespace SkyPrison.Runtime.UI
                 ? EquipmentSlotType.WeaponSecondary
                 : EquipmentSlotType.Weapon;
 
-            ApplyWeaponToCard(_cardA, eq?.GetEquipped(activeSlot));
+            var activeEntry = eq?.GetEquipped(activeSlot);
+            ApplyWeaponToCard(_cardA, activeEntry);
             ApplyWeaponToCard(_cardB, eq?.GetEquipped(otherSlot));
+            UpdateLethalRow(_cardA, activeEntry?.definition?.equipment);      // 只在当前手上的枪上显示
+            UpdateLethalRow(_cardB, null);
+        }
+
+        // 致命子弹进度：弹药数字正上方一排十个小格(冷绿)，亮到第几格 = 这一轮命中了几发，第 10 发触发后清空重来
+        private static readonly Color LethalOn = new Color(0.42f, 0.92f, 0.68f, 1f);
+        private static readonly Color LethalOff = new Color(1f, 1f, 1f, 0.22f);
+
+        private void UpdateLethalRow(WeaponSlotCard card, ItemEquipmentExtension ext)
+        {
+            if (card == null) return;
+            bool show = ext != null && ext.usesAmmo && SkyPrisonAfpPhysicalMastery.LethalTier > 0;
+            if (!show)
+            {
+                if (card.lethalRoot != null) card.lethalRoot.gameObject.SetActive(false);
+                return;
+            }
+            if (card.lethalRoot == null)
+            {
+                var go = new GameObject("LethalProgress", typeof(RectTransform));
+                go.transform.SetParent(card.root, false);
+                SetLayerRecursive(go, LayerMask.NameToLayer("UI"));
+                card.lethalRoot = (RectTransform)go.transform;
+                card.lethalRoot.anchorMin = card.lethalRoot.anchorMax = new Vector2(1f, 1f);
+                card.lethalRoot.pivot = new Vector2(1f, 0f);
+                card.lethalCells = new Image[SkyPrisonAfpPhysicalMastery.DeadlyEvery];
+                const float cell = 9f, gap = 3f;
+                int n = card.lethalCells.Length;
+                card.lethalRoot.sizeDelta = new Vector2(n * cell + (n - 1) * gap, cell);
+                for (int i = 0; i < n; i++)
+                {
+                    var c = new GameObject("c" + i, typeof(RectTransform), typeof(Image));
+                    c.transform.SetParent(card.lethalRoot, false);
+                    SetLayerRecursive(c, LayerMask.NameToLayer("UI"));
+                    var r = (RectTransform)c.transform;
+                    r.anchorMin = r.anchorMax = new Vector2(0f, 0.5f); r.pivot = new Vector2(0f, 0.5f);
+                    r.sizeDelta = new Vector2(cell, cell); r.anchoredPosition = new Vector2(i * (cell + gap), 0f);
+                    card.lethalCells[i] = c.GetComponent<Image>(); card.lethalCells[i].raycastTarget = false;
+                }
+            }
+            card.lethalRoot.gameObject.SetActive(true);
+            // 弹药数字框占卡片上方 0.35 倍卡片高度：小格放在它再往上一点
+            float ammoBoxHeight = card.root.rect.height * 0.35f;
+            card.lethalRoot.anchoredPosition = new Vector2(0f, ammoBoxHeight + 4f + 6f);
+            int hits = SkyPrisonAfpPhysicalMastery.HitsIntoCycle;
+            for (int i = 0; i < card.lethalCells.Length; i++) card.lethalCells[i].color = i < hits ? LethalOn : LethalOff;
         }
 
         private void ApplyWeaponToCard(WeaponSlotCard card, InventoryItemEntry entry)

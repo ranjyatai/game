@@ -753,6 +753,32 @@ public class AIBehaviorPackageRuntimeController : MonoBehaviour
                 return CompareFloat(distance, op, rhs);
             }
 
+            case "cond_unit_doing_tactical_action":
+            {
+                Transform subject = ResolveUnitSlot(sentence, "subject", transform);
+                bool expected = GetBoolSlot(sentence, "expected", true);
+                bool doing = false;
+                if (subject != null)
+                {
+                    var ta = subject.GetComponent<SkyPrisonTacticalActions>();
+                    var dash = subject.GetComponent<SkyPrisonAIDash>();
+                    doing = (ta != null && ta.IsBusy) || (dash != null && dash.IsDashing);
+                }
+                return doing == expected;
+            }
+
+            case "cond_target_in_xz_range":
+            {
+                string kind = GetEnumSlot(sentence, "targetKind", SkyPrisonAITargetResolver.CurrentTarget);
+                Vector2 point = new Vector2(GetFloatSlot(sentence, "pointX", 0f), GetFloatSlot(sentence, "pointY", 0f));
+                if (!SkyPrisonAITargetResolver.TryResolve(kind, transform, currentTarget, _spawnPosition, point, out Vector3 tp))
+                    return false;
+                float maxX = GetFloatSlot(sentence, "maxX", 10f);
+                float maxZ = GetFloatSlot(sentence, "maxZ", 4f);
+                Vector3 d = tp - transform.position;
+                return Mathf.Abs(d.x) <= maxX && Mathf.Abs(d.z) <= maxZ;
+            }
+
             case "cond_unit_behavior_type_is":
             {
                 string expected = NormalizeBehaviorType(GetEnumSlot(sentence, "behaviorType", "Wander"));
@@ -1074,6 +1100,53 @@ public class AIBehaviorPackageRuntimeController : MonoBehaviour
             case "act_wait_seconds":
                 return true;
 
+            case "act_leap_over_target":
+                return ExecuteLeapOver(sentence);
+
+            case "act_flank_run_by":
+                return ExecuteFlankRunBy(sentence);
+
+            case "act_claw_combo":
+                return ExecuteClawCombo(sentence);
+
+            case "act_evade_away":
+                return ExecuteEvadeAway(sentence);
+
+            case "act_designate_protectee":
+            {
+                Transform u = ResolveUnitSlot(sentence, "unit", transform);
+                Transform prot = ResolveUnitSlot(sentence, "protectee", null);
+                if (u == null) return false;
+                var esc = u.GetComponent<SkyPrisonGuardianEscort>() ?? u.gameObject.AddComponent<SkyPrisonGuardianEscort>();
+                esc.SetProtectee(prot);
+                return prot != null;
+            }
+
+            case "act_dash":
+                return ExecuteDash(sentence);
+
+            case "act_keep_distance_band":
+            {
+                Transform u = ResolveUnitSlot(sentence, "unit", transform);
+                if (u == null) return false;
+                var pos = u.GetComponent<SkyPrisonRangedPositioning>() ?? u.gameObject.AddComponent<SkyPrisonRangedPositioning>();
+                pos.Configure(GetFloatSlot(sentence, "minX", 0f), GetFloatSlot(sentence, "maxX", 12f), GetFloatSlot(sentence, "depth", 1f));
+                pos.SetTarget(GetEnumSlot(sentence, "targetKind", SkyPrisonAITargetResolver.Player),
+                    new Vector2(GetFloatSlot(sentence, "pointX", 0f), GetFloatSlot(sentence, "pointY", 0f)),
+                    () => currentTarget, _spawnPosition);
+                pos.SetActive(true);
+                return true;
+            }
+
+            case "act_stop_keep_distance_band":
+            {
+                Transform u = ResolveUnitSlot(sentence, "unit", transform);
+                if (u == null) return false;
+                var pos = u.GetComponent<SkyPrisonRangedPositioning>();
+                if (pos != null) pos.SetActive(false);
+                return true;
+            }
+
             case "act_switch_ai_package":
                 return ExecuteSwitchAIPackage(sentence);
 
@@ -1187,6 +1260,133 @@ public class AIBehaviorPackageRuntimeController : MonoBehaviour
         return currentTarget != null;
     }
 
+    // ── 战术动作词条的执行 ───────────────────────────────────
+
+    private System.Func<Vector3?> MakeTargetGetter(object sentence, Transform self)
+    {
+        string kind = GetEnumSlot(sentence, "targetKind", SkyPrisonAITargetResolver.CurrentTarget);
+        Vector2 point = new Vector2(GetFloatSlot(sentence, "pointX", 0f), GetFloatSlot(sentence, "pointY", 0f));
+        return () =>
+        {
+            if (SkyPrisonAITargetResolver.TryResolve(kind, self, currentTarget, _spawnPosition, point, out Vector3 pos)) return pos;
+            return (Vector3?)null;
+        };
+    }
+
+    private bool ExecuteLeapOver(object sentence)
+    {
+        Transform u = ResolveUnitSlot(sentence, "unit", transform);
+        if (u == null) return false;
+        Vector3? tp = MakeTargetGetter(sentence, u)();
+        if (!tp.HasValue) return false;
+        var ta = u.GetComponent<SkyPrisonTacticalActions>() ?? u.gameObject.AddComponent<SkyPrisonTacticalActions>();
+        return ta.LeapOver(new SkyPrisonTacticalActions.LeapParams
+        {
+            targetPos = tp.Value,
+            landBehind = GetFloatSlot(sentence, "landBehind", 2.4f),
+            flightSeconds = Mathf.Max(0.1f, GetFloatSlot(sentence, "flight", 0.55f)),
+            landRadius = GetFloatSlot(sentence, "radius", 1.7f),
+            damage = Mathf.Max(0, GetIntSlot(sentence, "damage", 10)),
+            damageType = GetEnumSlot(sentence, "damageType", "strike"),
+            knockback = Mathf.Max(0f, GetFloatSlot(sentence, "knockback", 0f)),
+            stun = Mathf.Max(0f, GetFloatSlot(sentence, "stun", 0f)),
+            recoverySeconds = 0.3f
+        });
+    }
+
+    private bool ExecuteFlankRunBy(object sentence)
+    {
+        Transform u = ResolveUnitSlot(sentence, "unit", transform);
+        if (u == null) return false;
+        var getter = MakeTargetGetter(sentence, u);
+        if (!getter().HasValue) return false;
+        var ta = u.GetComponent<SkyPrisonTacticalActions>() ?? u.gameObject.AddComponent<SkyPrisonTacticalActions>();
+        return ta.FlankRunBy(getter, GetFloatSlot(sentence, "lane", 2.2f), GetFloatSlot(sentence, "pass", 2.5f),
+            GetFloatSlot(sentence, "maxSeconds", 3f), GetBoolSlot(sentence, "run", true));
+    }
+
+    private bool ExecuteClawCombo(object sentence)
+    {
+        Transform u = ResolveUnitSlot(sentence, "unit", transform);
+        if (u == null) return false;
+        Vector3? tp = MakeTargetGetter(sentence, u)();
+        if (!tp.HasValue) return false;
+        var ta = u.GetComponent<SkyPrisonTacticalActions>() ?? u.gameObject.AddComponent<SkyPrisonTacticalActions>();
+        return ta.ClawCombo(new SkyPrisonTacticalActions.ClawParams
+        {
+            targetPos = tp.Value,
+            hits = Mathf.Max(1, GetIntSlot(sentence, "hits", 2)),
+            windup = GetFloatSlot(sentence, "windup", 0.14f),
+            interval = GetFloatSlot(sentence, "interval", 0.22f),
+            recovery = GetFloatSlot(sentence, "recovery", 0.3f),
+            reach = GetFloatSlot(sentence, "reach", 1.3f),
+            radius = GetFloatSlot(sentence, "radius", 1.1f),
+            damage = Mathf.Max(0, GetIntSlot(sentence, "damage", 8)),
+            damageType = GetEnumSlot(sentence, "damageType", "strike"),
+            knockback = Mathf.Max(0f, GetFloatSlot(sentence, "knockback", 0f)),
+            stun = Mathf.Max(0f, GetFloatSlot(sentence, "stun", 0f))
+        });
+    }
+
+    private bool ExecuteEvadeAway(object sentence)
+    {
+        Transform u = ResolveUnitSlot(sentence, "unit", transform);
+        if (u == null) return false;
+        Vector3? tp = MakeTargetGetter(sentence, u)();
+        if (!tp.HasValue) return false;
+        var ta = u.GetComponent<SkyPrisonTacticalActions>() ?? u.gameObject.AddComponent<SkyPrisonTacticalActions>();
+        return ta.Evade(tp.Value, GetFloatSlot(sentence, "speedScale", 1.4f), GetFloatSlot(sentence, "duration", 0.35f));
+    }
+
+    private bool ExecuteDash(object sentence)
+    {
+        Transform u = ResolveUnitSlot(sentence, "unit", transform);
+        if (u == null) return false;
+
+        string mode = GetEnumSlot(sentence, "mode", "ToPosition");
+        string kind = GetEnumSlot(sentence, "targetKind", SkyPrisonAITargetResolver.CurrentTarget);
+        Vector2 point = new Vector2(GetFloatSlot(sentence, "pointX", 0f), GetFloatSlot(sentence, "pointY", 0f));
+        float distance = Mathf.Max(0f, GetFloatSlot(sentence, "distance", 6f));
+        float duration = Mathf.Max(0.05f, GetFloatSlot(sentence, "duration", 0.3f));
+        int damage = Mathf.Max(0, GetIntSlot(sentence, "damage", 10));
+        string damageType = GetEnumSlot(sentence, "damageType", "strike");
+
+        Vector2 dir;
+        if (mode == "ByAngle")
+        {
+            float a = GetFloatSlot(sentence, "angle", 0f) * Mathf.Deg2Rad;
+            dir = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+            if (distance <= 0f) return false;
+        }
+        else
+        {
+            if (!SkyPrisonAITargetResolver.TryResolve(kind, u, currentTarget, _spawnPosition, point, out Vector3 tp))
+                return false;
+            Vector3 d = tp - u.position;
+            Vector2 toTarget = new Vector2(d.x, d.z);
+            if (toTarget.sqrMagnitude < 0.0001f) return false;
+            dir = toTarget.normalized;
+            if (mode == "ToPosition")
+                distance = distance > 0f ? Mathf.Min(toTarget.magnitude, distance) : toTarget.magnitude;
+            else if (distance <= 0f)
+                return false;
+        }
+
+        var dash = u.GetComponent<SkyPrisonAIDash>() ?? u.gameObject.AddComponent<SkyPrisonAIDash>();
+        return dash.Begin(new SkyPrisonAIDash.Request
+        {
+            direction = dir,
+            distance = distance,
+            duration = duration,
+            damage = damage,
+            damageType = damageType,
+            hitRadius = 0f,
+            pierce = GetBoolSlot(sentence, "pierce", true),
+            knockback = Mathf.Max(0f, GetFloatSlot(sentence, "knockback", 0f)),
+            stun = Mathf.Max(0f, GetFloatSlot(sentence, "stun", 0f))
+        });
+    }
+
     private bool ExecuteMoveToXY(object sentence, bool runHeld)
     {
         float x = GetFloatSlot(sentence, "x", transform.position.x);
@@ -1266,6 +1466,7 @@ public class AIBehaviorPackageRuntimeController : MonoBehaviour
         SkillDefinition skill = actionModule.RequestLightAttack();
         if (skill == null)
             Debug.LogWarning($"[AI Attack] {name}: RequestLightAttack returned null. module={actionModule.CurrentModule}, canAttack={actionController?.CanEnterAttackPublic()}", this);
+        if (skill != null) actionModule.BeginPlaceholderHitWindow(skill);
         return skill != null;
     }
 
@@ -1278,6 +1479,7 @@ public class AIBehaviorPackageRuntimeController : MonoBehaviour
         ClearCurrentAction();
 
         SkillDefinition skill = actionModule.RequestHeavyAttack();
+        if (skill != null) actionModule.BeginPlaceholderHitWindow(skill);
         return skill != null;
     }
 
@@ -1683,6 +1885,18 @@ public class AIBehaviorPackageRuntimeController : MonoBehaviour
             return parsed;
 
         return fallback;
+    }
+
+    // Int 槽位的固定值存在 intValue 里，EvaluateFloat() 读的是 floatValue——用 GetFloatSlot 读整数槽位会得到 0。
+    private static int GetIntSlot(object sentence, string slotId, int fallback)
+    {
+        object value = GetSlotValue(sentence, slotId);
+        if (value == null)
+            return fallback;
+        if (value is LogicSlotValue typedValue)
+            return typedValue.EvaluateInt();
+        object intValue = GetMemberValue(value, "intValue");
+        return intValue is int i ? i : fallback;
     }
 
     private static float GetFloatSlot(object sentence, string slotId, float fallback)

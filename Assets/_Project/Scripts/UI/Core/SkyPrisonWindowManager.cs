@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace SkyPrison.Runtime.UI
 {
@@ -47,13 +48,12 @@ namespace SkyPrison.Runtime.UI
             ApplyInputMode(metadata, true);
             UpdateHudForWindows();
 
-            // 只对 Window / Popup / Overlay 做淡入，HUD 等直接显示
+            // 只对 Window / Popup / Overlay 做"展开"，HUD 等直接显示。跟 CompressOut
+            // 收起动画对称——之前这里只是单纯淡入(alpha 0→1)，跟收起时"横竖压成一根线
+            // 再消失"完全不对称，看起来开窗永远是"啪"一下直接出现，用户反馈"打开不是
+            // 折叠展开的"。
             if (ShouldFade(metadata))
-            {
-                CanvasGroup cg = GetOrAddCanvasGroup(instance);
-                cg.alpha = 0f;
-                StartCoroutine(FadeIn(cg));
-            }
+                StartCoroutine(ExpandIn(instance, (RectTransform)instance.transform));
 
             return instance;
         }
@@ -126,22 +126,103 @@ namespace SkyPrison.Runtime.UI
 
         // ── 淡入淡出协程 ────────────────────────────────────────────────
 
-        private IEnumerator FadeIn(CanvasGroup cg)
+        // 开窗：跟 CompressOut 完全对称地反过来播一遍——先横向从中心撑开成一根线，
+        // 再纵向从这根线展开成完整面板（ease-out，收起是ease-in，一头一尾手感对应）。
+        private IEnumerator ExpandIn(GameObject instance, RectTransform rootRt)
         {
+            if (rootRt == null) yield break;
+
+            // 先用 CanvasGroup 立刻(同一帧内、不等一帧)把整个窗口透明度归零——
+            // 下面还要等一帧才能等到内容(选项列表等)真正装好，这一帧如果不额外遮
+            // 一下，会完整渲染一次"内容还没装好、但已经是正常大小/未缩放"的窗口，
+            // 表现为"展开前先闪了一下已经展开的画面"。等内容装好、面板真正缩到
+            // 0之后再把透明度还原，从那一刻起改由scale=0负责"看不见"。
+            CanvasGroup cg = rootRt.gameObject.GetComponent<CanvasGroup>();
+            if (cg == null) cg = rootRt.gameObject.AddComponent<CanvasGroup>();
+            float originalAlpha = cg.alpha;
+            cg.alpha = 0f;
+
+            // 等一帧：Open() 的调用方(比如 NPCDialogueInteractable.Interact())在
+            // Open() 返回之后、这个协程真正开始动画之前，往往还会同步再调一次
+            // Begin()/填充内容(选项列表等)——这一切都在同一帧内发生，协程从这里
+            // 往下的代码要等这些内容都装好、下面的 ForceRebuildLayoutImmediate
+            // 才能量到"装满内容之后"的真实尺寸，不然又是那个"存盘时/装内容前的
+            // 旧尺寸"坑，只是这次不是prefab存盘，是"内容还没塞进去"。
+            yield return null;
+
             SkyPrisonInventoryChromatic.PushGlobalSuspend(); // 开窗动画期间停色差抓屏，避免卡顿
+            SkyPrisonBlurUVTracker blurTracker = null;
+            SkyPrisonInventoryChromatic chromatic = null;
             try
             {
+                if (instance == null) { cg.alpha = originalAlpha; yield break; }
+                chromatic = instance.GetComponentInChildren<SkyPrisonInventoryChromatic>(true);
+                if (chromatic != null) chromatic.SuspendForInteraction = true;
+
+                // 冻结磨砂 UV 跟踪，原因跟 CompressOut 里一样：缩放期间它会跟着重算采样区，
+                // 磨砂图会跟着扭曲而不是随窗口展开。
+                blurTracker = instance.GetComponentInChildren<SkyPrisonBlurUVTracker>(true);
+                if (blurTracker != null) blurTracker.Frozen = true;
+
+                RectTransform rt = FindVisualPanel(rootRt);
+
+                // 面板刚 Instantiate 出来，自适应高度的 ContentSizeFitter 还没跑过一次，
+                // rt.rect.size 这时候读到的是 prefab 存盘那一刻(布局系统还没摆过)的原始
+                // 尺寸，通常是0——SetPivotKeepPosition 按这个错的尺寸算出来的位置补偿量
+                // 也是错的，等下一帧布局真正算出正确高度后，面板就会看起来"跳"到一个
+                // 偏移过的位置(表现为"坐标又被往下挪了")。先强制跑一次布局，让
+                // rt.rect.size 变成真实值，pivot 重定心的位置补偿才会算对。这一步不受
+                // 上面的alpha=0影响——ContentSizeFitter/布局系统量的是rect/sizeDelta，
+                // 跟透明度、跟scale都没关系。
+                LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
+                Vector2 originalPivot = rt.pivot; // 动画结束后要还原，不然面板从此就变成中心pivot了
+
+                // SetPivotKeepPosition 的位置补偿公式里用了当前的 localScale 做换算，
+                // 这时候 localScale 还是prefab原始的(1,1,1)，补偿才会算对——不能先把
+                // scale缩到0再调用这个，缩放为0会让补偿量恒算成0，等展开动画结束时
+                // 面板会跳到错误位置。
+                SetPivotKeepPosition(rt, new Vector2(0.5f, 0.5f)); // 绕面板中心展开
+                Vector3 baseScale = rt.localScale;
+
+                rt.localScale = new Vector3(0f, 0f, baseScale.z);
+                cg.alpha = originalAlpha; // 面板已经缩到0(视觉上不可见)，可以把透明度还原了
+
+                float xDur = fadeDuration * 0.6f;   // 横向撑开成线
+                float yDur = fadeDuration;          // 纵向展开成面板
+
+                // 阶段一：横向从中心撑开成一条线
                 float t = 0f;
-                while (t < fadeDuration)
+                while (t < xDur)
                 {
                     t += Time.unscaledDeltaTime;
-                    cg.alpha = Mathf.Clamp01(t / fadeDuration);
+                    if (rt == null) yield break;
+                    float k = Mathf.Clamp01(t / xDur); // 0→1
+                    rt.localScale = new Vector3(baseScale.x * k, 0f, baseScale.z);
                     yield return null;
                 }
-                cg.alpha = 1f;
+
+                // 阶段二：这条线纵向展开成完整面板（ease-out，越展越慢有"打开"感）
+                t = 0f;
+                while (t < yDur)
+                {
+                    t += Time.unscaledDeltaTime;
+                    if (rt == null) yield break;
+                    float p = Mathf.Clamp01(t / yDur);
+                    float k = 1f - (1f - p) * (1f - p); // 0→1，缓出
+                    rt.localScale = new Vector3(baseScale.x, baseScale.y * k, baseScale.z);
+                    yield return null;
+                }
+                rt.localScale = baseScale;
+
+                // 还原成面板原来的pivot——不然之后内容变化(选项数量等)时面板会从
+                // "中心"重新生长，而不是按它本来设计的锚点方式生长，标题一类固定
+                // 在角落的元素会跟着莫名其妙地跳。
+                if (rt != null) SetPivotKeepPosition(rt, originalPivot);
             }
             finally
             {
+                if (blurTracker != null) blurTracker.Frozen = false;
+                if (chromatic != null) chromatic.SuspendForInteraction = false;
                 SkyPrisonInventoryChromatic.PopGlobalSuspend();
             }
         }
@@ -256,12 +337,6 @@ namespace SkyPrison.Runtime.UI
             return metadata.kind == SkyPrisonUIPrefabKindV1.Window
                 || metadata.kind == SkyPrisonUIPrefabKindV1.Popup
                 || metadata.kind == SkyPrisonUIPrefabKindV1.Overlay;
-        }
-
-        private static CanvasGroup GetOrAddCanvasGroup(GameObject go)
-        {
-            CanvasGroup cg = go.GetComponent<CanvasGroup>();
-            return cg != null ? cg : go.AddComponent<CanvasGroup>();
         }
 
         private static void ApplyInputMode(SkyPrisonUIPrefabMetadata_V1 metadata, bool opening)

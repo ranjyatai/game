@@ -129,6 +129,18 @@ public class UnitHealthController : MonoBehaviour
             HandleHealthZero();
     }
 
+    /// <summary>
+    /// 把血量设成「上限的 percent 倍」（换场景 / 读档继承血量用）。至少留 1 点，不会因为还原把人直接弄死；
+    /// 会通知界面刷新（走和受伤一样的路径），不触发受击反馈。
+    /// </summary>
+    public void RestoreHealthPercent(float percent)
+    {
+        if (IsDead) return;
+        float target = Mathf.Clamp(maxHealth * Mathf.Clamp01(percent), 1f, maxHealth);
+        currentHealth = target;
+        OnRegainPoolChanged?.Invoke(this, regainPool);   // 借用这个事件让血条重新读一次当前值
+    }
+
     public void SetMaxHealthFromStatus(float value)
     {
         // 状态修正导致上限变化：
@@ -161,6 +173,8 @@ public class UnitHealthController : MonoBehaviour
         ApplyHeal(10f);
     }
 
+    static readonly System.Collections.Generic.List<ILethalDamageGuard> _lethalGuardBuf = new System.Collections.Generic.List<ILethalDamageGuard>();
+
     public void ApplyDamage(float amount)
     {
         ApplyDamage(amount, 0f);
@@ -177,6 +191,21 @@ public class UnitHealthController : MonoBehaviour
         if (_reviveProtection != null && _reviveProtection.IsProtected)
             return;
 
+        // 无敌单位从入口处直接拦截——不管伤害走的是哪条路径(标准Hitbox碰撞管线
+        // 自己已经有阵营判定，但触发器脚本的"造成伤害"动作会绕过那套判定直接调
+        // 这个方法)，统一在这里堵，不用逐条伤害路径单独打补丁。
+        if (runtimeBinder?.UnitDefinitionAsset?.isInvincible == true)
+            return;
+
+        // 致命伤守卫(生命保险等)：要把血打到 0 以下时，让它有机会改成「锁 1 点血」
+        if (amount >= currentHealth && currentHealth > 0f)
+        {
+            GetComponents(_lethalGuardBuf);
+            for (int gi = 0; gi < _lethalGuardBuf.Count; gi++) amount = _lethalGuardBuf[gi].GuardLethal(currentHealth, amount);
+            _lethalGuardBuf.Clear();
+            if (amount <= 0f) return;
+        }
+
         float oldHealth = currentHealth;
         currentHealth -= amount;
 
@@ -185,13 +214,17 @@ public class UnitHealthController : MonoBehaviour
 
         float actualLost = Mathf.Max(0f, oldHealth - currentHealth);
         if (actualLost > 0f)
+        {
+            if (regainRatio <= 0f) regainRatio = SkyPrisonAfpUsurper.PoolRatioFor(this);      // 科技树「篡夺者」：玩家受到的伤害一部分变成红色可回复部分
             RegisterRegainDamage(actualLost, regainRatio);
+        }
 
         OnDamaged?.Invoke(this, amount);
 
         // 玩家受击：磨损护甲 + 手柄震动反馈
         if (runtimeBinder?.UnitDefinitionAsset?.characterIdentity == CharacterIdentity.Player)
         {
+            SkyPrisonHubCombatGate.NotifyCombat();   // 主城里挨打也算进入战斗
             SkyPrisonGamepadRumble.PulseOnHit();
             SkyPrisonScreenShake.Shake(intensity: 0.15f, duration: 0.25f);
 

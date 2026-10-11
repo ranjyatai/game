@@ -1,5 +1,13 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
+
+[System.Serializable]
+public class LocalizedLogoEntry
+{
+    public string languageCode = "";
+    public Texture2D texture;
+}
 
 /// <summary>
 /// 主界面可配置参数。
@@ -10,8 +18,14 @@ using UnityEngine.Video;
 public class MainMenuSettings : ScriptableObject
 {
     [Header("LOGO")]
-    [Tooltip("主界面 LOGO 图片（直接拖 PNG 即可）。留空则隐藏。")]
+    [Tooltip("主界面 LOGO 图片（直接拖 PNG 即可）。留空则隐藏。\n" +
+             "只有在下面「多语言 LOGO」没有匹配当前语言的条目时才会用这张兜底。")]
     public Texture2D logoTexture;
+
+    [Tooltip("按语言配置不同的 LOGO 图——languageCode 要跟语言设置里的代码一致\n" +
+             "（比如 zh-CN / en / ja）。当前语言在这里找不到条目时，退回上面的\n" +
+             "logoTexture。")]
+    public List<LocalizedLogoEntry> logoTextures = new List<LocalizedLogoEntry>();
 
     [Tooltip("LOGO 距屏幕中心的垂直偏移（正值往上）")]
     public float logoOffsetY = 580f;
@@ -85,4 +99,17 @@ public class MainMenuSettings : ScriptableObject
         string.IsNullOrEmpty(versionOverride)
             ? $"Ver. {Application.version}"
             : $"Ver. {versionOverride}";
+
+    /// <summary>按当前语言解析 LOGO 贴图——多语言列表里找不到当前语言就退回
+    /// logoTexture（单张兜底），跟 UILocalizationTable.Get 的退回逻辑是同一个思路。</summary>
+    public Texture2D ResolvedLogoTexture(string languageCode)
+    {
+        if (!string.IsNullOrEmpty(languageCode) && logoTextures != null)
+        {
+            foreach (var entry in logoTextures)
+                if (entry != null && entry.languageCode == languageCode && entry.texture != null)
+                    return entry.texture;
+        }
+        return logoTexture;
+    }
 }

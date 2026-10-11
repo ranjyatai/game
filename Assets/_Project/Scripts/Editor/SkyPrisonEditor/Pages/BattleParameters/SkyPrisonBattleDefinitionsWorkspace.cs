@@ -21,7 +21,7 @@ public class SkyPrisonBattleDefinitionsWorkspace
 
     private readonly HashSet<string> standardActionModuleKeys = new HashSet<string>
     {
-        "one_hand_sword","hammer"
+        "sword","gun"
     };
 
     private readonly HashSet<string> standardDamageTypeKeys = new HashSet<string>

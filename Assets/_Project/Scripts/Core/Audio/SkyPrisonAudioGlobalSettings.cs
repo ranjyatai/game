@@ -330,6 +330,7 @@ public class SkyPrisonAudioGlobalSettingsWindow : UnityEditor.EditorWindow
         { SkyPrisonSystemSEType.NearDeath, "濒死 / 脉冲警报" },
         { SkyPrisonSystemSEType.Purchase,  "购买 / 支付" },
         { SkyPrisonSystemSEType.WeaponSwitch, "武器切换（滚轮）" }, // 之前漏了这个类型，音声设置窗口列表里一直显示英文原名
+        { SkyPrisonSystemSEType.Repair,    "修理成功" }, // 同上——这个字典是手动维护的，没跟着枚举自动同步，新增类型必须在这里手动补一条，不然又是显示英文原名
     };
 
     [UnityEditor.MenuItem("天空囚笼/设置/音声设置", false, 103)]

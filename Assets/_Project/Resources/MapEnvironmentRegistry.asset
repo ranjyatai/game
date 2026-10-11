@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b95455be97bb63846acc57a541efb58a, type: 3}
+  m_Name: MapEnvironmentRegistry
+  m_EditorClassIdentifier: Assembly-CSharp::MapEnvironmentRegistry
+  entries:
+  - mapKey: newmap
+    sceneName: MapTemplate_Base
+    scenePath: Assets/_Project/Maps/_Templates/MapTemplate_Base/MapTemplate_Base.unity
+    skyboxMaterial: {fileID: 0}
+    ambientColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
+    reflectionIntensity: 0
+    enableSceneFog: 0
+    enableHeightFog: 0
+    sceneFogColor: {r: 0.7775009, g: 0.86800367, b: 0.9811321, a: 1}
+    fogStartDistance: 20
+    fogEndDistance: 80
+  - mapKey: tower
+    sceneName: Tower
+    scenePath: Assets/_Project/Maps/Final/Tower/Tower/Tower.unity
+    skyboxMaterial: {fileID: 0}
+    ambientColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
+    reflectionIntensity: 0
+    enableSceneFog: 0
+    enableHeightFog: 0
+    sceneFogColor: {r: 0.55, g: 0.58, b: 0.62, a: 1}
+    fogStartDistance: 20
+    fogEndDistance: 80
+  - mapKey: newmap
+    sceneName: Still Vault
+    scenePath: Assets/_Project/Maps/Hub/StillVault/Still Vault/Still Vault.unity
+    skyboxMaterial: {fileID: 2100000, guid: 340d9b8bc2904b3d809e1ec0f510e874, type: 2}
+    ambientColor: {r: 0.03, g: 0.036, b: 0.045, a: 1}
+    reflectionIntensity: 0
+    enableSceneFog: 0
+    enableHeightFog: 1
+    sceneFogColor: {r: 0.03, g: 0.038, b: 0.05, a: 1}
+    fogStartDistance: 6
+    fogEndDistance: 42
+  - mapKey: abandoned_hospital
+    sceneName: AbandonedHospital
+    scenePath: Assets/_Project/Maps/Raid/AbandonedHospital/AbandonedHospital/AbandonedHospital.unity
+    skyboxMaterial: {fileID: 0}
+    ambientColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
+    reflectionIntensity: 0
+    enableSceneFog: 0
+    enableHeightFog: 0
+    sceneFogColor: {r: 0.55, g: 0.58, b: 0.62, a: 1}
+    fogStartDistance: 20
+    fogEndDistance: 80
+  - mapKey: campus
+    sceneName: Campus
+    scenePath: Assets/_Project/Maps/Raid/Campus/Campus/Campus.unity
+    skyboxMaterial: {fileID: 0}
+    ambientColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
+    reflectionIntensity: 0
+    enableSceneFog: 0
+    enableHeightFog: 0
+    sceneFogColor: {r: 0.55, g: 0.58, b: 0.62, a: 1}
+    fogStartDistance: 20
+    fogEndDistance: 80
+  - mapKey: el_dorado
+    sceneName: ElDorado
+    scenePath: Assets/_Project/Maps/Raid/ElDorado/ElDorado/ElDorado.unity
+    skyboxMaterial: {fileID: 0}
+    ambientColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
+    reflectionIntensity: 0
+    enableSceneFog: 0
+    enableHeightFog: 0
+    sceneFogColor: {r: 0.55, g: 0.58, b: 0.62, a: 1}
+    fogStartDistance: 20
+    fogEndDistance: 80
+  - mapKey: newmap
+    sceneName: Old Factory
+    scenePath: Assets/_Project/Maps/Raid/OldFactory/Old Factory/Old Factory.unity
+    skyboxMaterial: {fileID: 2100000, guid: b77ec6dacd80fc840ac92894afab788c, type: 2}
+    ambientColor: {r: 0.72, g: 0.7, b: 0.67, a: 1}
+    reflectionIntensity: 1
+    enableSceneFog: 0
+    enableHeightFog: 0
+    sceneFogColor: {r: 0.55, g: 0.58, b: 0.62, a: 1}
+    fogStartDistance: 20
+    fogEndDistance: 80

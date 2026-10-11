@@ -52,6 +52,7 @@ namespace SkyPrison.Runtime.UI
             EnsureGhost();
             _ghost.sprite = entry.definition.icon;
             _ghost.enabled = entry.definition.icon != null;
+            { var rc = transform.GetComponentInParent<Canvas>(); _ghostCanvas.sortingOrder = Mathf.Max(1200, (rc != null ? rc.rootCanvas.sortingOrder : 1100) + 100); }
             _ghostCanvas.gameObject.SetActive(true);
             UpdateDrag(e);
 

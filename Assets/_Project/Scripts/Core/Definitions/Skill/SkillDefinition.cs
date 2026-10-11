@@ -134,6 +134,10 @@ public class SkillProjectileData
     [Tooltip("命中目标时额外播放一次的 Effekseer 特效（留空则命中时只有伤害数字/受击音，\n" +
         "没有额外的命中爆点特效）。")]
     public EffekseerEffectAsset impactVfx;
+    [Tooltip("撞到墙/场景物(BlocksProjectile==true)时额外生成一份的Prefab——用来接外购的\n" +
+        "枪械VFX包里那种弹孔贴花/命中爆闪Prefab（普通GameObject，自带销毁逻辑，不是\n" +
+        "Effekseer资源）。只在撞墙时生成，命中敌对单位不会生成这个。留空则不生成。")]
+    public GameObject impactPropPrefab;
 }
 
 // 之前叫"元素伤害"（SkillElementalHit/elementalHits），跟属性/异常系统（BattleParameterDatabase
@@ -178,6 +182,24 @@ public class SkillDefinition : ScriptableObject
     public bool isChargeSkill = false;
     [Tooltip("只在isChargeSkill勾选时才生效。")]
     public SkillChargeData charge = new SkillChargeData();
+
+    [Tooltip("勾上后，这个技能的动画播在独立的上半身叠加轨道上（跟重攻击/蓄力技用的是\n" +
+        "同一条轨道），身体动画（站立/走/跑）不会被这个技能打断，可以边打边走、边打\n" +
+        "边停。跟isChargeSkill无关，非蓄力技也能用——枪械这类站着开火但腿部要能随时\n" +
+        "响应移动输入的技能应该勾上。前提是这个技能自己的 Spine 动画完全不能给腿部/\n" +
+        "胯部骨骼打关键帧，不然身体轨道正常播放的走路姿势会被这个动画的腿部关键帧\n" +
+        "冲掉——这部分只能在 Spine 编辑器里保证，代码没法检查。")]
+    public bool playOnUpperBodyOverlay = false;
+
+    [Header("按住持续循环（机枪式连发手感）")]
+    [Tooltip("勾选后，这个技能触发时不是播完一遍就结束——按住攻击键期间，动画只在\n" +
+        "[0, loopWindowSeconds] 这一小段区间内反复循环播放(Spine TrackEntry.Loop=true\n" +
+        "+ AnimationEnd裁剪播放范围，不需要在Spine里另外剪一份短动画)，松开攻击键才会\n" +
+        "结束攻击状态、回到正常动作。只对 playOnUpperBodyOverlay=true 的技能生效。")]
+    public bool loopWhileHeld = false;
+    [Tooltip("循环区间的结束时间(秒)——比如10帧、30fps对应约0.3333秒。留空/0表示不裁剪，\n" +
+        "循环整段动画(一般不建议，通常动画后段是收枪的后摇，循环起来会很奇怪)。")]
+    public float loopWindowSeconds = 0.3333333f;
 
     [Header("判定框")]
     [Tooltip("isProjectileSkill 勾选时不生效——远程弹幕技能的判定改由下面的\n" +

@@ -13,4 +13,7 @@ MonoBehaviour:
   m_Name: GameAssetManifest
   m_EditorClassIdentifier: Assembly-CSharp::GameAssetManifest
   itemRegistry: {fileID: 11400000, guid: a5165bfc1cedc1a448647009837e08ca, type: 2}
-  techTreeGraph: {fileID: 0}
+  techTreeGraph: {fileID: 11400000, guid: 23aad43bf9bee7741875fb13a5ce1a62, type: 2}
+  techTreeGraphs:
+  - {fileID: 11400000, guid: 23aad43bf9bee7741875fb13a5ce1a62, type: 2}
+  - {fileID: 11400000, guid: c05c7f2e932390e40afbec24f4045de7, type: 2}

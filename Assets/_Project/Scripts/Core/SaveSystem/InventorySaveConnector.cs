@@ -35,14 +35,17 @@ public class InventorySaveConnector : MonoBehaviour
     {
         SaveManager.OnSaveLoaded += HandleSaveLoaded;
         SaveManager.OnNewGame   += HandleNewGame;
-        SaveManager.OnSaved     += HandleSaved;
+        // 必须挂在「保存开始」上而不是「保存完成」上：SaveManager.Save() 是先序列化 Player 写文件、
+        // 最后才触发 OnSaved——挂在 OnSaved 上的话，背包 / 装备 / 货币是在文件写完之后才灌进 Player，
+        // 落盘的永远是上一次的旧数据（慢一拍）。OnSaveStarted 在序列化之前触发，写进文件的就是此刻的状态。
+        SaveManager.OnSaveStarted += HandleSaved;
     }
 
     private void OnDisable()
     {
         SaveManager.OnSaveLoaded -= HandleSaveLoaded;
         SaveManager.OnNewGame    -= HandleNewGame;
-        SaveManager.OnSaved      -= HandleSaved;
+        SaveManager.OnSaveStarted -= HandleSaved;
     }
 
     // ── 读档：存档→背包 ───────────────────────────────────────────────────
@@ -63,6 +66,8 @@ public class InventorySaveConnector : MonoBehaviour
 
         QuickSlotRuntime.Instance?.Deserialize(SaveManager.Player?.quickSlots, itemRegistry);
 
+        CurrencyRuntime.Instance?.Deserialize(SaveManager.Player?.currencies);
+
         DeserializeEquipment(SaveManager.Player?.equippedSlots, SaveManager.Player?.activeWeaponSlot ?? EquipmentSlotType.Weapon);
     }
 
@@ -75,6 +80,8 @@ public class InventorySaveConnector : MonoBehaviour
         StashRuntime.Instance?.Deserialize(null, itemRegistry);
 
         QuickSlotRuntime.Instance?.Deserialize(null, itemRegistry);
+
+        CurrencyRuntime.Instance?.Deserialize(null);
 
         EquipmentRuntime.Instance?.ClearAllSlotsForNewSession();
     }
@@ -92,6 +99,9 @@ public class InventorySaveConnector : MonoBehaviour
 
         if (QuickSlotRuntime.Instance != null)
             SaveManager.Player.quickSlots = QuickSlotRuntime.Instance.Serialize();
+
+        if (CurrencyRuntime.Instance != null)
+            SaveManager.Player.currencies = CurrencyRuntime.Instance.Serialize();
 
         SaveManager.Player.equippedSlots = SerializeEquipment();
         SaveManager.Player.activeWeaponSlot = EquipmentRuntime.Instance?.ActiveWeaponSlot ?? EquipmentSlotType.Weapon;

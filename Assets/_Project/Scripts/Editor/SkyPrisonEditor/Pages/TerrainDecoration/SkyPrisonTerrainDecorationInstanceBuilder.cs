@@ -1143,6 +1143,12 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
             if (renderer != null && !renderer.enabled)
                 continue;
 
+            // 约定：名字以 _VisualOnly 结尾的网格只用来显示，不生成碰撞。
+            // 台阶就是这样做的：看到的是一级级的台阶（Mesh_VisualOnly），脚踩的是旁边 CollisionProxy 节点里的
+            // 斜坡楔形（只有 MeshFilter、没有 Renderer，所以不显示但会生成碰撞）。台阶的竖直立面不进物理，不会绊脚。
+            if (source.gameObject.name.EndsWith("_VisualOnly", System.StringComparison.Ordinal))
+                continue;
+
             // 属于某个 LODGroup、但不在 LOD0 里的，跳过。
             // 同一个渲染器可能同时挂在多级 LOD 上，所以判定要看"在不在 LOD0"，
             // 而不是"在不在 LOD1 以上"。

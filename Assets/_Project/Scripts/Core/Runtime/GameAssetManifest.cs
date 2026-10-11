@@ -13,6 +13,7 @@ public class GameAssetManifest : ScriptableObject
 {
     [Header("自动填充 — 不要手动修改")]
     public ItemRegistry       itemRegistry;
-    public TechTreeGraphAsset techTreeGraph;
+    public TechTreeGraphAsset techTreeGraph;                                  // 第一张(旧字段，保留兼容)
+    public System.Collections.Generic.List<TechTreeGraphAsset> techTreeGraphs = new System.Collections.Generic.List<TechTreeGraphAsset>();   // 全部科技树(探索者、战略家…)
     // 后续新增全局 asset 在这里加字段，Builder 里加对应扫描逻辑即可
 }

@@ -13,7 +13,8 @@ public static class SkyPrisonTechTreeLayoutUtility
     public static Dictionary<int, Rect> BuildNodeLayout(
         int nodeCount,
         System.Func<int, int> getParentIndex,
-        TechTreeGraphAsset.LayoutMode mode)
+        TechTreeGraphAsset.LayoutMode mode,
+        System.Func<int, IList<int>> getExtraParents = null)
     {
         Dictionary<int, Rect> result = new Dictionary<int, Rect>();
         if (nodeCount <= 0)
@@ -53,7 +54,264 @@ public static class SkyPrisonTechTreeLayoutUtility
                 break;
         }
 
+        // 有「多个前置才能解锁」的节点(次要前置)时，纵向/横向改用分层布局：节点按层(层 = 最深前置的层 + 1)排，
+        // 横向位置取所有前置的平均位置、同层互相让开，所以这种节点会落在它的几个前置的中间下方，两条线汇合到它。
+        // 没有多前置节点的图，仍用原来的子树布局，外观不变。圆形布局只画连线，不调位置。
+        if (getExtraParents != null
+            && (mode == TechTreeGraphAsset.LayoutMode.Vertical || mode == TechTreeGraphAsset.LayoutMode.Horizontal))
+        {
+            Dictionary<int, Rect> layered = BuildLayeredLayout(nodeCount, getParentIndex, getExtraParents, mode == TechTreeGraphAsset.LayoutMode.Vertical, roots, childrenMap);
+            if (layered != null)
+                return layered;
+        }
+
         return result;
+    }
+
+    // ── 分层 + 重心排序布局(只在存在多前置节点时使用) ──────────────────────────────
+    private static Dictionary<int, Rect> BuildLayeredLayout(
+        int n,
+        System.Func<int, int> getParent,
+        System.Func<int, IList<int>> getExtra,
+        bool vertical,
+        List<int> roots,
+        Dictionary<int, List<int>> primaryChildren)
+    {
+        List<int>[] parents = new List<int>[n];
+        bool anyMulti = false;
+        for (int i = 0; i < n; i++)
+        {
+            parents[i] = new List<int>();
+            int p = getParent(i);
+            if (p >= 0 && p < n && p != i)
+                parents[i].Add(p);
+            IList<int> extra = getExtra(i);
+            if (extra != null)
+                foreach (int e in extra)
+                    if (e >= 0 && e < n && e != i && !parents[i].Contains(e))
+                        parents[i].Add(e);
+            if (parents[i].Count >= 2)
+                anyMulti = true;
+        }
+        if (!anyMulti)
+            return null;
+
+        // 层 = 最深前置的层 + 1(没有前置的是 0)；有环的节点放到第 0 层兜底
+        int[] depth = new int[n];
+        for (int i = 0; i < n; i++) depth[i] = parents[i].Count == 0 ? 0 : -1;
+        for (int pass = 0; pass <= n; pass++)
+        {
+            bool changed = false;
+            for (int i = 0; i < n; i++)
+            {
+                if (parents[i].Count == 0) continue;
+                int m = -1; bool ok = true;
+                foreach (int p in parents[i])
+                {
+                    if (depth[p] < 0) { ok = false; break; }
+                    m = Mathf.Max(m, depth[p]);
+                }
+                if (ok && depth[i] != m + 1) { depth[i] = m + 1; changed = true; }
+            }
+            if (!changed) break;
+        }
+        for (int i = 0; i < n; i++) if (depth[i] < 0) depth[i] = 0;
+
+        // 同层的初始顺序：沿主前置树的深度优先顺序
+        int[] rank = new int[n];
+        int counter = 0;
+        bool[] visited = new bool[n];
+        foreach (int r in roots) AssignRank(r, primaryChildren, rank, visited, ref counter);
+        for (int i = 0; i < n; i++) if (!visited[i]) AssignRank(i, primaryChildren, rank, visited, ref counter);
+
+        int maxDepth = 0;
+        for (int i = 0; i < n; i++) maxDepth = Mathf.Max(maxDepth, depth[i]);
+        List<int>[] layers = new List<int>[maxDepth + 1];
+        for (int d = 0; d <= maxDepth; d++) layers[d] = new List<int>();
+        for (int i = 0; i < n; i++) layers[depth[i]].Add(i);
+        for (int d = 0; d <= maxDepth; d++) layers[d].Sort((a, b) => rank[a].CompareTo(rank[b]));
+
+        List<int>[] kids = new List<int>[n];
+        for (int i = 0; i < n; i++) kids[i] = new List<int>();
+        for (int i = 0; i < n; i++) foreach (int p in parents[i]) kids[p].Add(i);
+
+        float crossStep = vertical ? NodeWidth + NodeHorizontalSpacing : NodeHeight + NodeVerticalSpacing;
+        float mainStep = vertical ? NodeHeight + NodeVerticalSpacing : NodeWidth + NodeHorizontalSpacing;
+
+        float[] x = new float[n];
+        for (int d = 0; d <= maxDepth; d++)
+            for (int k = 0; k < layers[d].Count; k++)
+                x[layers[d][k]] = (k - (layers[d].Count - 1) * 0.5f) * crossStep;
+
+        for (int round = 0; round < 6; round++)
+        {
+            for (int d = 1; d <= maxDepth; d++)
+            {
+                float[] desired = new float[n];
+                foreach (int i in layers[d])
+                {
+                    float sum = 0f;
+                    foreach (int p in parents[i]) sum += x[p];
+                    desired[i] = parents[i].Count > 0 ? sum / parents[i].Count : x[i];
+                }
+                PlaceLayer(layers[d], desired, x, rank, crossStep);
+            }
+            for (int d = maxDepth - 1; d >= 0; d--)
+            {
+                float[] desired = new float[n];
+                foreach (int i in layers[d])
+                {
+                    if (kids[i].Count == 0) { desired[i] = x[i]; continue; }
+                    float sum = 0f;
+                    foreach (int c in kids[i]) sum += x[c];
+                    desired[i] = sum / kids[i].Count;
+                }
+                PlaceLayer(layers[d], desired, x, rank, crossStep);
+            }
+        }
+
+        float half = vertical ? NodeWidth * 0.5f : NodeHeight * 0.5f;
+        float minCross = float.MaxValue;
+        for (int i = 0; i < n; i++) minCross = Mathf.Min(minCross, x[i] - half);
+        float shift = CanvasPadding - minCross;
+
+        Dictionary<int, Rect> result = new Dictionary<int, Rect>();
+        for (int i = 0; i < n; i++)
+        {
+            float cross = x[i] + shift;
+            float main = CanvasPadding + depth[i] * mainStep;
+            result[i] = vertical
+                ? new Rect(cross - NodeWidth * 0.5f, main, NodeWidth, NodeHeight)
+                : new Rect(main, cross - NodeHeight * 0.5f, NodeWidth, NodeHeight);
+        }
+        return result;
+    }
+
+    private static void AssignRank(int node, Dictionary<int, List<int>> childrenMap, int[] rank, bool[] visited, ref int counter)
+    {
+        if (node < 0 || node >= visited.Length || visited[node]) return;
+        visited[node] = true;
+        rank[node] = counter++;
+        if (!childrenMap.TryGetValue(node, out List<int> kids)) return;
+        foreach (int k in kids) AssignRank(k, childrenMap, rank, visited, ref counter);
+    }
+
+    // 把一层里的节点放到「想去的位置」附近，同层互相至少隔 step：先从左往右挤、再从右往左挤，两遍取平均，左右对称不偏
+    private static void PlaceLayer(List<int> layer, float[] desired, float[] x, int[] rank, float step)
+    {
+        layer.Sort((a, b) =>
+        {
+            int c = desired[a].CompareTo(desired[b]);
+            return c != 0 ? c : rank[a].CompareTo(rank[b]);
+        });
+        int count = layer.Count;
+        float[] fwd = new float[count];
+        float[] bwd = new float[count];
+        for (int k = 0; k < count; k++)
+        {
+            float want = desired[layer[k]];
+            fwd[k] = k == 0 ? want : Mathf.Max(want, fwd[k - 1] + step);
+        }
+        for (int k = count - 1; k >= 0; k--)
+        {
+            float want = desired[layer[k]];
+            bwd[k] = k == count - 1 ? want : Mathf.Min(want, bwd[k + 1] - step);
+        }
+        for (int k = 0; k < count; k++)
+            x[layer[k]] = (fwd[k] + bwd[k]) * 0.5f;
+    }
+
+    private static void ApplyMultiParentAdjust(
+        int nodeCount,
+        System.Func<int, int> getParentIndex,
+        System.Func<int, IList<int>> getExtraParents,
+        bool vertical,
+        Dictionary<int, List<int>> childrenMap,
+        Dictionary<int, Rect> layout)
+    {
+        List<int> multi = new List<int>();
+        for (int i = 0; i < nodeCount; i++)
+        {
+            IList<int> extra = getExtraParents(i);
+            if (extra != null && extra.Count > 0 && layout.ContainsKey(i))
+                multi.Add(i);
+        }
+        if (multi.Count == 0)
+            return;
+
+        // 按当前位置从上到下(从左到右)处理，前面的节点挪好了，后面依赖它的节点再挪
+        multi.Sort((a, b) => (vertical ? layout[a].yMin : layout[a].xMin).CompareTo(vertical ? layout[b].yMin : layout[b].xMin));
+
+        foreach (int n in multi)
+        {
+            List<int> parents = new List<int>();
+            int primary = getParentIndex(n);
+            if (primary >= 0 && layout.ContainsKey(primary))
+                parents.Add(primary);
+            foreach (int e in getExtraParents(n))
+                if (e != n && layout.ContainsKey(e) && !parents.Contains(e))
+                    parents.Add(e);
+            if (parents.Count < 2)
+                continue;
+
+            Rect r = layout[n];
+
+            float need = float.MinValue;
+            foreach (int p in parents)
+            {
+                Rect pr = layout[p];
+                need = Mathf.Max(need, vertical ? pr.yMax + NodeVerticalSpacing : pr.xMax + NodeHorizontalSpacing);
+            }
+            float dMain = Mathf.Max(0f, need - (vertical ? r.yMin : r.xMin));
+
+            float avg = 0f;
+            foreach (int p in parents)
+                avg += vertical ? layout[p].center.x : layout[p].center.y;
+            avg /= parents.Count;
+            float dCross = avg - (vertical ? r.center.x : r.center.y);
+
+            List<int> subtree = new List<int>();
+            CollectSubtree(n, childrenMap, subtree);
+            ShiftNodes(subtree, layout, vertical ? new Vector2(dCross, dMain) : new Vector2(dMain, dCross));
+
+            // 和同一行(列)里别的节点重叠就沿横轴(纵轴)方向挪开，整棵子树一起动
+            HashSet<int> moved = new HashSet<int>(subtree);
+            for (int iter = 0; iter < 40; iter++)
+            {
+                Rect cur = layout[n];
+                Rect expanded = new Rect(cur.x - 10f, cur.y - 10f, cur.width + 20f, cur.height + 20f);
+                float push = 0f;
+                foreach (var kv in layout)
+                {
+                    if (moved.Contains(kv.Key) && kv.Key != n) continue;
+                    if (kv.Key == n) continue;
+                    if (!expanded.Overlaps(kv.Value)) continue;
+                    float need2 = vertical ? kv.Value.xMax + NodeHorizontalSpacing * 0.5f - cur.xMin : kv.Value.yMax + NodeVerticalSpacing * 0.5f - cur.yMin;
+                    push = Mathf.Max(push, need2);
+                }
+                if (push <= 0.01f)
+                    break;
+                ShiftNodes(subtree, layout, vertical ? new Vector2(push, 0f) : new Vector2(0f, push));
+            }
+        }
+    }
+
+    private static void CollectSubtree(int root, Dictionary<int, List<int>> childrenMap, List<int> output)
+    {
+        output.Add(root);
+        if (!childrenMap.TryGetValue(root, out List<int> kids))
+            return;
+        foreach (int k in kids)
+            CollectSubtree(k, childrenMap, output);
+    }
+
+    private static void ShiftNodes(List<int> nodes, Dictionary<int, Rect> layout, Vector2 delta)
+    {
+        foreach (int i in nodes)
+        {
+            if (!layout.TryGetValue(i, out Rect r)) continue;
+            layout[i] = new Rect(r.x + delta.x, r.y + delta.y, r.width, r.height);
+        }
     }
 
     public static Rect CalculateBoundsRect(Dictionary<int, Rect> layout)

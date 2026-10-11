@@ -106,4 +106,68 @@ public enum SkyPrisonSystemSEType
     /// 序列化好的clip配置会全部错位。</summary>
     [InspectorName("购买 / 支付")]
     Purchase,
+
+    /// <summary>工房修理成功——扣钱把装备修满那一下，需要专门的"敲打/机械维修"质感
+    /// 音效，不跟通用Confirm共用。同上，追加在末尾，不能插中间。</summary>
+    [InspectorName("修理成功")]
+    Repair,
+
+    /// <summary>NPC对话里"接受任务"二次确认框弹出——AXIA接收到一条新指令这个仪式感
+    /// 时刻，需要比通用Open更有分量/更带战术终端感的独立音效，不跟其它窗口打开共用。
+    /// 同上，追加在末尾，不能插中间。</summary>
+    [InspectorName("接受任务确认框打开")]
+    QuestAcceptConfirmOpen,
+
+    // ── 进图地名牌（SkyPrisonMapNameCard）的几个时刻，追加在末尾（不能插中间，原因同上）。
+    // 在 SkyPrisonSystemSETable 里给对应类型配 clip 就会响；没配就是静音。──
+
+    /// <summary>地名牌出现的那一刻（牌子淡入开始）。</summary>
+    [InspectorName("地名牌 · 出现")]
+    MapNameCardShow,
+
+    /// <summary>名字每打出一个字（连续触发，建议配很短的音，可以多放几个 clip 随机）。副标每个字也用它。</summary>
+    [InspectorName("地名牌 · 打字（每字）")]
+    MapNameCardType,
+
+    /// <summary>名字全部打完、色差爆开的那一下。</summary>
+    [InspectorName("地名牌 · 色差爆开")]
+    MapNameCardAberration,
+
+    /// <summary>名字下面的横线展开。</summary>
+    [InspectorName("地名牌 · 横线展开")]
+    MapNameCardLine,
+
+    /// <summary>地名牌开始淡出消失。</summary>
+    [InspectorName("地名牌 · 淡出")]
+    MapNameCardFadeOut,
+
+    /// <summary>出发转场：四周向中心凹陷、吸入黑屏的那一整段。</summary>
+    [InspectorName("出发转场 · 凹陷吸入")]
+    DepartWarp,
+
+    // ── AFP 适应系统 / 能力 / 夜视 / 装备档位(追加在末尾，不能插中间，原因同上) ──
+    [InspectorName("AFP · 完成部署成功")] AfpDeploy,
+    [InspectorName("AFP · 预加点")] AfpAdd,
+    [InspectorName("AFP · 不能再加(资源 / 条件不足)")] AfpInsufficient,
+    [InspectorName("能力 · 致命子弹命中")] AbilityLethalHit,
+    [InspectorName("能力 · 特效力场豁免")] AbilityFieldBlock,
+    [InspectorName("能力 · 特效力场恢复完毕")] AbilityFieldRecharged,
+    [InspectorName("能力 · 生命保险触发")] AbilityInsurance,
+    [InspectorName("能力 · 回转回复 LP")] AbilityCycle,
+    [InspectorName("能力 · 异常追伤触发")] AbilityBurst,
+    [InspectorName("能力 · 篡夺者回血")] AbilityUsurper,
+    [InspectorName("夜视仪 · 开启")] NightVisionOn,
+    [InspectorName("夜视仪 · 关闭")] NightVisionOff,
+    [InspectorName("夜视仪 · 电量耗尽")] NightVisionDepleted,
+    [InspectorName("夜视仪 · 敌对单位进入视线")] NightVisionTarget,
+    [InspectorName("装备档位 · 变重")] EquipTierUp,
+    [InspectorName("装备档位 · 变轻")] EquipTierDown,
+
+    // ── 选关(RAID 地图) ──
+    [InspectorName("选关 · 打开地图")] MapOpen,
+    [InspectorName("选关 · 关闭地图")] MapClose,
+    [InspectorName("选关 · 切换 / 移动光标(轻)")] MapScroll,
+    [InspectorName("选关 · 选中据点")] MapSelect,
+    [InspectorName("选关 · 昼夜切换")] MapDayNight,
+    [InspectorName("选关 · 出发")] MapDepart,
 }

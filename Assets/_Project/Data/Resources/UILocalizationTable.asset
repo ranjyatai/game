@@ -1029,6 +1029,14 @@ MonoBehaviour:
       text: "\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC\u30D1\u30CD\u30EB"
     - languageCode: en
       text: Character Panel
+  - key: ui_settings_action_questlog
+    texts:
+    - languageCode: zh-CN
+      text: "\u4EFB\u52A1\u65E5\u5FD7"
+    - languageCode: ja
+      text: "\u30AF\u30A8\u30B9\u30C8\u30ED\u30B0"
+    - languageCode: en
+      text: Quest Log
   - key: ui_settings_action_quickitem1
     texts:
     - languageCode: zh-CN
@@ -2191,3 +2199,2027 @@ MonoBehaviour:
       text: "\u6570\u91CF\u8ABF\u6574"
     - languageCode: en
       text: Adjust Quantity
+  - key: ui_hint_confirm_repair
+    texts:
+    - languageCode: zh-CN
+      text: "\u786E\u8BA4\u4FEE\u7406"
+    - languageCode: ja
+      text: "\u4FEE\u7406\u3092\u78BA\u5B9A"
+    - languageCode: en
+      text: Confirm Repair
+  - key: workshop_repair_confirm
+    texts:
+    - languageCode: zh-CN
+      text: "\u4FEE\u7406"
+    - languageCode: ja
+      text: "\u4FEE\u7406"
+    - languageCode: en
+      text: Repair
+  - key: workshop_repair_cancel
+    texts:
+    - languageCode: zh-CN
+      text: "\u53D6\u6D88"
+    - languageCode: ja
+      text: "\u30AD\u30E3\u30F3\u30BB\u30EB"
+    - languageCode: en
+      text: Cancel
+  - key: workshop_repair_empty
+    texts:
+    - languageCode: zh-CN
+      text: "\u8EAB\u4E0A\u6CA1\u6709\u9700\u8981\u4FEE\u7406\u7684\u88C5\u5907"
+    - languageCode: ja
+      text: "\u4FEE\u7406\u304C\u5FC5\u8981\u306A\u88C5\u5099\u306F\u3042\u308A\u307E\u305B\u3093"
+    - languageCode: en
+      text: No equipped gear needs repair
+  - key: workshop_repair_title
+    texts:
+    - languageCode: zh-CN
+      text: "\u88C5\u5907\u4FEE\u7406"
+    - languageCode: ja
+      text: "\u88C5\u5099\u4FEE\u7406"
+    - languageCode: en
+      text: Equipment Repair
+  - key: workshop_repair_message
+    texts:
+    - languageCode: zh-CN
+      text: "\u662F\u5426\u6D88\u8017\u4EE5\u4E0B\u8D39\u7528\uFF0C\u4FEE\u7406\u8EAB\u4E0A\u6240\u6709\u88C5\u5907\uFF1F"
+    - languageCode: ja
+      text: "\u4EE5\u4E0B\u306E\u8CBB\u7528\u3092\u6D88\u8CBB\u3057\u3066\u3001\u88C5\u5099\u3092\u3059\u3079\u3066\u4FEE\u7406\u3057\u307E\u3059\u304B\uFF1F"
+    - languageCode: en
+      text: Spend the following cost to repair all equipped gear?
+  - key: workshop_repair_confirm_all
+    texts:
+    - languageCode: zh-CN
+      text: "\u4E00\u952E\u4FEE\u7406"
+    - languageCode: ja
+      text: "\u4E00\u62EC\u4FEE\u7406"
+    - languageCode: en
+      text: Repair All
+  - key: workshop_repair_item_action
+    texts:
+    - languageCode: zh-CN
+      text: "\u4FEE\u7406"
+    - languageCode: ja
+      text: "\u4FEE\u7406"
+    - languageCode: en
+      text: Repair
+  - key: ui_settings_voice_language
+    texts:
+    - languageCode: zh-CN
+      text: "\u8BED\u97F3\u8BED\u8A00"
+    - languageCode: ja
+      text: "\u97F3\u58F0\u8A00\u8A9E"
+    - languageCode: en
+      text: Voice Language
+  - key: npc_dialogue_back
+    texts:
+    - languageCode: zh-CN
+      text: "\u8FD4\u56DE"
+    - languageCode: ja
+      text: "\u623B\u308B"
+    - languageCode: en
+      text: Back
+  - key: npc_dialogue_no_active_quests
+    texts:
+    - languageCode: zh-CN
+      text: "\u76EE\u524D\u6CA1\u6709\u53EF\u5904\u7406\u7684\u4EFB\u52A1\u3002"
+    - languageCode: ja
+      text: "\u73FE\u5728\u5BFE\u5FDC\u3067\u304D\u308B\u4F9D\u983C\u306F\u3042\u308A\u307E\u305B\u3093\u3002"
+    - languageCode: en
+      text: There are no quests to handle right now.
+  - key: npc_dialogue_no_acceptable_quests
+    texts:
+    - languageCode: zh-CN
+      text: "\u76EE\u524D\u6CA1\u6709\u53EF\u4EE5\u63A5\u53D6\u7684\u4EFB\u52A1\u3002"
+    - languageCode: ja
+      text: "\u73FE\u5728\u53D7\u6CE8\u3067\u304D\u308B\u4F9D\u983C\u306F\u3042\u308A\u307E\u305B\u3093\u3002"
+    - languageCode: en
+      text: There are no quests available to accept right now.
+  - key: quest_accept_confirm_cancel
+    texts:
+    - languageCode: zh-CN
+      text: "\u53D6\u6D88"
+    - languageCode: ja
+      text: "\u30AD\u30E3\u30F3\u30BB\u30EB"
+    - languageCode: en
+      text: Cancel
+  - key: quest_accept_confirm_start
+    texts:
+    - languageCode: zh-CN
+      text: "\u5F00\u59CB\u4EFB\u52A1"
+    - languageCode: ja
+      text: "\u30AF\u30A8\u30B9\u30C8\u958B\u59CB"
+    - languageCode: en
+      text: Start Quest
+  - key: quest_accept_confirm_directive_tag
+    texts:
+    - languageCode: zh-CN
+      text: NEW DIRECTIVE
+    - languageCode: ja
+      text: NEW DIRECTIVE
+    - languageCode: en
+      text: NEW DIRECTIVE
+  - key: quest_accept_confirm_reward_label
+    texts:
+    - languageCode: zh-CN
+      text: "\u62A5\u916C"
+    - languageCode: ja
+      text: "\u5831\u916C"
+    - languageCode: en
+      text: Reward
+  - key: quest_accept_confirm_no_reward
+    texts:
+    - languageCode: zh-CN
+      text: "\u65E0"
+    - languageCode: ja
+      text: "\u306A\u3057"
+    - languageCode: en
+      text: None
+  - key: quest_accept_confirm_track_quest
+    texts:
+    - languageCode: zh-CN
+      text: "\u8BBE\u4E3A\u8FFD\u8E2A\u4E2D\u4EFB\u52A1"
+    - languageCode: ja
+      text: "\u30AF\u30A8\u30B9\u30C8\u3092\u8FFD\u8DE1"
+    - languageCode: en
+      text: Track Quest
+  - key: quest_hazard_rank_label
+    texts:
+    - languageCode: zh-CN
+      text: HAZARD RANK
+    - languageCode: ja
+      text: HAZARD RANK
+    - languageCode: en
+      text: HAZARD RANK
+  - key: npc_interact_talk_generic
+    texts:
+    - languageCode: zh-CN
+      text: "\u4EA4\u8C08"
+    - languageCode: ja
+      text: "\u8A71\u3059"
+    - languageCode: en
+      text: Talk
+  - key: npc_interact_talk_with
+    texts:
+    - languageCode: zh-CN
+      text: "\u4E0E{0}\u5BF9\u8BDD"
+    - languageCode: ja
+      text: "{0}\u3068\u8A71\u3059"
+    - languageCode: en
+      text: Talk to {0}
+  - key: ui_hint_select
+    texts:
+    - languageCode: zh-CN
+      text: "\u9009\u62E9"
+    - languageCode: ja
+      text: "\u9078\u629E"
+    - languageCode: en
+      text: Select
+  - key: ui_hint_select_option
+    texts:
+    - languageCode: zh-CN
+      text: "\u9009\u62E9\u9009\u9879"
+    - languageCode: ja
+      text: "\u9078\u629E\u80A2\u3092\u9078\u3076"
+    - languageCode: en
+      text: Select Option
+  - key: questlog_hint_abandon
+    texts:
+    - languageCode: zh-CN
+      text: "\u653E\u5F03\u4EFB\u52A1"
+    - languageCode: ja
+      text: "\u30AF\u30A8\u30B9\u30C8\u653E\u68C4"
+    - languageCode: en
+      text: Abandon Quest
+  - key: questlog_abandon_confirm_title
+    texts:
+    - languageCode: zh-CN
+      text: "\u653E\u5F03\u4EFB\u52A1\uFF1F"
+    - languageCode: ja
+      text: "\u30AF\u30A8\u30B9\u30C8\u3092\u653E\u68C4\u3057\u307E\u3059\u304B\uFF1F"
+    - languageCode: en
+      text: Abandon Quest?
+  - key: questlog_abandon_confirm_message
+    texts:
+    - languageCode: zh-CN
+      text: "\u786E\u5B9A\u8981\u653E\u5F03{0}\u5417\uFF1F\u653E\u5F03\u540E\u53EF\u4EE5\u91CD\u65B0\u63A5\u53D6\uFF0C\u4F46\u5F53\u524D\u8FDB\u5EA6\u4F1A\u6E05\u7A7A\u3002"
+    - languageCode: ja
+      text: "{0}\u3092\u653E\u68C4\u3057\u3066\u3082\u3088\u308D\u3057\u3044\u3067\u3059\u304B\uFF1F\u653E\u68C4\u5F8C\u306F\u518D\u5EA6\u53D7\u6CE8\u3067\u304D\u307E\u3059\u304C\u3001\u73FE\u5728\u306E\u9032\u884C\u72B6\u6CC1\u306F\u30EA\u30BB\u30C3\u30C8\u3055\u308C\u307E\u3059\u3002"
+    - languageCode: en
+      text: Are you sure you want to abandon {0}? You can accept it again later,
+        but current progress will be reset.
+  - key: questlog_abandon_confirm_confirm
+    texts:
+    - languageCode: zh-CN
+      text: "\u786E\u8BA4\u653E\u5F03"
+    - languageCode: ja
+      text: "\u653E\u68C4\u3059\u308B"
+    - languageCode: en
+      text: Abandon
+  - key: questlog_abandon_confirm_cancel
+    texts:
+    - languageCode: zh-CN
+      text: "\u53D6\u6D88"
+    - languageCode: ja
+      text: "\u30AD\u30E3\u30F3\u30BB\u30EB"
+    - languageCode: en
+      text: Cancel
+  - key: questlog_hover_progress
+    texts:
+    - languageCode: zh-CN
+      text: "\u8FDB\u5EA6"
+    - languageCode: ja
+      text: "\u9032\u6357"
+    - languageCode: en
+      text: Progress
+  - key: questlog_title
+    texts:
+    - languageCode: zh-CN
+      text: "\u4EFB\u52A1\u65E5\u5FD7"
+    - languageCode: ja
+      text: "\u30AF\u30A8\u30B9\u30C8\u30ED\u30B0"
+    - languageCode: en
+      text: Quest Log
+  - key: questlog_tab_inprogress
+    texts:
+    - languageCode: zh-CN
+      text: "\u8FDB\u884C\u4E2D"
+    - languageCode: ja
+      text: "\u9032\u884C\u4E2D"
+    - languageCode: en
+      text: In Progress
+  - key: questlog_tab_completed
+    texts:
+    - languageCode: zh-CN
+      text: "\u5DF2\u5B8C\u6210"
+    - languageCode: ja
+      text: "\u5B8C\u4E86"
+    - languageCode: en
+      text: Completed
+  - key: questlog_section_primary
+    texts:
+    - languageCode: zh-CN
+      text: "\u8FFD\u8E2A\u4E2D\u4EFB\u52A1"
+    - languageCode: ja
+      text: "\u8FFD\u8DE1\u4E2D\u306E\u30AF\u30A8\u30B9\u30C8"
+    - languageCode: en
+      text: Tracked Quest
+  - key: questlog_section_mainline
+    texts:
+    - languageCode: zh-CN
+      text: "\u4E3B\u7EBF\u4EFB\u52A1"
+    - languageCode: ja
+      text: "\u30E1\u30A4\u30F3\u30AF\u30A8\u30B9\u30C8"
+    - languageCode: en
+      text: Main Quests
+  - key: questlog_section_side
+    texts:
+    - languageCode: zh-CN
+      text: "\u652F\u7EBF\u4EFB\u52A1"
+    - languageCode: ja
+      text: "\u30B5\u30D6\u30AF\u30A8\u30B9\u30C8"
+    - languageCode: en
+      text: Side Quests
+  - key: questlog_section_characterarc
+    texts:
+    - languageCode: zh-CN
+      text: "\u4EBA\u7269\u8BB0\u5F55"
+    - languageCode: ja
+      text: "\u30AD\u30E3\u30E9\u30AF\u30BF\u30FC\u8A18\u9332"
+    - languageCode: en
+      text: Character Records
+  - key: questlog_current_objective
+    texts:
+    - languageCode: zh-CN
+      text: "\u5F53\u524D\u76EE\u6807"
+    - languageCode: ja
+      text: "\u73FE\u5728\u306E\u76EE\u6A19"
+    - languageCode: en
+      text: Current Objective
+  - key: questlog_field_region
+    texts:
+    - languageCode: zh-CN
+      text: "\u533A\u57DF"
+    - languageCode: ja
+      text: "\u30A8\u30EA\u30A2"
+    - languageCode: en
+      text: Region
+  - key: questlog_field_giver
+    texts:
+    - languageCode: zh-CN
+      text: "\u59D4\u6258\u4EBA"
+    - languageCode: ja
+      text: "\u4F9D\u983C\u4E3B"
+    - languageCode: en
+      text: Client
+  - key: questlog_field_state
+    texts:
+    - languageCode: zh-CN
+      text: "\u72B6\u6001"
+    - languageCode: ja
+      text: "\u72B6\u614B"
+    - languageCode: en
+      text: Status
+  - key: questlog_state_complete
+    texts:
+    - languageCode: zh-CN
+      text: "\u5DF2\u5B8C\u6210"
+    - languageCode: ja
+      text: "\u5B8C\u4E86"
+    - languageCode: en
+      text: Completed
+  - key: questlog_state_inprogress
+    texts:
+    - languageCode: zh-CN
+      text: "\u8FDB\u884C\u4E2D"
+    - languageCode: ja
+      text: "\u9032\u884C\u4E2D"
+    - languageCode: en
+      text: In Progress
+  - key: quest_complete_confirm_directive_tag
+    texts:
+    - languageCode: zh-CN
+      text: DIRECTIVE COMPLETE
+    - languageCode: ja
+      text: DIRECTIVE COMPLETE
+    - languageCode: en
+      text: DIRECTIVE COMPLETE
+  - key: quest_complete_confirm_send_to_stash
+    texts:
+    - languageCode: zh-CN
+      text: "\u80CC\u5305\u88C5\u4E0D\u4E0B\u65F6\u9001\u5230\u4ED3\u5E93"
+    - languageCode: ja
+      text: "\u30D0\u30C3\u30B0\u306B\u5165\u3089\u306A\u3044\u5834\u5408\u306F\u5009\u5EAB\u3078\u9001\u308B"
+    - languageCode: en
+      text: Send to warehouse if backpack is full
+  - key: quest_complete_confirm_later
+    texts:
+    - languageCode: zh-CN
+      text: "\u7A0D\u540E"
+    - languageCode: ja
+      text: "\u5F8C\u3067"
+    - languageCode: en
+      text: Later
+  - key: quest_complete_confirm_confirm
+    texts:
+    - languageCode: zh-CN
+      text: "\u786E\u8BA4\u9886\u53D6"
+    - languageCode: ja
+      text: "\u53D7\u3051\u53D6\u308B"
+    - languageCode: en
+      text: Claim Rewards
+  - key: quest_complete_confirm_bag_full
+    texts:
+    - languageCode: zh-CN
+      text: "\u80CC\u5305\u5DF2\u6EE1\uFF0C\u8BF7\u52FE\u9009\u201C\u9001\u5230\u4ED3\u5E93\u201D\uFF0C\u6216\u5148\u6E05\u7406\u80CC\u5305\u7A7A\u95F4"
+    - languageCode: ja
+      text: "\u30D0\u30C3\u30B0\u304C\u6E80\u676F\u3067\u3059\u3002\u300C\u5009\u5EAB\u3078\u9001\u308B\u300D\u306B\u30C1\u30A7\u30C3\u30AF\u3059\u308B\u304B\u3001\u30D0\u30C3\u30B0\u3092\u6574\u7406\u3057\u3066\u304F\u3060\u3055\u3044"
+    - languageCode: en
+      text: Backpack is full. Check "Send to warehouse" or free up space first.
+  - key: quest_delivery_confirm_directive_tag
+    texts:
+    - languageCode: zh-CN
+      text: DELIVERY REQUIRED
+    - languageCode: ja
+      text: DELIVERY REQUIRED
+    - languageCode: en
+      text: DELIVERY REQUIRED
+  - key: quest_delivery_confirm_cancel
+    texts:
+    - languageCode: zh-CN
+      text: "\u53D6\u6D88"
+    - languageCode: ja
+      text: "\u30AD\u30E3\u30F3\u30BB\u30EB"
+    - languageCode: en
+      text: Cancel
+  - key: quest_delivery_confirm_confirm
+    texts:
+    - languageCode: zh-CN
+      text: "\u786E\u8BA4\u4EA4\u4ED8"
+    - languageCode: ja
+      text: "\u5F15\u304D\u6E21\u3059"
+    - languageCode: en
+      text: Deliver
+  - key: quest_delivery_confirm_holding
+    texts:
+    - languageCode: zh-CN
+      text: "\u5F53\u524D\u6301\u6709\uFF1A{0} / {1}"
+    - languageCode: ja
+      text: "\u6240\u6301\u6570\uFF1A{0} / {1}"
+    - languageCode: en
+      text: 'Holding: {0} / {1}'
+  - key: questlog_hint_track
+    texts:
+    - languageCode: zh-CN
+      text: "\u8BBE\u4E3A\u8FFD\u8E2A\u4E2D\u4EFB\u52A1"
+    - languageCode: ja
+      text: "\u8FFD\u8DE1\u5BFE\u8C61\u306B\u8A2D\u5B9A"
+    - languageCode: en
+      text: Set as Tracked Quest
+  - key: questlog_hint_untrack
+    texts:
+    - languageCode: zh-CN
+      text: "\u53D6\u6D88\u8FFD\u8E2A\u4E2D\u4EFB\u52A1"
+    - languageCode: ja
+      text: "\u8FFD\u8DE1\u5BFE\u8C61\u89E3\u9664"
+    - languageCode: en
+      text: Untrack Quest
+  - key: door_interact_open
+    texts:
+    - languageCode: zh-CN
+      text: "\u5F00\u95E8"
+    - languageCode: ja
+      text: "\u30C9\u30A2\u3092\u958B\u3051\u308B"
+    - languageCode: en
+      text: Open door
+  - key: door_interact_close
+    texts:
+    - languageCode: zh-CN
+      text: "\u5173\u95E8"
+    - languageCode: ja
+      text: "\u30C9\u30A2\u3092\u9589\u3081\u308B"
+    - languageCode: en
+      text: Close door
+  - key: door_interact_locked
+    texts:
+    - languageCode: zh-CN
+      text: "\u65E0\u6CD5\u5F00\u542F"
+    - languageCode: ja
+      text: "\u958B\u304B\u306A\u3044"
+    - languageCode: en
+      text: Locked
+  - key: switch_interact_operate
+    texts:
+    - languageCode: zh-CN
+      text: "\u64CD\u4F5C"
+    - languageCode: ja
+      text: "\u64CD\u4F5C\u3059\u308B"
+    - languageCode: en
+      text: Operate
+  - key: switch_interact_locked
+    texts:
+    - languageCode: zh-CN
+      text: "\u65E0\u6CD5\u64CD\u4F5C"
+    - languageCode: ja
+      text: "\u64CD\u4F5C\u3067\u304D\u306A\u3044"
+    - languageCode: en
+      text: Can't operate
+  - key: raid_hint_switch_raid
+    texts:
+    - languageCode: zh-CN
+      text: "\u5207\u6362 RAID"
+    - languageCode: ja
+      text: "RAID\u3092\u5207\u308A\u66FF\u3048"
+    - languageCode: en
+      text: Switch RAID
+  - key: raid_hint_switch_daynight
+    texts:
+    - languageCode: zh-CN
+      text: "\u5207\u6362\u663C\u591C"
+    - languageCode: ja
+      text: "\u663C\u591C\u3092\u5207\u308A\u66FF\u3048"
+    - languageCode: en
+      text: Day / Night
+  - key: raid_hint_pan
+    texts:
+    - languageCode: zh-CN
+      text: "\u5E73\u79FB"
+    - languageCode: ja
+      text: "\u79FB\u52D5"
+    - languageCode: en
+      text: Pan
+  - key: raid_hint_zoom
+    texts:
+    - languageCode: zh-CN
+      text: "\u7F29\u653E"
+    - languageCode: ja
+      text: "\u30BA\u30FC\u30E0"
+    - languageCode: en
+      text: Zoom
+  - key: raid_hint_orbit
+    texts:
+    - languageCode: zh-CN
+      text: "\u8F6C\u52A8\u89C6\u89D2"
+    - languageCode: ja
+      text: "\u8996\u70B9\u3092\u56DE\u8EE2"
+    - languageCode: en
+      text: Rotate View
+  - key: raid_hint_confirm
+    texts:
+    - languageCode: zh-CN
+      text: "\u9009\u5B9A / \u51FA\u53D1"
+    - languageCode: ja
+      text: "\u6C7A\u5B9A / \u51FA\u767A"
+    - languageCode: en
+      text: Select / Deploy
+  - key: raid_hint_drag
+    texts:
+    - languageCode: zh-CN
+      text: "\u62D6\u62FD"
+    - languageCode: ja
+      text: "\u30C9\u30E9\u30C3\u30B0"
+    - languageCode: en
+      text: Drag
+  - key: raid_hint_wheel
+    texts:
+    - languageCode: zh-CN
+      text: "\u6EDA\u8F6E"
+    - languageCode: ja
+      text: "\u30DB\u30A4\u30FC\u30EB"
+    - languageCode: en
+      text: Wheel
+  - key: raid_hint_rclick
+    texts:
+    - languageCode: zh-CN
+      text: "\u53F3\u952E"
+    - languageCode: ja
+      text: "\u53F3\u30AF\u30EA\u30C3\u30AF"
+    - languageCode: en
+      text: Right Click
+  - key: raid_image_pending
+    texts:
+    - languageCode: zh-CN
+      text: "\u5F71\u50CF\u5F85\u8865"
+    - languageCode: ja
+      text: "\u753B\u50CF\u6E96\u5099\u4E2D"
+    - languageCode: en
+      text: Image Pending
+  - key: raid_depart
+    texts:
+    - languageCode: zh-CN
+      text: "\u51FA\u53D1"
+    - languageCode: ja
+      text: "\u51FA\u767A"
+    - languageCode: en
+      text: Deploy
+  - key: raid_depart_subway
+    texts:
+    - languageCode: zh-CN
+      text: "\u4E58\u5730\u94C1\u51FA\u53D1"
+    - languageCode: ja
+      text: "\u5730\u4E0B\u9244\u3067\u51FA\u767A"
+    - languageCode: en
+      text: Take the Subway
+  - key: raid_main_output
+    texts:
+    - languageCode: zh-CN
+      text: "\u4E3B\u8981\u4EA7\u51FA"
+    - languageCode: ja
+      text: "\u4E3B\u306A\u56DE\u53CE\u54C1"
+    - languageCode: en
+      text: Main Yield
+  - key: raid_day
+    texts:
+    - languageCode: zh-CN
+      text: "\u663C"
+    - languageCode: ja
+      text: "\u663C"
+    - languageCode: en
+      text: Day
+  - key: raid_night
+    texts:
+    - languageCode: zh-CN
+      text: "\u591C"
+    - languageCode: ja
+      text: "\u591C"
+    - languageCode: en
+      text: Night
+  - key: raid_map_title
+    texts:
+    - languageCode: zh-CN
+      text: "RAID  \xB7  \u51FA\u53D1\u5730\u56FE"
+    - languageCode: ja
+      text: "RAID  \xB7  \u51FA\u6483\u30DE\u30C3\u30D7"
+    - languageCode: en
+      text: "RAID  \xB7  Deployment Map"
+  - key: raid_subway_to
+    texts:
+    - languageCode: zh-CN
+      text: "\u5730\u94C1 \xB7 \u524D\u5F80 "
+    - languageCode: ja
+      text: "\u5730\u4E0B\u9244 \xB7 \u884C\u304D\u5148 "
+    - languageCode: en
+      text: "Subway \xB7 To "
+  - key: raid_new
+    texts:
+    - languageCode: zh-CN
+      text: NEW
+    - languageCode: ja
+      text: NEW
+    - languageCode: en
+      text: NEW
+  - key: raid_deploy_prompt
+    texts:
+    - languageCode: zh-CN
+      text: "\u51FA\u53D1 \xB7 \u9009\u62E9 RAID"
+    - languageCode: ja
+      text: "\u51FA\u767A \xB7 RAID\u9078\u629E"
+    - languageCode: en
+      text: "Deploy \xB7 Select RAID"
+  - key: raid_deploy_start
+    texts:
+    - languageCode: zh-CN
+      text: START
+    - languageCode: ja
+      text: START
+    - languageCode: en
+      text: START
+  - key: raid_hold_hint
+    texts:
+    - languageCode: zh-CN
+      text: "\u957F\u6309\u51FA\u53D1"
+    - languageCode: ja
+      text: "\u9577\u62BC\u3057\u3067\u51FA\u767A"
+    - languageCode: en
+      text: Hold to Deploy
+  - key: ui_afp_shop_sub
+    texts:
+    - languageCode: zh-CN
+      text: "\u9002\u5E94\u6027\u8C03\u6574\u4EC5\u5728\u672C\u6B21\u90E8\u7F72\u5185\u6709\u6548\u3002\u6BCF\u5B8C\u6210\u4E00\u7EA7\u5F3A\u5316\uFF0C\u540E\u7EED\u6240\u6709\u9879\u76EE\u7684
+        AFP \u6D88\u8017\u540C\u6B65\u4E0A\u8C03\u3002\u79BB\u5F00\u4F5C\u4E1A\u533A\u6216\u68C0\u6D4B\u5230\u4EA4\u6218\u65F6\uFF0C\u7CFB\u7EDF\u81EA\u52A8\u65AD\u5F00\u3002"
+    - languageCode: ja
+      text: "\u9069\u5FDC\u8ABF\u6574\u306F\u4ECA\u56DE\u306E\u5C55\u958B\u4E2D\u306E\u307F\u6709\u52B9\u3002\u5F37\u5316\u30921\u6BB5\u968E\u884C\u3046\u3054\u3068\u306B\u3001\u4EE5\u964D\u306E\u5168\u9805\u76EE\u306EAFP\u6D88\u8CBB\u304C\u9023\u52D5\u3057\u3066\u4E0A\u6607\u3059\u308B\u3002\u4F5C\u696D\u533A\u57DF\u3092\u96E2\u308C\u308B\u304B\u4EA4\u6226\u3092\u691C\u77E5\u3059\u308B\u3068\u3001\u30B7\u30B9\u30C6\u30E0\u306F\u81EA\u52D5\u7684\u306B\u5207\u65AD\u3055\u308C\u308B\u3002"
+    - languageCode: en
+      text: Adaptive adjustments last for this deployment only. Each level purchased
+        raises the AFP cost of all later items. The system disconnects automatically
+        when you leave the work zone or combat is detected.
+  - key: ui_afp_hint_select
+    texts:
+    - languageCode: zh-CN
+      text: "\u9009\u62E9"
+    - languageCode: ja
+      text: "\u9078\u629E"
+    - languageCode: en
+      text: Select
+  - key: ui_afp_hint_adjust
+    texts:
+    - languageCode: zh-CN
+      text: "\u9884\u52A0\u70B9 A\u2212/D+"
+    - languageCode: ja
+      text: "\u4E8B\u524D\u914D\u5206 A\u2212/D+"
+    - languageCode: en
+      text: "Allocate A\u2212/D+"
+  - key: ui_afp_hint_confirm
+    texts:
+    - languageCode: zh-CN
+      text: "\u5B8C\u6210\u90E8\u7F72"
+    - languageCode: ja
+      text: "\u5C55\u958B\u5B8C\u4E86"
+    - languageCode: en
+      text: Complete Deployment
+  - key: ui_afp_hint_close
+    texts:
+    - languageCode: zh-CN
+      text: "\u5173\u95ED"
+    - languageCode: ja
+      text: "\u9589\u3058\u308B"
+    - languageCode: en
+      text: Close
+  - key: ui_afp_confirm
+    texts:
+    - languageCode: zh-CN
+      text: "\u5B8C\u6210\u90E8\u7F72"
+    - languageCode: ja
+      text: "\u5C55\u958B\u5B8C\u4E86"
+    - languageCode: en
+      text: Complete Deployment
+  - key: ui_afp_clear
+    texts:
+    - languageCode: zh-CN
+      text: "\u6E05\u9664"
+    - languageCode: ja
+      text: "\u30AF\u30EA\u30A2"
+    - languageCode: en
+      text: Clear
+  - key: ui_afp_effect_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u6BCF\u7EA7 +{0}%\u3000\u5F53\u524D {1}"
+    - languageCode: ja
+      text: "1\u6BB5\u968E +{0}%\u3000\u73FE\u5728 {1}"
+    - languageCode: en
+      text: "Per Level +{0}%\u3000Current {1}"
+  - key: ui_afp_total_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u5F85\u5F3A\u5316 {0} \u7EA7\u3000\u5408\u8BA1 {1} AFP"
+    - languageCode: ja
+      text: "\u5F37\u5316\u5F85\u3061 {0} \u6BB5\u968E\u3000\u5408\u8A08 {1} AFP"
+    - languageCode: en
+      text: "Pending {0} Levels\u3000Total {1} AFP"
+  - key: ui_afp_up_slash
+    texts:
+    - languageCode: zh-CN
+      text: "\u65A9\u51FB\u6297\u6027"
+    - languageCode: ja
+      text: "\u65AC\u6483\u8010\u6027"
+    - languageCode: en
+      text: Slash Resistance
+  - key: ui_afp_up_strike
+    texts:
+    - languageCode: zh-CN
+      text: "\u6253\u51FB\u6297\u6027"
+    - languageCode: ja
+      text: "\u6253\u6483\u8010\u6027"
+    - languageCode: en
+      text: Strike Resistance
+  - key: ui_afp_up_impact
+    texts:
+    - languageCode: zh-CN
+      text: "\u51B2\u51FB\u6297\u6027"
+    - languageCode: ja
+      text: "\u885D\u6483\u8010\u6027"
+    - languageCode: en
+      text: Impact Resistance
+  - key: ui_afp_up_heat
+    texts:
+    - languageCode: zh-CN
+      text: "\u707C\u70ED\u6297\u6027"
+    - languageCode: ja
+      text: "\u707C\u71B1\u8010\u6027"
+    - languageCode: en
+      text: Heat Resistance
+  - key: ui_afp_up_shock
+    texts:
+    - languageCode: zh-CN
+      text: "\u7535\u78C1\u6297\u6027"
+    - languageCode: ja
+      text: "\u96FB\u78C1\u8010\u6027"
+    - languageCode: en
+      text: Electromagnetic Resistance
+  - key: ui_afp_up_corrosion
+    texts:
+    - languageCode: zh-CN
+      text: "\u8150\u8680\u6297\u6027"
+    - languageCode: ja
+      text: "\u8150\u98DF\u8010\u6027"
+    - languageCode: en
+      text: Corrosion Resistance
+  - key: ui_afp_up_freeze
+    texts:
+    - languageCode: zh-CN
+      text: "\u51BB\u7ED3\u6297\u6027"
+    - languageCode: ja
+      text: "\u51CD\u7D50\u8010\u6027"
+    - languageCode: en
+      text: Freeze Resistance
+  - key: afp_zone_prompt
+    texts:
+    - languageCode: zh-CN
+      text: "\u9002\u5E94\u7CFB\u7EDF"
+    - languageCode: ja
+      text: "\u9069\u5FDC\u30B7\u30B9\u30C6\u30E0"
+    - languageCode: en
+      text: Adaptation System
+  - key: afp_zone_combat
+    texts:
+    - languageCode: zh-CN
+      text: "\u6218\u6597\u4E2D\u65E0\u6CD5\u4F7F\u7528"
+    - languageCode: ja
+      text: "\u6226\u95D8\u4E2D\u306F\u4F7F\u7528\u4E0D\u53EF"
+    - languageCode: en
+      text: Unavailable in Combat
+  - key: ui_afp_max
+    texts:
+    - languageCode: zh-CN
+      text: MAX
+    - languageCode: ja
+      text: MAX
+    - languageCode: en
+      text: MAX
+  - key: ui_afp_next_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u4E0B\u4E00\u7EA7 +{0}%"
+    - languageCode: ja
+      text: "\u6B21\u306E\u30EC\u30D9\u30EB +{0}%"
+    - languageCode: en
+      text: Next Level +{0}%
+  - key: ui_afp_summary
+    texts:
+    - languageCode: zh-CN
+      text: "\u672C\u6B21\u63D0\u5347"
+    - languageCode: ja
+      text: "\u4ECA\u56DE\u306E\u4E0A\u6607"
+    - languageCode: en
+      text: This Upgrade
+  - key: ui_afp_cost_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u82B1\u8D39 {0} AFP"
+    - languageCode: ja
+      text: "\u6D88\u8CBB {0} AFP"
+    - languageCode: en
+      text: Cost {0} AFP
+  - key: ui_afp_up_hp
+    texts:
+    - languageCode: zh-CN
+      text: "\u8FFD\u52A0\u751F\u547D"
+    - languageCode: ja
+      text: "\u8FFD\u52A0\u30E9\u30A4\u30D5"
+    - languageCode: en
+      text: Bonus Vitality
+  - key: ui_afp_dmg_heat
+    texts:
+    - languageCode: zh-CN
+      text: "\u707C\u70ED"
+    - languageCode: ja
+      text: "\u707C\u71B1"
+    - languageCode: en
+      text: Heat
+  - key: ui_afp_dmg_shock
+    texts:
+    - languageCode: zh-CN
+      text: "\u7535\u78C1"
+    - languageCode: ja
+      text: "\u96FB\u78C1"
+    - languageCode: en
+      text: Shock
+  - key: ui_afp_ab_shield
+    texts:
+    - languageCode: zh-CN
+      text: "\u62B5\u6D88\u76FE"
+    - languageCode: ja
+      text: "\u76F8\u6BBA\u30B7\u30FC\u30EB\u30C9"
+    - languageCode: en
+      text: Absorb Shield
+  - key: ui_afp_ab_shield_eff_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u5438\u6536 {0} \u70B9{1}\u4F24\u5BB3"
+    - languageCode: ja
+      text: "{1}\u30C0\u30E1\u30FC\u30B8\u3092{0}\u5438\u53CE"
+    - languageCode: en
+      text: Absorbs {0} {1} damage
+  - key: ui_afp_ab_insurance
+    texts:
+    - languageCode: zh-CN
+      text: "\u751F\u547D\u4FDD\u9669"
+    - languageCode: ja
+      text: "\u30E9\u30A4\u30D5\u4FDD\u967A"
+    - languageCode: en
+      text: Life Insurance
+  - key: ui_afp_ab_insurance_eff
+    texts:
+    - languageCode: zh-CN
+      text: "\u81F4\u547D\u4E00\u51FB\u9501 1 \u70B9\u8840"
+    - languageCode: ja
+      text: "\u81F4\u547D\u50B7\u3092HP1\u3067\u8010\u3048\u308B"
+    - languageCode: en
+      text: Survive a lethal hit at 1 HP
+  - key: ui_afp_ab_need_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u518D {0} \u7EA7\u89E3\u9501"
+    - languageCode: ja
+      text: "\u3042\u3068{0}\u6BB5\u968E\u3067\u89E3\u653E"
+    - languageCode: en
+      text: '{0} more levels to unlock'
+  - key: ui_afp_ab_need_tech
+    texts:
+    - languageCode: zh-CN
+      text: "\u9700\u79D1\u6280\u6811\u89E3\u9501"
+    - languageCode: ja
+      text: "\u30C6\u30C3\u30AF\u30C4\u30EA\u30FC\u3067\u89E3\u653E"
+    - languageCode: en
+      text: Unlock in Tech Tree
+  - key: status_afp_insurance_ready
+    texts:
+    - languageCode: zh-CN
+      text: "\u751F\u547D\u4FDD\u9669"
+    - languageCode: ja
+      text: "\u30E9\u30A4\u30D5\u4FDD\u967A"
+    - languageCode: en
+      text: Life Insurance
+  - key: status_afp_insurance_ready_desc
+    texts:
+    - languageCode: zh-CN
+      text: "\u53D7\u5230\u81F4\u547D\u4F24\u5BB3\u65F6\u9501\u5728 1 \u70B9\u8840\uFF0C\u968F\u540E\u8FDB\u5165\u51B7\u5374\u3002"
+    - languageCode: ja
+      text: "\u81F4\u547D\u50B7\u3092\u53D7\u3051\u308B\u3068HP1\u3067\u8010\u3048\u3001\u305D\u306E\u5F8C\u30AF\u30FC\u30EB\u30C0\u30A6\u30F3\u306B\u5165\u308B\u3002"
+    - languageCode: en
+      text: A lethal hit leaves you at 1 HP, then the insurance goes on cooldown.
+  - key: status_afp_insurance_cd
+    texts:
+    - languageCode: zh-CN
+      text: "\u751F\u547D\u4FDD\u9669\xB7\u51B7\u5374"
+    - languageCode: ja
+      text: "\u30E9\u30A4\u30D5\u4FDD\u967A\xB7\u30AF\u30FC\u30EB\u30C0\u30A6\u30F3"
+    - languageCode: en
+      text: "Life Insurance \xB7 Cooldown"
+  - key: status_afp_insurance_cd_desc
+    texts:
+    - languageCode: zh-CN
+      text: "\u751F\u547D\u4FDD\u9669\u51B7\u5374\u4E2D\uFF0C\u7ED3\u675F\u540E\u6062\u590D\u53EF\u7528\u3002"
+    - languageCode: ja
+      text: "\u30E9\u30A4\u30D5\u4FDD\u967A\u306F\u30AF\u30FC\u30EB\u30C0\u30A6\u30F3\u4E2D\u3002\u7D42\u4E86\u5F8C\u306B\u518D\u3073\u4F7F\u7528\u53EF\u80FD\u3002"
+    - languageCode: en
+      text: Life Insurance is cooling down and becomes available again afterwards.
+  - key: ui_afp_ab_field_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A{0}"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A{0}"
+    - languageCode: en
+      text: 'Effect Field: {0}'
+  - key: status_afp_field_cd_suffix
+    texts:
+    - languageCode: zh-CN
+      text: "\xB7\u6062\u590D\u4E2D"
+    - languageCode: ja
+      text: "\xB7\u56DE\u5FA9\u4E2D"
+    - languageCode: en
+      text: " \xB7 Recharging"
+  - key: status_afp_field_desc
+    texts:
+    - languageCode: zh-CN
+      text: "\u5438\u6536\u5BF9\u5E94\u5C5E\u6027\u7684\u4F24\u5BB3\uFF1B\u6863\u4F4D(\u5C42\u6570)\u8D8A\u9AD8\u5438\u6536\u8D8A\u591A\u3002"
+    - languageCode: ja
+      text: "\u5BFE\u5FDC\u5C5E\u6027\u306E\u30C0\u30E1\u30FC\u30B8\u3092\u5438\u53CE\u3059\u308B\u3002\u6BB5\u968E(\u30B9\u30BF\u30C3\u30AF\u6570)\u304C\u9AD8\u3044\u307B\u3069\u5438\u53CE\u91CF\u304C\u5897\u3048\u308B\u3002"
+    - languageCode: en
+      text: Absorbs damage of its element; higher tiers absorb more.
+  - key: status_afp_field_cd_desc
+    texts:
+    - languageCode: zh-CN
+      text: "\u529B\u573A\u88AB\u6253\u7A7A\uFF0C\u6062\u590D\u4E2D\uFF0C\u7ED3\u675F\u540E\u91CD\u65B0\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u30D5\u30A3\u30FC\u30EB\u30C9\u304C\u7834\u3089\u308C\u305F\u3002\u56DE\u5FA9\u5F8C\u306B\u518D\u3073\u6709\u52B9\u306B\u306A\u308B\u3002"
+    - languageCode: en
+      text: The field was broken and is recharging.
+  - key: charpanel_group_abilities
+    texts:
+    - languageCode: zh-CN
+      text: "\u6218\u5C40\u80FD\u529B"
+    - languageCode: ja
+      text: "\u6226\u5C40\u30A2\u30D3\u30EA\u30C6\u30A3"
+    - languageCode: en
+      text: Raid Abilities
+  - key: charpanel_ability_absorb_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u5438\u6536 {0}"
+    - languageCode: ja
+      text: "\u5438\u53CE {0}"
+    - languageCode: en
+      text: Absorb {0}
+  - key: charpanel_ability_ready
+    texts:
+    - languageCode: zh-CN
+      text: "\u5C31\u7EEA"
+    - languageCode: ja
+      text: "\u5F85\u6A5F\u4E2D"
+    - languageCode: en
+      text: Ready
+  - key: ui_afp_ab_field_eff_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u8C41\u514D\u4E00\u6B21{0}\u5F02\u5E38 \xB7 {1}\u79D2\u6062\u590D"
+    - languageCode: ja
+      text: "{0}\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316 \xB7 {1}\u79D2\u3067\u56DE\u5FA9"
+    - languageCode: en
+      text: "Negates one {0} anomaly \xB7 {1}s recharge"
+  - key: status_afp_field_desc_v2
+    texts:
+    - languageCode: zh-CN
+      text: "\u8C41\u514D\u4E00\u6B21\u5BF9\u5E94\u5C5E\u6027\u7684\u5F02\u5E38\u8D4B\u4E88\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF1B\u6863\u4F4D(\u5C42\u6570)\u8D8A\u9AD8\u6062\u590D\u8D8A\u5FEB\uFF0C\u4F46\u6709\u4E0B\u9650\u3002"
+    - languageCode: ja
+      text: "\u5BFE\u5FDC\u5C5E\u6027\u306E\u7570\u5E38\u4ED8\u4E0E\u30921\u56DE\u7121\u52B9\u5316\u3057\u3001\u305D\u306E\u5F8C\u56DE\u5FA9\u306B\u5165\u308B\u3002\u6BB5\u968E\u304C\u9AD8\u3044\u307B\u3069\u56DE\u5FA9\u304C\u901F\u3044\u304C\u4E0B\u9650\u304C\u3042\u308B\u3002"
+    - languageCode: en
+      text: Negates one anomaly of its element, then recharges; higher tiers recharge
+        faster, down to a floor.
+  - key: status_afp_field_cd_desc_v2
+    texts:
+    - languageCode: zh-CN
+      text: "\u529B\u573A\u5DF2\u8C41\u514D\u4E00\u6B21\u5F02\u5E38\uFF0C\u6062\u590D\u4E2D\uFF0C\u7ED3\u675F\u540E\u91CD\u65B0\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u30D5\u30A3\u30FC\u30EB\u30C9\u304C\u7570\u5E38\u3092\u7121\u52B9\u5316\u3057\u305F\u3002\u56DE\u5FA9\u5F8C\u306B\u518D\u3073\u6709\u52B9\u306B\u306A\u308B\u3002"
+    - languageCode: en
+      text: The field negated an anomaly and is recharging.
+  - key: charpanel_ability_exempt
+    texts:
+    - languageCode: zh-CN
+      text: "\u8C41\u514D 1 \u6B21"
+    - languageCode: ja
+      text: "1\u56DE\u7121\u52B9\u5316"
+    - languageCode: en
+      text: Negate x1
+  - key: ui_afp_up_magazine
+    texts:
+    - languageCode: zh-CN
+      text: "\u6269\u5BB9\u5F39\u5323"
+    - languageCode: ja
+      text: "\u30DE\u30AC\u30B8\u30F3\u62E1\u5F35"
+    - languageCode: en
+      text: Extended Magazine
+  - key: ui_afp_unit_rounds
+    texts:
+    - languageCode: zh-CN
+      text: " \u53D1"
+    - languageCode: ja
+      text: " \u767A"
+    - languageCode: en
+      text: ' rounds'
+  - key: charpanel_page_stats
+    texts:
+    - languageCode: zh-CN
+      text: "\u5C5E\u6027"
+    - languageCode: ja
+      text: "\u30B9\u30C6\u30FC\u30BF\u30B9"
+    - languageCode: en
+      text: Stats
+  - key: charpanel_page_abilities
+    texts:
+    - languageCode: zh-CN
+      text: "\u6218\u5C40\u80FD\u529B"
+    - languageCode: ja
+      text: "\u6226\u5C40\u30A2\u30D3\u30EA\u30C6\u30A3"
+    - languageCode: en
+      text: Raid Abilities
+  - key: charpanel_hint_prev_page
+    texts:
+    - languageCode: zh-CN
+      text: "\u4E0A\u4E00\u9875"
+    - languageCode: ja
+      text: "\u524D\u306E\u30DA\u30FC\u30B8"
+    - languageCode: en
+      text: Prev Page
+  - key: charpanel_hint_next_page
+    texts:
+    - languageCode: zh-CN
+      text: "\u4E0B\u4E00\u9875"
+    - languageCode: ja
+      text: "\u6B21\u306E\u30DA\u30FC\u30B8"
+    - languageCode: en
+      text: Next Page
+  - key: charpanel_ability_detail
+    texts:
+    - languageCode: zh-CN
+      text: "\u8BE6\u60C5"
+    - languageCode: ja
+      text: "\u8A73\u7D30"
+    - languageCode: en
+      text: Details
+  - key: charpanel_ability_state_ready
+    texts:
+    - languageCode: zh-CN
+      text: "\u5C31\u7EEA"
+    - languageCode: ja
+      text: "\u5F85\u6A5F\u4E2D"
+    - languageCode: en
+      text: Ready
+  - key: charpanel_ability_recharging_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u6062\u590D\u4E2D {0}"
+    - languageCode: ja
+      text: "\u56DE\u5FA9\u4E2D {0}"
+    - languageCode: en
+      text: Recharging {0}
+  - key: charpanel_ability_maxtier
+    texts:
+    - languageCode: zh-CN
+      text: "\u5DF2\u8FBE\u6700\u9AD8\u6863"
+    - languageCode: ja
+      text: "\u6700\u9AD8\u6BB5\u968E\u306B\u5230\u9054"
+    - languageCode: en
+      text: Max tier reached
+  - key: charpanel_ability_next_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u518D {0} \u7EA7\u5347\u81F3 {1}\uFF1A\u6062\u590D {2} \u79D2"
+    - languageCode: ja
+      text: "\u3042\u3068{0}\u6BB5\u968E\u3067{1}\u3078\uFF1A\u56DE\u5FA9{2}\u79D2"
+    - languageCode: en
+      text: '{0} more levels to {1}: {2}s recharge'
+  - key: charpanel_ability_field_desc
+    texts:
+    - languageCode: zh-CN
+      text: "\u8FD9\u4E2A\u5C5E\u6027\u7684\u5F02\u5E38\u7D2F\u8BA1\u6EE1\u503C\u3001\u5373\u5C06\u8D4B\u4E88{0}\u5F02\u5E38\u72B6\u6001\u65F6\uFF0C\u8C41\u514D\u8FD9\u4E00\u6B21\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\u3002\u6863\u4F4D\u8D8A\u9AD8\u6062\u590D\u8D8A\u5FEB\uFF0C\u4F46\u4E0D\u4F1A\u4E00\u76F4\u8C41\u514D\u3002"
+    - languageCode: ja
+      text: "\u3053\u306E\u5C5E\u6027\u306E\u7570\u5E38\u84C4\u7A4D\u304C\u6E80\u30BF\u30F3\u306B\u306A\u308A{0}\u7570\u5E38\u304C\u4ED8\u4E0E\u3055\u308C\u308B\u76F4\u524D\u306B\u30011\u56DE\u3060\u3051\u7121\u52B9\u5316\u3057\u3066\u56DE\u5FA9\u306B\u5165\u308B\u3002\u6BB5\u968E\u304C\u9AD8\u3044\u307B\u3069\u56DE\u5FA9\u306F\u901F\u3044\u304C\u3001\u5E38\u6642\u7121\u52B9\u306B\u306F\u306A\u3089\u306A\u3044\u3002"
+    - languageCode: en
+      text: When this element's anomaly gauge fills and a {0} anomaly is about to
+        be applied, negate it once, then recharge. Higher tiers recharge faster,
+        but never permanently.
+  - key: charpanel_ability_field_source
+    texts:
+    - languageCode: zh-CN
+      text: "\u6765\u6E90\uFF1AAFP \u5F3A\u5316\u300C{0}\u6297\u6027\u300D\u6BCF
+        5 \u7EA7\u4E00\u6863 + \u79D1\u6280\u6811\u8282\u70B9"
+    - languageCode: ja
+      text: "\u5165\u624B\u5143\uFF1AAFP\u5F37\u5316\u300C{0}\u8010\u6027\u300D5\u6BB5\u968E\u3054\u3068\u306B1\u6BB5
+        + \u30C6\u30C3\u30AF\u30C4\u30EA\u30FC"
+    - languageCode: en
+      text: 'Source: AFP upgrade "{0} Resistance" (tier every 5 levels) + Tech Tree
+        node'
+  - key: ui_afp_ab_insurance_desc
+    texts:
+    - languageCode: zh-CN
+      text: "\u53D7\u5230\u4F1A\u81F4\u547D\u7684\u4F24\u5BB3\u65F6\uFF0C\u6539\u4E3A\u9501\u5728
+        1 \u70B9\u8840\uFF0C\u968F\u540E\u8FDB\u5165\u51B7\u5374\u3002\u51B7\u5374\u7ED3\u675F\u524D\u518D\u53D7\u81F4\u547D\u4F24\u5BB3\u4F1A\u6B63\u5E38\u6B7B\u4EA1\u3002"
+    - languageCode: ja
+      text: "\u81F4\u547D\u7684\u306A\u30C0\u30E1\u30FC\u30B8\u3092\u53D7\u3051\u308B\u3068HP1\u3067\u8010\u3048\u3001\u30AF\u30FC\u30EB\u30C0\u30A6\u30F3\u306B\u5165\u308B\u3002\u30AF\u30FC\u30EB\u30C0\u30A6\u30F3\u4E2D\u306B\u518D\u3073\u81F4\u547D\u50B7\u3092\u53D7\u3051\u308B\u3068\u901A\u5E38\u901A\u308A\u6B7B\u4EA1\u3059\u308B\u3002"
+    - languageCode: en
+      text: A lethal hit leaves you at 1 HP, then the insurance cools down. A lethal
+        hit during cooldown kills you normally.
+  - key: charpanel_ability_ins_source
+    texts:
+    - languageCode: zh-CN
+      text: "\u6765\u6E90\uFF1AAFP \u5F3A\u5316\u300C\u8FFD\u52A0\u751F\u547D\u300D5
+        \u7EA7 + \u79D1\u6280\u6811\u8282\u70B9"
+    - languageCode: ja
+      text: "\u5165\u624B\u5143\uFF1AAFP\u5F37\u5316\u300C\u8FFD\u52A0\u30E9\u30A4\u30D5\u300D5\u6BB5\u968E
+        + \u30C6\u30C3\u30AF\u30C4\u30EA\u30FC"
+    - languageCode: en
+      text: 'Source: AFP upgrade "Bonus Vitality" level 5 + Tech Tree node'
+  - key: charpanel_ability_cd_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u6062\u590D\u65F6\u95F4\uFF1A{0} \u79D2"
+    - languageCode: ja
+      text: "\u56DE\u5FA9\u6642\u9593\uFF1A{0}\u79D2"
+    - languageCode: en
+      text: 'Recharge time: {0}s'
+  - key: charpanel_ability_tier_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u5F53\u524D\u6863\u4F4D\uFF1A{0} / {1}"
+    - languageCode: ja
+      text: "\u73FE\u5728\u306E\u6BB5\u968E\uFF1A{0} / {1}"
+    - languageCode: en
+      text: 'Current tier: {0} / {1}'
+  - key: charpanel_ability_empty
+    texts:
+    - languageCode: zh-CN
+      text: "\u672C\u5C40\u8FD8\u6CA1\u6709\u83B7\u5F97\u4EFB\u4F55\u80FD\u529B\u3002\u5728
+        AFP \u8D2D\u4E70\u533A\u5F3A\u5316\uFF0C\u5E76\u5728\u63A2\u7D22\u8005\u79D1\u6280\u6811\u91CC\u89E3\u9501\u5BF9\u5E94\u80FD\u529B\u540E\uFF0C\u4F1A\u51FA\u73B0\u5728\u8FD9\u91CC\u3002"
+    - languageCode: ja
+      text: "\u4ECA\u56DE\u306E\u6226\u5C40\u3067\u306F\u307E\u3060\u30A2\u30D3\u30EA\u30C6\u30A3\u304C\u3042\u308A\u307E\u305B\u3093\u3002AFP\u8CFC\u5165\u30A8\u30EA\u30A2\u3067\u5F37\u5316\u3057\u3001\u63A2\u7D22\u8005\u30C6\u30C3\u30AF\u30C4\u30EA\u30FC\u3067\u89E3\u653E\u3059\u308B\u3068\u3053\u3053\u306B\u8868\u793A\u3055\u308C\u307E\u3059\u3002"
+    - languageCode: en
+      text: No abilities yet this raid. Upgrade at an AFP zone and unlock the matching
+        Seeker Tech Tree node to see them here.
+  - key: charpanel_upgrades_title
+    texts:
+    - languageCode: zh-CN
+      text: "AFP \u5F3A\u5316"
+    - languageCode: ja
+      text: "AFP\u5F37\u5316"
+    - languageCode: en
+      text: AFP Upgrades
+  - key: charpanel_upgrades_none
+    texts:
+    - languageCode: zh-CN
+      text: "\u672C\u5C40\u8FD8\u6CA1\u6709\u5F3A\u5316\u8FC7\u4EFB\u4F55\u9879\u76EE\u3002"
+    - languageCode: ja
+      text: "\u4ECA\u56DE\u306E\u6226\u5C40\u3067\u306F\u307E\u3060\u5F37\u5316\u3057\u3066\u3044\u307E\u305B\u3093\u3002"
+    - languageCode: en
+      text: Nothing upgraded this raid.
+  - key: ui_afp_up_phys
+    texts:
+    - languageCode: zh-CN
+      text: "\u7269\u7406\u653B\u51FB\u5F3A\u5316"
+    - languageCode: ja
+      text: "\u7269\u7406\u653B\u6483\u5F37\u5316"
+    - languageCode: en
+      text: Physical Damage
+  - key: ui_afp_up_attr
+    texts:
+    - languageCode: zh-CN
+      text: "\u5C5E\u6027\u653B\u51FB\u5F3A\u5316"
+    - languageCode: ja
+      text: "\u5C5E\u6027\u653B\u6483\u5F37\u5316"
+    - languageCode: en
+      text: Elemental Damage
+  - key: charpanel_page_abilities_v2
+    texts:
+    - languageCode: zh-CN
+      text: "\u9002\u5E94\u7CFB\u7EDF"
+    - languageCode: ja
+      text: "\u9069\u5FDC\u30B7\u30B9\u30C6\u30E0"
+    - languageCode: en
+      text: Adaptation System
+  - key: charpanel_group_abilities_v2
+    texts:
+    - languageCode: zh-CN
+      text: "\u9002\u5E94\u80FD\u529B"
+    - languageCode: ja
+      text: "\u9069\u5FDC\u30A2\u30D3\u30EA\u30C6\u30A3"
+    - languageCode: en
+      text: Adaptation Abilities
+  - key: charpanel_upgrades_title_v2
+    texts:
+    - languageCode: zh-CN
+      text: "\u9002\u5E94\u5F3A\u5316"
+    - languageCode: ja
+      text: "\u9069\u5FDC\u5F37\u5316"
+    - languageCode: en
+      text: Adaptation Upgrades
+  - key: charpanel_upgrades_none_v2
+    texts:
+    - languageCode: zh-CN
+      text: "\u672C\u5C40\u8FD8\u6CA1\u6709\u8FDB\u884C\u8FC7\u9002\u5E94\u5F3A\u5316\u3002"
+    - languageCode: ja
+      text: "\u4ECA\u56DE\u306E\u6226\u5C40\u3067\u306F\u307E\u3060\u9069\u5FDC\u5F37\u5316\u3092\u884C\u3063\u3066\u3044\u307E\u305B\u3093\u3002"
+    - languageCode: en
+      text: No adaptation upgrades yet this raid.
+  - key: charpanel_ability_empty_v2
+    texts:
+    - languageCode: zh-CN
+      text: "\u672C\u5C40\u8FD8\u6CA1\u6709\u83B7\u5F97\u4EFB\u4F55\u9002\u5E94\u80FD\u529B\u3002\u5728\u9002\u5E94\u7CFB\u7EDF(AFP
+        \u8D2D\u4E70\u533A)\u91CC\u5F3A\u5316\uFF0C\u5E76\u5728\u63A2\u7D22\u8005\u79D1\u6280\u6811\u91CC\u89E3\u9501\u5BF9\u5E94\u80FD\u529B\u540E\uFF0C\u4F1A\u51FA\u73B0\u5728\u8FD9\u91CC\u3002"
+    - languageCode: ja
+      text: "\u4ECA\u56DE\u306E\u6226\u5C40\u3067\u306F\u307E\u3060\u9069\u5FDC\u30A2\u30D3\u30EA\u30C6\u30A3\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u9069\u5FDC\u30B7\u30B9\u30C6\u30E0(AFP\u8CFC\u5165\u30A8\u30EA\u30A2)\u3067\u5F37\u5316\u3057\u3001\u63A2\u7D22\u8005\u30C6\u30C3\u30AF\u30C4\u30EA\u30FC\u3067\u89E3\u653E\u3059\u308B\u3068\u3053\u3053\u306B\u8868\u793A\u3055\u308C\u307E\u3059\u3002"
+    - languageCode: en
+      text: No adaptation abilities yet this raid. Upgrade in the Adaptation System
+        (AFP zone) and unlock the matching Seeker Tech Tree node to see them here.
+  - key: ui_afp_ab_exempt
+    texts:
+    - languageCode: zh-CN
+      text: "\u6B7B\u4EA1\u8C41\u514D"
+    - languageCode: ja
+      text: "\u6B7B\u4EA1\u514D\u9664"
+    - languageCode: en
+      text: Death Exemption
+  - key: ui_afp_ab_exempt_eff
+    texts:
+    - languageCode: zh-CN
+      text: "\u8C41\u514D\u4E00\u6B21\u81F4\u547D\u4F24\u5BB3"
+    - languageCode: ja
+      text: "\u81F4\u547D\u50B7\u30921\u56DE\u514D\u9664"
+    - languageCode: en
+      text: Exempts one lethal hit
+  - key: ui_afp_ab_exempt_desc
+    texts:
+    - languageCode: zh-CN
+      text: "\u53D7\u5230\u4F1A\u81F4\u547D\u7684\u4F24\u5BB3\u65F6\uFF0C\u8C41\u514D\u8FD9\u4E00\u6B21\u6B7B\u4EA1\uFF0C\u8840\u91CF\u4FDD\u7559
+        1 \u70B9\uFF0C\u968F\u540E\u8FDB\u5165\u51B7\u5374\u3002\u51B7\u5374\u7ED3\u675F\u524D\u518D\u53D7\u81F4\u547D\u4F24\u5BB3\u4F1A\u6B63\u5E38\u6B7B\u4EA1\u3002"
+    - languageCode: ja
+      text: "\u81F4\u547D\u7684\u306A\u30C0\u30E1\u30FC\u30B8\u3092\u53D7\u3051\u305F\u6642\u3001\u305D\u306E\u6B7B\u4EA1\u30921\u56DE\u514D\u9664\u3057HP1\u3067\u8010\u3048\u3001\u30AF\u30FC\u30EB\u30C0\u30A6\u30F3\u306B\u5165\u308B\u3002\u30AF\u30FC\u30EB\u30C0\u30A6\u30F3\u4E2D\u306B\u518D\u3073\u81F4\u547D\u50B7\u3092\u53D7\u3051\u308B\u3068\u901A\u5E38\u901A\u308A\u6B7B\u4EA1\u3059\u308B\u3002"
+    - languageCode: en
+      text: A lethal hit is exempted once, leaving you at 1 HP, then the ability
+        goes on cooldown. A lethal hit during cooldown kills you normally.
+  - key: status_afp_exempt_ready
+    texts:
+    - languageCode: zh-CN
+      text: "\u6B7B\u4EA1\u8C41\u514D"
+    - languageCode: ja
+      text: "\u6B7B\u4EA1\u514D\u9664"
+    - languageCode: en
+      text: Death Exemption
+  - key: status_afp_exempt_ready_desc
+    texts:
+    - languageCode: zh-CN
+      text: "\u53D7\u5230\u81F4\u547D\u4F24\u5BB3\u65F6\u8C41\u514D\u8FD9\u4E00\u6B21\u6B7B\u4EA1\uFF0C\u8840\u91CF\u4FDD\u7559
+        1 \u70B9\uFF0C\u968F\u540E\u8FDB\u5165\u51B7\u5374\u3002"
+    - languageCode: ja
+      text: "\u81F4\u547D\u50B7\u3092\u53D7\u3051\u305F\u6642\u3001\u305D\u306E\u6B7B\u4EA1\u30921\u56DE\u514D\u9664\u3057HP1\u3067\u8010\u3048\u3001\u30AF\u30FC\u30EB\u30C0\u30A6\u30F3\u306B\u5165\u308B\u3002"
+    - languageCode: en
+      text: A lethal hit is exempted once, leaving you at 1 HP, then it cools down.
+  - key: status_afp_exempt_cd
+    texts:
+    - languageCode: zh-CN
+      text: "\u6B7B\u4EA1\u8C41\u514D\xB7\u51B7\u5374"
+    - languageCode: ja
+      text: "\u6B7B\u4EA1\u514D\u9664\xB7\u30AF\u30FC\u30EB\u30C0\u30A6\u30F3"
+    - languageCode: en
+      text: "Death Exemption \xB7 Cooldown"
+  - key: status_afp_exempt_cd_desc
+    texts:
+    - languageCode: zh-CN
+      text: "\u6B7B\u4EA1\u8C41\u514D\u51B7\u5374\u4E2D\uFF0C\u7ED3\u675F\u540E\u6062\u590D\u53EF\u7528\u3002"
+    - languageCode: ja
+      text: "\u6B7B\u4EA1\u514D\u9664\u306F\u30AF\u30FC\u30EB\u30C0\u30A6\u30F3\u4E2D\u3002\u7D42\u4E86\u5F8C\u306B\u518D\u3073\u4F7F\u7528\u53EF\u80FD\u3002"
+    - languageCode: en
+      text: Death Exemption is cooling down and becomes available again afterwards.
+  - key: ui_afp_ab_burst
+    texts:
+    - languageCode: zh-CN
+      text: "\u5F02\u5E38\u8FFD\u4F24"
+    - languageCode: ja
+      text: "\u7570\u5E38\u8FFD\u6483"
+    - languageCode: en
+      text: Anomaly Burst
+  - key: ui_afp_ab_burst_eff_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u5F02\u5E38\u89E6\u53D1\u65F6\u8FFD\u4F24 \u653B\u51FB\u529B\xD7{0}"
+    - languageCode: ja
+      text: "\u7570\u5E38\u767A\u52D5\u6642\u306B\u653B\u6483\u529B\xD7{0}\u306E\u8FFD\u6483"
+    - languageCode: en
+      text: "On anomaly: bonus damage = ATK \xD7{0}"
+  - key: charpanel_ability_burst_state_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\xD7{0}"
+    - languageCode: ja
+      text: "\xD7{0}"
+    - languageCode: en
+      text: "\xD7{0}"
+  - key: charpanel_ability_burst_desc
+    texts:
+    - languageCode: zh-CN
+      text: "\u4F60\u7684\u653B\u51FB\u8BA9\u654C\u4EBA\u7684\u67D0\u79CD\u5C5E\u6027\u5F02\u5E38\u7D2F\u8BA1\u6EE1\u503C\u3001\u5F02\u5E38\u771F\u6B63\u8D4B\u4E88\u7684\u90A3\u4E00\u523B\uFF0C\u989D\u5916\u6253\u51FA\u4E00\u7B14\u540C\u5C5E\u6027\u7684\u8FFD\u4F24\uFF0C\u5927\u5C0F\u662F\u4F60\u5F53\u524D\u653B\u51FB\u529B\u7684\u500D\u6570\u3002\u8FFD\u4F24\u4E0D\u4F1A\u518D\u7D2F\u8BA1\u5F02\u5E38\uFF1B\u53CC\u5C5E\u6027\u6B66\u5668\u4E24\u79CD\u5F02\u5E38\u5404\u8FFD\u4F24\u4E00\u6B21\u3002"
+    - languageCode: ja
+      text: "\u653B\u6483\u3067\u6575\u306E\u5C5E\u6027\u7570\u5E38\u304C\u6E80\u30BF\u30F3\u306B\u306A\u308A\u3001\u7570\u5E38\u304C\u5B9F\u969B\u306B\u4ED8\u4E0E\u3055\u308C\u305F\u77AC\u9593\u306B\u3001\u540C\u5C5E\u6027\u306E\u8FFD\u6483\u30C0\u30E1\u30FC\u30B8\u3092\u4E0E\u3048\u308B\u3002\u5927\u304D\u3055\u306F\u73FE\u5728\u306E\u653B\u6483\u529B\u306E\u500D\u7387\u3002\u8FFD\u6483\u81EA\u4F53\u306F\u7570\u5E38\u3092\u84C4\u7A4D\u3057\u306A\u3044\u3002\u5C5E\u6027\u30922\u3064\u6301\u3064\u6B66\u5668\u306F\u3001\u4E21\u65B9\u306E\u7570\u5E38\u3067\u305D\u308C\u305E\u308C\u8FFD\u6483\u3059\u308B\u3002"
+    - languageCode: en
+      text: When your attack fills an enemy's anomaly gauge and the anomaly is actually
+        applied, you deal an extra hit of that element equal to a multiple of your
+        ATK. The extra hit does not build anomaly; dual-element weapons trigger it
+        once per anomaly.
+  - key: charpanel_ability_burst_source
+    texts:
+    - languageCode: zh-CN
+      text: "\u6765\u6E90\uFF1A\u9002\u5E94\u5F3A\u5316\u300C\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u300D\u6BCF
+        5 \u7EA7\u4E00\u6863 + \u79D1\u6280\u6811\u8282\u70B9"
+    - languageCode: ja
+      text: "\u5165\u624B\u5143\uFF1A\u9069\u5FDC\u5F37\u5316\u300C\u5C5E\u6027\u653B\u6483\u5F37\u5316\u300D5\u6BB5\u968E\u3054\u3068\u306B1\u6BB5
+        + \u30C6\u30C3\u30AF\u30C4\u30EA\u30FC"
+    - languageCode: en
+      text: 'Source: Adaptation upgrade "Elemental Damage" (tier every 5 levels)
+        + Tech Tree node'
+  - key: charpanel_ability_burst_next_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u518D {0} \u7EA7\u5347\u81F3 {1}\uFF1A\u8FFD\u4F24 \xD7{2}"
+    - languageCode: ja
+      text: "\u3042\u3068{0}\u6BB5\u968E\u3067{1}\u3078\uFF1A\u8FFD\u6483\xD7{2}"
+    - languageCode: en
+      text: "{0} more levels to {1}: burst \xD7{2}"
+  - key: ui_afp_ab_mastery
+    texts:
+    - languageCode: zh-CN
+      text: "\u7269\u7406\u4E13\u7CBE"
+    - languageCode: ja
+      text: "\u7269\u7406\u719F\u7DF4"
+    - languageCode: en
+      text: Physical Mastery
+  - key: ui_afp_ab_mastery_eff_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u5927\u5251\uFF1A\u65A9\u6740 \u2264{0} \u8840 \xB7 \u67AA\u68B0\uFF1A\u672B
+        {1} \u53D1 +{2}%"
+    - languageCode: ja
+      text: "\u5927\u5263\uFF1AHP{0}\u4EE5\u4E0B\u3092\u51E6\u5211 \xB7 \u9283\uFF1A\u6700\u5F8C\u306E{1}\u767A+{2}%"
+    - languageCode: en
+      text: "Greatsword: execute \u2264{0} HP \xB7 Gun: last {1} rounds +{2}%"
+  - key: charpanel_ability_mastery_state
+    texts:
+    - languageCode: zh-CN
+      text: "\u5DF2\u751F\u6548"
+    - languageCode: ja
+      text: "\u6709\u52B9"
+    - languageCode: en
+      text: Active
+  - key: charpanel_ability_mastery_desc_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u5927\u5251\uFF1A\u8FD9\u4E00\u51FB\u6253\u5B8C\u540E\u76EE\u6807\u8840\u91CF
+        \u2264 {0} \u70B9\u5C31\u76F4\u63A5\u65A9\u6740(\u8840\u91CF\u4E0A\u9650
+        \u2265 250 \u7684\u654C\u4EBA\u4E0D\u4F1A\u88AB\u65A9\u6740\uFF0C\u6539\u4E3A\u8840\u91CF\u4F4E\u4E8E
+        25% \u65F6\u7269\u7406\u4F24\u5BB3 +{1}%)\u3002\u67AA\u68B0\uFF1A\u5F39\u5323\u91CC\u6700\u540E
+        {2} \u53D1\u5B50\u5F39\u4F24\u5BB3 +{3}%\u3002"
+    - languageCode: ja
+      text: "\u5927\u5263\uFF1A\u3053\u306E\u4E00\u6483\u306E\u5F8C\u306B\u5BFE\u8C61\u306EHP\u304C{0}\u4EE5\u4E0B\u306A\u3089\u5373\u5EA7\u306B\u51E6\u5211(\u6700\u5927HP250\u4EE5\u4E0A\u306E\u6575\u306F\u51E6\u5211\u3055\u308C\u305A\u3001HP25%\u672A\u6E80\u306E\u6642\u306B\u7269\u7406\u30C0\u30E1\u30FC\u30B8+{1}%)\u3002\u9283\uFF1A\u30DE\u30AC\u30B8\u30F3\u6700\u5F8C\u306E{2}\u767A\u306E\u30C0\u30E1\u30FC\u30B8+{3}%\u3002"
+    - languageCode: en
+      text: "Greatsword: if the target's HP is \u2264 {0} after this hit, execute
+        it (enemies with max HP \u2265 250 can't be executed; below 25% HP they take
+        +{1}% physical damage). Gun: the last {2} rounds in the magazine deal +{3}%
+        damage."
+  - key: charpanel_ability_mastery_source
+    texts:
+    - languageCode: zh-CN
+      text: "\u6765\u6E90\uFF1A\u9002\u5E94\u5F3A\u5316\u300C\u7269\u7406\u653B\u51FB\u5F3A\u5316\u300D\u6BCF
+        5 \u7EA7\u4E00\u6863 + \u79D1\u6280\u6811\u8282\u70B9"
+    - languageCode: ja
+      text: "\u5165\u624B\u5143\uFF1A\u9069\u5FDC\u5F37\u5316\u300C\u7269\u7406\u653B\u6483\u5F37\u5316\u300D5\u6BB5\u968E\u3054\u3068\u306B1\u6BB5
+        + \u30C6\u30C3\u30AF\u30C4\u30EA\u30FC"
+    - languageCode: en
+      text: 'Source: Adaptation upgrade "Physical Damage" (tier every 5 levels) +
+        Tech Tree node'
+  - key: charpanel_ability_mastery_next_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u518D {0} \u7EA7\u5347\u81F3 {1}\uFF1A\u65A9\u6740 \u2264{2} \u8840
+        \xB7 \u672B {3} \u53D1 +{4}%"
+    - languageCode: ja
+      text: "\u3042\u3068{0}\u6BB5\u968E\u3067{1}\u3078\uFF1AHP{2}\u4EE5\u4E0B\u3092\u51E6\u5211
+        \xB7 \u6700\u5F8C{3}\u767A+{4}%"
+    - languageCode: en
+      text: "{0} more levels to {1}: execute \u2264{2} HP \xB7 last {3} rounds +{4}%"
+  - key: charpanel_ability_burst_vuln_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u53E6\u5916\uFF0C\u5904\u4E8E\u5F02\u5E38\u72B6\u6001\u4E2D\u7684\u654C\u4EBA\u53D7\u5230\u4F60\u7684\u4F24\u5BB3
+        +{0}%\u3002"
+    - languageCode: ja
+      text: "\u3055\u3089\u306B\u3001\u7570\u5E38\u72B6\u614B\u306E\u6575\u304C\u53D7\u3051\u308B\u81EA\u5206\u306E\u30C0\u30E1\u30FC\u30B8+{0}%\u3002"
+    - languageCode: en
+      text: Also, enemies under an anomaly take +{0}% damage from you.
+  - key: ui_afp_ab_mastery_eff_v3
+    texts:
+    - languageCode: zh-CN
+      text: "\u56DE\u8F6C\uFF1A\u51FB\u6740\u56DE {0}% LP \xB7 \u67AA\uFF1A\u672B
+        {1} \u53D1 +{2}%"
+    - languageCode: ja
+      text: "\u56DE\u8EE2\uFF1A\u6483\u7834\u3067LP{0}%\u56DE\u5FA9 \xB7 \u9283\uFF1A\u6700\u5F8C\u306E{1}\u767A+{2}%"
+    - languageCode: en
+      text: "Cycle: kills restore {0}% LP \xB7 Gun: last {1} rounds +{2}%"
+  - key: charpanel_ability_mastery_desc_v3
+    texts:
+    - languageCode: zh-CN
+      text: "\u56DE\u8F6C\uFF1A\u51FB\u6740\u654C\u4EBA\u65F6\u56DE\u590D\u6700\u5927
+        LP \u7684 {0}%(\u51FB\u6740\u8840\u91CF\u4E0A\u9650 \u2265 250 \u7684\u5927\u8840\u91CF\u654C\u4EBA\u56DE\u590D
+        \xD73)\uFF0C\u8BA9\u4F60\u6562\u4E8E\u51B2\u8FDB\u654C\u7FA4\uFF1B\u7BB1\u5B50\u7B49\u53EF\u7834\u574F\u7269\u4E0D\u7B97\u3002\u81F4\u547D\u5F39\u836F(\u67AA\u68B0)\uFF1A\u5F39\u5323\u91CC\u6700\u540E
+        {1} \u53D1\u5B50\u5F39\u4F24\u5BB3 +{2}%\u3002"
+    - languageCode: ja
+      text: "\u56DE\u8EE2\uFF1A\u6575\u3092\u5012\u3059\u3068\u6700\u5927LP\u306E{0}%\u3092\u56DE\u5FA9(\u6700\u5927HP250\u4EE5\u4E0A\u306E\u5927\u578B\u6575\u306F\xD73)\u3002\u6575\u7FA4\u306B\u98DB\u3073\u8FBC\u307F\u3084\u3059\u304F\u306A\u308B\u3002\u6728\u7BB1\u306A\u3069\u306E\u7834\u58CA\u7269\u306F\u5BFE\u8C61\u5916\u3002\u81F4\u547D\u5F3E(\u9283)\uFF1A\u30DE\u30AC\u30B8\u30F3\u6700\u5F8C\u306E{1}\u767A\u306E\u30C0\u30E1\u30FC\u30B8+{2}%\u3002"
+    - languageCode: en
+      text: 'Cycle: killing an enemy restores {0}% of max LP (x3 for large enemies
+        with max HP >= 250), so you can dive into groups; crates don''t count. Deadly
+        Ammo (guns): the last {1} rounds in the magazine deal +{2}% damage.'
+  - key: ui_afp_ab_mastery_v2
+    texts:
+    - languageCode: zh-CN
+      text: "\u6B66\u5668\u4E13\u7CBE"
+    - languageCode: ja
+      text: "\u6B66\u5668\u719F\u7DF4"
+    - languageCode: en
+      text: Weapon Mastery
+  - key: ui_afp_ab_mastery_eff_v2
+    texts:
+    - languageCode: zh-CN
+      text: "\u7EED\u6218\uFF1A\u51FB\u6740\u56DE {0}% LP \xB7 \u67AA\uFF1A\u672B
+        {1} \u53D1 +{2}%"
+    - languageCode: ja
+      text: "\u7D99\u6226\uFF1A\u6483\u7834\u3067LP{0}%\u56DE\u5FA9 \xB7 \u9283\uFF1A\u6700\u5F8C\u306E{1}\u767A+{2}%"
+    - languageCode: en
+      text: "Sustain: kills restore {0}% LP \xB7 Gun: last {1} rounds +{2}%"
+  - key: charpanel_ability_mastery_desc_v2
+    texts:
+    - languageCode: zh-CN
+      text: "\u7EED\u6218\uFF1A\u51FB\u6740\u654C\u4EBA\u65F6\u56DE\u590D\u6700\u5927
+        LP \u7684 {0}%(\u51FB\u6740\u8840\u91CF\u4E0A\u9650 \u2265 250 \u7684\u5927\u8840\u91CF\u654C\u4EBA\u56DE\u590D
+        \xD73)\uFF0C\u8BA9\u4F60\u6562\u4E8E\u51B2\u8FDB\u654C\u7FA4\uFF1B\u7BB1\u5B50\u7B49\u53EF\u7834\u574F\u7269\u4E0D\u7B97\u3002\u81F4\u547D\u5F39\u836F(\u67AA\u68B0)\uFF1A\u5F39\u5323\u91CC\u6700\u540E
+        {1} \u53D1\u5B50\u5F39\u4F24\u5BB3 +{2}%\u3002"
+    - languageCode: ja
+      text: "\u7D99\u6226\uFF1A\u6575\u3092\u5012\u3059\u3068\u6700\u5927LP\u306E{0}%\u3092\u56DE\u5FA9(\u6700\u5927HP250\u4EE5\u4E0A\u306E\u5927\u578B\u6575\u306F\xD73)\u3002\u6575\u7FA4\u306B\u98DB\u3073\u8FBC\u307F\u3084\u3059\u304F\u306A\u308B\u3002\u6728\u7BB1\u306A\u3069\u306E\u7834\u58CA\u7269\u306F\u5BFE\u8C61\u5916\u3002\u81F4\u547D\u5F3E(\u9283)\uFF1A\u30DE\u30AC\u30B8\u30F3\u6700\u5F8C\u306E{1}\u767A\u306E\u30C0\u30E1\u30FC\u30B8+{2}%\u3002"
+    - languageCode: en
+      text: 'Sustain: killing an enemy restores {0}% of max LP (x3 for large enemies
+        with max HP >= 250), so you can dive into groups; crates don''t count. Deadly
+        Ammo (guns): the last {1} rounds in the magazine deal +{2}% damage.'
+  - key: charpanel_ability_mastery_next_v2
+    texts:
+    - languageCode: zh-CN
+      text: "\u518D {0} \u7EA7\u5347\u81F3 {1}\uFF1A\u51FB\u6740\u56DE {2}% LP \xB7
+        \u67AA\u672B {3} \u53D1 +{4}%"
+    - languageCode: ja
+      text: "\u3042\u3068{0}\u6BB5\u968E\u3067{1}\u3078\uFF1A\u6483\u7834\u3067LP{2}%\u56DE\u5FA9
+        \xB7 \u9283\u6700\u5F8C{3}\u767A+{4}%"
+    - languageCode: en
+      text: "{0} more levels to {1}: kills restore {2}% LP \xB7 gun last {3} rounds
+        +{4}%"
+  - key: ui_afp_ab_mastery_eff_v4
+    texts:
+    - languageCode: zh-CN
+      text: "\u56DE\u8F6C\uFF1A\u51FB\u6740\u56DE {0}% LP \xB7 \u81F4\u547D\u5B50\u5F39\uFF1A\u672B
+        {1} \u53D1 +{2}%"
+    - languageCode: ja
+      text: "\u56DE\u8EE2\uFF1A\u6483\u7834\u3067LP{0}%\u56DE\u5FA9 \xB7 \u81F4\u547D\u5F3E\uFF1A\u6700\u5F8C\u306E{1}\u767A+{2}%"
+    - languageCode: en
+      text: "Cycle: kills restore {0}% LP \xB7 Lethal Rounds: last {1} rounds +{2}%"
+  - key: charpanel_ability_mastery_desc_v4
+    texts:
+    - languageCode: zh-CN
+      text: "\u56DE\u8F6C\uFF1A\u51FB\u6740\u654C\u4EBA\u65F6\u56DE\u590D\u6700\u5927
+        LP \u7684 {0}%(\u51FB\u6740\u8840\u91CF\u4E0A\u9650 \u2265 250 \u7684\u5927\u8840\u91CF\u654C\u4EBA\u56DE\u590D
+        \xD73)\uFF0C\u8BA9\u4F60\u6562\u4E8E\u51B2\u8FDB\u654C\u7FA4\uFF1B\u7BB1\u5B50\u7B49\u53EF\u7834\u574F\u7269\u4E0D\u7B97\u3002\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA)\uFF1A\u5F39\u5323\u91CC\u6700\u540E
+        {1} \u53D1\u5B50\u5F39\u4F24\u5BB3 +{2}%\u3002"
+    - languageCode: ja
+      text: "\u56DE\u8EE2\uFF1A\u6575\u3092\u5012\u3059\u3068\u6700\u5927LP\u306E{0}%\u3092\u56DE\u5FA9(\u6700\u5927HP250\u4EE5\u4E0A\u306E\u5927\u578B\u6575\u306F\xD73)\u3002\u6575\u7FA4\u306B\u98DB\u3073\u8FBC\u307F\u3084\u3059\u304F\u306A\u308B\u3002\u6728\u7BB1\u306A\u3069\u306E\u7834\u58CA\u7269\u306F\u5BFE\u8C61\u5916\u3002\u81F4\u547D\u5F3E(\u53CC\u9283)\uFF1A\u30DE\u30AC\u30B8\u30F3\u6700\u5F8C\u306E{1}\u767A\u306E\u30C0\u30E1\u30FC\u30B8+{2}%\u3002"
+    - languageCode: en
+      text: 'Cycle: killing an enemy restores {0}% of max LP (x3 for large enemies
+        with max HP >= 250), so you can dive into groups; crates don''t count. Lethal
+        Rounds (dual guns): the last {1} rounds in the magazine deal +{2}% damage.'
+  - key: charpanel_ability_mastery_next_v3
+    texts:
+    - languageCode: zh-CN
+      text: "\u518D {0} \u7EA7\u5347\u81F3 {1}\uFF1A\u51FB\u6740\u56DE {2}% LP \xB7
+        \u81F4\u547D\u5B50\u5F39 \u672B {3} \u53D1 +{4}%"
+    - languageCode: ja
+      text: "\u3042\u3068{0}\u6BB5\u968E\u3067{1}\u3078\uFF1A\u6483\u7834\u3067LP{2}%\u56DE\u5FA9
+        \xB7 \u81F4\u547D\u5F3E \u6700\u5F8C{3}\u767A+{4}%"
+    - languageCode: en
+      text: "{0} more levels to {1}: kills restore {2}% LP \xB7 Lethal Rounds last
+        {3} rounds +{4}%"
+  - key: afp_zone_prompt_v2
+    texts:
+    - languageCode: zh-CN
+      text: "\u8FDB\u884CAFP\u90E8\u7F72"
+    - languageCode: ja
+      text: "AFP\u5C55\u958B\u3092\u884C\u3046"
+    - languageCode: en
+      text: Deploy AFP
+  - key: ui_afp_ab_need_short_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u518D {0} \u7EA7"
+    - languageCode: ja
+      text: "\u3042\u3068{0}\u6BB5\u968E"
+    - languageCode: en
+      text: '{0} more lv'
+  - key: ui_afp_ab_burst_short_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u8FFD\u4F24 \u653B\u51FB\u529B\xD7{0} \xB7 \u5F02\u5E38\u589E\u4F24
+        +{1}%"
+    - languageCode: ja
+      text: "\u8FFD\u6483 \u653B\u6483\u529B\xD7{0} \xB7 \u7570\u5E38\u5897\u30C0\u30E1+{1}%"
+    - languageCode: en
+      text: "Burst ATK\xD7{0} \xB7 anomaly +{1}% dmg"
+  - key: ui_afp_ab_mastery_short_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u56DE\u8F6C {0}% LP \xB7 \u81F4\u547D\u5B50\u5F39 \u672B{1}\u53D1 +{2}%"
+    - languageCode: ja
+      text: "\u56DE\u8EE2 LP{0}% \xB7 \u81F4\u547D\u5F3E \u6700\u5F8C{1}\u767A+{2}%"
+    - languageCode: en
+      text: "Cycle {0}% LP \xB7 Lethal Rounds last {1} +{2}%"
+  - key: charpanel_ability_slot_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u9002\u5E94\u80FD\u529B {0}"
+    - languageCode: ja
+      text: "\u9069\u5FDC\u80FD\u529B {0}"
+    - languageCode: en
+      text: Adaptation {0}
+  - key: charpanel_ability_empty_v3
+    texts:
+    - languageCode: zh-CN
+      text: "\u5C1A\u672A\u83B7\u5F97\u9002\u5E94\u80FD\u529B"
+    - languageCode: ja
+      text: "\u9069\u5FDC\u80FD\u529B\u306F\u672A\u53D6\u5F97"
+    - languageCode: en
+      text: No adaptations acquired
+  - key: charpanel_upgrades_none_v3
+    texts:
+    - languageCode: zh-CN
+      text: "\u5C1A\u672A\u8FDB\u884C\u9002\u5E94\u5F3A\u5316"
+    - languageCode: ja
+      text: "\u9069\u5FDC\u5F37\u5316\u306F\u672A\u5B9F\u65BD"
+    - languageCode: en
+      text: No upgrades applied
+  - key: charpanel_equip_weight
+    texts:
+    - languageCode: zh-CN
+      text: "\u88C5\u5907\u603B\u91CD"
+    - languageCode: ja
+      text: "\u88C5\u5099\u7DCF\u91CD\u91CF"
+    - languageCode: en
+      text: Equipment Weight
+  - key: charpanel_tier_light
+    texts:
+    - languageCode: zh-CN
+      text: "\u8F7B\u88C5"
+    - languageCode: ja
+      text: "\u8EFD\u88C5"
+    - languageCode: en
+      text: Light
+  - key: charpanel_tier_normal
+    texts:
+    - languageCode: zh-CN
+      text: "\u6807\u51C6"
+    - languageCode: ja
+      text: "\u6A19\u6E96"
+    - languageCode: en
+      text: Standard
+  - key: charpanel_tier_heavy
+    texts:
+    - languageCode: zh-CN
+      text: "\u91CD\u88C5"
+    - languageCode: ja
+      text: "\u91CD\u88C5"
+    - languageCode: en
+      text: Heavy
+  - key: charpanel_tier_overload
+    texts:
+    - languageCode: zh-CN
+      text: "\u8D85\u91CD\u88C5"
+    - languageCode: ja
+      text: "\u8D85\u91CD\u88C5"
+    - languageCode: en
+      text: Overweight
+  - key: ui_afp_ab_cycle
+    texts:
+    - languageCode: zh-CN
+      text: "\u56DE\u8F6C"
+    - languageCode: ja
+      text: "\u56DE\u8EE2"
+    - languageCode: en
+      text: Cycle
+  - key: ui_afp_ab_cycle_short_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u51FB\u6740\u56DE\u590D {0}% LP"
+    - languageCode: ja
+      text: "\u6483\u7834\u3067LP{0}%\u56DE\u5FA9"
+    - languageCode: en
+      text: 'Kill: +{0}% LP'
+  - key: ui_afp_ab_cycle_state_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u51FB\u6740 +{0}% LP"
+    - languageCode: ja
+      text: "\u6483\u7834 +{0}% LP"
+    - languageCode: en
+      text: Kill +{0}% LP
+  - key: ui_afp_ab_lethal
+    texts:
+    - languageCode: zh-CN
+      text: "\u81F4\u547D\u5B50\u5F39"
+    - languageCode: ja
+      text: "\u81F4\u547D\u5F3E"
+    - languageCode: en
+      text: Lethal Rounds
+  - key: ui_afp_ab_lethal_short_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u5F39\u5323\u672B {0} \u53D1 \u4F24\u5BB3 +{1}%"
+    - languageCode: ja
+      text: "\u30DE\u30AC\u30B8\u30F3\u672B\u5C3E{0}\u767A \u30C0\u30E1\u30FC\u30B8+{1}%"
+    - languageCode: en
+      text: 'Last {0} rounds: +{1}% damage'
+  - key: ui_afp_ab_lethal_state_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u672B {0} \u53D1 +{1}%"
+    - languageCode: ja
+      text: "\u672B\u5C3E{0}\u767A +{1}%"
+    - languageCode: en
+      text: Last {0} +{1}%
+  - key: charpanel_ability_cycle_desc_v5
+    texts:
+    - languageCode: zh-CN
+      text: "\u4EC5\u9650\u5251\u3002\u51FB\u6740\u654C\u4EBA\u65F6\uFF0C\u6062\u590D\u6700\u5927
+        LP \u7684 {0}%\u3002\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
+        \xD73\u3002\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002"
+    - languageCode: ja
+      text: "\u5263\u5C02\u7528\u3002\u6575\u3092\u6483\u7834\u3059\u308B\u3068\u3001\u6700\u5927LP\u306E{0}%\u3092\u56DE\u5FA9\u3059\u308B\u3002\u6700\u5927HP250\u4EE5\u4E0A\u306E\u5BFE\u8C61\u3092\u6483\u7834\u3057\u305F\u5834\u5408\u3001\u56DE\u5FA9\u91CF\u306F\xD73\u3002\u7834\u58CA\u7269\u306F\u5BFE\u8C61\u5916\u3002"
+    - languageCode: en
+      text: Sword only. Killing an enemy restores {0}% of max LP. Targets with 250
+        or more max HP restore x3. Destructibles do not count.
+  - key: charpanel_ability_lethal_desc_v5
+    texts:
+    - languageCode: zh-CN
+      text: "\u4EC5\u9650\u53CC\u67AA\u3002\u5F39\u5323\u6700\u540E {0} \u53D1\u5B50\u5F39\u7684\u4F24\u5BB3
+        +{1}%\u3002"
+    - languageCode: ja
+      text: "\u53CC\u9283\u5C02\u7528\u3002\u30DE\u30AC\u30B8\u30F3\u6700\u5F8C\u306E{0}\u767A\u306E\u30C0\u30E1\u30FC\u30B8+{1}%\u3002"
+    - languageCode: en
+      text: Dual guns only. The last {0} rounds in the magazine deal +{1}% damage.
+  - key: charpanel_ability_phys_source_v5
+    texts:
+    - languageCode: zh-CN
+      text: "\u6765\u6E90\uFF1A\u9002\u5E94\u5F3A\u5316\u300C\u7269\u7406\u653B\u51FB\u5F3A\u5316\u300D\u6BCF
+        5 \u7EA7 + \u79D1\u6280\u6811\u8282\u70B9"
+    - languageCode: ja
+      text: "\u5165\u624B\uFF1A\u9069\u5FDC\u5F37\u5316\u300C\u7269\u7406\u653B\u6483\u5F37\u5316\u300D5\u6BB5\u968E\u3054\u3068
+        + \u6280\u8853\u30C4\u30EA\u30FC\u30CE\u30FC\u30C9"
+    - languageCode: en
+      text: 'Source: Physical Attack upgrade, every 5 levels + tech tree node'
+  - key: charpanel_ability_cycle_next_v5
+    texts:
+    - languageCode: zh-CN
+      text: "\u518D {0} \u7EA7\u5347\u81F3 {1}\uFF1A\u51FB\u6740\u56DE\u590D {2}%
+        LP"
+    - languageCode: ja
+      text: "\u3042\u3068{0}\u6BB5\u968E\u3067{1}\u3078\uFF1A\u6483\u7834\u3067LP{2}%\u56DE\u5FA9"
+    - languageCode: en
+      text: '{0} more levels to {1}: kill restores {2}% LP'
+  - key: charpanel_ability_lethal_next_v5
+    texts:
+    - languageCode: zh-CN
+      text: "\u518D {0} \u7EA7\u5347\u81F3 {1}\uFF1A\u5F39\u5323\u672B {2} \u53D1
+        +{3}%"
+    - languageCode: ja
+      text: "\u3042\u3068{0}\u6BB5\u968E\u3067{1}\u3078\uFF1A\u30DE\u30AC\u30B8\u30F3\u672B\u5C3E{2}\u767A
+        +{3}%"
+    - languageCode: en
+      text: '{0} more levels to {1}: last {2} rounds +{3}%'
+  - key: charpanel_ability_field_desc_v5
+    texts:
+    - languageCode: zh-CN
+      text: "\u76EE\u6807\u5C5E\u6027\u7684\u5F02\u5E38\u7D2F\u8BA1\u5373\u5C06\u89E6\u53D1{0}\u5F02\u5E38\u65F6\uFF0C\u8C41\u514D\u4E00\u6B21\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\u3002\u6863\u4F4D\u8D8A\u9AD8\uFF0C\u6062\u590D\u8D8A\u5FEB\u3002"
+    - languageCode: ja
+      text: "\u5BFE\u8C61\u5C5E\u6027\u306E\u7570\u5E38\u84C4\u7A4D\u304C{0}\u7570\u5E38\u306B\u9054\u3059\u308B\u969B\u3001\u4E00\u5EA6\u3060\u3051\u7121\u52B9\u5316\u3057\u3001\u305D\u306E\u5F8C\u56DE\u5FA9\u306B\u5165\u308B\u3002\u6BB5\u968E\u304C\u9AD8\u3044\u307B\u3069\u56DE\u5FA9\u304C\u65E9\u3044\u3002"
+    - languageCode: en
+      text: When accumulation of this attribute is about to inflict {0} status, negate
+        it once, then recharge. Higher tiers recharge faster.
+  - key: charpanel_ability_field_source_v5
+    texts:
+    - languageCode: zh-CN
+      text: "\u6765\u6E90\uFF1A\u9002\u5E94\u5F3A\u5316\u300C{0}\u6297\u6027\u300D\u6BCF
+        5 \u7EA7 + \u79D1\u6280\u6811\u8282\u70B9"
+    - languageCode: ja
+      text: "\u5165\u624B\uFF1A\u9069\u5FDC\u5F37\u5316\u300C{0}\u8010\u6027\u300D5\u6BB5\u968E\u3054\u3068
+        + \u6280\u8853\u30C4\u30EA\u30FC\u30CE\u30FC\u30C9"
+    - languageCode: en
+      text: 'Source: {0} Resistance upgrade, every 5 levels + tech tree node'
+  - key: charpanel_ability_burst_desc_v5
+    texts:
+    - languageCode: zh-CN
+      text: "\u547D\u4E2D\u4EE4\u654C\u4EBA\u89E6\u53D1\u5C5E\u6027\u5F02\u5E38\u65F6\uFF0C\u8FFD\u52A0\u4E00\u6B21\u540C\u5C5E\u6027\u8FFD\u4F24\uFF0C\u4F24\u5BB3\u4E3A\u5F53\u524D\u653B\u51FB\u529B\u7684\u500D\u6570\u3002\u8FFD\u4F24\u4E0D\u518D\u7D2F\u8BA1\u5F02\u5E38\uFF1B\u53CC\u5C5E\u6027\u6B66\u5668\u4E24\u79CD\u5F02\u5E38\u5404\u8FFD\u4F24\u4E00\u6B21\u3002\u5904\u4E8E\u5F02\u5E38\u72B6\u6001\u7684\u654C\u4EBA\uFF0C\u53D7\u5230\u7684\u4F24\u5BB3
+        +{0}%\u3002"
+    - languageCode: ja
+      text: "\u547D\u4E2D\u3067\u6575\u306B\u5C5E\u6027\u7570\u5E38\u304C\u767A\u751F\u3057\u305F\u969B\u3001\u540C\u5C5E\u6027\u306E\u8FFD\u6483\u30921\u56DE\u8FFD\u52A0\u3059\u308B\u3002\u30C0\u30E1\u30FC\u30B8\u306F\u73FE\u5728\u306E\u653B\u6483\u529B\u306E\u500D\u7387\u3002\u8FFD\u6483\u306F\u7570\u5E38\u3092\u84C4\u7A4D\u3057\u306A\u3044\u3002\u4E8C\u5C5E\u6027\u6B66\u5668\u306F\u4E21\u65B9\u306E\u7570\u5E38\u3067\u8FFD\u6483\u3059\u308B\u3002\u7570\u5E38\u72B6\u614B\u306E\u6575\u3078\u306E\u4E0E\u30C0\u30E1\u30FC\u30B8+{0}%\u3002"
+    - languageCode: en
+      text: When a hit inflicts an attribute status, deal an additional hit of the
+        same attribute, scaled by your current ATK. It does not build up status.
+        Dual-attribute weapons trigger once per status. Enemies under a status take
+        +{0}% damage.
+  - key: charpanel_ability_burst_source_v5
+    texts:
+    - languageCode: zh-CN
+      text: "\u6765\u6E90\uFF1A\u9002\u5E94\u5F3A\u5316\u300C\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u300D\u6BCF
+        5 \u7EA7 + \u79D1\u6280\u6811\u8282\u70B9"
+    - languageCode: ja
+      text: "\u5165\u624B\uFF1A\u9069\u5FDC\u5F37\u5316\u300C\u5C5E\u6027\u653B\u6483\u5F37\u5316\u300D5\u6BB5\u968E\u3054\u3068
+        + \u6280\u8853\u30C4\u30EA\u30FC\u30CE\u30FC\u30C9"
+    - languageCode: en
+      text: 'Source: Attribute Attack upgrade, every 5 levels + tech tree node'
+  - key: ui_afp_ab_exempt_desc_v5
+    texts:
+    - languageCode: zh-CN
+      text: "\u53D7\u5230\u81F4\u547D\u4F24\u5BB3\u65F6\uFF0C\u8C41\u514D\u4E00\u6B21\u6B7B\u4EA1\uFF0C\u751F\u547D\u4FDD\u7559
+        1 \u70B9\uFF0C\u968F\u540E\u8FDB\u5165\u51B7\u5374\u3002\u51B7\u5374\u671F\u95F4\u518D\u53D7\u81F4\u547D\u4F24\u5BB3\uFF0C\u5C06\u6B63\u5E38\u6B7B\u4EA1\u3002"
+    - languageCode: ja
+      text: "\u81F4\u547D\u30C0\u30E1\u30FC\u30B8\u3092\u53D7\u3051\u305F\u969B\u3001\u4E00\u5EA6\u3060\u3051\u6B7B\u4EA1\u3092\u7121\u52B9\u5316\u3057\u3001HP\u30921\u6B8B\u3059\u3002\u305D\u306E\u5F8C\u30AF\u30FC\u30EB\u30C0\u30A6\u30F3\u306B\u5165\u308B\u3002\u30AF\u30FC\u30EB\u30C0\u30A6\u30F3\u4E2D\u306B\u518D\u3073\u81F4\u547D\u30C0\u30E1\u30FC\u30B8\u3092\u53D7\u3051\u308B\u3068\u6B7B\u4EA1\u3059\u308B\u3002"
+    - languageCode: en
+      text: When taking lethal damage, negate death once and keep 1 HP, then enter
+        cooldown. Lethal damage during cooldown is fatal.
+  - key: charpanel_ability_ins_source_v5
+    texts:
+    - languageCode: zh-CN
+      text: "\u6765\u6E90\uFF1A\u9002\u5E94\u5F3A\u5316\u300C\u8FFD\u52A0\u751F\u547D\u300D5
+        \u7EA7 + \u79D1\u6280\u6811\u8282\u70B9"
+    - languageCode: ja
+      text: "\u5165\u624B\uFF1A\u9069\u5FDC\u5F37\u5316\u300C\u8FFD\u52A0\u30E9\u30A4\u30D5\u300D5\u6BB5\u968E
+        + \u6280\u8853\u30C4\u30EA\u30FC\u30CE\u30FC\u30C9"
+    - languageCode: en
+      text: 'Source: Bonus Vitality upgrade, 5 levels + tech tree node'
+  - key: ui_afp_ab_usurp
+    texts:
+    - languageCode: zh-CN
+      text: "\u7BE1\u593A\u8005"
+    - languageCode: ja
+      text: "\u7C12\u596A\u8005"
+    - languageCode: en
+      text: Usurper
+  - key: ui_afp_ab_usurp_short
+    texts:
+    - languageCode: zh-CN
+      text: "\u653B\u51FB\u56DE\u590D\u7EA2\u8272\u8840\u91CF"
+    - languageCode: ja
+      text: "\u653B\u6483\u3067\u8D64\u3044HP\u3092\u56DE\u5FA9"
+    - languageCode: en
+      text: Attacks restore red HP
+  - key: ui_afp_ab_usurp_state
+    texts:
+    - languageCode: zh-CN
+      text: "\u7EA2\u8272\u56DE\u590D"
+    - languageCode: ja
+      text: "\u8D64\u56DE\u5FA9"
+    - languageCode: en
+      text: Red Regain
+  - key: charpanel_ability_usurp_desc_v5
+    texts:
+    - languageCode: zh-CN
+      text: "\u53D7\u5230\u7684\u4F24\u5BB3\uFF0C\u6709 {0}% \u8F6C\u4E3A\u8840\u6761\u4E0A\u7684\u7EA2\u8272\u90E8\u5206\uFF0C\u968F\u65F6\u95F4\u6D88\u9000\u3002\u653B\u51FB\u654C\u4EBA\u65F6\uFF0C\u9020\u6210\u4F24\u5BB3\u7684\u4E00\u90E8\u5206\u8F6C\u5316\u4E3A\u751F\u547D\u56DE\u590D\uFF0C\u53EA\u80FD\u56DE\u590D\u7EA2\u8272\u90E8\u5206\uFF1A\u8FD1\u6218
+        {1}%\uFF0C\u8FDC\u7A0B {2}%\u3002"
+    - languageCode: ja
+      text: "\u53D7\u3051\u305F\u30C0\u30E1\u30FC\u30B8\u306E{0}%\u304CHP\u30D0\u30FC\u306E\u8D64\u3044\u90E8\u5206\u306B\u5909\u308F\u308A\u3001\u6642\u9593\u3068\u3068\u3082\u306B\u6D88\u3048\u308B\u3002\u6575\u3092\u653B\u6483\u3059\u308B\u3068\u3001\u4E0E\u3048\u305F\u30C0\u30E1\u30FC\u30B8\u306E\u4E00\u90E8\u304C\u751F\u547D\u56DE\u5FA9\u306B\u5909\u63DB\u3055\u308C\u308B\u3002\u56DE\u5FA9\u3067\u304D\u308B\u306E\u306F\u8D64\u3044\u90E8\u5206\u306E\u307F\uFF1A\u8FD1\u63A5{1}%\u3001\u9060\u9694{2}%\u3002"
+    - languageCode: en
+      text: '{0}% of damage taken becomes a red portion of the HP bar that fades
+        over time. Damage dealt to enemies is converted into healing, but only restores
+        the red portion: {1}% melee, {2}% ranged.'
+  - key: charpanel_ability_usurp_source
+    texts:
+    - languageCode: zh-CN
+      text: "\u6765\u6E90\uFF1A\u63A2\u7D22\u8005\u79D1\u6280\u6811"
+    - languageCode: ja
+      text: "\u5165\u624B\uFF1A\u63A2\u7D22\u8005\u30C6\u30C3\u30AF\u30C4\u30EA\u30FC"
+    - languageCode: en
+      text: 'Source: Seeker tech tree'
+  - key: ui_afp_up_usurp
+    texts:
+    - languageCode: zh-CN
+      text: "\u7BE1\u593A\u8005"
+    - languageCode: ja
+      text: "\u7C12\u596A\u8005"
+    - languageCode: en
+      text: Usurper
+  - key: ui_afp_usurp_need_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u9700\u8981 {0}\u3000{1}"
+    - languageCode: ja
+      text: "\u5FC5\u8981\uFF1A{0}\u3000{1}"
+    - languageCode: en
+      text: Requires {0}  {1}
+  - key: ui_afp_ab_usurp_state_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u8FD1\u6218 {0}% \xB7 \u8FDC\u7A0B {1}%"
+    - languageCode: ja
+      text: "\u8FD1\u63A5{0}% \xB7 \u9060\u9694{1}%"
+    - languageCode: en
+      text: "Melee {0}% \xB7 Ranged {1}%"
+  - key: charpanel_ability_usurp_source_v6
+    texts:
+    - languageCode: zh-CN
+      text: "\u6765\u6E90\uFF1A\u9002\u5E94\u5F3A\u5316\u300C\u7BE1\u593A\u8005\u300D(\u9700\u8FFD\u52A0\u751F\u547D\u3001\u7269\u7406\u653B\u51FB\u5F3A\u5316\u5404
+        10 \u7EA7) + \u79D1\u6280\u6811\u8282\u70B9"
+    - languageCode: ja
+      text: "\u5165\u624B\uFF1A\u9069\u5FDC\u5F37\u5316\u300C\u7C12\u596A\u8005\u300D(\u8FFD\u52A0\u30E9\u30A4\u30D5\u30FB\u7269\u7406\u653B\u6483\u5F37\u5316\u304C\u540410\u6BB5\u968E\u5FC5\u8981)
+        + \u6280\u8853\u30C4\u30EA\u30FC\u30CE\u30FC\u30C9"
+    - languageCode: en
+      text: 'Source: Usurper upgrade (requires Bonus Vitality and Physical Attack
+        at level 10) + tech tree node'
+  - key: charpanel_ability_usurp_next_v6
+    texts:
+    - languageCode: zh-CN
+      text: "\u4E0B\u4E00\u7EA7\uFF1A\u8FD1\u6218 {0}% \xB7 \u8FDC\u7A0B {1}%"
+    - languageCode: ja
+      text: "\u6B21\u306E\u6BB5\u968E\uFF1A\u8FD1\u63A5{0}% \xB7 \u9060\u9694{1}%"
+    - languageCode: en
+      text: "Next level: melee {0}% \xB7 ranged {1}%"
+  - key: ui_afp_ab_lethal_short_fmt_v2
+    texts:
+    - languageCode: zh-CN
+      text: "\u6BCF\u7B2C {0} \u53D1 \u4F24\u5BB3 +{1}%"
+    - languageCode: ja
+      text: "{0}\u767A\u3054\u3068 \u30C0\u30E1\u30FC\u30B8+{1}%"
+    - languageCode: en
+      text: 'Every {0}th round: +{1}% damage'
+  - key: ui_afp_ab_lethal_state_fmt_v2
+    texts:
+    - languageCode: zh-CN
+      text: "\u6BCF {0} \u53D1 +{1}%"
+    - languageCode: ja
+      text: "{0}\u767A\u3054\u3068 +{1}%"
+    - languageCode: en
+      text: Every {0}th +{1}%
+  - key: charpanel_ability_lethal_desc_v6
+    texts:
+    - languageCode: zh-CN
+      text: "\u4EC5\u9650\u53CC\u67AA\u3002\u6BCF\u7B2C {0} \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
+        +{1}%\u3002"
+    - languageCode: ja
+      text: "\u53CC\u9283\u5C02\u7528\u3002{0}\u767A\u76EE\u306E\u547D\u4E2D\u3054\u3068\u306B\u3001\u30C0\u30E1\u30FC\u30B8+{1}%\u3002"
+    - languageCode: en
+      text: Dual guns only. Every {0}th round that hits deals +{1}% damage.
+  - key: charpanel_ability_lethal_next_v6
+    texts:
+    - languageCode: zh-CN
+      text: "\u518D {0} \u7EA7\u5347\u81F3 {1}\uFF1A\u6BCF\u7B2C {2} \u53D1 +{3}%"
+    - languageCode: ja
+      text: "\u3042\u3068{0}\u6BB5\u968E\u3067{1}\u3078\uFF1A{2}\u767A\u3054\u3068
+        +{3}%"
+    - languageCode: en
+      text: '{0} more levels to {1}: every {2}th round +{3}%'
+  - key: ui_afp_dmg_corrosion
+    texts:
+    - languageCode: zh-CN
+      text: "\u8150\u8680"
+    - languageCode: ja
+      text: "\u8150\u98DF"
+    - languageCode: en
+      text: Corrosion
+  - key: ui_afp_dmg_freeze
+    texts:
+    - languageCode: zh-CN
+      text: "\u51BB\u7ED3"
+    - languageCode: ja
+      text: "\u51CD\u7D50"
+    - languageCode: en
+      text: Freeze
+  - key: training_title
+    texts:
+    - languageCode: zh-CN
+      text: "\u6218\u672F\u7814\u4FEE"
+    - languageCode: ja
+      text: "\u6226\u8853\u7814\u4FEE"
+    - languageCode: en
+      text: Field Training
+  - key: training_points
+    texts:
+    - languageCode: zh-CN
+      text: "\u7814\u4FEE\u70B9"
+    - languageCode: ja
+      text: "\u7814\u4FEE\u30DD\u30A4\u30F3\u30C8"
+    - languageCode: en
+      text: Training Points
+  - key: training_tab_seeker
+    texts:
+    - languageCode: zh-CN
+      text: "\u63A2\u7D22\u8005"
+    - languageCode: ja
+      text: "\u63A2\u7D22\u8005"
+    - languageCode: en
+      text: Seeker
+  - key: training_tab_strategist
+    texts:
+    - languageCode: zh-CN
+      text: "\u6218\u7565\u5BB6"
+    - languageCode: ja
+      text: "\u6226\u7565\u5BB6"
+    - languageCode: en
+      text: Strategist
+  - key: training_hint_select
+    texts:
+    - languageCode: zh-CN
+      text: "\u9009\u62E9"
+    - languageCode: ja
+      text: "\u9078\u629E"
+    - languageCode: en
+      text: Select
+  - key: training_hint_tab
+    texts:
+    - languageCode: zh-CN
+      text: "\u5207\u6362\u8BFE\u7A0B"
+    - languageCode: ja
+      text: "\u30B3\u30FC\u30B9\u5207\u66FF"
+    - languageCode: en
+      text: Switch Course
+  - key: training_hint_learn
+    texts:
+    - languageCode: zh-CN
+      text: "\u6309\u4F4F\u7814\u4FEE"
+    - languageCode: ja
+      text: "\u9577\u62BC\u3057\u3067\u7814\u4FEE"
+    - languageCode: en
+      text: Hold to Train
+  - key: training_hold
+    texts:
+    - languageCode: zh-CN
+      text: "\u6309\u4F4F\u7814\u4FEE"
+    - languageCode: ja
+      text: "\u9577\u62BC\u3057\u3067\u7814\u4FEE"
+    - languageCode: en
+      text: Hold to Train
+  - key: training_prereq
+    texts:
+    - languageCode: zh-CN
+      text: "\u524D\u7F6E\u6761\u4EF6"
+    - languageCode: ja
+      text: "\u524D\u63D0\u6761\u4EF6"
+    - languageCode: en
+      text: Prerequisites
+  - key: training_done
+    texts:
+    - languageCode: zh-CN
+      text: "\u7814\u4FEE\u5B8C\u6210"
+    - languageCode: ja
+      text: "\u7814\u4FEE\u5B8C\u4E86"
+    - languageCode: en
+      text: Training Complete
+  - key: training_cost_fmt
+    texts:
+    - languageCode: zh-CN
+      text: "\u4E0B\u4E00\u7EA7\u9700\u8981 {0} \u7814\u4FEE\u70B9"
+    - languageCode: ja
+      text: "\u6B21\u306E\u30EC\u30D9\u30EB\u306B\u7814\u4FEE\u30DD\u30A4\u30F3\u30C8{0}\u5FC5\u8981"
+    - languageCode: en
+      text: Next level costs {0} Training Points
+  - key: ui_afp_up_drone_count
+    texts:
+    - languageCode: zh-CN
+      text: "\u6D6E\u6E38\u70AE\u6570\u91CF"
+    - languageCode: ja
+      text: "\u30C9\u30ED\u30FC\u30F3\u7832\u306E\u6570"
+    - languageCode: en
+      text: Drone Count
+  - key: ui_afp_up_drone_mag
+    texts:
+    - languageCode: zh-CN
+      text: "\u6D6E\u6E38\u70AE\u5F39\u4ED3"
+    - languageCode: ja
+      text: "\u30C9\u30ED\u30FC\u30F3\u7832\u306E\u88C5\u5F3E\u6570"
+    - languageCode: en
+      text: Drone Magazine
+  - key: ui_afp_up_drone_cd
+    texts:
+    - languageCode: zh-CN
+      text: "\u6D6E\u6E38\u70AE\u51B7\u5374\u7F29\u77ED"
+    - languageCode: ja
+      text: "\u30C9\u30ED\u30FC\u30F3\u7832\u306E\u30AF\u30FC\u30EB\u30C0\u30A6\u30F3\u77ED\u7E2E"
+    - languageCode: en
+      text: Drone Cooldown Cut
+  - key: training_hint_zoom
+    texts:
+    - languageCode: zh-CN
+      text: "\u7F29\u653E"
+    - languageCode: ja
+      text: "\u30BA\u30FC\u30E0"
+    - languageCode: en
+      text: Zoom

@@ -32,6 +32,14 @@ Shader "Hidden/SkyPrison/StatusOutlineGlow"
     // 9 tap 高斯（σ≈2）。两轮横纵之后足够平滑，不会出现条纹。
     static const float kWeights[5] = { 0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162 };
 
+    // 噪波贴图不是无缝平铺的（左右边缘差约 32/255、上下约 64/255，相邻像素只差 0.4），
+    // 直接 Repeat 会在 UV 整数处出现硬接缝——噪波原点是单位中心，接缝正好穿过两腿之间。
+    // 镜像平铺（三角波）处处连续，不依赖贴图本身可平铺。
+    float2 MirrorUV(float2 uv)
+    {
+        return 1.0 - abs(1.0 - 2.0 * frac(uv * 0.5));
+    }
+
     float SampleBlit(float2 uv)
     {
         return SAMPLE_TEXTURE2D_X_LOD(_BlitTexture, sampler_LinearClamp, uv, 0).r;
@@ -122,8 +130,8 @@ Shader "Hidden/SkyPrison/StatusOutlineGlow"
                 // 做出「有的地方亮、有的地方几乎没有」的火光感，而不是一圈等宽等亮的光环。
                 float2 np = (i.texcoord - _GlowCenter.xy) * float2(_GlowCenter.z, 1.0) * _GlowNoise.x;
                 float flow = _Time.y * _GlowNoise.y;
-                float n1 = SAMPLE_TEXTURE2D_LOD(_GlowNoiseTex, sampler_LinearRepeat, np + float2(0.0, -flow), 0).r;
-                float n2 = SAMPLE_TEXTURE2D_LOD(_GlowNoiseTex, sampler_LinearRepeat, np * 2.3 + float2(0.37, -flow * 1.7), 0).r;
+                float n1 = SAMPLE_TEXTURE2D_LOD(_GlowNoiseTex, sampler_LinearRepeat, MirrorUV(np + float2(0.0, -flow)), 0).r;
+                float n2 = SAMPLE_TEXTURE2D_LOD(_GlowNoiseTex, sampler_LinearRepeat, MirrorUV(np * 2.3 + float2(0.37, -flow * 1.7)), 0).r;
                 float n = smoothstep(0.2, 0.8, n1 * 0.65 + n2 * 0.35);
                 outer *= lerp(1.0 - _GlowNoise.z, 1.0 + _GlowNoise.z, n);
 

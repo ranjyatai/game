@@ -16,6 +16,11 @@ Shader "UI/SkyPrison/TVStatic"
         _WiggleAmount     ("扭动幅度", Range(0, 0.3))       = 0.06
         _WiggleFreq       ("扭动纹理疏密", Range(1, 20))    = 6
         _WiggleSpeed      ("扭动速度", Range(0.2, 10))      = 2
+
+        // 默认（0）用 Unity 的 _Time.y（受 Time.timeScale 影响）。在暂停 / 冻结世界的界面里用的话，
+        // 把它设为 1，并由脚本每帧把 Time.unscaledTime 写进 _UnscaledTime，雪花才会在 timeScale=0 时继续动。
+        [HideInInspector] _UseUnscaled  ("使用不缩放时间", Float) = 0
+        [HideInInspector] _UnscaledTime ("不缩放时间", Float)     = 0
     }
     SubShader
     {
@@ -66,6 +71,8 @@ Shader "UI/SkyPrison/TVStatic"
             float _WiggleAmount;
             float _WiggleFreq;
             float _WiggleSpeed;
+            float _UseUnscaled;
+            float _UnscaledTime;
 
             v2f vert(appdata v)
             {
@@ -90,14 +97,15 @@ Shader "UI/SkyPrison/TVStatic"
                 // 呈现出蠕动/扭曲感，而不是每帧原地闪烁的规整网格——之前加的低频块状
                 // 明暗调制（大波浪）改变了整体明暗层次、而且插值网格本身太规则，看起来
                 // 像斜纹布而不是雪花屏，这里换成"扭曲采样坐标"，颜色深浅完全不受影响。
+                float T = _UseUnscaled > 0.5 ? _UnscaledTime : _Time.y;
                 float2 wiggle = float2(
-                    sin(i.uv.y * _WiggleFreq + _Time.y * _WiggleSpeed),
-                    cos(i.uv.x * _WiggleFreq * 1.3 - _Time.y * _WiggleSpeed * 0.8)
+                    sin(i.uv.y * _WiggleFreq + T * _WiggleSpeed),
+                    cos(i.uv.x * _WiggleFreq * 1.3 - T * _WiggleSpeed * 0.8)
                 ) * _WiggleAmount;
 
                 // 每帧按固定速度切一次噪点格子（不是连续插值），才有经典"雪花"的跳变感，
                 // 而不是平滑漂移的柔和噪声。
-                float frame = floor(_Time.y * _NoiseSpeed);
+                float frame = floor(T * _NoiseSpeed);
                 float2 grid = floor((i.uv + wiggle) * _NoiseScale);
                 float n = Rand(grid + frame * 17.317);
 

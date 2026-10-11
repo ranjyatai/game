@@ -49,6 +49,10 @@ public class MainMenuController : MonoBehaviour
     // TMP_Text（包含 inactive 的 Label_R/Label_B）一起改掉。
     private readonly List<(Button button, string key, string fallback)> _localizedButtonTexts = new();
 
+    // LOGO 按语言换图——跟上面文字/按钮同一个原地刷新思路，不用重建整个 Canvas。
+    private Image          _logoImage;
+    private RectTransform  _logoRt;
+
     private void RegisterLocalizedText(TMP_Text text, string key, string fallback) =>
         _localizedTexts.Add((text, key, fallback));
 
@@ -66,6 +70,46 @@ public class MainMenuController : MonoBehaviour
             string resolved = L(key, fallback);
             foreach (var t in button.GetComponentsInChildren<TMP_Text>(true))
                 t.text = resolved;
+        }
+
+        ApplyLogoTexture();
+    }
+
+    /// <summary>按当前语言换 LOGO 贴图——建 UI 时调一次，语言切换时再调一次刷新，
+    /// 逻辑跟 OnLanguageChanged 里刷文字是同一个原地更新思路，不重建节点。</summary>
+    private void ApplyLogoTexture()
+    {
+        if (_logoImage == null || _logoRt == null)
+            return;
+
+        string code = LocalizationRuntime.Instance != null ? LocalizationRuntime.Instance.CurrentCode : null;
+        Texture2D tex = settings != null ? settings.ResolvedLogoTexture(code) : null;
+
+        if (tex != null)
+        {
+            var sprite = Sprite.Create(tex,
+                new Rect(0, 0, tex.width, tex.height),
+                new Vector2(0.5f, 0.5f), 100f);
+
+            _logoImage.sprite         = sprite;
+            _logoImage.color          = Color.white;
+            _logoImage.preserveAspect = true;
+            _logoImage.type           = Image.Type.Simple;
+
+            float nativeW = tex.width;
+            float nativeH = tex.height;
+            if (nativeW > 0 && nativeH > 0)
+            {
+                float maxW  = 3840f * 0.60f;
+                float maxH  = 2160f * 0.40f;
+                float scale = Mathf.Min(maxW / nativeW, maxH / nativeH, 1f);
+                _logoRt.sizeDelta = new Vector2(nativeW * scale, nativeH * scale);
+            }
+        }
+        else
+        {
+            _logoImage.sprite = null;
+            _logoImage.color  = new Color(1f, 1f, 1f, 0f);  // 透明占位
         }
     }
 
@@ -581,40 +625,15 @@ public class MainMenuController : MonoBehaviour
         // 编辑器里选中 "LogoPlaceholder" 节点，把 Image.sprite 换成实际 LOGO 图即可
         var logoGo = new GameObject("LogoPlaceholder");
         logoGo.transform.SetParent(root, false);
-        var logoRt = logoGo.AddComponent<RectTransform>();
-        logoRt.anchorMin        = new Vector2(0.5f, 0.5f);
-        logoRt.anchorMax        = new Vector2(0.5f, 0.5f);
-        logoRt.pivot            = new Vector2(0.5f, 0.5f);
+        _logoRt = logoGo.AddComponent<RectTransform>();
+        _logoRt.anchorMin        = new Vector2(0.5f, 0.5f);
+        _logoRt.anchorMax        = new Vector2(0.5f, 0.5f);
+        _logoRt.pivot            = new Vector2(0.5f, 0.5f);
         float logoOffY = settings?.logoOffsetY ?? 580f;
-        logoRt.anchoredPosition = new Vector2(0f, logoOffY);
-        logoRt.sizeDelta        = new Vector2(960f, 320f); // 初始占位尺寸，加载纹理后会重算
-        var logoImg = logoGo.AddComponent<Image>();
-        if (settings?.logoTexture != null)
-        {
-            var tex = settings.logoTexture;
-            var sprite = Sprite.Create(tex,
-                new Rect(0, 0, tex.width, tex.height),
-                new Vector2(0.5f, 0.5f), 100f);
-
-            logoImg.sprite         = sprite;
-            logoImg.color          = Color.white;
-            logoImg.preserveAspect = true;
-            logoImg.type           = Image.Type.Simple;
-
-            float nativeW = tex.width;
-            float nativeH = tex.height;
-            if (nativeW > 0 && nativeH > 0)
-            {
-                float maxW  = 3840f * 0.60f;
-                float maxH  = 2160f * 0.40f;
-                float scale = Mathf.Min(maxW / nativeW, maxH / nativeH, 1f);
-                logoRt.sizeDelta = new Vector2(nativeW * scale, nativeH * scale);
-            }
-        }
-        else
-        {
-            logoImg.color = new Color(1f, 1f, 1f, 0f);  // 透明占位
-        }
+        _logoRt.anchoredPosition = new Vector2(0f, logoOffY);
+        _logoRt.sizeDelta        = new Vector2(960f, 320f); // 初始占位尺寸，加载纹理后会重算
+        _logoImage = logoGo.AddComponent<Image>();
+        ApplyLogoTexture();
 
         // ── 阶段1：任意键屏幕 ────────────────────────────────────────────
         _anyKeyRoot = new GameObject("AnyKeyScreen");

@@ -76,8 +76,8 @@ public class SkyPrisonMapEditorPage : SkyPrisonEditorPageBase
                 selectedMap = matched;
         }
 
-        if (selectedMap == null && maps.Count > 0)
-            selectedMap = maps[0];
+        // 刷新后如果之前没有选中任何地图（比如脚本重新编译后选择状态丢了），就保持「没有选中」，右侧什么都不显示，
+        // 不再自动选第一个——否则左边列表没有高亮、右边却显示着某张地图，对不上。
 
         selectedMapSO = selectedMap != null ? new SerializedObject(selectedMap) : null;
         assetListPanel.OnRefresh();
@@ -89,10 +89,7 @@ public class SkyPrisonMapEditorPage : SkyPrisonEditorPageBase
     public override void OnGUIRight()
     {
         if (selectedMap == null)
-        {
-            EditorGUILayout.HelpBox("请先在左侧选择一个地图定义。", MessageType.Info);
-            return;
-        }
+            return;   // 没有选中地图：右侧什么都不显示
 
         EnsureSelectedSerializedObject();
         selectedMapSO.Update();

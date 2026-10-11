@@ -15,6 +15,12 @@ public sealed class SkyPrisonRuntimeSystemsBootstrapper : MonoBehaviour
     [SerializeField] private bool ensureInventory = true;
     [SerializeField] private bool ensureCurrency = true;
     [SerializeField] private bool ensureItemPickup = true;
+    // SkyPrisonInteractionController(NPC/设施这些通用IInteractable的按键交互提示)
+    // 一直只有代码、没有任何地方实际把它挂到场景里——物品拾取能用是因为上面那行
+    // ensureItemPickup单独确保了SkyPrisonItemPickupController，通用交互这条完全
+    // 是漏配的，不是逻辑bug，是从来没人接上过。
+    [SerializeField] private bool ensureInteraction = true;
+    [SerializeField] private bool ensureQuest = true;
     // 2026-07-19：原 ensureHiddenOutlineOverlay（V16废弃管线的Canvas覆盖层）已连同
     // SkyPrisonHiddenOutlineCanvasOverlay_V3 脚本一起删除。
     [SerializeField] private bool ensureStatusIconBar = true;
@@ -27,6 +33,7 @@ public sealed class SkyPrisonRuntimeSystemsBootstrapper : MonoBehaviour
     [SerializeField] private string windowManagerName = "SkyPrisonWindowManager_Runtime";
     [SerializeField] private string inventoryName = "SkyPrisonInventory_Runtime";
     [SerializeField] private string itemPickupName = "SkyPrisonItemPickup_Runtime";
+    [SerializeField] private string interactionControllerName = "SkyPrisonInteraction_Runtime";
 
     [Header("Scene Loading")]
     [SerializeField] private bool rescanAfterSceneLoaded = true;
@@ -181,6 +188,12 @@ public sealed class SkyPrisonRuntimeSystemsBootstrapper : MonoBehaviour
 
         if (ensureItemPickup)
             EnsureChildComponent<SkyPrison.Runtime.UI.SkyPrisonItemPickupController>(root, itemPickupName);
+
+        if (ensureInteraction)
+            EnsureChildComponent<SkyPrisonInteractionController>(root, interactionControllerName);
+
+        if (ensureQuest)
+            EnsureChildComponent<QuestRuntime>(root, "SkyPrisonQuest_Runtime");
 
         if (ensureStatusIconBar)
             PlayerHUDStatusIconBar.EnsureInScene();
