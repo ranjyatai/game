@@ -119,7 +119,7 @@ MonoBehaviour:
     displayName: "\u80CC\u5305"
     triggerMode: 1
     primaryKey: 98
-    secondaryKey: 9
+    secondaryKey: 0
     gamepadKey: 333
   - action: 31
     displayName: "\u5730\u56FE"

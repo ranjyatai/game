@@ -198,6 +198,11 @@ public static class TriggerActionExecutor
                 result = ExecuteSetRaidEntry(sentence);
                 break;
 
+            // ── 战术研修 ──────────────────────────────────────────────────────
+            case "act_reveal_tech_group":
+                result = ExecuteRevealTechGroup(sentence);
+                break;
+
             default:
                 if (debugLogs)
                     Debug.LogWarning($"[TriggerActionExecutor] 未实现的行动句型：{tid}");
@@ -835,6 +840,22 @@ public static class TriggerActionExecutor
         if (!SkyPrisonRaidEntry.Set(target, state != "disabled"))
         {
             Debug.LogWarning("[TriggerActionExecutor] act_set_raid_entry：SaveManager.Player 尚未初始化");
+            return false;
+        }
+        return true;
+    }
+
+    private static bool ExecuteRevealTechGroup(LogicSentenceInstance sentence)
+    {
+        string group = GetSlotValue(sentence, "group")?.EvaluateString();
+        if (string.IsNullOrWhiteSpace(group))
+        {
+            Debug.LogWarning("[TriggerActionExecutor] act_reveal_tech_group：group 槽位为空");
+            return false;
+        }
+        if (!TechTreeReveal.Reveal(group))
+        {
+            Debug.LogWarning("[TriggerActionExecutor] act_reveal_tech_group：SaveManager.Player 尚未初始化");
             return false;
         }
         return true;

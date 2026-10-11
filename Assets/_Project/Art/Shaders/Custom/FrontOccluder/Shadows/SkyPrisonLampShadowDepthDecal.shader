@@ -49,6 +49,9 @@ Shader "Hidden/SkyPrison/LampShadowDepthDecal"
         float4 _SkyPrison_LampShadowSpot;    // xyz = 灯朝向, w = 1 聚光 / 0 点光
         float4 _SkyPrison_LampShadowCone;    // x = cos(外半角), y = cos(内半角), z = 强度×颜色亮度
         #define SKYPRISON_LAMP_SHADOW_FULL_BRIGHTNESS 0.25
+        #define WALL_FACE_SLACK 2.5      // 墙面比「墙挡光」截止距离多允许的米数(见 Decal Pass)
+        #define FOOT_SNAP_UP 0.35        // 脚底最多抬高到画面里踏面的高度(米)
+        #define FOOT_SNAP_DOWN 0.30      // 脚底最多降低(米)
 
         // normal：表面法线（由深度重建出来的世界坐标求导得到）。旧版写死「地面朝上」，
         // 现在影子能落在墙和斜坡上，法线必须按实际表面算。
@@ -187,9 +190,29 @@ Shader "Hidden/SkyPrison/LampShadowDepthDecal"
                 if (max(abs(lp.x), max(abs(lp.y), abs(lp.z))) > 0.5)
                     return half4(1, 1, 1, 1);
 
+                // 表面法线：由重建出来的世界坐标求导，并翻到朝向相机的一侧。(要在墙挡光判断之前算：墙面和墙后的地面截止距离不一样)
+                float3 nrm = normalize(cross(dPy, dPx));
+                if (dot(nrm, _WorldSpaceCameraPos - P) < 0.0)
+                    nrm = -nrm;
+
                 float3 foot = _SkyPrison_LampDecalFoot.xyz;
+                // 脚下高度贴合「画面里实际看到的地面」：角色走的是碰撞体(斜坡)，画面里是台阶 / 凹凸的踏面，两者可以差十几厘米。
+                // 差着的话，影子按「脚在碰撞面上」算，落到踏面上时整条影子的起点会沿灯光方向错开一截，一级台阶一错，影子就被切成一块一块。
+                // 取脚下那个像素的深度还原出踏面高度，把「脚底」抬 / 降到那里(限幅，免得脚下被前景物挡着、或站在悬崖边时取到很远的面)。
+                // 角色不写深度，所以脚下像素的深度就是地面。
+                float3 footNdc = ComputeNormalizedDeviceCoordinatesWithZ(foot, UNITY_MATRIX_VP);
+                float footDepth = SampleSceneDepth(footNdc.xy).x;
+                #if !UNITY_REVERSED_Z
+                footDepth = lerp(UNITY_NEAR_CLIP_VALUE, 1, footDepth);
+                #endif
+                float3 footSurf = ComputeWorldSpacePosition(footNdc.xy, footDepth, UNITY_MATRIX_I_VP);
+                foot.y += clamp(footSurf.y - foot.y, -FOOT_SNAP_DOWN, FOOT_SNAP_UP);
                 // 墙挡光：脚到墙的这一段之外，灯照不到（被墙遮住了），不画影子。只按距离裁，常数开销。
-                if (dot(P.xz - foot.xz, _SkyPrison_LampDecalClip.xy) > _SkyPrison_LampDecalClip.z)
+                // 例外：近乎竖直的面(墙面本身)允许再多走 WALL_FACE_SLACK 米——影子要能爬上挡住它的那面墙的近侧面(靠墙站时，
+                // 躯干和头的影子都落在墙面上；之前统一截断，墙边只剩两条腿的细线)。墙面可能是弧面(圆柱)，离轴的点比射线命中点更远，所以留一点余量。
+                // 墙后面的地面仍然按原截止距离裁，不会穿墙。
+                float wallFace = 1.0 - smoothstep(0.35, 0.6, abs(nrm.y));
+                if (dot(P.xz - foot.xz, _SkyPrison_LampDecalClip.xy) > _SkyPrison_LampDecalClip.z + wallFace * WALL_FACE_SLACK)
                     return half4(1, 1, 1, 1);
                 float3 right = float3(_SkyPrison_LampDecalRight.x, 0, _SkyPrison_LampDecalRight.y);
                 float3 planeN = float3(-right.z, 0, right.x);       // 角色纸片平面的水平法线
@@ -217,11 +240,6 @@ Shader "Hidden/SkyPrison/LampShadowDepthDecal"
                     return half4(1, 1, 1, 1);
 
                 half shape = SAMPLE_TEXTURE2D_LOD(_SkyPrison_LampMaskTex, sampler_LinearClamp, muv, 0).r;
-
-                // 表面法线：由重建出来的世界坐标求导，并翻到朝向相机的一侧。
-                float3 nrm = normalize(cross(dPy, dPx));
-                if (dot(nrm, _WorldSpaceCameraPos - P) < 0.0)
-                    nrm = -nrm;
 
                 half strength = saturate(_SkyPrison_LampDecalDv.w) * LampLitAt(P, nrm);
                 half3 shadowRgb = saturate(_ShadowColor.rgb);

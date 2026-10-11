@@ -170,4 +170,10 @@ public enum SkyPrisonSystemSEType
     [InspectorName("选关 · 选中据点")] MapSelect,
     [InspectorName("选关 · 昼夜切换")] MapDayNight,
     [InspectorName("选关 · 出发")] MapDepart,
+
+    // ── 屏幕横带(SkyPrisonScreenBanner：战术研修解放等)的几个时刻(追加在末尾，不能插中间，原因同上) ──
+    [InspectorName("横带 · 展开")] BannerOpen,
+    [InspectorName("横带 · 反色闪烁(每一闪)")] BannerFlash,
+    [InspectorName("横带 · 右下角坐标发信")] BannerSignal,
+    [InspectorName("横带 · 收起")] BannerClose,
 }

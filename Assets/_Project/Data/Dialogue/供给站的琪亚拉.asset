@@ -118,3 +118,23 @@ MonoBehaviour:
       clip: {fileID: 0}
     - languageCode: en
       clip: {fileID: 0}
+  - sentenceId: Chapter 1-005
+    chapter: ab9c3dfc61e9445c96cb4fce930080f7
+    note: "\u544A\u522B\uFF08\u5019\u9009\uFF09"
+    speakerUnit: {fileID: 11400000, guid: 04e0c90e408f3f640985757651f20d58, type: 2}
+    speakerAnonymous: 0
+    speakerAliasOverride:
+    - languageCode: zh-CN
+      text: 
+    - languageCode: ja
+      text: 
+    - languageCode: en
+      text: 
+    texts:
+    - languageCode: zh-CN
+      text: "\u5343\u4E07\u8981\u5C0F\u5FC3\u54E6\uFF01"
+    - languageCode: ja
+      text: "\u304F\u308C\u3050\u308C\u3082\u304A\u6C17\u3092\u3064\u3051\u3066\u304F\u3060\u3055\u3044\u306D\uFF01"
+    - languageCode: en
+      text: Please, be careful out there!
+    voices: []

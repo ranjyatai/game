@@ -5617,8 +5617,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 272387aa4e8b43beaa4ce8e0012cd74b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonGuardianShield
-  guardianMaxHealth: 120
-  shieldDurability: 150
+  guardianMaxHealth: 2000
+  shieldDurability: 2500
   physicalReduction: 0.9
   maxPhysicalDamageWhileShielded: 9
   elementShieldMultiplier: 1.5
@@ -6064,6 +6064,7 @@ MonoBehaviour:
   protecteeNameKeywords:
   - Caster
   - GrayFurnace
+  - Chanter
   guardDistance: 2.6
   laneSpread: 1.2
   arriveTolerance: 1.2

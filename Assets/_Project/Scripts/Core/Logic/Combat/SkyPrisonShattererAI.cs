@@ -14,7 +14,7 @@ using UnityEngine;
 /// 之后：腿血量/可破坏、场内随机弹幕、阶段。
 /// </summary>
 [DisallowMultipleComponent]
-public class SkyPrisonShattererAI : MonoBehaviour
+public class SkyPrisonShattererAI : MonoBehaviour, IStaggerable
 {
     [Header("唤醒")]
     [SerializeField] private float wakeRangeX = 24f;
@@ -176,6 +176,20 @@ public class SkyPrisonShattererAI : MonoBehaviour
     private float DamageBoost => 1f + brokenDamageBonus * _brokenCount;     // 越断越凶
     public float LegMaxHp => (_health != null ? _health.MaxHealth : 1000f) * legHpFraction;
     public float LegBodyShare => legBodyShare;
+
+    // ── 失衡(SkyPrisonStagger，Boss 档：条很长、倒下 3 秒) ──
+    private float _staggerUntil = -999f;
+    /// <summary>出招中算霸体：失衡条满了先挂起，这一招放完立刻失衡。</summary>
+    public bool SuperArmored => _attacking;
+    public bool Airborne => false;
+    public void Stagger(float seconds)
+    {
+        if (Dead) return;
+        _staggerUntil = Time.time + seconds;
+        _nextStepTime = Mathf.Max(_nextStepTime, _staggerUntil + 0.5f);
+        SubmitMove(Vector2.zero);
+        SpawnDust(transform.position);
+    }
 
     // 腿断了(永久)：停在原地变成断桩，扬一团尘；之后不再迈步/不再出波/没有接触伤害
     public void OnLegBroken(int index)
@@ -355,6 +369,7 @@ public class SkyPrisonShattererAI : MonoBehaviour
         }
 
         if (_attacking) { SubmitMove(Vector2.zero); UpdateLegContact(); return; }
+        if (Time.time < _staggerUntil) { SubmitMove(Vector2.zero); UpdateLegContact(); return; }   // 失衡：原地僵住，不迈步不出招
         if (AllBroken)
         {
             // 四条腿全断：身体砸到地上趴着不能动，只剩核心还能放高射炮

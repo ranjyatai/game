@@ -101,6 +101,16 @@ public class SkyPrisonCharacterEnvironmentLightReceiver : MonoBehaviour
     private Vector4 _decalFoot, _decalRight, _decalDv, _decalClip = new Vector4(0f, 1f, 1e4f, 0f);
     private readonly RaycastHit[] _decalClipHits = new RaycastHit[8];
     private static readonly int DecalClipId = Shader.PropertyToID("_SkyPrison_LampDecalClip");
+
+    // 选灯迟滞 / 影子方向平滑：见 UpdateLampShadow
+    private static int _occluderProbeLayerCache = -2;
+    private static int _occluderProbeLayer => _occluderProbeLayerCache != -2 ? _occluderProbeLayerCache : (_occluderProbeLayerCache = LayerMask.NameToLayer("OccluderProbe"));
+    private const float LampWallMinHeight = 1.8f;         // 墙挡光：障碍物顶面至少比脚底高这么多米才算挡灯的墙
+    private const float LampSwitchRatio = 0.85f;          // 正在用的灯贡献 ≥ 第一名的这个比例就不换
+    private const float LampShadowDirSmooth = 14f;        // 影子方向逼近新方向的速度(1/秒，越大转得越快，约 70ms 到位 63%)
+    private Light _lampCurrent;
+    private Vector3 _gSmoothed;
+    private bool _gSmoothedValid;
     private Matrix4x4 _decalMatrix;
 
     /// <summary>这一帧主相机要画的轮廓影子，供 HologramCoverageFeature 先画一遍去重计数图
@@ -426,8 +436,14 @@ public class SkyPrisonCharacterEnvironmentLightReceiver : MonoBehaviour
             {
                 RaycastHit h = _decalClipHits[hi];
                 if (h.collider.transform.IsChildOf(transform)) continue;
+                // 遮挡探测盒(OccluderProbe 层)是前后遮挡判断用的辅助体积，不是真实几何：中枢圆柱外面套的是 12×12 的方盒子，
+                // 四个角比圆柱大出一圈，以前会在空地上把影子截断(只剩两条腿)。真实的墙另有贴合模型的网格碰撞体。
+                if (h.collider.gameObject.layer == _occluderProbeLayer) continue;
                 if (h.normal.y > 0.5f) continue;                   // 斜坡、台阶侧边不挡光，只认竖直面
-                if (h.collider.bounds.size.y < 2f) continue;       // 矮的东西挡不住灯
+                // 矮的东西挡不住灯：按「顶面比脚底高多少」判断，不是按物体本身多高。
+                // 以前写的是 bounds.size.y < 2：环形台阶的遮挡探测盒(OccluderProbe_Box，0~2 米)正好 2.0 没被过滤，
+                // 站在台阶上时它的顶只比脚高 0.7 米，却被当成墙把影子截在 2 米处，只剩两条腿的细线。
+                if (h.collider.bounds.max.y - root.y < LampWallMinHeight) continue;
                 if (h.distance < clipDist) clipDist = h.distance;
             }
         }
@@ -635,6 +651,16 @@ public class SkyPrisonCharacterEnvironmentLightReceiver : MonoBehaviour
             if (lv > bestLevel) { bestLevel = lv; best = l; }
         }
 
+        // 迟滞：几盏灯贡献差不多时(比如圆形平台四周四盏同样强度的灯，绕一圈有好几处两盏灯打平)，只要正在用的这盏灯
+        // 的贡献还有第一名的 LampSwitchRatio，就继续用它，不然挪一小步赢家就换、影子方向跳 90°。
+        if (_lampCurrent != null && _lampCurrent != best && _lampCurrent.isActiveAndEnabled && _lampCurrent.intensity > 0f
+            && (_lampCurrent.type == LightType.Point || _lampCurrent.type == LightType.Spot))
+        {
+            float cl = LampContribution(_lampCurrent, feet);
+            if (cl > 0f && cl >= bestLevel * LampSwitchRatio) { best = _lampCurrent; bestLevel = cl; }
+        }
+        _lampCurrent = best;
+
         Vector3 delta = best != null ? feet - best.transform.position : Vector3.zero;
         Vector3 flat = new Vector3(delta.x, 0f, delta.z);
         float dist = flat.magnitude;
@@ -647,10 +673,21 @@ public class SkyPrisonCharacterEnvironmentLightReceiver : MonoBehaviour
         {
             _lampShadowSr.enabled = false;
             _silActive = false;
+            _gSmoothedValid = false;           // 下次重新出现时直接取新方向，不从旧方向慢慢转过来
             return;
         }
 
         Vector3 g = flat / dist;
+        // 影子方向平滑：灯切换(或灯贡献换了第一名)时方向会突变，按角度指数逼近新方向，影子转过去而不是瞬间跳。
+        if (_gSmoothedValid)
+        {
+            float ang = Vector3.SignedAngle(_gSmoothed, g, Vector3.up);
+            float stepAng = ang * (1f - Mathf.Exp(-LampShadowDirSmooth * Time.deltaTime));
+            _gSmoothed = Quaternion.AngleAxis(stepAng, Vector3.up) * _gSmoothed;
+        }
+        else _gSmoothed = g;
+        _gSmoothedValid = true;
+        g = _gSmoothed.normalized;
 
         // 轮廓版：把参数交给 beginCameraRendering 里的 DrawMesh，椭圆软影子隐藏。
         if (lampShadowSilhouette && FindSilhouetteSource() != null && PrepareSilhouetteMaterial())

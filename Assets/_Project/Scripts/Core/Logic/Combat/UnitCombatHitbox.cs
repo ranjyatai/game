@@ -249,6 +249,19 @@ public class UnitCombatHitbox : MonoBehaviour
         return (aIsPlayerSide && bIsEnemySide) || (aIsEnemySide && bIsPlayerSide);
     }
 
+    /// <summary>是不是「自己人」——给支援类(颂赞者牵线等)找同伴用。
+    /// 跟 !AreHostile 不同：箱子/道具、中立不主动单位对谁都"不敌对"，但不是同伴；这里要求双方都是活物单位、且同属玩家侧或同属敌对侧。</summary>
+    public static bool AreAllied(GameObject a, GameObject b)
+    {
+        if (a == null || b == null) return false;
+        if (IsPlayerOnlyDestructibleTarget(a) || IsPlayerOnlyDestructibleTarget(b)) return false;
+        CharacterIdentity idA = GetIdentity(a), idB = GetIdentity(b);
+        if (idA == CharacterIdentity.NeutralPassive || idB == CharacterIdentity.NeutralPassive) return false;
+        bool aPlayer = idA == CharacterIdentity.Player || idA == CharacterIdentity.Ally;
+        bool bPlayer = idB == CharacterIdentity.Player || idB == CharacterIdentity.Ally;
+        return aPlayer == bPlayer;
+    }
+
     private static bool IsPlayerOnlyDestructibleTarget(GameObject go)
     {
         UnitDefinitionRuntimeBinder binder =

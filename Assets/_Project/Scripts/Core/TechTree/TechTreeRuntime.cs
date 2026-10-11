@@ -115,7 +115,7 @@ public class TechTreeRuntime : MonoBehaviour
 
     public static string ExternalConditionText(TechTreeExternalCondition c)
     {
-        return c == TechTreeExternalCondition.NightModeAppeared ? "夜间模式尚未出现" : "条件未满足";
+        return c == TechTreeExternalCondition.NightModeAppeared ? DoorText.Get("training_reason_night", "夜间模式尚未出现") : DoorText.Get("training_reason_condition", "条件未满足");
     }
 
     public TechTreeNodeData FindNode(string nodeId)
@@ -141,7 +141,7 @@ public class TechTreeRuntime : MonoBehaviour
         if (!node.enabled)         { reason = "节点未启用"; return false; }
 
         int currentLevel = GetNodeLevel(nodeId);
-        if (currentLevel >= node.maxLevel) { reason = "已达最高等级"; return false; }
+        if (currentLevel >= node.maxLevel) { reason = DoorText.Get("training_reason_maxed", "已达最高等级"); return false; }
 
         int targetLevel = currentLevel + 1;
         var levelData   = GetLevelData(node, targetLevel);
@@ -155,7 +155,7 @@ public class TechTreeRuntime : MonoBehaviour
             var parent = graph.nodes[node.primaryParentIndex];
             if (GetNodeLevel(parent.nodeId) < 1)
             {
-                reason = $"需先解锁「{parent.nodeName}」";
+                reason = string.Format(DoorText.Get("training_reason_need_unlock_fmt", "需先解锁「{0}」"), parent.GetLocalizedName());
                 return false;
             }
         }
@@ -173,14 +173,14 @@ public class TechTreeRuntime : MonoBehaviour
             if (reqLevel < req.requiredLevel)
             {
                 var reqNode = FindNode(req.targetNodeId);
-                reason = $"需「{reqNode?.nodeName ?? req.targetNodeId}」达到 LV{req.requiredLevel}（当前 LV{reqLevel}）";
+                reason = string.Format(DoorText.Get("training_reason_need_level_fmt", "需「{0}」达到 LV{1}（当前 LV{2}）"), reqNode != null ? reqNode.GetLocalizedName() : req.targetNodeId, req.requiredLevel, reqLevel);
                 return false;
             }
         }
 
         if (data.availablePoints < cost)
         {
-            reason = $"研修点不足（需要 {cost}，剩余 {data.availablePoints}）";
+            reason = string.Format(DoorText.Get("training_reason_points_fmt", "研修点不足（需要 {0}，剩余 {1}）"), cost, data.availablePoints);
             return false;
         }
         return true;

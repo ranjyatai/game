@@ -18,6 +18,7 @@ MonoBehaviour:
   - conditions: []
     greetingSentenceIds:
     - REXIA-001
+    - REXIA-003
     options:
     - label:
       - languageCode: zh-CN
@@ -46,7 +47,7 @@ MonoBehaviour:
       actionType: 0
       visibilityConditions: []
       targetSentenceIds:
-      - REXIA-002
+      - REXIA-004
       closeAfterShow: 1
       targetWindowPrefab: {fileID: 0}
       returnToDialogueAfterWindowClose: 0
@@ -55,7 +56,10 @@ MonoBehaviour:
       questToAccept: {fileID: 0}
       subOptions: []
   idleChatterDelaySeconds: 18
-  idleChatterSentenceIds: []
+  idleChatterSentenceIds:
+  - REXIA-007
+  - REXIA-008
+  - REXIA-009
   references:
     version: 2
     RefIds: []

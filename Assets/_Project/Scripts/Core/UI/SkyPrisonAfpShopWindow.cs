@@ -116,6 +116,7 @@ public sealed class SkyPrisonAfpShopWindow : MonoBehaviour
         yield return null;
 
         BuildUI();
+        _openedInSession = AFPRuntime.Instance != null && AFPRuntime.Instance.IsInSession;
         SkyPrisonAfpUpgrades.OnChanged += Refresh;
         AFPRuntime.OnAFPChanged += OnAfpChanged;
         Refresh();
@@ -160,6 +161,9 @@ public sealed class SkyPrisonAfpShopWindow : MonoBehaviour
         sr.anchorMin = new Vector2(0f, 1f); sr.anchorMax = new Vector2(1f, 1f); sr.pivot = new Vector2(0.5f, 1f);
         sr.anchoredPosition = new Vector2(0f, -(SkyPrisonFloatingWindowKit.TitleBarHeight + 6f));
         sr.sizeDelta = new Vector2(-120f, 56f);
+        // 日文比中英文长，一行放不下就自动缩小字号(最小 22)，不超出窗口
+        sub.enableWordWrapping = false; sub.overflowMode = TextOverflowModes.Overflow;
+        sub.enableAutoSizing = true; sub.fontSizeMax = 32; sub.fontSizeMin = 22;
 
         // 行容器：占标题/说明以下的整块；项目多了超出就出滚动条
         var box = MakeRect("RowsBox", _boxRt, Vector2.zero, Vector2.one);
@@ -1018,6 +1022,8 @@ public sealed class SkyPrisonAfpShopWindow : MonoBehaviour
 
         // 世界没停：离开购买区、或进入战斗，窗口自己关(战斗里不该站着买东西)
         if (PlayerCombatStateRuntime.IsInCombat || (_zone != null && !_zone.PlayerInside)) { Close(); return; }
+        // 角色死亡 / 这一局的 AFP 会话结束(出本、撤离、死亡结算)：窗口不能挡在结算画面前面
+        if (PlayerDead() || (_openedInSession && (AFPRuntime.Instance == null || !AFPRuntime.Instance.IsInSession))) { Close(); return; }
         if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null)
             EventSystem.current.SetSelectedGameObject(null);
 
@@ -1079,6 +1085,15 @@ public sealed class SkyPrisonAfpShopWindow : MonoBehaviour
     }
 
     static float Axis(string n) { try { return Input.GetAxisRaw(n); } catch { return 0f; } }
+
+    bool _openedInSession;
+    static bool PlayerDead()
+    {
+        var p = SkyPrisonPlayerAuthority.CurrentPlayerUnit;
+        if (p == null) return false;
+        var h = p.GetComponentInChildren<UnitHealthController>(true);
+        return h != null && h.IsDead;
+    }
 
     void Close()
     {

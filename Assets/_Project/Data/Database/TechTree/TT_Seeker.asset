@@ -19,21 +19,35 @@ MonoBehaviour:
   layoutMode: 0
   nodes:
   - nodeId: seeker_root
-    nodeName: "\u63A2\u7D22\u8005\u9002\u5E94"
-    description: 
+    nodeName: "AFP\u7CFB\u7EDF\u89E3\u653E"
+    localizedNames:
+    - languageCode: zh-CN
+      text: "AFP\u7CFB\u7EDF\u89E3\u653E"
+    - languageCode: ja
+      text: "AFP\u30B7\u30B9\u30C6\u30E0\u89E3\u653E"
+    - languageCode: en
+      text: AFP System Unlock
+    description: "\u5F00\u653EAFP\u7CFB\u7EDF\u90E8\u7F72\u80FD\u529B\u3002\u8FDB\u5165\u526F\u672C\u540E\uFF0CAFP
+      \u7CFB\u7EDF\u4F1A\u6301\u7EED\u5206\u6790\u6218\u5C40\u3001\u6F14\u7B97\u672C\u5C40\u7684\u53D6\u80DC\u8DEF\u5F84\uFF1B\u53EF\u5728
+      AFP \u8D2D\u4E70\u533A\u6309\u6F14\u7B97\u7ED3\u679C\u90E8\u7F72\u5F3A\u5316\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u5F00\u653EAFP\u7CFB\u7EDF\u90E8\u7F72\u80FD\u529B\u3002\u8FDB\u5165\u526F\u672C\u540E\uFF0CAFP
+        \u7CFB\u7EDF\u4F1A\u6301\u7EED\u5206\u6790\u6218\u5C40\u3001\u6F14\u7B97\u672C\u5C40\u7684\u53D6\u80DC\u8DEF\u5F84\uFF1B\u53EF\u5728
+        AFP \u8D2D\u4E70\u533A\u6309\u6F14\u7B97\u7ED3\u679C\u90E8\u7F72\u5F3A\u5316\u3002"
     - languageCode: ja
-      text: 
+      text: "AFP\u30B7\u30B9\u30C6\u30E0\u306E\u5C55\u958B\u80FD\u529B\u3092\u89E3\u653E\u3059\u308B\u3002\u51FA\u6483\u5F8C\u3001AFP\u30B7\u30B9\u30C6\u30E0\u304C\u6226\u6CC1\u3092\u7D99\u7D9A\u7684\u306B\u5206\u6790\u3057\u3001\u3053\u306E\u4F5C\u6226\u306E\u52DD\u3061\u7B4B\u3092\u6F14\u7B97\u3059\u308B\u3002AFP\u8CFC\u5165\u30A8\u30EA\u30A2\u3067\u6F14\u7B97\u7D50\u679C\u306B\u57FA\u3065\u304D\u5F37\u5316\u3092\u5C55\u958B\u3067\u304D\u308B\u3002"
     - languageCode: en
-      text: 
+      text: Unlocks AFP system deployment. Once deployed in a raid, the AFP system
+        continuously analyzes the battle and calculates a winning path; deploy enhancements
+        based on its results at an AFP Purchase Zone.
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u89E3\u9501\u9002\u5E94\u7CFB\u7EDF\uFF1A\u8FDB\u672C\u540E\u5728
       AFP \u8D2D\u4E70\u533A\u8FDB\u884C AFP \u90E8\u7F72\u3002"
     enabled: 1
     primaryParentIndex: -1
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: 
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -44,24 +58,38 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 1
       rewards: []
-      note: "\u89E3\u9501\u9002\u5E94\u7CFB\u7EDF\uFF1A\u8FDB\u672C\u540E\u5728 AFP
-        \u8D2D\u4E70\u533A\u8FDB\u884C AFP \u90E8\u7F72\u3002"
+      note: "\u5F00\u653EAFP\u7CFB\u7EDF\u90E8\u7F72\u80FD\u529B"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u5F00\u653EAFP\u7CFB\u7EDF\u90E8\u7F72\u80FD\u529B"
+      - languageCode: ja
+        text: "AFP\u30B7\u30B9\u30C6\u30E0\u5C55\u958B\u80FD\u529B\u3092\u89E3\u653E"
+      - languageCode: en
+        text: Unlocks AFP deployment
   - nodeId: seeker_loot
     nodeName: "\u63A0\u593A"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u63A0\u593A"
+    - languageCode: ja
+      text: "\u7565\u596A"
+    - languageCode: en
+      text: Plunder
+    description: "\u63D0\u9AD8\u654C\u4EBA\u4E0E\u5BB9\u5668\u7684\u6389\u5B9D\u51E0\u7387\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u63D0\u9AD8\u654C\u4EBA\u4E0E\u5BB9\u5668\u7684\u6389\u5B9D\u51E0\u7387\u3002"
     - languageCode: ja
-      text: 
+      text: "\u6575\u3068\u30B3\u30F3\u30C6\u30CA\u306E\u30C9\u30ED\u30C3\u30D7\u7387\u3092\u4E0A\u3052\u308B\u3002"
     - languageCode: en
-      text: 
+      text: Increases drop rates from enemies and containers.
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  \u6389\u5B9D\u7387 +5%\nLv2 
       \u6389\u5B9D\u7387\u7D2F\u8BA1 +10%\nLv3  \u6389\u5B9D\u7387\u7D2F\u8BA1 +15%"
     enabled: 1
     primaryParentIndex: 0
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: 
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -78,6 +106,13 @@ MonoBehaviour:
         isPercent: 1
         note: 
       note: "\u6389\u5B9D\u7387 +5%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u6389\u5B9D\u7387 +5%"
+      - languageCode: ja
+        text: "\u30C9\u30ED\u30C3\u30D7\u7387 +5%"
+      - languageCode: en
+        text: Drop rate +5%
     - level: 2
       costs:
       - item: {fileID: 0}
@@ -88,7 +123,14 @@ MonoBehaviour:
         value: 5
         isPercent: 1
         note: 
-      note: "\u6389\u5B9D\u7387\u7D2F\u8BA1 +10%"
+      note: "\u6389\u5B9D\u7387 +10%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u6389\u5B9D\u7387 +10%"
+      - languageCode: ja
+        text: "\u30C9\u30ED\u30C3\u30D7\u7387 +10%"
+      - languageCode: en
+        text: Drop rate +10%
     - level: 3
       costs:
       - item: {fileID: 0}
@@ -99,23 +141,39 @@ MonoBehaviour:
         value: 5
         isPercent: 1
         note: 
-      note: "\u6389\u5B9D\u7387\u7D2F\u8BA1 +15%"
+      note: "\u6389\u5B9D\u7387 +15%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u6389\u5B9D\u7387 +15%"
+      - languageCode: ja
+        text: "\u30C9\u30ED\u30C3\u30D7\u7387 +15%"
+      - languageCode: en
+        text: Drop rate +15%
   - nodeId: seeker_loot_scavenger
     nodeName: "\u62FE\u8352\u8005"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u62FE\u8352\u8005"
+    - languageCode: ja
+      text: "\u30B9\u30AB\u30D9\u30F3\u30B8\u30E3\u30FC"
+    - languageCode: en
+      text: Scavenger
+    description: "\u6269\u5927\u62FE\u53D6\u8303\u56F4\uFF0C\u6218\u5229\u54C1\u4E0D\u5FC5\u8D70\u5230\u8DDF\u524D\u624D\u80FD\u6536\u53D6\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u6269\u5927\u62FE\u53D6\u8303\u56F4\uFF0C\u6218\u5229\u54C1\u4E0D\u5FC5\u8D70\u5230\u8DDF\u524D\u624D\u80FD\u6536\u53D6\u3002"
     - languageCode: ja
-      text: 
+      text: "\u62FE\u5F97\u7BC4\u56F2\u3092\u5E83\u3052\u3001\u6226\u5229\u54C1\u306B\u8FD1\u3065\u304B\u306A\u304F\u3066\u3082\u56DE\u53CE\u3067\u304D\u308B\u3002"
     - languageCode: en
-      text: 
+      text: Widens pickup range so loot can be collected without walking right up
+        to it.
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  \u62FE\u53D6\u8303\u56F4
       +10%\nLv2  \u62FE\u53D6\u8303\u56F4\u7D2F\u8BA1 +20%"
     enabled: 1
     primaryParentIndex: 1
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_2
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -132,6 +190,13 @@ MonoBehaviour:
         isPercent: 1
         note: 
       note: "\u62FE\u53D6\u8303\u56F4 +10%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u62FE\u53D6\u8303\u56F4 +10%"
+      - languageCode: ja
+        text: "\u62FE\u5F97\u7BC4\u56F2 +10%"
+      - languageCode: en
+        text: Pickup range +10%
     - level: 2
       costs:
       - item: {fileID: 0}
@@ -142,17 +207,32 @@ MonoBehaviour:
         value: 10
         isPercent: 1
         note: 
-      note: "\u62FE\u53D6\u8303\u56F4\u7D2F\u8BA1 +20%"
+      note: "\u62FE\u53D6\u8303\u56F4 +20%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u62FE\u53D6\u8303\u56F4 +20%"
+      - languageCode: ja
+        text: "\u62FE\u5F97\u7BC4\u56F2 +20%"
+      - languageCode: en
+        text: Pickup range +20%
   - nodeId: seeker_adapt
     nodeName: "\u81EA\u9002\u5E94"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u81EA\u9002\u5E94"
+    - languageCode: ja
+      text: "\u9069\u5FDC"
+    - languageCode: en
+      text: Adaptive
+    description: "\u5728\u6218\u6597\u4E0E\u641C\u522E\u4E2D\u66F4\u5FEB\u79EF\u7D2F
+      AFP\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u5728\u6218\u6597\u4E0E\u641C\u522E\u4E2D\u66F4\u5FEB\u79EF\u7D2F AFP\u3002"
     - languageCode: ja
-      text: 
+      text: "\u6226\u95D8\u3068\u63A2\u7D22\u3067AFP\u3092\u3088\u308A\u901F\u304F\u84C4\u7A4D\u3059\u308B\u3002"
     - languageCode: en
-      text: 
+      text: Accumulate AFP faster through combat and scavenging.
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  AFP \u83B7\u53D6\u7387 +8%\nLv2 
       AFP \u83B7\u53D6\u7387\u7D2F\u8BA1 +16%\nLv3  AFP \u83B7\u53D6\u7387\u7D2F\u8BA1
       +24%\n\u524D\u7F6E\uFF1A\u62FE\u8352\u8005(\u63A0\u593A \u2192 \u62FE\u8352\u8005
@@ -161,6 +241,7 @@ MonoBehaviour:
     primaryParentIndex: 2
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_2
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -177,6 +258,13 @@ MonoBehaviour:
         isPercent: 1
         note: 
       note: "AFP \u83B7\u53D6\u7387 +8%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "AFP \u83B7\u53D6\u7387 +8%"
+      - languageCode: ja
+        text: "AFP\u7372\u5F97\u7387 +8%"
+      - languageCode: en
+        text: AFP gain +8%
     - level: 2
       costs:
       - item: {fileID: 0}
@@ -187,7 +275,14 @@ MonoBehaviour:
         value: 8
         isPercent: 1
         note: 
-      note: "AFP \u83B7\u53D6\u7387\u7D2F\u8BA1 +16%"
+      note: "AFP \u83B7\u53D6\u7387 +16%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "AFP \u83B7\u53D6\u7387 +16%"
+      - languageCode: ja
+        text: "AFP\u7372\u5F97\u7387 +16%"
+      - languageCode: en
+        text: AFP gain +16%
     - level: 3
       costs:
       - item: {fileID: 0}
@@ -198,17 +293,32 @@ MonoBehaviour:
         value: 8
         isPercent: 1
         note: 
-      note: "AFP \u83B7\u53D6\u7387\u7D2F\u8BA1 +24%"
+      note: "AFP \u83B7\u53D6\u7387 +24%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "AFP \u83B7\u53D6\u7387 +24%"
+      - languageCode: ja
+        text: "AFP\u7372\u5F97\u7387 +24%"
+      - languageCode: en
+        text: AFP gain +24%
   - nodeId: seeker_starting_afp
     nodeName: "\u8D77\u59CB\u8D44\u91D1"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u8D77\u59CB\u8D44\u91D1"
+    - languageCode: ja
+      text: "\u521D\u671F\u8CC7\u91D1"
+    - languageCode: en
+      text: Starting Funds
+    description: "\u51FA\u53D1\u65F6\u81EA\u5E26\u4E00\u7B14 AFP\uFF0C\u8FDB\u5165\u526F\u672C\u5373\u53EF\u6295\u5165\u9002\u5E94\u7CFB\u7EDF\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u51FA\u53D1\u65F6\u81EA\u5E26\u4E00\u7B14 AFP\uFF0C\u8FDB\u5165\u526F\u672C\u5373\u53EF\u6295\u5165\u9002\u5E94\u7CFB\u7EDF\u3002"
     - languageCode: ja
-      text: 
+      text: "\u51FA\u6483\u6642\u306BAFP\u3092\u6240\u6301\u3057\u3001\u4F5C\u6226\u958B\u59CB\u76F4\u5F8C\u304B\u3089\u9069\u5FDC\u30B7\u30B9\u30C6\u30E0\u306B\u6295\u5165\u3067\u304D\u308B\u3002"
     - languageCode: en
-      text: 
+      text: Begin each raid with some AFP, ready to invest in the Adaptation System
+        right away.
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\nLv1  \u5F00\u5C40 AFP +50\nLv2 
       \u7D2F\u8BA1 +100\nLv3  \u7D2F\u8BA1 +150\nLv4  \u7D2F\u8BA1 +200\nLv5  \u7D2F\u8BA1
       +250\n\u524D\u7F6E\uFF1A\u81EA\u9002\u5E94\u3002"
@@ -216,6 +326,7 @@ MonoBehaviour:
     primaryParentIndex: 3
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_2
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -227,34 +338,88 @@ MonoBehaviour:
         amount: 2
       rewards: []
       note: "\u5F00\u5C40 AFP +50"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u5F00\u5C40 AFP +50"
+      - languageCode: ja
+        text: "\u958B\u59CB\u6642AFP +50"
+      - languageCode: en
+        text: Starting AFP +50
     - level: 2
       costs:
       - item: {fileID: 0}
         amount: 3
       rewards: []
-      note: "\u5F00\u5C40 AFP \u7D2F\u8BA1 +100"
+      note: "\u5F00\u5C40 AFP +100"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u5F00\u5C40 AFP +100"
+      - languageCode: ja
+        text: "\u958B\u59CB\u6642AFP +100"
+      - languageCode: en
+        text: Starting AFP +100
     - level: 3
       costs:
       - item: {fileID: 0}
         amount: 4
       rewards: []
-      note: "\u5F00\u5C40 AFP \u7D2F\u8BA1 +150"
+      note: "\u5F00\u5C40 AFP +150"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u5F00\u5C40 AFP +150"
+      - languageCode: ja
+        text: "\u958B\u59CB\u6642AFP +150"
+      - languageCode: en
+        text: Starting AFP +150
     - level: 4
       costs:
       - item: {fileID: 0}
         amount: 6
       rewards: []
-      note: "\u5F00\u5C40 AFP \u7D2F\u8BA1 +200"
+      note: "\u5F00\u5C40 AFP +200"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u5F00\u5C40 AFP +200"
+      - languageCode: ja
+        text: "\u958B\u59CB\u6642AFP +200"
+      - languageCode: en
+        text: Starting AFP +200
     - level: 5
       costs:
       - item: {fileID: 0}
         amount: 8
       rewards: []
-      note: "\u5F00\u5C40 AFP \u7D2F\u8BA1 +250"
+      note: "\u5F00\u5C40 AFP +250"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u5F00\u5C40 AFP +250"
+      - languageCode: ja
+        text: "\u958B\u59CB\u6642AFP +250"
+      - languageCode: en
+        text: Starting AFP +250
   - nodeId: seeker_afp_res_phys
     nodeName: "\u8BCD\u6761\uFF1A\u7269\u7406\u6297\u6027"
-    description: "\u89E3\u9501\u65A9\u51FB / \u6253\u51FB / \u51B2\u51FB\u6297\u6027\u5F3A\u5316\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u8BCD\u6761\uFF1A\u7269\u7406\u6297\u6027"
+    - languageCode: ja
+      text: "\u9805\u76EE\uFF1A\u7269\u7406\u8010\u6027"
+    - languageCode: en
+      text: 'Entry: Physical Resistance'
+    description: "\u5F00\u653E\u9002\u5E94\u9879\u76EE\uFF1A\u65A9\u51FB\u3001\u6253\u51FB\u3001\u51B2\u51FB\u6297\u6027\u3002\n\u6BCF\u7EA7
+      +0.5% \u5BF9\u5E94\u6297\u6027\uFF0C\u4E0A\u9650 99 \u7EA7\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u5F00\u653E\u9002\u5E94\u9879\u76EE\uFF1A\u65A9\u51FB\u3001\u6253\u51FB\u3001\u51B2\u51FB\u6297\u6027\u3002\n\u6BCF\u7EA7
+        +0.5% \u5BF9\u5E94\u6297\u6027\uFF0C\u4E0A\u9650 99 \u7EA7\u3002"
+    - languageCode: ja
+      text: "\u9069\u5FDC\u9805\u76EE\u3092\u89E3\u653E\uFF1A\u65AC\u6483\u30FB\u6253\u6483\u30FB\u885D\u6483\u8010\u6027\u3002\n1\u30EC\u30D9\u30EB\u3054\u3068\u306B\u5BFE\u5FDC\u3059\u308B\u8010\u6027
+        +0.5%\u3001\u6700\u592799\u30EC\u30D9\u30EB\u3002"
+    - languageCode: en
+      text: 'Unlocks adaptation entries: Slash, Strike, and Impact Resistance.
+
+        +0.5%
+        to the matching resistance per level, up to level 99.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u89E3\u9501\u9002\u5E94\u5F3A\u5316\uFF1A\u65A9\u51FB
       / \u6253\u51FB / \u51B2\u51FB\u6297\u6027(\u6BCF\u7EA7 +0.5% \u5BF9\u5E94\u6297\u6027\uFF0C\u6700\u591A
       99 \u7EA7)\u3002"
@@ -262,6 +427,7 @@ MonoBehaviour:
     primaryParentIndex: 0
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: 
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -272,19 +438,37 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 2
       rewards: []
-      note: "\u89E3\u9501\u9002\u5E94\u5F3A\u5316\uFF1A\u65A9\u51FB / \u6253\u51FB
-        / \u51B2\u51FB\u6297\u6027(\u6BCF\u7EA7 +0.5% \u5BF9\u5E94\u6297\u6027\uFF0C\u6700\u591A
-        99 \u7EA7)\u3002"
+      note: "\u5F00\u653E\u7269\u7406\u6297\u6027"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u5F00\u653E\u7269\u7406\u6297\u6027"
+      - languageCode: ja
+        text: "\u7269\u7406\u8010\u6027\u3092\u89E3\u653E"
+      - languageCode: en
+        text: Unlocks Physical Resistance
   - nodeId: seeker_afp_res_attr
     nodeName: "\u8BCD\u6761\uFF1A\u5C5E\u6027\u6297\u6027"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u8BCD\u6761\uFF1A\u5C5E\u6027\u6297\u6027"
+    - languageCode: ja
+      text: "\u9805\u76EE\uFF1A\u5C5E\u6027\u8010\u6027"
+    - languageCode: en
+      text: 'Entry: Elemental Resistance'
+    description: "\u5F00\u653E\u9002\u5E94\u9879\u76EE\uFF1A\u707C\u70ED\u3001\u7535\u78C1\u3001\u8150\u8680\u3001\u51BB\u7ED3\u6297\u6027\u3002\n\u6BCF\u7EA7
+      +0.5% \u5BF9\u5E94\u6297\u6027\uFF0C\u4E0A\u9650 99 \u7EA7\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u5F00\u653E\u9002\u5E94\u9879\u76EE\uFF1A\u707C\u70ED\u3001\u7535\u78C1\u3001\u8150\u8680\u3001\u51BB\u7ED3\u6297\u6027\u3002\n\u6BCF\u7EA7
+        +0.5% \u5BF9\u5E94\u6297\u6027\uFF0C\u4E0A\u9650 99 \u7EA7\u3002"
     - languageCode: ja
-      text: 
+      text: "\u9069\u5FDC\u9805\u76EE\u3092\u89E3\u653E\uFF1A\u707C\u71B1\u30FB\u96FB\u78C1\u30FB\u8150\u98DF\u30FB\u51CD\u7D50\u8010\u6027\u3002\n1\u30EC\u30D9\u30EB\u3054\u3068\u306B\u5BFE\u5FDC\u3059\u308B\u8010\u6027
+        +0.5%\u3001\u6700\u592799\u30EC\u30D9\u30EB\u3002"
     - languageCode: en
-      text: 
+      text: 'Unlocks adaptation entries: Heat, Shock, Corrosion, and Freeze Resistance.
+
+        +0.5%
+        to the matching resistance per level, up to level 99.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u89E3\u9501\u9002\u5E94\u5F3A\u5316\uFF1A\u707C\u70ED
       / \u7535\u78C1 / \u8150\u8680 / \u51BB\u7ED3\u6297\u6027(\u6BCF\u7EA7 +0.5%
       \u5BF9\u5E94\u6297\u6027\uFF0C\u6700\u591A 99 \u7EA7)\u3002"
@@ -292,6 +476,7 @@ MonoBehaviour:
     primaryParentIndex: 0
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: 
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -302,19 +487,44 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 2
       rewards: []
-      note: "\u89E3\u9501\u9002\u5E94\u5F3A\u5316\uFF1A\u707C\u70ED / \u7535\u78C1
-        / \u8150\u8680 / \u51BB\u7ED3\u6297\u6027(\u6BCF\u7EA7 +0.5% \u5BF9\u5E94\u6297\u6027\uFF0C\u6700\u591A
-        99 \u7EA7)\u3002"
+      note: "\u5F00\u653E\u5C5E\u6027\u6297\u6027"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u5F00\u653E\u5C5E\u6027\u6297\u6027"
+      - languageCode: ja
+        text: "\u5C5E\u6027\u8010\u6027\u3092\u89E3\u653E"
+      - languageCode: en
+        text: Unlocks Elemental Resistance
   - nodeId: seeker_afp_atk
     nodeName: "\u8BCD\u6761\uFF1A\u653B\u51FB\u5F3A\u5316"
-    description: "\u89E3\u9501\u7269\u7406\u653B\u51FB\u5F3A\u5316\u4E0E\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u8BCD\u6761\uFF1A\u653B\u51FB\u5F3A\u5316"
+    - languageCode: ja
+      text: "\u9805\u76EE\uFF1A\u653B\u6483\u5F37\u5316"
+    - languageCode: en
+      text: 'Entry: Attack Enhancement'
+    description: "\u5F00\u653E\u9002\u5E94\u9879\u76EE\uFF1A\u7269\u7406\u653B\u51FB\u5F3A\u5316\u3001\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u3002\n\u6BCF\u7EA7
+      +0.5% \u5BF9\u5E94\u4F24\u5BB3\uFF0C\u4E0A\u9650 99 \u7EA7\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u5F00\u653E\u9002\u5E94\u9879\u76EE\uFF1A\u7269\u7406\u653B\u51FB\u5F3A\u5316\u3001\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u3002\n\u6BCF\u7EA7
+        +0.5% \u5BF9\u5E94\u4F24\u5BB3\uFF0C\u4E0A\u9650 99 \u7EA7\u3002"
+    - languageCode: ja
+      text: "\u9069\u5FDC\u9805\u76EE\u3092\u89E3\u653E\uFF1A\u7269\u7406\u653B\u6483\u5F37\u5316\u30FB\u5C5E\u6027\u653B\u6483\u5F37\u5316\u3002\n1\u30EC\u30D9\u30EB\u3054\u3068\u306B\u5BFE\u5FDC\u3059\u308B\u30C0\u30E1\u30FC\u30B8
+        +0.5%\u3001\u6700\u592799\u30EC\u30D9\u30EB\u3002"
+    - languageCode: en
+      text: 'Unlocks adaptation entries: Physical Damage and Elemental Damage.
+
+        +0.5%
+        to the matching damage per level, up to level 99.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u89E3\u9501\u9002\u5E94\u5F3A\u5316\uFF1A\u7269\u7406\u653B\u51FB\u5F3A\u5316\u3001\u5C5E\u6027\u653B\u51FB\u5F3A\u5316(\u6BCF\u7EA7
       +0.5% \u5BF9\u5E94\u4F24\u5BB3\uFF0C\u6700\u591A 99 \u7EA7)\u3002"
     enabled: 1
     primaryParentIndex: 0
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: 
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -325,24 +535,48 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 3
       rewards: []
-      note: "\u89E3\u9501\u9002\u5E94\u5F3A\u5316\uFF1A\u7269\u7406\u653B\u51FB\u5F3A\u5316\u3001\u5C5E\u6027\u653B\u51FB\u5F3A\u5316(\u6BCF\u7EA7
-        +0.5% \u5BF9\u5E94\u4F24\u5BB3\uFF0C\u6700\u591A 99 \u7EA7)\u3002"
+      note: "\u5F00\u653E\u653B\u51FB\u5F3A\u5316"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u5F00\u653E\u653B\u51FB\u5F3A\u5316"
+      - languageCode: ja
+        text: "\u653B\u6483\u5F37\u5316\u3092\u89E3\u653E"
+      - languageCode: en
+        text: Unlocks Attack Enhancement
   - nodeId: seeker_afp_magazine
     nodeName: "\u8BCD\u6761\uFF1A\u6269\u5BB9\u5F39\u5323"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u8BCD\u6761\uFF1A\u6269\u5BB9\u5F39\u5323"
+    - languageCode: ja
+      text: "\u9805\u76EE\uFF1A\u30DE\u30AC\u30B8\u30F3\u62E1\u5F35"
+    - languageCode: en
+      text: 'Entry: Extended Magazine'
+    description: "\u5F00\u653E\u9002\u5E94\u9879\u76EE\uFF1A\u6269\u5BB9\u5F39\u5323\u3002\n\u6BCF\u6B21
+      +10 \u53D1\u5F39\u5323\u5BB9\u91CF\uFF0C\u6700\u591A 3 \u6B21\u3002\u4EF7\u683C\u4F9D\u6B21\u4E3A
+      350 / 2200 / 7500 AFP\uFF0C\u4E0D\u53D7\u5168\u5C40\u6DA8\u4EF7\u5F71\u54CD\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u5F00\u653E\u9002\u5E94\u9879\u76EE\uFF1A\u6269\u5BB9\u5F39\u5323\u3002\n\u6BCF\u6B21
+        +10 \u53D1\u5F39\u5323\u5BB9\u91CF\uFF0C\u6700\u591A 3 \u6B21\u3002\u4EF7\u683C\u4F9D\u6B21\u4E3A
+        350 / 2200 / 7500 AFP\uFF0C\u4E0D\u53D7\u5168\u5C40\u6DA8\u4EF7\u5F71\u54CD\u3002"
     - languageCode: ja
-      text: 
+      text: "\u9069\u5FDC\u9805\u76EE\u3092\u89E3\u653E\uFF1A\u30DE\u30AC\u30B8\u30F3\u62E1\u5F35\u3002\n1\u56DE\u3054\u3068\u306B\u88C5\u5F3E\u6570
+        +10\u3001\u6700\u59273\u56DE\u3002\u4FA1\u683C\u306F 350 / 2200 / 7500 AFP
+        \u3067\u3001\u5168\u4F53\u306E\u5024\u4E0A\u304C\u308A\u306E\u5F71\u97FF\u3092\u53D7\u3051\u306A\u3044\u3002"
     - languageCode: en
-      text: 
+      text: 'Unlocks adaptation entry: Extended Magazine.
+
+        +10 magazine capacity
+        per purchase, up to 3 times. Costs 350 / 2200 / 7500 AFP and is unaffected
+        by global price increases.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u89E3\u9501\u9002\u5E94\u5F3A\u5316\uFF1A\u6269\u5BB9\u5F39\u5323(\u6BCF\u6B21
       +10 \u53D1\uFF0C\u6700\u591A 3 \u6B21\uFF0C\u4EF7\u76EE 350 / 2200 / 7500 AFP\uFF0C\u4E0D\u53D7\u5168\u5C40\u6DA8\u4EF7\u5F71\u54CD)\u3002"
     enabled: 1
     primaryParentIndex: 0
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: 
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -353,19 +587,35 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 3
       rewards: []
-      note: "\u89E3\u9501\u9002\u5E94\u5F3A\u5316\uFF1A\u6269\u5BB9\u5F39\u5323(\u6BCF\u6B21
-        +10 \u53D1\uFF0C\u6700\u591A 3 \u6B21\uFF0C\u4EF7\u76EE 350 / 2200 / 7500
-        AFP\uFF0C\u4E0D\u53D7\u5168\u5C40\u6DA8\u4EF7\u5F71\u54CD)\u3002"
+      note: "\u5F00\u653E\u6269\u5BB9\u5F39\u5323"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u5F00\u653E\u6269\u5BB9\u5F39\u5323"
+      - languageCode: ja
+        text: "\u30DE\u30AC\u30B8\u30F3\u62E1\u5F35\u3092\u89E3\u653E"
+      - languageCode: en
+        text: Unlocks Extended Magazine
   - nodeId: seeker_afp_magazine_discount
     nodeName: "\u52A0\u901F\u6539\u9020\uFF1A\u6269\u5BB9\u5F39\u5323"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u52A0\u901F\u6539\u9020\uFF1A\u6269\u5BB9\u5F39\u5323"
+    - languageCode: ja
+      text: "\u65E9\u671F\u6539\u4FEE\uFF1A\u30DE\u30AC\u30B8\u30F3\u62E1\u5F35"
+    - languageCode: en
+      text: 'Rapid Refit: Extended Magazine'
+    description: "\u6269\u5BB9\u5F39\u5323\u7684\u8D2D\u4E70\u4EF7\u683C\u6574\u4F53\u4E0B\u8C03\uFF0C\u7B2C\u4E00\u6B21\u6269\u5BB9\u53EA\u9700
+      300 AFP\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u6269\u5BB9\u5F39\u5323\u7684\u8D2D\u4E70\u4EF7\u683C\u6574\u4F53\u4E0B\u8C03\uFF0C\u7B2C\u4E00\u6B21\u6269\u5BB9\u53EA\u9700
+        300 AFP\u3002"
     - languageCode: ja
-      text: 
+      text: "\u30DE\u30AC\u30B8\u30F3\u62E1\u5F35\u306E\u8CFC\u5165\u4FA1\u683C\u3092\u5168\u4F53\u7684\u306B\u5F15\u304D\u4E0B\u3052\u30011\u56DE\u76EE\u306E\u62E1\u5F35\u306F
+        300 AFP \u3067\u6E08\u3080\u3002"
     - languageCode: en
-      text: 
+      text: Lowers Extended Magazine prices across the board; the first upgrade costs
+        only 300 AFP.
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u6269\u5BB9\u5F39\u5323\u4EF7\u76EE\u6574\u4F53
       \xD7300/350\uFF1A350\u2192300\uFF0C2200\u2192\u7EA6 1886\uFF0C7500\u2192\u7EA6
       6429(\u7B2C\u4E00\u6B21\u6B63\u597D\u662F\u5F00\u5C40 300 AFP \u4E70\u5F97\u8D77\u7684\u4EF7\u683C)\u3002"
@@ -373,6 +623,7 @@ MonoBehaviour:
     primaryParentIndex: 8
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_2
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -383,19 +634,40 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 6
       rewards: []
-      note: "\u6269\u5BB9\u5F39\u5323\u4EF7\u76EE\u6574\u4F53 \xD7300/350\uFF1A350\u2192300\uFF0C2200\u2192\u7EA6
-        1886\uFF0C7500\u2192\u7EA6 6429(\u7B2C\u4E00\u6B21\u6B63\u597D\u662F\u5F00\u5C40
-        300 AFP \u4E70\u5F97\u8D77\u7684\u4EF7\u683C)\u3002"
+      note: "\u6269\u5BB9\u5F39\u5323\u4EF7\u683C\u4E0B\u8C03"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u6269\u5BB9\u5F39\u5323\u4EF7\u683C\u4E0B\u8C03"
+      - languageCode: ja
+        text: "\u30DE\u30AC\u30B8\u30F3\u62E1\u5F35\u306E\u4FA1\u683C\u3092\u5F15\u304D\u4E0B\u3052"
+      - languageCode: en
+        text: Extended Magazine price reduced
   - nodeId: seeker_afp_heat_shield_1
     nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u707C\u70ED I"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A\u707C\u70ED I"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u707C\u71B1 I"
+    - languageCode: en
+      text: 'Effect Field: Heat I'
+    description: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+      150 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+      5 \u7EA7\u540E\u751F\u6548\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+        150 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+        5 \u7EA7\u540E\u751F\u6548\u3002"
     - languageCode: ja
-      text: 
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u5C55\u958B\u3057\u3001\u707C\u71B1\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3059\u308B\u3002\u305D\u306E\u5F8C
+        150 \u79D2\u306E\u56DE\u5FA9\u306B\u5165\u308B\u3002\n\u5BFE\u5FDC\u3059\u308B\u5C5E\u6027\u306E\u8010\u6027\u5F37\u5316\u304C\u30EC\u30D9\u30EB5\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
     - languageCode: en
-      text: 
+      text: 'Deploys an Effect Field that negates one Heat anomaly, then recharges
+        for 150 seconds.
+
+        Takes effect once the matching resistance reaches
+        level 5.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 1 \u6863(I)\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38
       \xB7 150\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
       5 \u7EA7\u3002"
@@ -403,6 +675,7 @@ MonoBehaviour:
     primaryParentIndex: 6
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_2
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -413,14 +686,43 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 2
       rewards: []
-      note: "\u7B2C 1 \u6863(I)\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38
-        \xB7 150\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
-        5 \u7EA7\u3002"
+      note: "\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u6062\u590D 150
+        \u79D2"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u6062\u590D
+          150 \u79D2"
+      - languageCode: ja
+        text: "\u707C\u71B1\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3001\u56DE\u5FA9
+          150 \u79D2"
+      - languageCode: en
+        text: Negates one Heat anomaly, 150s recharge
   - nodeId: seeker_afp_heat_shield_2
     nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u707C\u70ED II"
-    description: "\u707C\u70ED\u6297\u6027\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u6062\u590D\u65F6\u95F4\u968F\u6863\u4F4D\u7F29\u77ED(150/120/90/60
-      \u79D2)\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A\u707C\u70ED II"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u707C\u71B1 II"
+    - languageCode: en
+      text: 'Effect Field: Heat II'
+    description: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+      120 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+      10 \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+        120 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+        10 \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u5C55\u958B\u3057\u3001\u707C\u71B1\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3059\u308B\u3002\u305D\u306E\u5F8C
+        120 \u79D2\u306E\u56DE\u5FA9\u306B\u5165\u308B\u3002\n\u5BFE\u5FDC\u3059\u308B\u5C5E\u6027\u306E\u8010\u6027\u5F37\u5316\u304C\u30EC\u30D9\u30EB10\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'Deploys an Effect Field that negates one Heat anomaly, then recharges
+        for 120 seconds.
+
+        Takes effect once the matching resistance reaches
+        level 10.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 2 \u6863(II)\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38
       \xB7 120\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
       10 \u7EA7\u3002"
@@ -428,6 +730,7 @@ MonoBehaviour:
     primaryParentIndex: 10
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -438,19 +741,43 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 3
       rewards: []
-      note: "\u7B2C 2 \u6863(II)\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38
-        \xB7 120\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
-        10 \u7EA7\u3002"
+      note: "\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u6062\u590D 120
+        \u79D2"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u6062\u590D
+          120 \u79D2"
+      - languageCode: ja
+        text: "\u707C\u71B1\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3001\u56DE\u5FA9
+          120 \u79D2"
+      - languageCode: en
+        text: Negates one Heat anomaly, 120s recharge
   - nodeId: seeker_afp_heat_shield_3
     nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u707C\u70ED III"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A\u707C\u70ED III"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u707C\u71B1 III"
+    - languageCode: en
+      text: 'Effect Field: Heat III'
+    description: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+      90 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+      15 \u7EA7\u540E\u751F\u6548\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+        90 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+        15 \u7EA7\u540E\u751F\u6548\u3002"
     - languageCode: ja
-      text: 
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u5C55\u958B\u3057\u3001\u707C\u71B1\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3059\u308B\u3002\u305D\u306E\u5F8C
+        90 \u79D2\u306E\u56DE\u5FA9\u306B\u5165\u308B\u3002\n\u5BFE\u5FDC\u3059\u308B\u5C5E\u6027\u306E\u8010\u6027\u5F37\u5316\u304C\u30EC\u30D9\u30EB15\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
     - languageCode: en
-      text: 
+      text: 'Deploys an Effect Field that negates one Heat anomaly, then recharges
+        for 90 seconds.
+
+        Takes effect once the matching resistance reaches
+        level 15.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 3 \u6863(III)\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38
       \xB7 90\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
       15 \u7EA7\u3002"
@@ -458,6 +785,7 @@ MonoBehaviour:
     primaryParentIndex: 11
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -468,19 +796,43 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 5
       rewards: []
-      note: "\u7B2C 3 \u6863(III)\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38
-        \xB7 90\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
-        15 \u7EA7\u3002"
+      note: "\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u6062\u590D 90
+        \u79D2"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u6062\u590D
+          90 \u79D2"
+      - languageCode: ja
+        text: "\u707C\u71B1\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3001\u56DE\u5FA9
+          90 \u79D2"
+      - languageCode: en
+        text: Negates one Heat anomaly, 90s recharge
   - nodeId: seeker_afp_heat_shield_4
     nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u707C\u70ED IV"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A\u707C\u70ED IV"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u707C\u71B1 IV"
+    - languageCode: en
+      text: 'Effect Field: Heat IV'
+    description: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+      60 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+      20 \u7EA7\u540E\u751F\u6548\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+        60 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+        20 \u7EA7\u540E\u751F\u6548\u3002"
     - languageCode: ja
-      text: 
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u5C55\u958B\u3057\u3001\u707C\u71B1\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3059\u308B\u3002\u305D\u306E\u5F8C
+        60 \u79D2\u306E\u56DE\u5FA9\u306B\u5165\u308B\u3002\n\u5BFE\u5FDC\u3059\u308B\u5C5E\u6027\u306E\u8010\u6027\u5F37\u5316\u304C\u30EC\u30D9\u30EB20\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
     - languageCode: en
-      text: 
+      text: 'Deploys an Effect Field that negates one Heat anomaly, then recharges
+        for 60 seconds.
+
+        Takes effect once the matching resistance reaches
+        level 20.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 4 \u6863(IV)\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38
       \xB7 60\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
       20 \u7EA7\u3002"
@@ -488,6 +840,7 @@ MonoBehaviour:
     primaryParentIndex: 12
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -498,14 +851,43 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 8
       rewards: []
-      note: "\u7B2C 4 \u6863(IV)\uFF1A\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38
-        \xB7 60\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
-        20 \u7EA7\u3002"
+      note: "\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u6062\u590D 60
+        \u79D2"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8C41\u514D\u4E00\u6B21\u707C\u70ED\u5F02\u5E38\uFF0C\u6062\u590D
+          60 \u79D2"
+      - languageCode: ja
+        text: "\u707C\u71B1\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3001\u56DE\u5FA9
+          60 \u79D2"
+      - languageCode: en
+        text: Negates one Heat anomaly, 60s recharge
   - nodeId: seeker_afp_shock_shield_1
     nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u7535\u78C1 I"
-    description: "\u7535\u78C1\u6297\u6027\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u6062\u590D\u65F6\u95F4\u968F\u6863\u4F4D\u7F29\u77ED(150/120/90/60
-      \u79D2)\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A\u7535\u78C1 I"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u96FB\u78C1 I"
+    - languageCode: en
+      text: 'Effect Field: Shock I'
+    description: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+      150 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+      5 \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+        150 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+        5 \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u5C55\u958B\u3057\u3001\u96FB\u78C1\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3059\u308B\u3002\u305D\u306E\u5F8C
+        150 \u79D2\u306E\u56DE\u5FA9\u306B\u5165\u308B\u3002\n\u5BFE\u5FDC\u3059\u308B\u5C5E\u6027\u306E\u8010\u6027\u5F37\u5316\u304C\u30EC\u30D9\u30EB5\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'Deploys an Effect Field that negates one Shock anomaly, then recharges
+        for 150 seconds.
+
+        Takes effect once the matching resistance reaches
+        level 5.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 1 \u6863(I)\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38
       \xB7 150\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
       5 \u7EA7\u3002"
@@ -513,6 +895,7 @@ MonoBehaviour:
     primaryParentIndex: 6
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_2
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -523,14 +906,43 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 2
       rewards: []
-      note: "\u7B2C 1 \u6863(I)\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38
-        \xB7 150\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
-        5 \u7EA7\u3002"
+      note: "\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u6062\u590D 150
+        \u79D2"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u6062\u590D
+          150 \u79D2"
+      - languageCode: ja
+        text: "\u96FB\u78C1\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3001\u56DE\u5FA9
+          150 \u79D2"
+      - languageCode: en
+        text: Negates one Shock anomaly, 150s recharge
   - nodeId: seeker_afp_shock_shield_2
     nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u7535\u78C1 II"
-    description: "\u7535\u78C1\u6297\u6027\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u6062\u590D\u65F6\u95F4\u968F\u6863\u4F4D\u7F29\u77ED(150/120/90/60
-      \u79D2)\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A\u7535\u78C1 II"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u96FB\u78C1 II"
+    - languageCode: en
+      text: 'Effect Field: Shock II'
+    description: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+      120 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+      10 \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+        120 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+        10 \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u5C55\u958B\u3057\u3001\u96FB\u78C1\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3059\u308B\u3002\u305D\u306E\u5F8C
+        120 \u79D2\u306E\u56DE\u5FA9\u306B\u5165\u308B\u3002\n\u5BFE\u5FDC\u3059\u308B\u5C5E\u6027\u306E\u8010\u6027\u5F37\u5316\u304C\u30EC\u30D9\u30EB10\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'Deploys an Effect Field that negates one Shock anomaly, then recharges
+        for 120 seconds.
+
+        Takes effect once the matching resistance reaches
+        level 10.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 2 \u6863(II)\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38
       \xB7 120\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
       10 \u7EA7\u3002"
@@ -538,6 +950,7 @@ MonoBehaviour:
     primaryParentIndex: 14
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -548,14 +961,43 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 3
       rewards: []
-      note: "\u7B2C 2 \u6863(II)\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38
-        \xB7 120\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
-        10 \u7EA7\u3002"
+      note: "\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u6062\u590D 120
+        \u79D2"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u6062\u590D
+          120 \u79D2"
+      - languageCode: ja
+        text: "\u96FB\u78C1\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3001\u56DE\u5FA9
+          120 \u79D2"
+      - languageCode: en
+        text: Negates one Shock anomaly, 120s recharge
   - nodeId: seeker_afp_shock_shield_3
     nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u7535\u78C1 III"
-    description: "\u7535\u78C1\u6297\u6027\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u6062\u590D\u65F6\u95F4\u968F\u6863\u4F4D\u7F29\u77ED(150/120/90/60
-      \u79D2)\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A\u7535\u78C1 III"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u96FB\u78C1 III"
+    - languageCode: en
+      text: 'Effect Field: Shock III'
+    description: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+      90 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+      15 \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+        90 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+        15 \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u5C55\u958B\u3057\u3001\u96FB\u78C1\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3059\u308B\u3002\u305D\u306E\u5F8C
+        90 \u79D2\u306E\u56DE\u5FA9\u306B\u5165\u308B\u3002\n\u5BFE\u5FDC\u3059\u308B\u5C5E\u6027\u306E\u8010\u6027\u5F37\u5316\u304C\u30EC\u30D9\u30EB15\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'Deploys an Effect Field that negates one Shock anomaly, then recharges
+        for 90 seconds.
+
+        Takes effect once the matching resistance reaches
+        level 15.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 3 \u6863(III)\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38
       \xB7 90\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
       15 \u7EA7\u3002"
@@ -563,6 +1005,7 @@ MonoBehaviour:
     primaryParentIndex: 15
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -573,14 +1016,43 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 5
       rewards: []
-      note: "\u7B2C 3 \u6863(III)\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38
-        \xB7 90\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
-        15 \u7EA7\u3002"
+      note: "\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u6062\u590D 90
+        \u79D2"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u6062\u590D
+          90 \u79D2"
+      - languageCode: ja
+        text: "\u96FB\u78C1\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3001\u56DE\u5FA9
+          90 \u79D2"
+      - languageCode: en
+        text: Negates one Shock anomaly, 90s recharge
   - nodeId: seeker_afp_shock_shield_4
     nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u7535\u78C1 IV"
-    description: "\u7535\u78C1\u6297\u6027\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u6062\u590D\u65F6\u95F4\u968F\u6863\u4F4D\u7F29\u77ED(150/120/90/60
-      \u79D2)\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A\u7535\u78C1 IV"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u96FB\u78C1 IV"
+    - languageCode: en
+      text: 'Effect Field: Shock IV'
+    description: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+      60 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+      20 \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+        60 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+        20 \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u5C55\u958B\u3057\u3001\u96FB\u78C1\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3059\u308B\u3002\u305D\u306E\u5F8C
+        60 \u79D2\u306E\u56DE\u5FA9\u306B\u5165\u308B\u3002\n\u5BFE\u5FDC\u3059\u308B\u5C5E\u6027\u306E\u8010\u6027\u5F37\u5316\u304C\u30EC\u30D9\u30EB20\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'Deploys an Effect Field that negates one Shock anomaly, then recharges
+        for 60 seconds.
+
+        Takes effect once the matching resistance reaches
+        level 20.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 4 \u6863(IV)\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38
       \xB7 60\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
       20 \u7EA7\u3002"
@@ -588,6 +1060,7 @@ MonoBehaviour:
     primaryParentIndex: 16
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -598,20 +1071,43 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 8
       rewards: []
-      note: "\u7B2C 4 \u6863(IV)\uFF1A\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38
-        \xB7 60\u79D2\u6062\u590D\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
-        20 \u7EA7\u3002"
+      note: "\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u6062\u590D 60
+        \u79D2"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8C41\u514D\u4E00\u6B21\u7535\u78C1\u5F02\u5E38\uFF0C\u6062\u590D
+          60 \u79D2"
+      - languageCode: ja
+        text: "\u96FB\u78C1\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3001\u56DE\u5FA9
+          60 \u79D2"
+      - languageCode: en
+        text: Negates one Shock anomaly, 60s recharge
   - nodeId: seeker_afp_life_insurance
     nodeName: "\u751F\u547D\u4FDD\u9669"
-    description: "\u8FFD\u52A0\u751F\u547D 5 \u7EA7\u540E\u751F\u6548\uFF1A\u53D7\u5230\u81F4\u547D\u4F24\u5BB3\u65F6\u6B7B\u4EA1\u8C41\u514D\uFF0C\u8840\u91CF\u4FDD\u7559
-      1 \u70B9\uFF0C\u968F\u540E\u51B7\u5374 300 \u79D2\u3002\u9700\u8981\u5148\u70B9\u4EAE\u300C\u8BCD\u6761\uFF1A\u7269\u7406\u6297\u6027\u300D\u548C\u300C\u8BCD\u6761\uFF1A\u5C5E\u6027\u6297\u6027\u300D(\u4E24\u7C7B\u6297\u6027\u90FD\u6709\u5E95\u5B50\u624D\u4E70\u5F97\u8D77\u4FDD\u9669)\u3002"
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u751F\u547D\u4FDD\u9669"
+    - languageCode: ja
+      text: "\u30E9\u30A4\u30D5\u4FDD\u967A"
+    - languageCode: en
+      text: Life Insurance
+    description: "\u53D7\u5230\u81F4\u547D\u4F24\u5BB3\u65F6\u514D\u4E8E\u6B7B\u4EA1\uFF0C\u751F\u547D\u4FDD\u7559
+      1 \u70B9\uFF0C\u968F\u540E\u8FDB\u5165 300 \u79D2\u51B7\u5374\u3002\n\u8FFD\u52A0\u751F\u547D\u8FBE\u5230
+      5 \u7EA7\u540E\u751F\u6548\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u53D7\u5230\u81F4\u547D\u4F24\u5BB3\u65F6\u514D\u4E8E\u6B7B\u4EA1\uFF0C\u751F\u547D\u4FDD\u7559
+        1 \u70B9\uFF0C\u968F\u540E\u8FDB\u5165 300 \u79D2\u51B7\u5374\u3002\n\u8FFD\u52A0\u751F\u547D\u8FBE\u5230
+        5 \u7EA7\u540E\u751F\u6548\u3002"
     - languageCode: ja
-      text: 
+      text: "\u81F4\u547D\u7684\u306A\u30C0\u30E1\u30FC\u30B8\u3092\u53D7\u3051\u305F\u6642\u3001\u6B7B\u4EA1\u3092\u514D\u308CHP1\u3067\u8010\u3048\u308B\u3002\u305D\u306E\u5F8C
+        300 \u79D2\u306E\u30AF\u30FC\u30EB\u30C0\u30A6\u30F3\u306B\u5165\u308B\u3002\n\u8FFD\u52A0\u30E9\u30A4\u30D5\u304C\u30EC\u30D9\u30EB5\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
     - languageCode: en
-      text: 
+      text: 'When taking lethal damage, survive with 1 HP instead of dying, then
+        enter a 300-second cooldown.
+
+        Takes effect once Bonus Vitality reaches
+        level 5.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8FFD\u52A0\u751F\u547D\u6EE1
       5 \u7EA7\u540E\u751F\u6548\uFF1A\u53D7\u5230\u81F4\u547D\u4F24\u5BB3\u65F6\u6B7B\u4EA1\u8C41\u514D\uFF0C\u8840\u91CF\u4FDD\u7559
       1 \u70B9\uFF0C\u968F\u540E\u51B7\u5374 300 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u8BCD\u6761\uFF1A\u7269\u7406\u6297\u6027(\u4E3B\u524D\u7F6E\uFF0C\u9632\u5FA1\u7EBF)
@@ -623,6 +1119,7 @@ MonoBehaviour:
       requirementType: 0
       requiredLevel: 1
     externalCondition: 0
+    revealGroup: seeker_2
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -633,13 +1130,42 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 10
       rewards: []
-      note: "\u8FFD\u52A0\u751F\u547D 5 \u7EA7\u540E\u751F\u6548\uFF1A\u6B7B\u4EA1\u8C41\u514D\uFF0C\u8840\u91CF\u4FDD\u7559
-        1 \u70B9\uFF0C\u51B7\u5374 300 \u79D2\u3002\u524D\u7F6E\uFF1A\u8D77\u59CB\u8D44\u91D1
-        + \u8BCD\u6761\uFF1A\u7269\u7406\u6297\u6027\u3002"
+      note: "\u5F00\u653E\u751F\u547D\u4FDD\u9669"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u5F00\u653E\u751F\u547D\u4FDD\u9669"
+      - languageCode: ja
+        text: "\u30E9\u30A4\u30D5\u4FDD\u967A\u3092\u89E3\u653E"
+      - languageCode: en
+        text: Unlocks Life Insurance
   - nodeId: seeker_afp_attr_burst_1
     nodeName: "\u5F02\u5E38\u8FFD\u4F24 I"
-    description: "\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u5F02\u5E38\u8D4B\u4E88\u65F6\u8FFD\u52A0\u4E00\u7B14\u653B\u51FB\u529B\u500D\u6570\u7684\u540C\u5C5E\u6027\u4F24\u5BB3\uFF0C\u5E76\u8BA9\u5F02\u5E38\u4E2D\u7684\u654C\u4EBA\u53D7\u5230\u66F4\u591A\u4F24\u5BB3\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u5F02\u5E38\u8FFD\u4F24 I"
+    - languageCode: ja
+      text: "\u7570\u5E38\u8FFD\u6483 I"
+    - languageCode: en
+      text: Anomaly Burst I
+    description: "\u9644\u52A0\u5F02\u5E38\u72B6\u6001\u65F6\uFF0C\u8FFD\u52A0\u4E00\u6B21\u653B\u51FB\u529B
+      300% \u7684\u540C\u5C5E\u6027\u4F24\u5BB3\uFF0C\u5E76\u4F7F\u5904\u4E8E\u5F02\u5E38\u4E2D\u7684\u654C\u4EBA\u989D\u5916\u627F\u53D7
+      5% \u4F24\u5BB3\u3002\n\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u8FBE\u5230 5 \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u9644\u52A0\u5F02\u5E38\u72B6\u6001\u65F6\uFF0C\u8FFD\u52A0\u4E00\u6B21\u653B\u51FB\u529B
+        300% \u7684\u540C\u5C5E\u6027\u4F24\u5BB3\uFF0C\u5E76\u4F7F\u5904\u4E8E\u5F02\u5E38\u4E2D\u7684\u654C\u4EBA\u989D\u5916\u627F\u53D7
+        5% \u4F24\u5BB3\u3002\n\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u8FBE\u5230 5
+        \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u7570\u5E38\u72B6\u614B\u3092\u4ED8\u4E0E\u3057\u305F\u6642\u3001\u653B\u6483\u529B
+        300% \u306E\u540C\u5C5E\u6027\u30C0\u30E1\u30FC\u30B8\u3092\u8FFD\u52A0\u3067\u4E0E\u3048\u3001\u7570\u5E38\u72B6\u614B\u306E\u6575\u304C\u53D7\u3051\u308B\u30C0\u30E1\u30FC\u30B8\u3092
+        5% \u5897\u52A0\u3055\u305B\u308B\u3002\n\u5C5E\u6027\u653B\u6483\u5F37\u5316\u304C\u30EC\u30D9\u30EB5\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'When inflicting an anomaly, deal an extra hit of same-element damage
+        equal to 300% of attack, and enemies under the anomaly take 5% more damage.
+
+        Takes
+        effect once Elemental Damage reaches level 5.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 1 \u6863(I)\uFF1A\u8FFD\u4F24
       \u653B\u51FB\u529B\xD73.0 \xB7 \u5F02\u5E38\u589E\u4F24 +5%\uFF1B\u9700\u8981\u5BF9\u5E94
       AFP \u5F3A\u5316\u9879\u6BCF\u6EE1 5 \u7EA7\u3002"
@@ -647,6 +1173,7 @@ MonoBehaviour:
     primaryParentIndex: 7
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_2
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -657,13 +1184,44 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 2
       rewards: []
-      note: "\u7B2C 1 \u6863(I)\uFF1A\u8FFD\u4F24 \u653B\u51FB\u529B\xD73.0 \xB7
-        \u5F02\u5E38\u589E\u4F24 +5%\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
-        5 \u7EA7\u3002"
+      note: "\u8FFD\u4F24 300% \xB7 \u5F02\u5E38\u589E\u4F24 +5%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8FFD\u4F24 300% \xB7 \u5F02\u5E38\u589E\u4F24 +5%"
+      - languageCode: ja
+        text: "\u8FFD\u6483 300% \xB7 \u7570\u5E38\u6642\u88AB\u30C0\u30E1\u30FC\u30B8
+          +5%"
+      - languageCode: en
+        text: "Burst 300% \xB7 Anomaly vulnerability +5%"
   - nodeId: seeker_afp_attr_burst_2
     nodeName: "\u5F02\u5E38\u8FFD\u4F24 II"
-    description: "\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u5F02\u5E38\u8D4B\u4E88\u65F6\u8FFD\u52A0\u4E00\u7B14\u653B\u51FB\u529B\u500D\u6570\u7684\u540C\u5C5E\u6027\u4F24\u5BB3\uFF0C\u5E76\u8BA9\u5F02\u5E38\u4E2D\u7684\u654C\u4EBA\u53D7\u5230\u66F4\u591A\u4F24\u5BB3\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u5F02\u5E38\u8FFD\u4F24 II"
+    - languageCode: ja
+      text: "\u7570\u5E38\u8FFD\u6483 II"
+    - languageCode: en
+      text: Anomaly Burst II
+    description: "\u9644\u52A0\u5F02\u5E38\u72B6\u6001\u65F6\uFF0C\u8FFD\u52A0\u4E00\u6B21\u653B\u51FB\u529B
+      450% \u7684\u540C\u5C5E\u6027\u4F24\u5BB3\uFF0C\u5E76\u4F7F\u5904\u4E8E\u5F02\u5E38\u4E2D\u7684\u654C\u4EBA\u989D\u5916\u627F\u53D7
+      10% \u4F24\u5BB3\u3002\n\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u8FBE\u5230 10
+      \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u9644\u52A0\u5F02\u5E38\u72B6\u6001\u65F6\uFF0C\u8FFD\u52A0\u4E00\u6B21\u653B\u51FB\u529B
+        450% \u7684\u540C\u5C5E\u6027\u4F24\u5BB3\uFF0C\u5E76\u4F7F\u5904\u4E8E\u5F02\u5E38\u4E2D\u7684\u654C\u4EBA\u989D\u5916\u627F\u53D7
+        10% \u4F24\u5BB3\u3002\n\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u8FBE\u5230
+        10 \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u7570\u5E38\u72B6\u614B\u3092\u4ED8\u4E0E\u3057\u305F\u6642\u3001\u653B\u6483\u529B
+        450% \u306E\u540C\u5C5E\u6027\u30C0\u30E1\u30FC\u30B8\u3092\u8FFD\u52A0\u3067\u4E0E\u3048\u3001\u7570\u5E38\u72B6\u614B\u306E\u6575\u304C\u53D7\u3051\u308B\u30C0\u30E1\u30FC\u30B8\u3092
+        10% \u5897\u52A0\u3055\u305B\u308B\u3002\n\u5C5E\u6027\u653B\u6483\u5F37\u5316\u304C\u30EC\u30D9\u30EB10\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'When inflicting an anomaly, deal an extra hit of same-element damage
+        equal to 450% of attack, and enemies under the anomaly take 10% more damage.
+
+        Takes
+        effect once Elemental Damage reaches level 10.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 2 \u6863(II)\uFF1A\u8FFD\u4F24
       \u653B\u51FB\u529B\xD74.5 \xB7 \u5F02\u5E38\u589E\u4F24 +10%\uFF1B\u9700\u8981\u5BF9\u5E94
       AFP \u5F3A\u5316\u9879\u6BCF\u6EE1 10 \u7EA7\u3002"
@@ -671,6 +1229,7 @@ MonoBehaviour:
     primaryParentIndex: 19
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -681,13 +1240,44 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 3
       rewards: []
-      note: "\u7B2C 2 \u6863(II)\uFF1A\u8FFD\u4F24 \u653B\u51FB\u529B\xD74.5 \xB7
-        \u5F02\u5E38\u589E\u4F24 +10%\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
-        10 \u7EA7\u3002"
+      note: "\u8FFD\u4F24 450% \xB7 \u5F02\u5E38\u589E\u4F24 +10%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8FFD\u4F24 450% \xB7 \u5F02\u5E38\u589E\u4F24 +10%"
+      - languageCode: ja
+        text: "\u8FFD\u6483 450% \xB7 \u7570\u5E38\u6642\u88AB\u30C0\u30E1\u30FC\u30B8
+          +10%"
+      - languageCode: en
+        text: "Burst 450% \xB7 Anomaly vulnerability +10%"
   - nodeId: seeker_afp_attr_burst_3
     nodeName: "\u5F02\u5E38\u8FFD\u4F24 III"
-    description: "\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u5F02\u5E38\u8D4B\u4E88\u65F6\u8FFD\u52A0\u4E00\u7B14\u653B\u51FB\u529B\u500D\u6570\u7684\u540C\u5C5E\u6027\u4F24\u5BB3\uFF0C\u5E76\u8BA9\u5F02\u5E38\u4E2D\u7684\u654C\u4EBA\u53D7\u5230\u66F4\u591A\u4F24\u5BB3\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u5F02\u5E38\u8FFD\u4F24 III"
+    - languageCode: ja
+      text: "\u7570\u5E38\u8FFD\u6483 III"
+    - languageCode: en
+      text: Anomaly Burst III
+    description: "\u9644\u52A0\u5F02\u5E38\u72B6\u6001\u65F6\uFF0C\u8FFD\u52A0\u4E00\u6B21\u653B\u51FB\u529B
+      600% \u7684\u540C\u5C5E\u6027\u4F24\u5BB3\uFF0C\u5E76\u4F7F\u5904\u4E8E\u5F02\u5E38\u4E2D\u7684\u654C\u4EBA\u989D\u5916\u627F\u53D7
+      15% \u4F24\u5BB3\u3002\n\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u8FBE\u5230 15
+      \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u9644\u52A0\u5F02\u5E38\u72B6\u6001\u65F6\uFF0C\u8FFD\u52A0\u4E00\u6B21\u653B\u51FB\u529B
+        600% \u7684\u540C\u5C5E\u6027\u4F24\u5BB3\uFF0C\u5E76\u4F7F\u5904\u4E8E\u5F02\u5E38\u4E2D\u7684\u654C\u4EBA\u989D\u5916\u627F\u53D7
+        15% \u4F24\u5BB3\u3002\n\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u8FBE\u5230
+        15 \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u7570\u5E38\u72B6\u614B\u3092\u4ED8\u4E0E\u3057\u305F\u6642\u3001\u653B\u6483\u529B
+        600% \u306E\u540C\u5C5E\u6027\u30C0\u30E1\u30FC\u30B8\u3092\u8FFD\u52A0\u3067\u4E0E\u3048\u3001\u7570\u5E38\u72B6\u614B\u306E\u6575\u304C\u53D7\u3051\u308B\u30C0\u30E1\u30FC\u30B8\u3092
+        15% \u5897\u52A0\u3055\u305B\u308B\u3002\n\u5C5E\u6027\u653B\u6483\u5F37\u5316\u304C\u30EC\u30D9\u30EB15\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'When inflicting an anomaly, deal an extra hit of same-element damage
+        equal to 600% of attack, and enemies under the anomaly take 15% more damage.
+
+        Takes
+        effect once Elemental Damage reaches level 15.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 3 \u6863(III)\uFF1A\u8FFD\u4F24
       \u653B\u51FB\u529B\xD76.0 \xB7 \u5F02\u5E38\u589E\u4F24 +15%\uFF1B\u9700\u8981\u5BF9\u5E94
       AFP \u5F3A\u5316\u9879\u6BCF\u6EE1 15 \u7EA7\u3002"
@@ -695,6 +1285,7 @@ MonoBehaviour:
     primaryParentIndex: 20
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -705,13 +1296,44 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 5
       rewards: []
-      note: "\u7B2C 3 \u6863(III)\uFF1A\u8FFD\u4F24 \u653B\u51FB\u529B\xD76.0 \xB7
-        \u5F02\u5E38\u589E\u4F24 +15%\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
-        15 \u7EA7\u3002"
+      note: "\u8FFD\u4F24 600% \xB7 \u5F02\u5E38\u589E\u4F24 +15%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8FFD\u4F24 600% \xB7 \u5F02\u5E38\u589E\u4F24 +15%"
+      - languageCode: ja
+        text: "\u8FFD\u6483 600% \xB7 \u7570\u5E38\u6642\u88AB\u30C0\u30E1\u30FC\u30B8
+          +15%"
+      - languageCode: en
+        text: "Burst 600% \xB7 Anomaly vulnerability +15%"
   - nodeId: seeker_afp_attr_burst_4
     nodeName: "\u5F02\u5E38\u8FFD\u4F24 IV"
-    description: "\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u5F02\u5E38\u8D4B\u4E88\u65F6\u8FFD\u52A0\u4E00\u7B14\u653B\u51FB\u529B\u500D\u6570\u7684\u540C\u5C5E\u6027\u4F24\u5BB3\uFF0C\u5E76\u8BA9\u5F02\u5E38\u4E2D\u7684\u654C\u4EBA\u53D7\u5230\u66F4\u591A\u4F24\u5BB3\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u5F02\u5E38\u8FFD\u4F24 IV"
+    - languageCode: ja
+      text: "\u7570\u5E38\u8FFD\u6483 IV"
+    - languageCode: en
+      text: Anomaly Burst IV
+    description: "\u9644\u52A0\u5F02\u5E38\u72B6\u6001\u65F6\uFF0C\u8FFD\u52A0\u4E00\u6B21\u653B\u51FB\u529B
+      800% \u7684\u540C\u5C5E\u6027\u4F24\u5BB3\uFF0C\u5E76\u4F7F\u5904\u4E8E\u5F02\u5E38\u4E2D\u7684\u654C\u4EBA\u989D\u5916\u627F\u53D7
+      20% \u4F24\u5BB3\u3002\n\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u8FBE\u5230 20
+      \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u9644\u52A0\u5F02\u5E38\u72B6\u6001\u65F6\uFF0C\u8FFD\u52A0\u4E00\u6B21\u653B\u51FB\u529B
+        800% \u7684\u540C\u5C5E\u6027\u4F24\u5BB3\uFF0C\u5E76\u4F7F\u5904\u4E8E\u5F02\u5E38\u4E2D\u7684\u654C\u4EBA\u989D\u5916\u627F\u53D7
+        20% \u4F24\u5BB3\u3002\n\u5C5E\u6027\u653B\u51FB\u5F3A\u5316\u8FBE\u5230
+        20 \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u7570\u5E38\u72B6\u614B\u3092\u4ED8\u4E0E\u3057\u305F\u6642\u3001\u653B\u6483\u529B
+        800% \u306E\u540C\u5C5E\u6027\u30C0\u30E1\u30FC\u30B8\u3092\u8FFD\u52A0\u3067\u4E0E\u3048\u3001\u7570\u5E38\u72B6\u614B\u306E\u6575\u304C\u53D7\u3051\u308B\u30C0\u30E1\u30FC\u30B8\u3092
+        20% \u5897\u52A0\u3055\u305B\u308B\u3002\n\u5C5E\u6027\u653B\u6483\u5F37\u5316\u304C\u30EC\u30D9\u30EB20\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'When inflicting an anomaly, deal an extra hit of same-element damage
+        equal to 800% of attack, and enemies under the anomaly take 20% more damage.
+
+        Takes
+        effect once Elemental Damage reaches level 20.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u7B2C 4 \u6863(IV)\uFF1A\u8FFD\u4F24
       \u653B\u51FB\u529B\xD78.0 \xB7 \u5F02\u5E38\u589E\u4F24 +20%\uFF1B\u9700\u8981\u5BF9\u5E94
       AFP \u5F3A\u5316\u9879\u6BCF\u6EE1 20 \u7EA7\u3002"
@@ -719,6 +1341,7 @@ MonoBehaviour:
     primaryParentIndex: 21
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -729,14 +1352,45 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 8
       rewards: []
-      note: "\u7B2C 4 \u6863(IV)\uFF1A\u8FFD\u4F24 \u653B\u51FB\u529B\xD78.0 \xB7
-        \u5F02\u5E38\u589E\u4F24 +20%\uFF1B\u9700\u8981\u5BF9\u5E94 AFP \u5F3A\u5316\u9879\u6BCF\u6EE1
-        20 \u7EA7\u3002"
+      note: "\u8FFD\u4F24 800% \xB7 \u5F02\u5E38\u589E\u4F24 +20%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8FFD\u4F24 800% \xB7 \u5F02\u5E38\u589E\u4F24 +20%"
+      - languageCode: ja
+        text: "\u8FFD\u6483 800% \xB7 \u7570\u5E38\u6642\u88AB\u30C0\u30E1\u30FC\u30B8
+          +20%"
+      - languageCode: en
+        text: "Burst 800% \xB7 Anomaly vulnerability +20%"
   - nodeId: seeker_afp_cycle_1
     nodeName: "\u56DE\u8F6C I"
-    description: "\u7269\u7406\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u56DE\u8F6C(\u51FB\u6740\u56DE
-      LP)\u4E0E\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA\u5F39\u5323\u672B\u5C3E\u52A0\u4F24)\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u56DE\u8F6C I"
+    - languageCode: ja
+      text: "\u56DE\u8EE2 I"
+    - languageCode: en
+      text: Cycle I
+    description: "\u5927\u5251\u9650\u5B9A\u3002\u51FB\u6740\u654C\u4EBA\u65F6\uFF0C\u6062\u590D\u6700\u5927
+      LP \u7684 12%\u3002\n\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
+      \xD73\uFF1B\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002\n\u7269\u7406\u653B\u51FB\u5F3A\u5316\u8FBE\u5230
+      5 \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u5927\u5251\u9650\u5B9A\u3002\u51FB\u6740\u654C\u4EBA\u65F6\uFF0C\u6062\u590D\u6700\u5927
+        LP \u7684 12%\u3002\n\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
+        \xD73\uFF1B\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002\n\u7269\u7406\u653B\u51FB\u5F3A\u5316\u8FBE\u5230
+        5 \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u5927\u5263\u9650\u5B9A\u3002\u6575\u3092\u5012\u3057\u305F\u6642\u3001\u6700\u5927LP\u306E
+        12% \u3092\u56DE\u5FA9\u3059\u308B\u3002\n\u6700\u5927HP250\u4EE5\u4E0A\u306E\u5BFE\u8C61\u3092\u5012\u3059\u3068\u56DE\u5FA9\u91CF\xD73\u3002\u7834\u58CA\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u3067\u306F\u767A\u52D5\u3057\u306A\u3044\u3002\n\u7269\u7406\u653B\u6483\u5F37\u5316\u304C\u30EC\u30D9\u30EB5\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'Greatsword only. Defeating an enemy restores 12% of max LP.
+
+        Defeating
+        targets with 250+ max HP triples the amount; destructible objects don''t
+        count.
+
+        Takes effect once Physical Damage reaches level 5.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u4EC5\u9650\u5251\u3002\u51FB\u6740\u654C\u4EBA\u65F6\uFF0C\u6062\u590D\u6700\u5927
       LP \u7684 12%\n\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
       \xD73\uFF1B\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002\n\u524D\u7F6E\uFF1A\u8BCD\u6761\uFF1A\u653B\u51FB\u5F3A\u5316\u3002"
@@ -744,6 +1398,7 @@ MonoBehaviour:
     primaryParentIndex: 7
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_2
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -754,13 +1409,44 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 2
       rewards: []
-      note: "\u51FB\u6740\u654C\u4EBA\u65F6\uFF0C\u6062\u590D\u6700\u5927 LP \u7684
-        12%"
+      note: "\u51FB\u6740\u6062\u590D\u6700\u5927 LP \u7684 12%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u51FB\u6740\u6062\u590D\u6700\u5927 LP \u7684 12%"
+      - languageCode: ja
+        text: "\u6483\u7834\u6642\u306B\u6700\u5927LP\u306E 12% \u56DE\u5FA9"
+      - languageCode: en
+        text: Restore 12% max LP on kill
   - nodeId: seeker_afp_cycle_2
     nodeName: "\u56DE\u8F6C II"
-    description: "\u7269\u7406\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u56DE\u8F6C(\u51FB\u6740\u56DE
-      LP)\u4E0E\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA\u5F39\u5323\u672B\u5C3E\u52A0\u4F24)\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u56DE\u8F6C II"
+    - languageCode: ja
+      text: "\u56DE\u8EE2 II"
+    - languageCode: en
+      text: Cycle II
+    description: "\u5927\u5251\u9650\u5B9A\u3002\u51FB\u6740\u654C\u4EBA\u65F6\uFF0C\u6062\u590D\u6700\u5927
+      LP \u7684 18%\u3002\n\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
+      \xD73\uFF1B\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002\n\u7269\u7406\u653B\u51FB\u5F3A\u5316\u8FBE\u5230
+      10 \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u5927\u5251\u9650\u5B9A\u3002\u51FB\u6740\u654C\u4EBA\u65F6\uFF0C\u6062\u590D\u6700\u5927
+        LP \u7684 18%\u3002\n\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
+        \xD73\uFF1B\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002\n\u7269\u7406\u653B\u51FB\u5F3A\u5316\u8FBE\u5230
+        10 \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u5927\u5263\u9650\u5B9A\u3002\u6575\u3092\u5012\u3057\u305F\u6642\u3001\u6700\u5927LP\u306E
+        18% \u3092\u56DE\u5FA9\u3059\u308B\u3002\n\u6700\u5927HP250\u4EE5\u4E0A\u306E\u5BFE\u8C61\u3092\u5012\u3059\u3068\u56DE\u5FA9\u91CF\xD73\u3002\u7834\u58CA\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u3067\u306F\u767A\u52D5\u3057\u306A\u3044\u3002\n\u7269\u7406\u653B\u6483\u5F37\u5316\u304C\u30EC\u30D9\u30EB10\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'Greatsword only. Defeating an enemy restores 18% of max LP.
+
+        Defeating
+        targets with 250+ max HP triples the amount; destructible objects don''t
+        count.
+
+        Takes effect once Physical Damage reaches level 10.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u4EC5\u9650\u5251\u3002\u51FB\u6740\u56DE\u590D
       18% LP\n\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
       \xD73\uFF1B\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002\n\u524D\u7F6E\uFF1A\u56DE\u8F6C
@@ -769,6 +1455,7 @@ MonoBehaviour:
     primaryParentIndex: 23
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -779,12 +1466,44 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 3
       rewards: []
-      note: "\u51FB\u6740\u56DE\u590D 18% LP"
+      note: "\u51FB\u6740\u6062\u590D\u6700\u5927 LP \u7684 18%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u51FB\u6740\u6062\u590D\u6700\u5927 LP \u7684 18%"
+      - languageCode: ja
+        text: "\u6483\u7834\u6642\u306B\u6700\u5927LP\u306E 18% \u56DE\u5FA9"
+      - languageCode: en
+        text: Restore 18% max LP on kill
   - nodeId: seeker_afp_cycle_3
     nodeName: "\u56DE\u8F6C III"
-    description: "\u7269\u7406\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u56DE\u8F6C(\u51FB\u6740\u56DE
-      LP)\u4E0E\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA\u5F39\u5323\u672B\u5C3E\u52A0\u4F24)\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u56DE\u8F6C III"
+    - languageCode: ja
+      text: "\u56DE\u8EE2 III"
+    - languageCode: en
+      text: Cycle III
+    description: "\u5927\u5251\u9650\u5B9A\u3002\u51FB\u6740\u654C\u4EBA\u65F6\uFF0C\u6062\u590D\u6700\u5927
+      LP \u7684 25%\u3002\n\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
+      \xD73\uFF1B\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002\n\u7269\u7406\u653B\u51FB\u5F3A\u5316\u8FBE\u5230
+      15 \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u5927\u5251\u9650\u5B9A\u3002\u51FB\u6740\u654C\u4EBA\u65F6\uFF0C\u6062\u590D\u6700\u5927
+        LP \u7684 25%\u3002\n\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
+        \xD73\uFF1B\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002\n\u7269\u7406\u653B\u51FB\u5F3A\u5316\u8FBE\u5230
+        15 \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u5927\u5263\u9650\u5B9A\u3002\u6575\u3092\u5012\u3057\u305F\u6642\u3001\u6700\u5927LP\u306E
+        25% \u3092\u56DE\u5FA9\u3059\u308B\u3002\n\u6700\u5927HP250\u4EE5\u4E0A\u306E\u5BFE\u8C61\u3092\u5012\u3059\u3068\u56DE\u5FA9\u91CF\xD73\u3002\u7834\u58CA\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u3067\u306F\u767A\u52D5\u3057\u306A\u3044\u3002\n\u7269\u7406\u653B\u6483\u5F37\u5316\u304C\u30EC\u30D9\u30EB15\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'Greatsword only. Defeating an enemy restores 25% of max LP.
+
+        Defeating
+        targets with 250+ max HP triples the amount; destructible objects don''t
+        count.
+
+        Takes effect once Physical Damage reaches level 15.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u4EC5\u9650\u5251\u3002\u51FB\u6740\u56DE\u590D
       25% LP\n\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
       \xD73\uFF1B\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002\n\u524D\u7F6E\uFF1A\u56DE\u8F6C
@@ -793,6 +1512,7 @@ MonoBehaviour:
     primaryParentIndex: 24
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -803,12 +1523,44 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 5
       rewards: []
-      note: "\u51FB\u6740\u56DE\u590D 25% LP"
+      note: "\u51FB\u6740\u6062\u590D\u6700\u5927 LP \u7684 25%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u51FB\u6740\u6062\u590D\u6700\u5927 LP \u7684 25%"
+      - languageCode: ja
+        text: "\u6483\u7834\u6642\u306B\u6700\u5927LP\u306E 25% \u56DE\u5FA9"
+      - languageCode: en
+        text: Restore 25% max LP on kill
   - nodeId: seeker_afp_cycle_4
     nodeName: "\u56DE\u8F6C IV"
-    description: "\u7269\u7406\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u56DE\u8F6C(\u51FB\u6740\u56DE
-      LP)\u4E0E\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA\u5F39\u5323\u672B\u5C3E\u52A0\u4F24)\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u56DE\u8F6C IV"
+    - languageCode: ja
+      text: "\u56DE\u8EE2 IV"
+    - languageCode: en
+      text: Cycle IV
+    description: "\u5927\u5251\u9650\u5B9A\u3002\u51FB\u6740\u654C\u4EBA\u65F6\uFF0C\u6062\u590D\u6700\u5927
+      LP \u7684 35%\u3002\n\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
+      \xD73\uFF1B\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002\n\u7269\u7406\u653B\u51FB\u5F3A\u5316\u8FBE\u5230
+      20 \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u5927\u5251\u9650\u5B9A\u3002\u51FB\u6740\u654C\u4EBA\u65F6\uFF0C\u6062\u590D\u6700\u5927
+        LP \u7684 35%\u3002\n\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
+        \xD73\uFF1B\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002\n\u7269\u7406\u653B\u51FB\u5F3A\u5316\u8FBE\u5230
+        20 \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u5927\u5263\u9650\u5B9A\u3002\u6575\u3092\u5012\u3057\u305F\u6642\u3001\u6700\u5927LP\u306E
+        35% \u3092\u56DE\u5FA9\u3059\u308B\u3002\n\u6700\u5927HP250\u4EE5\u4E0A\u306E\u5BFE\u8C61\u3092\u5012\u3059\u3068\u56DE\u5FA9\u91CF\xD73\u3002\u7834\u58CA\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u3067\u306F\u767A\u52D5\u3057\u306A\u3044\u3002\n\u7269\u7406\u653B\u6483\u5F37\u5316\u304C\u30EC\u30D9\u30EB20\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'Greatsword only. Defeating an enemy restores 35% of max LP.
+
+        Defeating
+        targets with 250+ max HP triples the amount; destructible objects don''t
+        count.
+
+        Takes effect once Physical Damage reaches level 20.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u4EC5\u9650\u5251\u3002\u51FB\u6740\u56DE\u590D
       35% LP\n\u51FB\u6740\u751F\u547D\u4E0A\u9650 250 \u4EE5\u4E0A\u7684\u76EE\u6807\uFF0C\u6062\u590D\u91CF
       \xD73\uFF1B\u7834\u574F\u7269\u4E0D\u89E6\u53D1\u3002\n\u524D\u7F6E\uFF1A\u56DE\u8F6C
@@ -817,6 +1569,7 @@ MonoBehaviour:
     primaryParentIndex: 25
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -827,18 +1580,44 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 8
       rewards: []
-      note: "\u51FB\u6740\u56DE\u590D 35% LP"
+      note: "\u51FB\u6740\u6062\u590D\u6700\u5927 LP \u7684 35%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u51FB\u6740\u6062\u590D\u6700\u5927 LP \u7684 35%"
+      - languageCode: ja
+        text: "\u6483\u7834\u6642\u306B\u6700\u5927LP\u306E 35% \u56DE\u5FA9"
+      - languageCode: en
+        text: Restore 35% max LP on kill
   - nodeId: seeker_afp_lethal_1
     nodeName: "\u81F4\u547D\u5B50\u5F39 I"
-    description: "\u7269\u7406\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u56DE\u8F6C(\u51FB\u6740\u56DE
-      LP)\u4E0E\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA\u5F39\u5323\u672B\u5C3E\u52A0\u4F24)\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u81F4\u547D\u5B50\u5F39 I"
+    - languageCode: ja
+      text: "\u81F4\u547D\u5F3E I"
+    - languageCode: en
+      text: Lethal Rounds I
+    description: "\u53CC\u67AA\u9650\u5B9A\u3002\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
+      +100%\u3002\n\u7269\u7406\u653B\u51FB\u5F3A\u5316\u8FBE\u5230 5 \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u53CC\u67AA\u9650\u5B9A\u3002\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
+        +100%\u3002\n\u7269\u7406\u653B\u51FB\u5F3A\u5316\u8FBE\u5230 5 \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u53CC\u9283\u9650\u5B9A\u3002\u547D\u4E2D10\u767A\u3054\u3068\u306E\u5F3E\u4E38\u306E\u30C0\u30E1\u30FC\u30B8
+        +100%\u3002\n\u7269\u7406\u653B\u6483\u5F37\u5316\u304C\u30EC\u30D9\u30EB5\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'Dual pistols only. Every 10th bullet that hits deals +100% damage.
+
+        Takes
+        effect once Physical Damage reaches level 5.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u4EC5\u9650\u53CC\u67AA\u3002\u6BCF\u7B2C
       10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3 +100%\u3002\n\u524D\u7F6E\uFF1A\u8BCD\u6761\uFF1A\u653B\u51FB\u5F3A\u5316\u3002"
     enabled: 1
     primaryParentIndex: 7
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_2
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -849,13 +1628,37 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 2
       rewards: []
-      note: "\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
-        +100%"
+      note: "\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\uFF0C\u4F24\u5BB3 +100%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\uFF0C\u4F24\u5BB3 +100%"
+      - languageCode: ja
+        text: "10\u767A\u76EE\u3054\u3068\u306B\u30C0\u30E1\u30FC\u30B8 +100%"
+      - languageCode: en
+        text: Every 10th hit +100% damage
   - nodeId: seeker_afp_lethal_2
     nodeName: "\u81F4\u547D\u5B50\u5F39 II"
-    description: "\u7269\u7406\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u56DE\u8F6C(\u51FB\u6740\u56DE
-      LP)\u4E0E\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA\u5F39\u5323\u672B\u5C3E\u52A0\u4F24)\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u81F4\u547D\u5B50\u5F39 II"
+    - languageCode: ja
+      text: "\u81F4\u547D\u5F3E II"
+    - languageCode: en
+      text: Lethal Rounds II
+    description: "\u53CC\u67AA\u9650\u5B9A\u3002\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
+      +150%\u3002\n\u7269\u7406\u653B\u51FB\u5F3A\u5316\u8FBE\u5230 10 \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u53CC\u67AA\u9650\u5B9A\u3002\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
+        +150%\u3002\n\u7269\u7406\u653B\u51FB\u5F3A\u5316\u8FBE\u5230 10 \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u53CC\u9283\u9650\u5B9A\u3002\u547D\u4E2D10\u767A\u3054\u3068\u306E\u5F3E\u4E38\u306E\u30C0\u30E1\u30FC\u30B8
+        +150%\u3002\n\u7269\u7406\u653B\u6483\u5F37\u5316\u304C\u30EC\u30D9\u30EB10\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'Dual pistols only. Every 10th bullet that hits deals +150% damage.
+
+        Takes
+        effect once Physical Damage reaches level 10.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u4EC5\u9650\u53CC\u67AA\u3002\u6BCF\u7B2C
       10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3 +150%\u3002\n\u524D\u7F6E\uFF1A\u81F4\u547D\u5B50\u5F39
       I\u3002"
@@ -863,6 +1666,7 @@ MonoBehaviour:
     primaryParentIndex: 27
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -873,13 +1677,37 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 3
       rewards: []
-      note: "\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
-        +150%"
+      note: "\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\uFF0C\u4F24\u5BB3 +150%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\uFF0C\u4F24\u5BB3 +150%"
+      - languageCode: ja
+        text: "10\u767A\u76EE\u3054\u3068\u306B\u30C0\u30E1\u30FC\u30B8 +150%"
+      - languageCode: en
+        text: Every 10th hit +150% damage
   - nodeId: seeker_afp_lethal_3
     nodeName: "\u81F4\u547D\u5B50\u5F39 III"
-    description: "\u7269\u7406\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u56DE\u8F6C(\u51FB\u6740\u56DE
-      LP)\u4E0E\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA\u5F39\u5323\u672B\u5C3E\u52A0\u4F24)\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u81F4\u547D\u5B50\u5F39 III"
+    - languageCode: ja
+      text: "\u81F4\u547D\u5F3E III"
+    - languageCode: en
+      text: Lethal Rounds III
+    description: "\u53CC\u67AA\u9650\u5B9A\u3002\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
+      +200%\u3002\n\u7269\u7406\u653B\u51FB\u5F3A\u5316\u8FBE\u5230 15 \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u53CC\u67AA\u9650\u5B9A\u3002\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
+        +200%\u3002\n\u7269\u7406\u653B\u51FB\u5F3A\u5316\u8FBE\u5230 15 \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u53CC\u9283\u9650\u5B9A\u3002\u547D\u4E2D10\u767A\u3054\u3068\u306E\u5F3E\u4E38\u306E\u30C0\u30E1\u30FC\u30B8
+        +200%\u3002\n\u7269\u7406\u653B\u6483\u5F37\u5316\u304C\u30EC\u30D9\u30EB15\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'Dual pistols only. Every 10th bullet that hits deals +200% damage.
+
+        Takes
+        effect once Physical Damage reaches level 15.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u4EC5\u9650\u53CC\u67AA\u3002\u6BCF\u7B2C
       10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3 +200%\u3002\n\u524D\u7F6E\uFF1A\u81F4\u547D\u5B50\u5F39
       II\u3002"
@@ -887,6 +1715,7 @@ MonoBehaviour:
     primaryParentIndex: 28
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -897,13 +1726,37 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 5
       rewards: []
-      note: "\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
-        +200%"
+      note: "\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\uFF0C\u4F24\u5BB3 +200%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\uFF0C\u4F24\u5BB3 +200%"
+      - languageCode: ja
+        text: "10\u767A\u76EE\u3054\u3068\u306B\u30C0\u30E1\u30FC\u30B8 +200%"
+      - languageCode: en
+        text: Every 10th hit +200% damage
   - nodeId: seeker_afp_lethal_4
     nodeName: "\u81F4\u547D\u5B50\u5F39 IV"
-    description: "\u7269\u7406\u653B\u51FB\u5F3A\u5316\u6BCF\u6EE1 5 \u7EA7\u4E00\u6863\uFF1A\u56DE\u8F6C(\u51FB\u6740\u56DE
-      LP)\u4E0E\u81F4\u547D\u5B50\u5F39(\u53CC\u67AA\u5F39\u5323\u672B\u5C3E\u52A0\u4F24)\u3002"
-    localizedDescriptions: []
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u81F4\u547D\u5B50\u5F39 IV"
+    - languageCode: ja
+      text: "\u81F4\u547D\u5F3E IV"
+    - languageCode: en
+      text: Lethal Rounds IV
+    description: "\u53CC\u67AA\u9650\u5B9A\u3002\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
+      +300%\u3002\n\u7269\u7406\u653B\u51FB\u5F3A\u5316\u8FBE\u5230 20 \u7EA7\u540E\u751F\u6548\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "\u53CC\u67AA\u9650\u5B9A\u3002\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
+        +300%\u3002\n\u7269\u7406\u653B\u51FB\u5F3A\u5316\u8FBE\u5230 20 \u7EA7\u540E\u751F\u6548\u3002"
+    - languageCode: ja
+      text: "\u53CC\u9283\u9650\u5B9A\u3002\u547D\u4E2D10\u767A\u3054\u3068\u306E\u5F3E\u4E38\u306E\u30C0\u30E1\u30FC\u30B8
+        +300%\u3002\n\u7269\u7406\u653B\u6483\u5F37\u5316\u304C\u30EC\u30D9\u30EB20\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
+    - languageCode: en
+      text: 'Dual pistols only. Every 10th bullet that hits deals +300% damage.
+
+        Takes
+        effect once Physical Damage reaches level 20.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u4EC5\u9650\u53CC\u67AA\u3002\u6BCF\u7B2C
       10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3 +300%\u3002\n\u524D\u7F6E\uFF1A\u81F4\u547D\u5B50\u5F39
       III\u3002"
@@ -911,6 +1764,7 @@ MonoBehaviour:
     primaryParentIndex: 29
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -921,18 +1775,48 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 8
       rewards: []
-      note: "\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\u7684\u5B50\u5F39\uFF0C\u4F24\u5BB3
-        +300%"
+      note: "\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\uFF0C\u4F24\u5BB3 +300%"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u6BCF\u7B2C 10 \u53D1\u547D\u4E2D\uFF0C\u4F24\u5BB3 +300%"
+      - languageCode: ja
+        text: "10\u767A\u76EE\u3054\u3068\u306B\u30C0\u30E1\u30FC\u30B8 +300%"
+      - languageCode: en
+        text: Every 10th hit +300% damage
   - nodeId: seeker_usurper
     nodeName: "\u7BE1\u593A\u8005"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7BE1\u593A\u8005"
+    - languageCode: ja
+      text: "\u7C12\u596A\u8005"
+    - languageCode: en
+      text: Usurper
+    description: "\u5F00\u653E\u9002\u5E94\u9879\u76EE\uFF1A\u7BE1\u593A\u8005\uFF0C\u6700\u9AD8
+      10 \u7EA7\u3002\u8FFD\u52A0\u751F\u547D\u4E0E\u7269\u7406\u653B\u51FB\u5F3A\u5316\u5747\u8FBE\u5230
+      10 \u7EA7\u540E\u53EF\u8D2D\u4E70\u3002\n\u53D7\u5230\u7684\u4F24\u5BB3\u6709\u4E00\u90E8\u5206\u8F6C\u4E3A\u8840\u6761\u4E0A\u7684\u7EA2\u8272\u90E8\u5206\uFF0C\u5E76\u968F\u65F6\u95F4\u6D88\u9000\uFF081
+      \u7EA7 30%\uFF0C10 \u7EA7 60%\uFF09\u3002\n\u653B\u51FB\u654C\u4EBA\u65F6\uFF0C\u9020\u6210\u4F24\u5BB3\u7684\u4E00\u90E8\u5206\u8F6C\u4E3A\u751F\u547D\u56DE\u590D\uFF0C\u4E14\u53EA\u80FD\u56DE\u590D\u7EA2\u8272\u90E8\u5206\uFF08\u8FD1\u6218
+      20%\u201380%\uFF0C\u8FDC\u7A0B\u4E3A\u8FD1\u6218\u7684 40%\uFF09\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u5F00\u653E\u9002\u5E94\u9879\u76EE\uFF1A\u7BE1\u593A\u8005\uFF0C\u6700\u9AD8
+        10 \u7EA7\u3002\u8FFD\u52A0\u751F\u547D\u4E0E\u7269\u7406\u653B\u51FB\u5F3A\u5316\u5747\u8FBE\u5230
+        10 \u7EA7\u540E\u53EF\u8D2D\u4E70\u3002\n\u53D7\u5230\u7684\u4F24\u5BB3\u6709\u4E00\u90E8\u5206\u8F6C\u4E3A\u8840\u6761\u4E0A\u7684\u7EA2\u8272\u90E8\u5206\uFF0C\u5E76\u968F\u65F6\u95F4\u6D88\u9000\uFF081
+        \u7EA7 30%\uFF0C10 \u7EA7 60%\uFF09\u3002\n\u653B\u51FB\u654C\u4EBA\u65F6\uFF0C\u9020\u6210\u4F24\u5BB3\u7684\u4E00\u90E8\u5206\u8F6C\u4E3A\u751F\u547D\u56DE\u590D\uFF0C\u4E14\u53EA\u80FD\u56DE\u590D\u7EA2\u8272\u90E8\u5206\uFF08\u8FD1\u6218
+        20%\u201380%\uFF0C\u8FDC\u7A0B\u4E3A\u8FD1\u6218\u7684 40%\uFF09\u3002"
     - languageCode: ja
-      text: 
+      text: "\u9069\u5FDC\u9805\u76EE\u3092\u89E3\u653E\uFF1A\u7C12\u596A\u8005\u3001\u6700\u592710\u30EC\u30D9\u30EB\u3002\u8FFD\u52A0\u30E9\u30A4\u30D5\u3068\u7269\u7406\u653B\u6483\u5F37\u5316\u304C\u5171\u306B\u30EC\u30D9\u30EB10\u306B\u9054\u3059\u308B\u3068\u8CFC\u5165\u3067\u304D\u308B\u3002\n\u53D7\u3051\u305F\u30C0\u30E1\u30FC\u30B8\u306E\u4E00\u90E8\u304CHP\u30B2\u30FC\u30B8\u306E\u8D64\u3044\u90E8\u5206\u306B\u306A\u308A\u3001\u6642\u9593\u3068\u3068\u3082\u306B\u6D88\u3048\u308B\uFF08\u30EC\u30D9\u30EB1\u306730%\u3001\u30EC\u30D9\u30EB10\u306760%\uFF09\u3002\n\u6575\u3092\u653B\u6483\u3059\u308B\u3068\u4E0E\u3048\u305F\u30C0\u30E1\u30FC\u30B8\u306E\u4E00\u90E8\u304CHP\u56DE\u5FA9\u306B\u5909\u308F\u308A\u3001\u8D64\u3044\u90E8\u5206\u306E\u307F\u56DE\u5FA9\u3067\u304D\u308B\uFF08\u8FD1\u63A520%\u301C80%\u3001\u9060\u8DDD\u96E2\u306F\u8FD1\u63A5\u306E40%\uFF09\u3002"
     - languageCode: en
-      text: 
+      text: 'Unlocks adaptation entry: Usurper, up to level 10. Purchasable once
+        Bonus Vitality and Physical Damage both reach level 10.
+
+        Part of
+        the damage you take becomes a red section of the HP bar that fades over time
+        (30% at level 1, 60% at level 10).
+
+        Attacking enemies converts part
+        of the damage dealt into healing that can only restore the red section (melee
+        20%-80%, ranged 40% of melee).'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u70B9\u4EAE\u540E\uFF0CAFP \u7A97\u53E3\u91CC\u51FA\u73B0\u72EC\u7ACB\u7684\u300C\u7BE1\u593A\u8005\u300D\u4E00\u884C\uFF0C\u8FFD\u52A0\u751F\u547D\u3001\u7269\u7406\u653B\u51FB\u5F3A\u5316\u5404
       \u2265 10 \u7EA7\u624D\u80FD\u8D2D\u4E70\uFF0C\u6700\u9AD8 10 \u7EA7\u3002\n\u53D7\u5230\u7684\u4F24\u5BB3\uFF0C\u6709
       30%\uFF081 \u7EA7\uFF09\u81F3 60%\uFF0810 \u7EA7\uFF09\u8F6C\u4E3A\u8840\u6761\u4E0A\u7684\u7EA2\u8272\u90E8\u5206\uFF0C\u968F\u65F6\u95F4\u6D88\u9000\u3002\n\u653B\u51FB\u654C\u4EBA\u65F6\uFF0C\u9020\u6210\u4F24\u5BB3\u7684\u4E00\u90E8\u5206\u8F6C\u5316\u4E3A\u751F\u547D\u56DE\u590D\uFF0C\u53EA\u80FD\u56DE\u590D\u7EA2\u8272\u90E8\u5206\uFF1A\u8FD1\u6218
@@ -941,6 +1825,7 @@ MonoBehaviour:
     primaryParentIndex: 7
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_2
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -951,23 +1836,47 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 8
       rewards: []
-      note: "\u89E3\u9501 AFP \u5347\u7EA7\u9879\u300C\u7BE1\u593A\u8005\u300D"
+      note: "\u5F00\u653E\u7BE1\u593A\u8005"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u5F00\u653E\u7BE1\u593A\u8005"
+      - languageCode: ja
+        text: "\u7C12\u596A\u8005\u3092\u89E3\u653E"
+      - languageCode: en
+        text: Unlocks Usurper
   - nodeId: seeker_afp_corrosion_shield_1
     nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680 I"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680 I"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u8150\u98DF I"
+    - languageCode: en
+      text: 'Effect Field: Corrosion I'
+    description: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+      150 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+      5 \u7EA7\u540E\u751F\u6548\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+        150 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+        5 \u7EA7\u540E\u751F\u6548\u3002"
     - languageCode: ja
-      text: 
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u5C55\u958B\u3057\u3001\u8150\u98DF\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3059\u308B\u3002\u305D\u306E\u5F8C
+        150 \u79D2\u306E\u56DE\u5FA9\u306B\u5165\u308B\u3002\n\u5BFE\u5FDC\u3059\u308B\u5C5E\u6027\u306E\u8010\u6027\u5F37\u5316\u304C\u30EC\u30D9\u30EB5\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
     - languageCode: en
-      text: 
+      text: 'Deploys an Effect Field that negates one Corrosion anomaly, then recharges
+        for 150 seconds.
+
+        Takes effect once the matching resistance reaches
+        level 5.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF0C\u6062\u590D\u65F6\u95F4
       150 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u8BCD\u6761\uFF1A\u5C5E\u6027\u6297\u6027\u3002"
     enabled: 1
     primaryParentIndex: 6
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_2
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -978,17 +1887,43 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 2
       rewards: []
-      note: "\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38 \xB7 150 \u79D2\u6062\u590D"
+      note: "\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u6062\u590D 150
+        \u79D2"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u6062\u590D
+          150 \u79D2"
+      - languageCode: ja
+        text: "\u8150\u98DF\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3001\u56DE\u5FA9
+          150 \u79D2"
+      - languageCode: en
+        text: Negates one Corrosion anomaly, 150s recharge
   - nodeId: seeker_afp_corrosion_shield_2
     nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680 II"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680 II"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u8150\u98DF II"
+    - languageCode: en
+      text: 'Effect Field: Corrosion II'
+    description: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+      120 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+      10 \u7EA7\u540E\u751F\u6548\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+        120 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+        10 \u7EA7\u540E\u751F\u6548\u3002"
     - languageCode: ja
-      text: 
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u5C55\u958B\u3057\u3001\u8150\u98DF\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3059\u308B\u3002\u305D\u306E\u5F8C
+        120 \u79D2\u306E\u56DE\u5FA9\u306B\u5165\u308B\u3002\n\u5BFE\u5FDC\u3059\u308B\u5C5E\u6027\u306E\u8010\u6027\u5F37\u5316\u304C\u30EC\u30D9\u30EB10\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
     - languageCode: en
-      text: 
+      text: 'Deploys an Effect Field that negates one Corrosion anomaly, then recharges
+        for 120 seconds.
+
+        Takes effect once the matching resistance reaches
+        level 10.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF0C\u6062\u590D\u65F6\u95F4
       120 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680
       I\u3002"
@@ -996,6 +1931,7 @@ MonoBehaviour:
     primaryParentIndex: 32
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -1006,17 +1942,43 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 3
       rewards: []
-      note: "\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38 \xB7 120 \u79D2\u6062\u590D"
+      note: "\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u6062\u590D 120
+        \u79D2"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u6062\u590D
+          120 \u79D2"
+      - languageCode: ja
+        text: "\u8150\u98DF\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3001\u56DE\u5FA9
+          120 \u79D2"
+      - languageCode: en
+        text: Negates one Corrosion anomaly, 120s recharge
   - nodeId: seeker_afp_corrosion_shield_3
     nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680 III"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680 III"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u8150\u98DF III"
+    - languageCode: en
+      text: 'Effect Field: Corrosion III'
+    description: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+      90 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+      15 \u7EA7\u540E\u751F\u6548\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+        90 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+        15 \u7EA7\u540E\u751F\u6548\u3002"
     - languageCode: ja
-      text: 
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u5C55\u958B\u3057\u3001\u8150\u98DF\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3059\u308B\u3002\u305D\u306E\u5F8C
+        90 \u79D2\u306E\u56DE\u5FA9\u306B\u5165\u308B\u3002\n\u5BFE\u5FDC\u3059\u308B\u5C5E\u6027\u306E\u8010\u6027\u5F37\u5316\u304C\u30EC\u30D9\u30EB15\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
     - languageCode: en
-      text: 
+      text: 'Deploys an Effect Field that negates one Corrosion anomaly, then recharges
+        for 90 seconds.
+
+        Takes effect once the matching resistance reaches
+        level 15.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF0C\u6062\u590D\u65F6\u95F4
       90 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680
       II\u3002"
@@ -1024,6 +1986,7 @@ MonoBehaviour:
     primaryParentIndex: 33
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -1034,17 +1997,43 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 5
       rewards: []
-      note: "\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38 \xB7 90 \u79D2\u6062\u590D"
+      note: "\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u6062\u590D 90
+        \u79D2"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u6062\u590D
+          90 \u79D2"
+      - languageCode: ja
+        text: "\u8150\u98DF\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3001\u56DE\u5FA9
+          90 \u79D2"
+      - languageCode: en
+        text: Negates one Corrosion anomaly, 90s recharge
   - nodeId: seeker_afp_corrosion_shield_4
     nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680 IV"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680 IV"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u8150\u98DF IV"
+    - languageCode: en
+      text: 'Effect Field: Corrosion IV'
+    description: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+      60 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+      20 \u7EA7\u540E\u751F\u6548\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+        60 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+        20 \u7EA7\u540E\u751F\u6548\u3002"
     - languageCode: ja
-      text: 
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u5C55\u958B\u3057\u3001\u8150\u98DF\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3059\u308B\u3002\u305D\u306E\u5F8C
+        60 \u79D2\u306E\u56DE\u5FA9\u306B\u5165\u308B\u3002\n\u5BFE\u5FDC\u3059\u308B\u5C5E\u6027\u306E\u8010\u6027\u5F37\u5316\u304C\u30EC\u30D9\u30EB20\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
     - languageCode: en
-      text: 
+      text: 'Deploys an Effect Field that negates one Corrosion anomaly, then recharges
+        for 60 seconds.
+
+        Takes effect once the matching resistance reaches
+        level 20.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF0C\u6062\u590D\u65F6\u95F4
       60 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u7279\u6548\u529B\u573A\uFF1A\u8150\u8680
       III\u3002"
@@ -1052,6 +2041,7 @@ MonoBehaviour:
     primaryParentIndex: 34
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -1062,23 +2052,50 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 8
       rewards: []
-      note: "\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38 \xB7 60 \u79D2\u6062\u590D"
+      note: "\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u6062\u590D 60
+        \u79D2"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8C41\u514D\u4E00\u6B21\u8150\u8680\u5F02\u5E38\uFF0C\u6062\u590D
+          60 \u79D2"
+      - languageCode: ja
+        text: "\u8150\u98DF\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3001\u56DE\u5FA9
+          60 \u79D2"
+      - languageCode: en
+        text: Negates one Corrosion anomaly, 60s recharge
   - nodeId: seeker_afp_freeze_shield_1
     nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3 I"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3 I"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u51CD\u7D50 I"
+    - languageCode: en
+      text: 'Effect Field: Freeze I'
+    description: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+      150 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+      5 \u7EA7\u540E\u751F\u6548\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+        150 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+        5 \u7EA7\u540E\u751F\u6548\u3002"
     - languageCode: ja
-      text: 
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u5C55\u958B\u3057\u3001\u51CD\u7D50\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3059\u308B\u3002\u305D\u306E\u5F8C
+        150 \u79D2\u306E\u56DE\u5FA9\u306B\u5165\u308B\u3002\n\u5BFE\u5FDC\u3059\u308B\u5C5E\u6027\u306E\u8010\u6027\u5F37\u5316\u304C\u30EC\u30D9\u30EB5\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
     - languageCode: en
-      text: 
+      text: 'Deploys an Effect Field that negates one Freeze anomaly, then recharges
+        for 150 seconds.
+
+        Takes effect once the matching resistance reaches
+        level 5.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF0C\u6062\u590D\u65F6\u95F4
       150 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u8BCD\u6761\uFF1A\u5C5E\u6027\u6297\u6027\u3002"
     enabled: 1
     primaryParentIndex: 6
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_2
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -1089,17 +2106,43 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 2
       rewards: []
-      note: "\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38 \xB7 150 \u79D2\u6062\u590D"
+      note: "\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u6062\u590D 150
+        \u79D2"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u6062\u590D
+          150 \u79D2"
+      - languageCode: ja
+        text: "\u51CD\u7D50\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3001\u56DE\u5FA9
+          150 \u79D2"
+      - languageCode: en
+        text: Negates one Freeze anomaly, 150s recharge
   - nodeId: seeker_afp_freeze_shield_2
     nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3 II"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3 II"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u51CD\u7D50 II"
+    - languageCode: en
+      text: 'Effect Field: Freeze II'
+    description: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+      120 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+      10 \u7EA7\u540E\u751F\u6548\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+        120 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+        10 \u7EA7\u540E\u751F\u6548\u3002"
     - languageCode: ja
-      text: 
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u5C55\u958B\u3057\u3001\u51CD\u7D50\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3059\u308B\u3002\u305D\u306E\u5F8C
+        120 \u79D2\u306E\u56DE\u5FA9\u306B\u5165\u308B\u3002\n\u5BFE\u5FDC\u3059\u308B\u5C5E\u6027\u306E\u8010\u6027\u5F37\u5316\u304C\u30EC\u30D9\u30EB10\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
     - languageCode: en
-      text: 
+      text: 'Deploys an Effect Field that negates one Freeze anomaly, then recharges
+        for 120 seconds.
+
+        Takes effect once the matching resistance reaches
+        level 10.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF0C\u6062\u590D\u65F6\u95F4
       120 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3
       I\u3002"
@@ -1107,6 +2150,7 @@ MonoBehaviour:
     primaryParentIndex: 36
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -1117,17 +2161,43 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 3
       rewards: []
-      note: "\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38 \xB7 120 \u79D2\u6062\u590D"
+      note: "\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u6062\u590D 120
+        \u79D2"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u6062\u590D
+          120 \u79D2"
+      - languageCode: ja
+        text: "\u51CD\u7D50\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3001\u56DE\u5FA9
+          120 \u79D2"
+      - languageCode: en
+        text: Negates one Freeze anomaly, 120s recharge
   - nodeId: seeker_afp_freeze_shield_3
     nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3 III"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3 III"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u51CD\u7D50 III"
+    - languageCode: en
+      text: 'Effect Field: Freeze III'
+    description: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+      90 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+      15 \u7EA7\u540E\u751F\u6548\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+        90 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+        15 \u7EA7\u540E\u751F\u6548\u3002"
     - languageCode: ja
-      text: 
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u5C55\u958B\u3057\u3001\u51CD\u7D50\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3059\u308B\u3002\u305D\u306E\u5F8C
+        90 \u79D2\u306E\u56DE\u5FA9\u306B\u5165\u308B\u3002\n\u5BFE\u5FDC\u3059\u308B\u5C5E\u6027\u306E\u8010\u6027\u5F37\u5316\u304C\u30EC\u30D9\u30EB15\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
     - languageCode: en
-      text: 
+      text: 'Deploys an Effect Field that negates one Freeze anomaly, then recharges
+        for 90 seconds.
+
+        Takes effect once the matching resistance reaches
+        level 15.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF0C\u6062\u590D\u65F6\u95F4
       90 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3
       II\u3002"
@@ -1135,6 +2205,7 @@ MonoBehaviour:
     primaryParentIndex: 37
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -1145,17 +2216,43 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 5
       rewards: []
-      note: "\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38 \xB7 90 \u79D2\u6062\u590D"
+      note: "\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u6062\u590D 90
+        \u79D2"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u6062\u590D
+          90 \u79D2"
+      - languageCode: ja
+        text: "\u51CD\u7D50\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3001\u56DE\u5FA9
+          90 \u79D2"
+      - languageCode: en
+        text: Negates one Freeze anomaly, 90s recharge
   - nodeId: seeker_afp_freeze_shield_4
     nodeName: "\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3 IV"
-    description: 
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3 IV"
+    - languageCode: ja
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\uFF1A\u51CD\u7D50 IV"
+    - languageCode: en
+      text: 'Effect Field: Freeze IV'
+    description: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+      60 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+      20 \u7EA7\u540E\u751F\u6548\u3002"
     localizedDescriptions:
     - languageCode: zh-CN
-      text: 
+      text: "\u5C55\u5F00\u7279\u6548\u529B\u573A\uFF0C\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165
+        60 \u79D2\u7684\u6062\u590D\u3002\n\u5BF9\u5E94\u5C5E\u6027\u7684\u6297\u6027\u5F3A\u5316\u8FBE\u5230
+        20 \u7EA7\u540E\u751F\u6548\u3002"
     - languageCode: ja
-      text: 
+      text: "\u7279\u52B9\u30D5\u30A3\u30FC\u30EB\u30C9\u3092\u5C55\u958B\u3057\u3001\u51CD\u7D50\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3059\u308B\u3002\u305D\u306E\u5F8C
+        60 \u79D2\u306E\u56DE\u5FA9\u306B\u5165\u308B\u3002\n\u5BFE\u5FDC\u3059\u308B\u5C5E\u6027\u306E\u8010\u6027\u5F37\u5316\u304C\u30EC\u30D9\u30EB20\u306B\u9054\u3059\u308B\u3068\u6709\u52B9\u3002"
     - languageCode: en
-      text: 
+      text: 'Deploys an Effect Field that negates one Freeze anomaly, then recharges
+        for 60 seconds.
+
+        Takes effect once the matching resistance reaches
+        level 20.'
     designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u968F\u540E\u8FDB\u5165\u6062\u590D\uFF0C\u6062\u590D\u65F6\u95F4
       60 \u79D2\u3002\n\u524D\u7F6E\uFF1A\u7279\u6548\u529B\u573A\uFF1A\u51BB\u7ED3
       III\u3002"
@@ -1163,6 +2260,7 @@ MonoBehaviour:
     primaryParentIndex: 38
     secondaryRequirements: []
     externalCondition: 0
+    revealGroup: seeker_3
     icon: {fileID: 0}
     useCustomColor: 0
     customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
@@ -1173,4 +2271,151 @@ MonoBehaviour:
       - item: {fileID: 0}
         amount: 8
       rewards: []
-      note: "\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38 \xB7 60 \u79D2\u6062\u590D"
+      note: "\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u6062\u590D 60
+        \u79D2"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u8C41\u514D\u4E00\u6B21\u51BB\u7ED3\u5F02\u5E38\uFF0C\u6062\u590D
+          60 \u79D2"
+      - languageCode: ja
+        text: "\u51CD\u7D50\u7570\u5E38\u30921\u56DE\u7121\u52B9\u5316\u3001\u56DE\u5FA9
+          60 \u79D2"
+      - languageCode: en
+        text: Negates one Freeze anomaly, 60s recharge
+  - nodeId: seeker_afp_load
+    nodeName: "\u8BCD\u6761\uFF1A\u8D1F\u8377\u8010\u53D7"
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u8BCD\u6761\uFF1A\u8D1F\u8377\u8010\u53D7"
+    - languageCode: ja
+      text: "\u9805\u76EE\uFF1A\u8CA0\u8377\u8010\u6027"
+    - languageCode: en
+      text: 'Entry: Load Tolerance'
+    description: "AFP \u7CFB\u7EDF\u53EF\u90E8\u7F72\u300C\u8D1F\u8377\u8010\u53D7\u300D\uFF1A\u63D0\u5347\u8D1F\u8377\u503C\uFF08LP\uFF09\u4E0A\u9650\uFF0C\u6700\u591A\u63D0\u5347\u81F3
+      150\u3002\u95EA\u907F\u4E0E\u5954\u8DD1\u7684\u6D88\u8017\u4E0D\u968F\u4E0A\u9650\u589E\u52A0\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "AFP \u7CFB\u7EDF\u53EF\u90E8\u7F72\u300C\u8D1F\u8377\u8010\u53D7\u300D\uFF1A\u63D0\u5347\u8D1F\u8377\u503C\uFF08LP\uFF09\u4E0A\u9650\uFF0C\u6700\u591A\u63D0\u5347\u81F3
+        150\u3002\u95EA\u907F\u4E0E\u5954\u8DD1\u7684\u6D88\u8017\u4E0D\u968F\u4E0A\u9650\u589E\u52A0\u3002"
+    - languageCode: ja
+      text: "AFP\u30B7\u30B9\u30C6\u30E0\u3067\u300C\u8CA0\u8377\u8010\u6027\u300D\u3092\u5C55\u958B\u53EF\u80FD\u306B\u306A\u308B\uFF1A\u8CA0\u8377\u5024\uFF08LP\uFF09\u306E\u4E0A\u9650\u3092\u6700\u5927150\u307E\u3067\u5F15\u304D\u4E0A\u3052\u308B\u3002\u56DE\u907F\u3068\u30C0\u30C3\u30B7\u30E5\u306E\u6D88\u8CBB\u306F\u4E0A\u9650\u306B\u6BD4\u4F8B\u3057\u3066\u5897\u3048\u306A\u3044\u3002"
+    - languageCode: en
+      text: 'The AFP system can deploy Load Tolerance: raises the Load (LP) cap up
+        to 150. Dodge and sprint costs do not scale with the cap.'
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u89E3\u9501 AFP \u8BCD\u6761\u300C\u8D1F\u8377\u8010\u53D7\u300D(\u4E09\u6BB5\u56FA\u5B9A\u4EF7
+      600/2400/7000\uFF1ALP \u4E0A\u9650 +15/+30/+50)\u3002"
+    enabled: 1
+    primaryParentIndex: 0
+    secondaryRequirements: []
+    externalCondition: 0
+    revealGroup: seeker_2
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards: []
+      note: "\u53EF\u90E8\u7F72 \u8D1F\u8377\u8010\u53D7"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u53EF\u90E8\u7F72 \u8D1F\u8377\u8010\u53D7"
+      - languageCode: ja
+        text: "\u8CA0\u8377\u8010\u6027\u3092\u5C55\u958B\u53EF\u80FD"
+      - languageCode: en
+        text: Load Tolerance deployable
+  - nodeId: seeker_afp_weak
+    nodeName: "\u8BCD\u6761\uFF1A\u5F31\u70B9\u7279\u6548"
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u8BCD\u6761\uFF1A\u5F31\u70B9\u7279\u6548"
+    - languageCode: ja
+      text: "\u9805\u76EE\uFF1A\u5F31\u70B9\u7279\u52B9"
+    - languageCode: en
+      text: 'Entry: Weakness Exploit'
+    description: "AFP \u7CFB\u7EDF\u53EF\u90E8\u7F72\u300C\u5F31\u70B9\u7279\u6548\u300D\uFF1A\u547D\u4E2D\u76EE\u6807\u5F31\u70B9\u5C5E\u6027\u65F6\uFF0C\u66B4\u51FB\u7387\u63D0\u5347\uFF0C\u51FB\u9000\u4E0E\u786C\u76F4\u52A0\u5F3A\u3002\u6EE1\u7EA7\u65F6\uFF0C\u5F31\u70B9\u66B4\u51FB\u53EF\u65E0\u89C6\u9738\u4F53\u6253\u65AD\u51FA\u62DB\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "AFP \u7CFB\u7EDF\u53EF\u90E8\u7F72\u300C\u5F31\u70B9\u7279\u6548\u300D\uFF1A\u547D\u4E2D\u76EE\u6807\u5F31\u70B9\u5C5E\u6027\u65F6\uFF0C\u66B4\u51FB\u7387\u63D0\u5347\uFF0C\u51FB\u9000\u4E0E\u786C\u76F4\u52A0\u5F3A\u3002\u6EE1\u7EA7\u65F6\uFF0C\u5F31\u70B9\u66B4\u51FB\u53EF\u65E0\u89C6\u9738\u4F53\u6253\u65AD\u51FA\u62DB\u3002"
+    - languageCode: ja
+      text: "AFP\u30B7\u30B9\u30C6\u30E0\u3067\u300C\u5F31\u70B9\u7279\u52B9\u300D\u3092\u5C55\u958B\u53EF\u80FD\u306B\u306A\u308B\uFF1A\u5BFE\u8C61\u306E\u5F31\u70B9\u5C5E\u6027\u306B\u547D\u4E2D\u3057\u305F\u6642\u3001\u4F1A\u5FC3\u7387\u304C\u4E0A\u304C\u308A\u3001\u30CE\u30C3\u30AF\u30D0\u30C3\u30AF\u3068\u602F\u307F\u304C\u5F37\u5316\u3055\u308C\u308B\u3002\u6700\u5927\u30EC\u30D9\u30EB\u3067\u306F\u3001\u5F31\u70B9\u3078\u306E\u4F1A\u5FC3\u304C\u30B9\u30FC\u30D1\u30FC\u30A2\u30FC\u30DE\u30FC\u3092\u7121\u8996\u3057\u3066\u884C\u52D5\u3092\u4E2D\u65AD\u3055\u305B\u308B\u3002"
+    - languageCode: en
+      text: 'The AFP system can deploy Weakness Exploit: hits on a target''s weak
+        element gain critical chance and stronger knockback and stagger. At max level,
+        weak-point criticals ignore super armor and interrupt attacks.'
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u89E3\u9501 AFP \u8BCD\u6761\u300C\u5F31\u70B9\u7279\u6548\u300D(\u4E09\u6BB5\u56FA\u5B9A\u4EF7
+      600/2400/7000\uFF1A\u6253\u5F31\u70B9\u66B4\u51FB\u7387 +15/30/50%\uFF0C\u51FB\u9000\u786C\u76F4
+      \xD71.2/1.35/1.5\uFF1BLv3 \u7834\u7532\u51B2\u51FB\uFF1A\u5F31\u70B9\u66B4\u51FB\u65E0\u89C6\u9738\u4F53\u6253\u65AD\uFF0C\u540C\u76EE\u6807
+      3 \u79D2\u51B7\u5374\uFF0CBoss \u4E0D\u5403)\u3002"
+    enabled: 1
+    primaryParentIndex: 0
+    secondaryRequirements: []
+    externalCondition: 0
+    revealGroup: seeker_2
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards: []
+      note: "\u53EF\u90E8\u7F72 \u5F31\u70B9\u7279\u6548"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u53EF\u90E8\u7F72 \u5F31\u70B9\u7279\u6548"
+      - languageCode: ja
+        text: "\u5F31\u70B9\u7279\u52B9\u3092\u5C55\u958B\u53EF\u80FD"
+      - languageCode: en
+        text: Weakness Exploit deployable
+  - nodeId: seeker_afp_crit
+    nodeName: "\u8BCD\u6761\uFF1A\u66B4\u51FB\u7279\u6548"
+    localizedNames:
+    - languageCode: zh-CN
+      text: "\u8BCD\u6761\uFF1A\u66B4\u51FB\u7279\u6548"
+    - languageCode: ja
+      text: "\u9805\u76EE\uFF1A\u4F1A\u5FC3\u7279\u52B9"
+    - languageCode: en
+      text: 'Entry: Critical Boost'
+    description: "AFP \u7CFB\u7EDF\u53EF\u90E8\u7F72\u300C\u66B4\u51FB\u7279\u6548\u300D\uFF1A\u63D0\u5347\u66B4\u51FB\u4F24\u5BB3\u3002\u6EE1\u7EA7\u65F6\uFF0C\u67AA\u68B0\u66B4\u51FB\u6709\u6982\u7387\u4E0D\u6D88\u8017\u5F39\u836F\uFF0C\u5927\u5251\u66B4\u51FB\u56DE\u590D\u8D1F\u8377\u503C\uFF08LP\uFF09\u3002"
+    localizedDescriptions:
+    - languageCode: zh-CN
+      text: "AFP \u7CFB\u7EDF\u53EF\u90E8\u7F72\u300C\u66B4\u51FB\u7279\u6548\u300D\uFF1A\u63D0\u5347\u66B4\u51FB\u4F24\u5BB3\u3002\u6EE1\u7EA7\u65F6\uFF0C\u67AA\u68B0\u66B4\u51FB\u6709\u6982\u7387\u4E0D\u6D88\u8017\u5F39\u836F\uFF0C\u5927\u5251\u66B4\u51FB\u56DE\u590D\u8D1F\u8377\u503C\uFF08LP\uFF09\u3002"
+    - languageCode: ja
+      text: "AFP\u30B7\u30B9\u30C6\u30E0\u3067\u300C\u4F1A\u5FC3\u7279\u52B9\u300D\u3092\u5C55\u958B\u53EF\u80FD\u306B\u306A\u308B\uFF1A\u4F1A\u5FC3\u30C0\u30E1\u30FC\u30B8\u304C\u4E0A\u304C\u308B\u3002\u6700\u5927\u30EC\u30D9\u30EB\u3067\u306F\u3001\u9283\u5668\u306E\u4F1A\u5FC3\u306F\u4E00\u5B9A\u78BA\u7387\u3067\u5F3E\u85AC\u3092\u6D88\u8CBB\u305B\u305A\u3001\u5927\u5263\u306E\u4F1A\u5FC3\u306F\u8CA0\u8377\u5024\uFF08LP\uFF09\u3092\u56DE\u5FA9\u3059\u308B\u3002"
+    - languageCode: en
+      text: 'The AFP system can deploy Critical Boost: raises critical damage. At
+        max level, firearm criticals may not consume ammo, and greatsword criticals
+        restore Load (LP).'
+    designerNote: "\u6548\u679C\u8BF4\u660E\uFF1A\n\u89E3\u9501 AFP \u8BCD\u6761\u300C\u66B4\u51FB\u7279\u6548\u300D(\u4E09\u6BB5\u56FA\u5B9A\u4EF7
+      800/3000/8000\uFF1A\u66B4\u51FB\u4F24\u5BB3 150%\u2192170/190/220%\uFF1BLv3
+      \u4F1A\u5FC3\u56DE\u6536\uFF1A\u67AA\u68B0\u66B4\u51FB 40% \u9000\u56DE\u5B50\u5F39\uFF0C\u5927\u5251\u66B4\u51FB\u56DE\u590D\u6700\u5927
+      LP \u7684 4%)\u3002"
+    enabled: 1
+    primaryParentIndex: 0
+    secondaryRequirements: []
+    externalCondition: 0
+    revealGroup: seeker_2
+    icon: {fileID: 0}
+    useCustomColor: 0
+    customColor: {r: 0.48, g: 0.76, b: 1, a: 1}
+    maxLevel: 1
+    levels:
+    - level: 1
+      costs:
+      - item: {fileID: 0}
+        amount: 3
+      rewards: []
+      note: "\u53EF\u90E8\u7F72 \u66B4\u51FB\u7279\u6548"
+      localizedNotes:
+      - languageCode: zh-CN
+        text: "\u53EF\u90E8\u7F72 \u66B4\u51FB\u7279\u6548"
+      - languageCode: ja
+        text: "\u4F1A\u5FC3\u7279\u52B9\u3092\u5C55\u958B\u53EF\u80FD"
+      - languageCode: en
+        text: Critical Boost deployable

@@ -126,6 +126,7 @@ MonoBehaviour:
       visibilityConditions: []
       targetSentenceIds:
       - Chapter 1-002
+      - Chapter 1-005
       closeAfterShow: 1
       targetWindowPrefab: {fileID: 0}
       returnToDialogueAfterWindowClose: 0

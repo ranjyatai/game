@@ -146,10 +146,10 @@ MonoBehaviour:
   deathDissolveNoiseScale: 0.6
   dropProfiles:
   - {fileID: 11400000, guid: 48c31c8ed0fbc444d918a799668a9204, type: 2}
-  afpYield: 50
+  afpYield: 5000
   parameterValues:
   - parameterKey: maxHp
-    value: 3000
+    value: 18000
   - parameterKey: maxLp
     value: 100
   - parameterKey: atk

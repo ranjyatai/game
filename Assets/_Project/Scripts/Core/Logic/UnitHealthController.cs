@@ -47,6 +47,7 @@ public class UnitHealthController : MonoBehaviour
     public bool IsAlive => !IsDead;
 
     private PlayerReviveProtection _reviveProtection;
+    private bool _damagedOnce;      // 出生后挨过打没有(SetMaxHealthFromStatus 判断要不要跟着补满)
 
     private void Reset()
     {
@@ -146,10 +147,15 @@ public class UnitHealthController : MonoBehaviour
         // 状态修正导致上限变化：
         // 只恢复容量，不自动恢复当前值
         bool wasUninitialized = currentHealth <= 0f && maxHealth <= 1f;
+        // 出生时满血、还没挨过打：单位定义的 maxHp 比 Awake 晚生效(预制体默认 100 → 定义里 220/700)，
+        // 不跟着补满的话怪一出生就是"残血"。挨过打之后上限再变，就按原规则只扩容量不回血。
+        bool fullAndUntouched = !_damagedOnce && currentHealth >= maxHealth - 0.01f;
+        // 上限被压低(灰炉的灰色损失等)也算"动过"：之后上限恢复时不回血，保持"灰色恢复后血量不返回"的规则
+        if (value < maxHealth - 0.01f) { _damagedOnce = true; fullAndUntouched = false; }
         maxHealth = Mathf.Max(1f, value);
 
         // 首次由状态系统设定上限时（currentHealth 仍是未初始化的 0），自动填满
-        if (wasUninitialized)
+        if (wasUninitialized || fullAndUntouched)
             currentHealth = maxHealth;
 
         if (clampHealth)
@@ -208,6 +214,7 @@ public class UnitHealthController : MonoBehaviour
 
         float oldHealth = currentHealth;
         currentHealth -= amount;
+        _damagedOnce = true;
 
         if (clampHealth)
             currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);

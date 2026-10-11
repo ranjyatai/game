@@ -6012,6 +6012,9 @@ MonoBehaviour:
   pounceFlightSeconds: 0.55
   pounceRecoverySeconds: 0.8
   pounceLandRadius: 2.5
+  pounceLeadStrength: 0.7
+  pounceFreezeSeconds: 0.15
+  pounceMaxLead: 4
   stalkMinSeconds: 0.3
   stalkMaxSeconds: 0.8
   stalkBandMinX: 3.5

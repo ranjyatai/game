@@ -22,7 +22,7 @@ MonoBehaviour:
   - languageCode: ja
     text: "\u30B0\u30EC\u30A4\u30D5\u30A1\u30FC\u30CD\u30B9"
   - languageCode: en
-    text: "Gray Furnace"
+    text: Gray Furnace
   localizedDescriptions:
   - languageCode: zh-CN
     text: 
@@ -127,6 +127,7 @@ MonoBehaviour:
     dodgeForwardKey: dodge_forward
     dodgeBackKey: dodge_back
     deathKey: Die
+    reloadKey: Reload
     driveMovementAnimation: 1
     movementAnimationFade: 0.08
     oneShotLockSeconds: 0.18
@@ -145,13 +146,14 @@ MonoBehaviour:
   deathDissolveNoiseScale: 0.6
   dropProfiles:
   - {fileID: 11400000, guid: 48c31c8ed0fbc444d918a799668a9204, type: 2}
+  afpYield: 1900
   parameterValues:
   - parameterKey: maxHp
-    value: 100
+    value: 10000
   - parameterKey: maxLp
     value: 100
   - parameterKey: atk
-    value: 17
+    value: 0
   - parameterKey: def
     value: 0
   - parameterKey: critRate
@@ -215,18 +217,18 @@ MonoBehaviour:
   - parameterKey: freezeBuildUp
     value: 0
   - parameterKey: slashResist
-    value: 0
+    value: 30
   - parameterKey: strikeResist
-    value: 0
+    value: -20
   - parameterKey: impactResist
     value: 0
   - parameterKey: heatResist
-    value: 0
+    value: 60
   - parameterKey: shockResist
-    value: 0
+    value: -50
   - parameterKey: corrosionResist
-    value: 0
+    value: 40
   - parameterKey: freezeResist
-    value: 0
+    value: -30
   - parameterKey: new_attribute
     value: 0

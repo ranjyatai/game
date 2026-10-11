@@ -316,3 +316,27 @@ MonoBehaviour:
     volume: 0.8
     pitch: 1
     pitchVariance: 0
+  - type: 53
+    clips:
+    - {fileID: 8300000, guid: bdda0e50ec576c14f87f5bf3473bd032, type: 3}
+    volume: 0.8
+    pitch: 1
+    pitchVariance: 0
+  - type: 54
+    clips:
+    - {fileID: 8300000, guid: 1a49cb1063d6cbf4795b40ff35871d37, type: 3}
+    volume: 0.55
+    pitch: 1
+    pitchVariance: 0
+  - type: 55
+    clips:
+    - {fileID: 8300000, guid: 28fb97abd49017947a1318b7716234f9, type: 3}
+    volume: 0.5
+    pitch: 1
+    pitchVariance: 0
+  - type: 56
+    clips:
+    - {fileID: 8300000, guid: f01a02bf07873ee4e9d152bea05ec825, type: 3}
+    volume: 0.7
+    pitch: 1
+    pitchVariance: 0

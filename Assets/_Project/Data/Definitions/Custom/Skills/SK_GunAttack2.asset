@@ -59,6 +59,7 @@ MonoBehaviour:
   lpCost: 1
   knockbackForce: 2
   stunDuration: 0.1
+  staggerMultiplier: 0.8
   startupTime: 0.05
   activeTime: 0.05
   recoveryTime: 0.15

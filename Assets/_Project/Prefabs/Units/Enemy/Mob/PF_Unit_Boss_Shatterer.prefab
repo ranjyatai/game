@@ -5568,7 +5568,7 @@ MonoBehaviour:
   waveMaxRadius: 55
   waveSpeed: 5
   waveBand: 1.6
-  waveDamage: 30
+  waveDamage: 39
   waveStun: 0.3
   waveKnockback: 5
   airSafeHeight: 0.35
@@ -5576,11 +5576,11 @@ MonoBehaviour:
   leapWaveWallHeight: 2.2
   waveWallAlpha: 0.5
   stompRadius: 1.8
-  stompDamage: 45
+  stompDamage: 68
   stompStun: 0.5
   stompKnockback: 6
   contactRadius: 1.4
-  contactDamage: 15
+  contactDamage: 20
   contactInterval: 0.7
   stepsBeforeAttack: 6
   attackRecoverySeconds: 1.4
@@ -5594,7 +5594,7 @@ MonoBehaviour:
   mortarRiseHeight: 22
   mortarScatter: {x: 1.5, y: 8}
   mortarRadius: 2.3
-  mortarDamage: 35
+  mortarDamage: 48
   mortarStun: 0.3
   mortarKnockback: 4
   flurryCount: 3
@@ -5607,11 +5607,14 @@ MonoBehaviour:
   leapAirSeconds: 1
   leapHeight: 11
   leapImpactRadius: 4.2
-  leapImpactDamage: 90
+  leapImpactDamage: 136
   leapWaveMaxRadius: 70
   leapWaveSpeed: 6
-  leapWaveDamage: 55
+  leapWaveDamage: 78
   leapRecoverySeconds: 1.6
+  legTether: 3.2
+  legMaxStretch: 5
+  collapseSeconds: 0.7
   legHpFraction: 0.07
   legBodyShare: 0.3
   brokenDamageBonus: 0.2

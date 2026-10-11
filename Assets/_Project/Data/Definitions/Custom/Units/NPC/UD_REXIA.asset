@@ -245,3 +245,5 @@ MonoBehaviour:
     value: 0
   - parameterKey: freezeResist
     value: 0
+  - parameterKey: moveSpeedRate
+    value: 100

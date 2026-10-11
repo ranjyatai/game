@@ -579,7 +579,9 @@ public class NPCDialogueWindowController : SkyPrisonBaseWindowController
                     // 变成两个窗口叠在一起。改成真正隐藏自己，等子窗口关闭了再显示回来。
                     // 用 manager 的协程而不是自己的——SetActive(false) 会连自己身上正在跑的
                     // 协程一起冻结，永远等不到重新显示。
-                    if (option.returnToDialogueAfterWindowClose && opened != null && manager != null)
+                    // 用户 10-12 定：所有 NPC 打开子窗口(交易 / 升级设施……)关掉之后都回到对话选项，不再看
+                    // returnToDialogueAfterWindowClose 这个勾选项(以前没勾的会直接结束对话)。
+                    if (opened != null && manager != null)
                     {
                         var subMeta = opened.GetComponent<SkyPrisonUIPrefabMetadata_V1>();
                         string subUiId = subMeta != null && !string.IsNullOrWhiteSpace(subMeta.uiId) ? subMeta.uiId : opened.name;
@@ -589,9 +591,8 @@ public class NPCDialogueWindowController : SkyPrisonBaseWindowController
                         return;
                     }
                 }
-                // 没勾"关闭子窗口后弹回对话"就直接关自己。
-                if (!option.returnToDialogueAfterWindowClose)
-                    Close();
+                // 走到这里说明子窗口没打开(没配窗口 / 打开失败)：直接关自己，免得对话框卡在那里
+                Close();
                 break;
 
             case DialogueOptionActionType.SetQuestFlag:
@@ -635,10 +636,20 @@ public class NPCDialogueWindowController : SkyPrisonBaseWindowController
                 goto case DialogueOptionActionType.ShowSentence;
 
             case DialogueOptionActionType.TacticalTraining:
-                // 先关对话再开窗口：战术研修窗口自己接管输入/HUD，关掉后直接回到世界
-                Close();
+            {
+                // 研修窗口关掉后回到 REXIA 的对话选项(和打开子窗口同一套：隐藏自己 → 等窗口关 → 显示回来)。
+                // 等待用窗口管理器的协程：SetActive(false) 会把自己身上的协程一起冻结。
+                var trainingHost = FindObjectOfType<SkyPrisonWindowManager_V1>();
                 SkyPrisonTrainingWindow.Show();
+                if (trainingHost != null && SkyPrisonTrainingWindow.IsOpen)
+                {
+                    DialogueSubtitleHUD.Instance?.Hide();
+                    gameObject.SetActive(false);
+                    trainingHost.StartCoroutine(WaitForTrainingCloseThenShow());
+                }
+                else Close();
                 break;
+            }
 
             case DialogueOptionActionType.Close:
             default:
@@ -2002,6 +2013,16 @@ public class NPCDialogueWindowController : SkyPrisonBaseWindowController
         // "新的一句"再念一遍，用户明确要求不要这样，子窗口关闭不等于NPC又说了一次话。
         gameObject.SetActive(true);
         _idleTimer = 0f; // 刚从子窗口回来给个新的停留宽限，不要一回来就立刻念闲聊
+    }
+
+    private IEnumerator WaitForTrainingCloseThenShow()
+    {
+        while (SkyPrisonTrainingWindow.IsOpen)
+            yield return null;
+
+        if (this == null || gameObject == null) yield break;
+        gameObject.SetActive(true);      // 只把选项显示回来，不重新念台词(同 WaitForSubWindowCloseThenShow)
+        _idleTimer = 0f;
     }
 
     private void ClearOptions()

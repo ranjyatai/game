@@ -34,8 +34,11 @@ public sealed class SkyPrisonAfpPurchaseZone : MonoBehaviour, IInteractable
     public string InteractLabel => PlayerCombatStateRuntime.IsInCombat
         ? DoorText.Get("afp_zone_combat", "战斗中无法使用")
         : DoorText.Get("afp_zone_prompt_v2", "进行AFP部署");
-    public bool CanInteract => insideNow && !PlayerCombatStateRuntime.IsInCombat;
+    public bool CanInteract => unlocked && insideNow && !PlayerCombatStateRuntime.IsInCombat;
 
+    /// <summary>战术研修里「AFP 系统解放」(seeker_root) 点亮后适应系统才开放：没点亮时购买区整个不显示、不可交互。</summary>
+    public const string UnlockNodeId = "seeker_root";
+    bool unlocked = true;
     bool insideNow;
     public bool PlayerInside => insideNow;
 
@@ -123,6 +126,14 @@ public sealed class SkyPrisonAfpPurchaseZone : MonoBehaviour, IInteractable
             var p = SkyPrisonPlayerAuthority.CurrentPlayerUnit;
             if (p != null) player = p.transform;
         }
+
+        bool nowUnlocked = SkyPrisonAfpAbsorbShield.NodeUnlocked(UnlockNodeId);
+        if (nowUnlocked != unlocked || (!nowUnlocked && frame.enabled))
+        {
+            unlocked = nowUnlocked;
+            frame.enabled = scan.enabled = fillRenderer.enabled = logoRenderer.enabled = unlocked;
+        }
+        if (!unlocked) { insideNow = false; return; }
 
         float distToRect = 999f;
         insideNow = false;

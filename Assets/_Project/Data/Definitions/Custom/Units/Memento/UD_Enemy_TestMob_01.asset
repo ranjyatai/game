@@ -149,7 +149,7 @@ MonoBehaviour:
   afpYield: 50
   parameterValues:
   - parameterKey: maxHp
-    value: 100
+    value: 180
   - parameterKey: maxLp
     value: 100
   - parameterKey: atk
@@ -223,7 +223,7 @@ MonoBehaviour:
   - parameterKey: impactResist
     value: 0
   - parameterKey: heatResist
-    value: 0
+    value: -40
   - parameterKey: shockResist
     value: 0
   - parameterKey: corrosionResist
@@ -233,4 +233,4 @@ MonoBehaviour:
   - parameterKey: new_attribute
     value: 0
   - parameterKey: moveSpeedRate
-    value: 0
+    value: 100

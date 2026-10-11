@@ -3973,6 +3973,9 @@ MonoBehaviour:
   sideAngleDegrees: 35
   sideOriginOffset: 0.5
   muzzleHeight: 1.2
+  fiveLanesWhenBerserk: 1
+  berserkLaneAngleStep: 20
+  berserkMuzzleGlowSize: 0.9
   triggerRangeX: 26
   triggerRangeZ: 6
   telegraphSeconds: 0.8

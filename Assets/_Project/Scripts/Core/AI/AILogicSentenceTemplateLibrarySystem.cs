@@ -122,7 +122,10 @@ public static class AILogicSentenceTemplateLibrarySystem
             BuildActionSetWeatherActive(),
 
             // RAID 入口：把某个入口（旧工厂昼 / 夜、学校昼 / 夜、黄金乡昼 / 夜、废病院昼 / 夜、塔）设为可进入 / 不可进入
-            BuildActionSetRaidEntry()
+            BuildActionSetRaidEntry(),
+
+            // 战术研修：随主线让一批科技树节点出现在研修窗口里
+            BuildActionRevealTechGroup()
         };
     }
 
@@ -1707,6 +1710,29 @@ public static class AILogicSentenceTemplateLibrarySystem
                     new LogicSentenceTemplate.EnumOption("enabled",  "可进入"),
                     new LogicSentenceTemplate.EnumOption("disabled", "不可进入"),
                 })
+            }
+        };
+    }
+
+    private static LogicSentenceTemplate BuildActionRevealTechGroup()
+    {
+        var groups = new List<LogicSentenceTemplate.EnumOption>();
+        foreach (var g in TechTreeReveal.Groups) groups.Add(new LogicSentenceTemplate.EnumOption(g[0], g[1]));
+        return new LogicSentenceTemplate
+        {
+            templateId = "act_reveal_tech_group",
+            displayName = "显现研修节点组",
+            category = LogicSentenceCategory.Action,
+            nodeKind = LogicNodeKind.Leaf,
+            tags = new List<LogicTemplateTag> { LogicTemplateTag.AI },
+            tokens = new List<LogicSentenceTemplate.TextToken>
+            {
+                new LogicSentenceTemplate.TextToken { isSlot = false, text = "让战术研修显现节点组 " },
+                new LogicSentenceTemplate.TextToken { isSlot = true,  slotId = "group" }
+            },
+            slots = new List<LogicSentenceTemplate.SlotDefinition>
+            {
+                BuildLocalEnumSlot("group", "节点组", groups)
             }
         };
     }

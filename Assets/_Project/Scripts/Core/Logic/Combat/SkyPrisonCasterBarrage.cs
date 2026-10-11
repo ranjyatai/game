@@ -9,7 +9,7 @@ using UnityEngine;
 /// 占位阶段：弹体与预警线都用代码生成的简单几何，Spine/特效做好之后再换。
 /// </summary>
 [DisallowMultipleComponent]
-public class SkyPrisonCasterBarrage : MonoBehaviour
+public class SkyPrisonCasterBarrage : MonoBehaviour, IStaggerable
 {
     [Header("技能（属性弹）")]
     [SerializeField] private SkillDefinition boltSkill;
@@ -22,6 +22,14 @@ public class SkyPrisonCasterBarrage : MonoBehaviour
     [Tooltip("上下两路出生点相对中路的深度错开(米)，避免近处三发叠成一团。")]
     [SerializeField] private float sideOriginOffset = 0.5f;
     [SerializeField] private float muzzleHeight = 1.2f;
+
+    [Header("狂暴(被颂赞者连线)时：五路")]
+    [Tooltip("身上有狂暴状态(status_berserk)时改发五路：0°、±step、±2×step。")]
+    [SerializeField] private bool fiveLanesWhenBerserk = true;
+    [Tooltip("五路相邻两路的夹角(度)。20° → 10 米处相邻弹道约 3.5 米，近距离(≈6 米内)基本躲不开。")]
+    [SerializeField] private float berserkLaneAngleStep = 20f;
+    [Tooltip("五路蓄势时枪口亮起的光球，让玩家读到这一发是五路。")]
+    [SerializeField] private float berserkMuzzleGlowSize = 0.9f;
 
     [Header("节奏")]
     [SerializeField] private float triggerRangeX = 16f;
@@ -50,6 +58,8 @@ public class SkyPrisonCasterBarrage : MonoBehaviour
     private float _nextReadyTime;
     private bool _busy;
     private Color _color = new Color(1f, 0.45f, 0.25f, 1f);
+    private UnitStatusController _status;
+    private float _laneAngleStep;          // 本轮相邻两路夹角(三路=sideAngleDegrees，五路=berserkLaneAngleStep)
     private static Material _lineMaterial;
 
     private void Awake()
@@ -64,7 +74,10 @@ public class SkyPrisonCasterBarrage : MonoBehaviour
     {
         if (_actionModule == null) _actionModule = GetComponentInChildren<UnitActionModuleRuntime>(true);
         if (_death == null) _death = GetComponentInChildren<UnitDeathController>(true);
+        if (_status == null) _status = GetComponentInChildren<UnitStatusController>(true);
     }
+
+    private bool IsBerserk => fiveLanesWhenBerserk && _status != null && _status.HasStatus("status_berserk");
 
     private void Update()
     {
@@ -90,14 +103,20 @@ public class SkyPrisonCasterBarrage : MonoBehaviour
         _busy = true;
         if (_positioning != null) _positioning.Locked = true;
 
-        // 三路的发射顺序随机：中→上→下、下→中→上……玩家不能只记一个方向换位
-        int[][] orders = { new[] { 0, 1, -1 }, new[] { 0, -1, 1 }, new[] { 1, 0, -1 }, new[] { -1, 0, 1 }, new[] { 1, -1, 0 }, new[] { -1, 1, 0 } };
-        int[] order = orders[Random.Range(0, orders.Length)];
+        // 狂暴(被颂赞者连线)时五路，否则三路；在蓄势开始时决定，蓄势中状态变化不影响这一轮
+        bool five = IsBerserk;
+        _laneAngleStep = five ? berserkLaneAngleStep : sideAngleDegrees;
+        int[] order = five ? new[] { -2, -1, 0, 1, 2 } : new[] { -1, 0, 1 };
+        // 发射顺序随机：玩家不能只记一个方向换位
+        for (int i = order.Length - 1; i > 0; i--) { int j = Random.Range(0, i + 1); int tmp = order[i]; order[i] = order[j]; order[j] = tmp; }
+        int laneCount = order.Length;
 
-        var lines = new LineRenderer[3];
+        var lines = new LineRenderer[laneCount];
         if (showTelegraphLines)
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < laneCount; i++)
                 lines[i] = CreateLine(order[i], dirX);
+        GameObject glow = five ? CreateMuzzleGlow() : null;
+        _activeGlow = glow; _activeLines = lines;
 
         // 预警：线从半透明渐变到亮，最后一小段闪一下，让玩家读到"要发了"
         float t = 0f;
@@ -107,24 +126,27 @@ public class SkyPrisonCasterBarrage : MonoBehaviour
             float k = Mathf.Clamp01(t / telegraphSeconds);
             float flash = k > 0.8f ? (Mathf.Sin(t * 60f) * 0.5f + 0.5f) * 0.4f : 0f;
             SetLineAlpha(lines, 0.15f + 0.45f * k + flash);
+            if (glow != null) glow.transform.localScale = Vector3.one * berserkMuzzleGlowSize * (0.3f + 0.7f * k) * (1f + flash);
             // 蓄势中玩家贴到枪口：中止这一轮，让站位组件先带它后退
             if (_positioning != null && _positioning.PlayerTooClose)
             {
                 DestroyLines(lines);
+                if (glow != null) Destroy(glow);
                 _positioning.Locked = false;
                 _nextReadyTime = Time.time + 0.4f;
                 _busy = false;
                 yield break;
             }
-            if (_death != null && _death.IsDeadLike) { DestroyLines(lines); _busy = false; if (_positioning != null) _positioning.Locked = false; yield break; }
+            if (_death != null && _death.IsDeadLike) { DestroyLines(lines); if (glow != null) Destroy(glow); _busy = false; if (_positioning != null) _positioning.Locked = false; yield break; }
             yield return null;
         }
 
-        for (int i = 0; i < 3; i++)
+        if (glow != null) Destroy(glow);
+        for (int i = 0; i < laneCount; i++)
         {
             FireLane(order[i], dirX);
             if (lines[i] != null) Destroy(lines[i].gameObject, lineLingerSeconds + i * 0.02f);
-            if (i < 2 && laneStaggerSeconds > 0f) yield return new WaitForSeconds(laneStaggerSeconds);
+            if (i < laneCount - 1 && laneStaggerSeconds > 0f) yield return new WaitForSeconds(laneStaggerSeconds);
         }
 
         // 硬直：放完最后一发后原地僵住，之后才开始冷却
@@ -133,6 +155,27 @@ public class SkyPrisonCasterBarrage : MonoBehaviour
         _nextReadyTime = Time.time + cooldownSeconds;
         _busy = false;
         if (_positioning != null) _positioning.Locked = false;
+    }
+
+    private GameObject _activeGlow;
+    private LineRenderer[] _activeLines;
+
+    public bool SuperArmored => false;
+    public bool Airborne => false;
+
+    /// <summary>失衡：打断这一轮(蓄势中就不发射)，硬直结束后再多等半个冷却才开始下一轮。</summary>
+    public void Stagger(float seconds)
+    {
+        var action = GetComponentInChildren<UnitActionController>(true);
+        if (action != null) action.ForceHitStun(seconds);
+        if (!_busy) { _nextReadyTime = Mathf.Max(_nextReadyTime, Time.time + seconds); return; }
+        StopAllCoroutines();
+        if (_activeGlow != null) Destroy(_activeGlow);
+        if (_activeLines != null) DestroyLines(_activeLines);
+        _activeGlow = null; _activeLines = null;
+        _busy = false;
+        if (_positioning != null) _positioning.Locked = false;
+        _nextReadyTime = Time.time + seconds + cooldownSeconds * 0.5f;
     }
 
     private void FireLane(int laneIndex, float dirX)
@@ -147,11 +190,30 @@ public class SkyPrisonCasterBarrage : MonoBehaviour
 
     private Vector3 LaneDirection(int laneIndex, float dirX)
     {
-        float a = laneIndex * sideAngleDegrees * Mathf.Deg2Rad;
+        float step = _laneAngleStep > 0f ? _laneAngleStep : sideAngleDegrees;
+        float a = laneIndex * step * Mathf.Deg2Rad;
         return new Vector3(dirX * Mathf.Cos(a), 0f, Mathf.Sin(a));
     }
 
     // ── 占位视觉 ────────────────────────────────────────────────
+
+    // 五路蓄势：枪口一颗随蓄势变大的属性色光球
+    private GameObject CreateMuzzleGlow()
+    {
+        var g = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        g.name = "CasterBerserkGlow";
+        var col = g.GetComponent<Collider>(); if (col != null) Destroy(col);
+        g.transform.SetParent(transform, false);
+        g.transform.position = transform.position + new Vector3(0f, muzzleHeight, 0f);
+        g.transform.localScale = Vector3.one * berserkMuzzleGlowSize * 0.3f;
+        int layer = LayerMask.NameToLayer("World3D");
+        if (layer >= 0) g.layer = layer;
+        var r = g.GetComponent<Renderer>();
+        r.material = new Material(GetLineMaterial()) { color = new Color(_color.r, _color.g, _color.b, 0.75f) };
+        r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        r.receiveShadows = false;
+        return g;
+    }
 
     private void AttachBoltVisual(Transform parent)
     {

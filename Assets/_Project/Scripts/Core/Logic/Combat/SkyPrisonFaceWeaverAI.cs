@@ -42,7 +42,7 @@ using UnityEngine;
 /// 所以防御/装备耐久/异常累积全部沿用现有的一套。占位阶段预警线/圈用代码画。
 /// </summary>
 [DisallowMultipleComponent]
-public class SkyPrisonFaceWeaverAI : MonoBehaviour, ILeashListener, IIncomingHitModifier
+public class SkyPrisonFaceWeaverAI : MonoBehaviour, ILeashListener, IIncomingHitModifier, IStaggerable
 {
     [Header("技能（物理伤害，无属性）")]
     [SerializeField] private SkillDefinition dashSkill;
@@ -158,21 +158,9 @@ public class SkyPrisonFaceWeaverAI : MonoBehaviour, ILeashListener, IIncomingHit
     [Tooltip("醒来后随机的反应延迟(秒，最大值)：避免同时被惊醒的几只同一帧动作。")]
     [SerializeField] private float maxReactionDelay = 0.6f;
 
-    [Header("韧性（累计伤害破韧）")]
-    [Tooltip("统计窗口(秒)：窗口内累计受到的伤害超过阈值，就被打出一次硬直。")]
-    [SerializeField] private float poiseWindowSeconds = 1.2f;
-    [Tooltip("破韧阈值 = 最大血量 × 这个比例。0.12 约等于 4~5 发枪弹，或者 1~2 刀大剑。")]
-    [SerializeField, Range(0.02f, 1f)] private float poiseThresholdFraction = 0.12f;
-    [Tooltip("破韧后被打断的时长(秒)。")]
-    [SerializeField] private float poiseStaggerSeconds = 0.45f;
-    [Tooltip("破韧后的保护期(秒)：这段时间内不会再被破韧，避免被连发锁死。")]
-    [SerializeField] private float poiseImmuneSeconds = 1.5f;
-
     [Header("空中易伤 / 击落（跳扑）")]
     [Tooltip("跳扑滞空期间受到的伤害倍率。>1 = 空中更容易被打伤。")]
     [SerializeField] private float airVulnerability = 1.4f;
-    [Tooltip("空中击落阈值 = 最大血量 × 这个比例（比地面破韧低）。窗口同地面破韧。")]
-    [SerializeField, Range(0.02f, 1f)] private float airPoiseFraction = 0.08f;
     [Tooltip("被击落、摔到地上后的硬直(秒)：这段时间可以放心输出。")]
     [SerializeField] private float airKnockdownSeconds = 0.9f;
 
@@ -202,6 +190,15 @@ public class SkyPrisonFaceWeaverAI : MonoBehaviour, ILeashListener, IIncomingHit
     [SerializeField, Range(0.1f, 1f)] private float adaptMinMultiplier = 0.5f;
     [Tooltip("复读每多一次，躲这一招的概率加这么多。")]
     [SerializeField, Range(0f, 0.5f)] private float adaptEvadeBonus = 0.15f;
+
+    [Header("反制蓄力（玩家蓄力时有概率冲上来打断）")]
+    [Tooltip("玩家刚开始蓄力时，每次判定冲上来的概率。")]
+    [SerializeField, Range(0f, 1f)] private float chargePunishBaseChance = 0.2f;
+    [Tooltip("玩家每多蓄力 1 秒，概率增加多少(按得越久越危险)。")]
+    [SerializeField] private float chargePunishRampPerSecond = 0.2f;
+    [SerializeField, Range(0f, 1f)] private float chargePunishMaxChance = 0.8f;
+    [Tooltip("多久判定一次(秒)。")]
+    [SerializeField] private float chargePunishRollInterval = 0.5f;
 
     [Header("躲冲刺（玩家冲刺/突刺朝它冲来）")]
     [SerializeField] private float chargeDodgeRange = 14f;
@@ -266,12 +263,11 @@ public class SkyPrisonFaceWeaverAI : MonoBehaviour, ILeashListener, IIncomingHit
     private float _nextBulletDodgeTime;
     private bool _wasStunned;
     private bool _wary;
+    private float _waryStart;
+    private float _nextPunishRoll;
     private float _waryZDir;
     private float _spawnFillUntil = -1f;       // 出生后这段时间内，没挨过打就把当前血量补满到上限
     private bool _hurtSinceSpawn;
-    private float _poiseWindowStart = -999f;
-    private float _poiseAccum;
-    private float _poiseImmuneUntil = -999f;
     // 适应同一招
     private string _adaptKey;
     private int _adaptCount;
@@ -414,29 +410,7 @@ public class SkyPrisonFaceWeaverAI : MonoBehaviour, ILeashListener, IIncomingHit
     private void HandleDamaged(UnitHealthController hc, float amount)
     {
         _awake = true; _hurtSinceSpawn = true;
-        if (amount <= 0f || _health == null || Time.time < _poiseImmuneUntil) return;
-
-        // 累计伤害破韧：窗口内累加，超过阈值打断一次
-        if (Time.time - _poiseWindowStart > poiseWindowSeconds) { _poiseWindowStart = Time.time; _poiseAccum = 0f; }
-        _poiseAccum += amount;
-        float threshold = _health.MaxHealth * (_inPounceAir ? airPoiseFraction : poiseThresholdFraction);
-        if (_poiseAccum < threshold) return;
-
-        _poiseAccum = 0f;
-        _poiseWindowStart = -999f;
-        _poiseImmuneUntil = Time.time + poiseImmuneSeconds;
-        if (_inPounceAir)
-        {
-            // 空中被击落：取消水平冲量垂直掉下来，落地不造成伤害
-            _knockedOutOfAir = true;
-            if (_movement != null) _movement.CancelChargeDash();
-            return;
-        }
-        if (_inFlight) return;                                  // 地面冲刺飞行中保持霸体：不打断
-        if (Dead) return;
-        AbortActions();                                         // 打断前摇/试探/闪避
-        SubmitMove(Vector2.zero, false);
-        if (_action != null) _action.ForceHitStun(poiseStaggerSeconds);
+        // 打断判定已交给通用失衡条 SkyPrisonStagger(伤害结算里累积，满了回调 Stagger)
     }
 
     private void Update()
@@ -492,7 +466,11 @@ public class SkyPrisonFaceWeaverAI : MonoBehaviour, ILeashListener, IIncomingHit
 
         // 警戒：玩家在蓄力(大剑等)时不跳扑、不冲刺、不近身，保持距离，太近就后闪，蓄力一松开再恢复出招。
         // (以前是「蓄力就冲上去惩罚」，结果傻傻地跳进大剑的蓄力斩范围里。)
-        if (PlayerIsChargingNearby(player, absDx)) { WaryBehavior(player, delta, dirX, absDx); return; }
+        if (PlayerIsChargingNearby(player, absDx))
+        {
+            if (_wary && TryPunishCharge(player, dirX, absDx, absDz, aligned)) return;
+            WaryBehavior(player, delta, dirX, absDx); return;
+        }
         if (_wary) { _wary = false; _stalkStarted = false; _leapPending = false; _flanking = false; _nextReadyTime = Mathf.Max(_nextReadyTime, Time.time + 0.25f); }
 
         // 招式冷却中也在绕圈游走，不贴在玩家身上干站着
@@ -574,9 +552,28 @@ public class SkyPrisonFaceWeaverAI : MonoBehaviour, ILeashListener, IIncomingHit
 
     // 玩家蓄力释放的冲刺只沿 X 轴、10 单位、0.1~0.3 秒冲完，后闪 / 后撤都来不及。
     // 唯一可靠的躲法是提前躲出那条线：Z 偏差 ≥ waryLaneClear 就根本打不到。
+    // 玩家蓄力时不再一律退开：每隔一段时间按概率冲上来(同线冲刺、不同线跳扑)，打断玩家的蓄力(被打会取消蓄力)。
+    // 蓄力越久概率越高、急躁的个体更早出手；两只织面者共用错峰(TryCommitAttack)，同一时间只会有一只扑上来。
+    private bool TryPunishCharge(SkyPrisonUnitRuntimeIdentity player, float dirX, float absDx, float absDz, bool aligned)
+    {
+        if (Time.time < _nextReadyTime || Time.time < _nextPunishRoll) return false;
+        _nextPunishRoll = Time.time + chargePunishRollInterval;
+        float chance = Mathf.Min(chargePunishMaxChance, (chargePunishBaseChance + chargePunishRampPerSecond * (Time.time - _waryStart)) * _pAggression);
+        if (Random.value >= chance) return false;
+        float dist = Mathf.Sqrt(absDx * absDx + absDz * absDz);
+        bool canDash = aligned && absDx >= dashMinRangeX && absDx <= dashMaxRangeX && dashSkill != null;
+        bool canPounce = pounceSkill != null && dist >= pounceMinRange && dist <= pounceMaxRange;
+        if (!canDash && !canPounce) return false;
+        if (!TryCommitAttack()) return false;
+        _wary = false;
+        if (canDash) StartCoroutine(DashRoutine(player, dirX));
+        else StartCoroutine(PounceRoutine(player));
+        return true;
+    }
+
     private void WaryBehavior(SkyPrisonUnitRuntimeIdentity player, Vector3 delta, float dirX, float absDx)
     {
-        if (!_wary) { _wary = true; _leapPending = false; _flanking = false; _meleeMode = false; _stalkStarted = false; _waryZDir = 0f; }
+        if (!_wary) { _wary = true; _waryStart = Time.time; _nextPunishRoll = Time.time + chargePunishRollInterval; _leapPending = false; _flanking = false; _meleeMode = false; _stalkStarted = false; _waryZDir = 0f; }
         float dz = transform.position.z - player.transform.position.z;     // >0：织面者在玩家的 +Z 侧
         float adz = Mathf.Abs(dz);
         if (absDx <= waryReach && adz < waryLaneClear)
@@ -760,6 +757,29 @@ public class SkyPrisonFaceWeaverAI : MonoBehaviour, ILeashListener, IIncomingHit
     private static float Soft(float bias) { return Mathf.Lerp(1f, bias, 0.5f); }
 
     // 中止当前所有出招/试探（回归、被拉走时用），并清掉预警物体
+    // ── 失衡(SkyPrisonStagger：失衡条满了才打断；原来自己的「累计伤害破韧」已合并过去) ──
+    /// <summary>地面冲刺飞行段是完全霸体：失衡条满了也等飞完再打断(破甲冲击除外)。</summary>
+    public bool SuperArmored => _inFlight && !_inPounceAir;
+    /// <summary>跳扑滞空：用更低的空中阈值，满了直接击落。</summary>
+    public bool Airborne => _inPounceAir;
+
+    public void Stagger(float seconds)
+    {
+        EnsureRefs();
+        if (Dead) return;
+        if (_inPounceAir)
+        {
+            // 空中被击落：取消水平冲量垂直掉下来，落地不造成伤害、改为硬直
+            _knockedOutOfAir = true;
+            if (_movement != null) _movement.CancelChargeDash();
+            return;
+        }
+        if (_inFlight && _movement != null) _movement.CancelChargeDash();     // 破甲冲击强行打断冲刺：当场停下
+        AbortActions();                                         // 打断前摇/试探/闪避
+        SubmitMove(Vector2.zero, false);
+        if (_action != null) _action.ForceHitStun(seconds);
+    }
+
     private void AbortActions()
     {
         StopAllCoroutines();

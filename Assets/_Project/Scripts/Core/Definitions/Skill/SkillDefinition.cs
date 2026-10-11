@@ -231,6 +231,8 @@ public class SkillDefinition : ScriptableObject
     [Header("击退 & 硬直")]
     public float knockbackForce  = 0f;
     public float stunDuration    = 0f;
+    [Tooltip("失衡系数：打中挂了失衡条的中高级 Memento 时，造成的伤害 × 这个值累积进失衡条(SkyPrisonStagger)。默认 1；突刺 1.3、军铳 0.8。")]
+    public float staggerMultiplier = 1f;
 
     [Header("帧数据 (秒)")]
     [Tooltip("前摇：动画开始到判定帧")]

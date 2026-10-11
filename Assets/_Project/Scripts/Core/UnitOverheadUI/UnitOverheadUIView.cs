@@ -31,6 +31,8 @@ public class UnitOverheadUIView : MonoBehaviour
 
     public Transform overheadAnchor;
     public RectTransform runtimeUiRoot;
+    /// <summary>外部可见度(0~1)：别的系统要临时藏起整个头顶 UI 时用(怪人光学迷彩中 = 0，现形时回到 1)。跟距离淡出相乘。</summary>
+    [System.NonSerialized] public float externalVisibility = 1f;
     public RectTransform nameRoot;
     public TextMeshProUGUI nameText;
     public RectTransform slotRoot01;
@@ -291,8 +293,10 @@ public class UnitOverheadUIView : MonoBehaviour
         if (!Application.isPlaying || startDist <= 0f)
         {
             // 编辑器里(没在Play)或者这个功能没启用——不参与淡出判定，直接保证满
-            // alpha，避免上次Play模式算出来的半透明值卡住不还原。
-            if (rangeCanvasGroup != null) rangeCanvasGroup.alpha = 1f;
+            // alpha，避免上次Play模式算出来的半透明值卡住不还原。外部可见度仍然生效(光学迷彩)。
+            float ext = Application.isPlaying ? Mathf.Clamp01(externalVisibility) : 1f;
+            if (ext < 0.999f && rangeCanvasGroup == null) rangeCanvasGroup = EnsureCanvasGroup(runtimeUiRoot);
+            if (rangeCanvasGroup != null) rangeCanvasGroup.alpha = ext;
             return;
         }
 
@@ -304,6 +308,7 @@ public class UnitOverheadUIView : MonoBehaviour
             float fadeRange = Mathf.Max(0.01f, appliedStyle.visibilityFadeRange);
             targetAlpha = 1f - Mathf.Clamp01((dist - startDist) / fadeRange);
         }
+        targetAlpha *= Mathf.Clamp01(externalVisibility);
 
         float speed = appliedStyle != null ? appliedStyle.fadeSpeed : 8f;
         rangeCurrentAlpha = Mathf.Lerp(rangeCurrentAlpha, targetAlpha, 1f - Mathf.Exp(-speed * Time.deltaTime));

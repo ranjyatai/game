@@ -408,14 +408,10 @@ namespace SkyPrison.Runtime.UI
 
         private void NormalizeOverheadStyleHpLagTiming()
         {
-            // Migration guard: older HUD builds stored 0.18/0.45/0.90 style values.
-            // The project standard is the UnitOverheadUIView timing: hold time 2.35s, reference chase speed 2.5 ratio/sec.
-            // This keeps existing saved PF/style assets from silently overriding the confirmed overhead UI behavior.
-            if (hpDamageLagHoldDuration < 1.0f)
-                hpDamageLagHoldDuration = 2.35f;
-
-            if (hpDamageLagCatchupDuration < 1.0f)
-                hpDamageLagCatchupDuration = 2.5f;
+            // 玩家血条红色残影的时间以 SkyPrisonHUDStyleProfile_V1.HpLagHoldSeconds / HpLagChaseSpeed 为准(给「篡夺者」留反应时间)，
+            // 样式资产 / 预制体里存的旧值(0.18 / 2.35 / 2.5……)每次都被覆盖，只在这里改。
+            hpDamageLagHoldDuration = SkyPrisonHUDStyleProfile_V1.HpLagHoldSeconds;
+            hpDamageLagCatchupDuration = SkyPrisonHUDStyleProfile_V1.HpLagChaseSpeed;
 
             useUnscaledTimeForBars = false;
         }

@@ -5,6 +5,7 @@ using UnityEngine;
 /// <summary>
 /// 仅编辑器的测试快捷键（打包后不存在）：
 ///   F4 = 一键装备：大剑(军用重铲)装主武器并切到它、军铳装副武器且弹匣填满、背包补 300 发子弹；
+///   F2 = 在玩家前方放 1 只颂赞者 + 2 只归巢者（先清掉上一批 TEST_CH_*）；
 ///   F3 = 在玩家前方放两只织面者（8 / 11 米、深度错开 ±1.8，开局同时在画面内、同时看到玩家；先清掉上一批 TEST_FW_*）。
 /// 运行时自己常驻，不用挂任何场景对象。已有的 F6~F10 被夜视/遮挡调试/状态调试占着，所以用 F3、F4。
 /// </summary>
@@ -29,6 +30,7 @@ public class SkyPrisonDebugLoadout : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.F4)) EquipLoadout();
         if (Input.GetKeyDown(KeyCode.F3)) SpawnWeavers();
+        if (Input.GetKeyDown(KeyCode.F2)) SpawnChanterGroup();
     }
 
     private static void EquipLoadout()
@@ -82,6 +84,28 @@ public class SkyPrisonDebugLoadout : MonoBehaviour
         var a = Instantiate(prefab, new Vector3(pp.x + 8f, 0f, pp.z + 1.8f), Quaternion.identity); a.name = "TEST_FW_A";
         var b = Instantiate(prefab, new Vector3(pp.x + 11f, 0f, pp.z - 1.8f), Quaternion.identity); b.name = "TEST_FW_B";
         Debug.Log("[DebugLoadout] 已在前方 8 / 11 米放两只织面者（都在画面内、都在唤醒范围内，开局同时看到玩家）");
+    }
+
+    private const string ChanterPrefabPath = "Assets/_Project/Prefabs/Units/Enemy/Mob/PF_Unit_Enemy_Chanter.prefab";
+    private const string HomerPrefabPath = "Assets/_Project/Prefabs/Units/Enemy/Mob/PF_Unit_Enemy_Mob_01.prefab";
+
+    // F2：前方放 1 只颂赞者(14 米，躲后排) + 2 只归巢者(9 米，深度错开)，看回血/狂暴
+    private static void SpawnChanterGroup()
+    {
+        var player = SkyPrisonPlayerAuthority.CurrentPlayerUnit;
+        if (player == null) { Debug.LogWarning("[DebugLoadout] 玩家还没就绪"); return; }
+        var chanter = AssetDatabase.LoadAssetAtPath<GameObject>(ChanterPrefabPath);
+        var homer = AssetDatabase.LoadAssetAtPath<GameObject>(HomerPrefabPath);
+        if (chanter == null || homer == null) { Debug.LogWarning("[DebugLoadout] 找不到颂赞者/归巢者预制体"); return; }
+
+        foreach (var go in FindObjectsOfType<Transform>())
+            if (go != null && go.parent == null && go.name.StartsWith("TEST_CH_")) Destroy(go.gameObject);
+
+        Vector3 pp = player.transform.position;
+        Instantiate(homer, new Vector3(pp.x + 9f, 0f, pp.z + 1.5f), Quaternion.identity).name = "TEST_CH_Homer_A";
+        Instantiate(homer, new Vector3(pp.x + 9f, 0f, pp.z - 1.5f), Quaternion.identity).name = "TEST_CH_Homer_B";
+        Instantiate(chanter, new Vector3(pp.x + 14f, 0f, pp.z), Quaternion.identity).name = "TEST_CH_Chanter";
+        Debug.Log("[DebugLoadout] 已放 1 只颂赞者(14 米) + 2 只归巢者(9 米)");
     }
 }
 #endif

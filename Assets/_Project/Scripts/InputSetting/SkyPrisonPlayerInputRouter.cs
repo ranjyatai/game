@@ -188,9 +188,15 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
                 && (settingsEarly.GetActionDown(SkyPrisonInputAction.Inventory) || settingsEarly.GetActionDown(SkyPrisonInputAction.CharacterPanel)
                     || settingsEarly.GetActionDown(SkyPrisonInputAction.QuestLog) || settingsEarly.GetActionDown(SkyPrisonInputAction.Map)))
                 SkyPrisonTrainingWindow.Hide();
+            // 战术地图(小地图)开着时按背包/角色面板/任务日志键：地图先关，对应窗口再开
+            if (SkyPrisonMinimapWindow.IsOpen
+                && (settingsEarly.GetActionDown(SkyPrisonInputAction.Inventory) || settingsEarly.GetActionDown(SkyPrisonInputAction.CharacterPanel)
+                    || settingsEarly.GetActionDown(SkyPrisonInputAction.QuestLog)))
+                SkyPrisonMinimapWindow.Hide();
 
+            // 战术地图开着时也会置 ExternalBlock(挡攻击/闪避，鼠标要用来放标记)，但它是「再按 M 能关自己」的悬浮窗，不算真模态
             bool blockedByRealModal = SkyPrison.Runtime.UI.SkyPrisonWindowManager_V1.ExternalBlock
-                && !CharacterPanelController.IsOpen && !QuestLogController.IsOpen;
+                && !CharacterPanelController.IsOpen && !QuestLogController.IsOpen && !SkyPrisonMinimapWindow.IsOpen;
             // 商店这类"真模态"prefab窗口(metadata.lockGameplayInput=true)开着的时候，
             // 背包/角色面板这些快捷键不该还能把别的窗口叠开在它上面——用户明确要求
             // "商店界面不应该允许按B打开背包，其他任何呼出的窗口都应该冻结"。这个跟
@@ -235,6 +241,20 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
                 lastInputEvent = "QuestLog";
             }
 
+            // 战术地图(默认 M)：打开前先关掉背包 / 角色面板 / 任务日志，互斥；没点亮 / 战斗中 / 本图没有地图数据时 Show 自己会响禁止音
+            // 手柄：PS4 触摸板 / Xbox View，走 Input System(见 SkyPrisonMapGamepad)，不占用旧的 JoystickButton 键位
+            if ((settingsEarly.GetActionDown(SkyPrisonInputAction.Map) || SkyPrisonMapGamepad.MapButtonPressed()) && !blockedByRealModal && !blockedByLockingWindow)
+            {
+                if (!SkyPrisonMinimapWindow.IsOpen)
+                {
+                    if (windowManager != null && windowManager.IsOpen("inventory")) windowManager.Close("inventory");
+                    if (CharacterPanelController.IsOpen) CharacterPanelController.Hide();
+                    if (QuestLogController.IsOpen) QuestLogController.Hide();
+                }
+                SkyPrisonMinimapWindow.Toggle();
+                lastInputEvent = "Map";
+            }
+
             // 致命报错弹窗（SkyPrisonErrorReporter.ShowFatalDialog）打开时也会把 ExternalBlock
             // 置 true，但之前这里只挡 PauseMenuController.IsOpen，没查 ExternalBlock——
             // 报错弹窗只监听自己的确认键，完全不管 Esc，导致弹窗开着的时候 Esc 还能把
@@ -244,7 +264,8 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
             if (settingsEarly.GetActionDown(SkyPrisonInputAction.Menu) && !PauseMenuController.IsOpen && !blockedByRealModal
                 && !SkyPrisonRaidMapScreen.IsOpen && !SkyPrisonRaidMapScreen.JustClosedThisFrame
                 && !SkyPrisonAfpShopWindow.IsOpen && !SkyPrisonAfpShopWindow.JustClosedThisFrame   // AFP 购买窗口自己处理 Esc
-                && !SkyPrisonTrainingWindow.IsOpen && !SkyPrisonTrainingWindow.JustClosedThisFrame)   // 战术研修窗口也自己处理 Esc
+                && !SkyPrisonTrainingWindow.IsOpen && !SkyPrisonTrainingWindow.JustClosedThisFrame   // 战术研修窗口也自己处理 Esc
+                && !SkyPrisonMinimapWindow.IsOpen && !SkyPrisonMinimapWindow.JustClosedThisFrame)    // 战术地图也自己处理 Esc
             {
                 // 任何走 SkyPrisonWindowManager_V1 的悬浮窗口开着的时候，Esc 都应该先关
                 // 窗口，不叠加弹出暂停菜单——之前这里只特判了"inventory"，商店/仓库/

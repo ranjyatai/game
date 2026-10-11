@@ -52,6 +52,13 @@ public static class SkyPrisonAfpAbilityTable
             name = () => L("ui_afp_ab_lethal", "致命子弹"),
             shortEffect = t => string.Format(L("ui_afp_ab_lethal_short_fmt_v2", "每第 {0} 发 伤害 +{1}%"), SkyPrisonAfpPhysicalMastery.DeadlyEvery,
                 Mathf.RoundToInt(SkyPrisonAfpPhysicalMastery.DeadlyBonus[Mathf.Clamp(t, 1, 4) - 1] * 100f)) },
+        // 弱点特效 / 暴击特效满级(Lv3)的质变：单档，节点就是词条节点本身
+        new AbilityDef { id = "armorbreak", upgradeKey = SkyPrisonAfpWeakCrit.WeakKey, nodePrefix = SkyPrisonAfpWeakCrit.WeakNodeId, maxTier = 1, levelsPerTier = SkyPrisonAfpWeakCrit.MaxLevel, icon = SkyPrisonAfpIcons.Bolt,
+            name = () => L("ui_afp_ab_armorbreak", "破甲冲击"),
+            shortEffect = t => L("ui_afp_ab_armorbreak_short", "弱点暴击 失衡×3 · 无视霸体") },
+        new AbilityDef { id = "critrecover", upgradeKey = SkyPrisonAfpWeakCrit.CritKey, nodePrefix = SkyPrisonAfpWeakCrit.CritNodeId, maxTier = 1, levelsPerTier = SkyPrisonAfpWeakCrit.MaxLevel, icon = SkyPrisonAfpIcons.Bullet,
+            name = () => L("ui_afp_ab_critrecover", "会心回收"),
+            shortEffect = t => L("ui_afp_ab_critrecover_short", "枪暴击 40% 退弹 · 剑暴击回 4% LP") },
     };
 
     public static AbilityDef Find(string id)

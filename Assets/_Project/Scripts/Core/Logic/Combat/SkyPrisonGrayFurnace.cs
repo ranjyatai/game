@@ -3,8 +3,9 @@ using UnityEngine;
 /// <summary>
 /// 灰炉：不会移动的瘴气装置。
 ///   · 玩家处于瘴气半径内，每秒累加「灰色损失」（最大生命被灰色吞掉，满了即死），离开不消失；
-///   · 能被打死，但是「集火检测」：受击后停火超过 regenDelaySeconds 就以 regenPerSecond 快速回血，
-///     所以不能先去清周围的怪再回头打它；
+///   · 能被打死，但是「集火检测」：一直按最大生命的比例回血(挨打时也回)，停火超过 regenDelaySeconds 回得更快，
+///     所以不能先去清周围的怪再回头打它；前期火力低于回血速度，站在瘴气里把子弹打空也打不死(用户 10-12 定)；
+///   · 血量由单位定义的 maxHp 决定(10-12：以前组件自己 SetMaxHealth(450)，但随后被属性系统按单位定义的 100 覆盖，实际一直是 100 血)；
 ///   · 瘴气半径要比枪的射程大，枪也得走进瘴气才打得到。
 /// 占位阶段：瘴气边缘用地面圆环表示，美术(特效/模型)做好后再换。
 /// </summary>
@@ -15,14 +16,15 @@ public class SkyPrisonGrayFurnace : MonoBehaviour
     [Tooltip("瘴气半径(米，水平)。要大于玩家枪的射程(约16.5m)。")]
     [SerializeField] private float radius = 20f;
     [Tooltip("一直待在瘴气里，多少秒灰色占满血条(致死)。")]
-    [SerializeField] private float secondsToFull = 40f;
+    [SerializeField] private float secondsToFull = 25f;
 
     [Header("集火检测（回血）")]
-    [SerializeField] private float furnaceMaxHealth = 450f;
-    [Tooltip("最后一次受击后，多少秒没被打才开始回血。")]
+    [Tooltip("持续回血：每秒回最大生命的这个比例，挨打时也回。2000 血 × 2.5% = 50/秒，前期火力(≈56/秒)净伤害只剩 ≈6/秒，25 秒吞满前打不死。")]
+    [SerializeField] private float regenFractionPerSecond = 0.025f;
+    [Tooltip("最后一次受击后，多少秒没被打就进入快速回血。")]
     [SerializeField] private float regenDelaySeconds = 2f;
-    [Tooltip("回血速度(每秒)。约取玩家持续输出的 50~60%。")]
-    [SerializeField] private float regenPerSecond = 45f;
+    [Tooltip("停火后的回血倍率。")]
+    [SerializeField] private float idleRegenMultiplier = 3f;
 
     [Header("地面圆环（占位）")]
     [SerializeField] private bool showRing = true;
@@ -45,8 +47,6 @@ public class SkyPrisonGrayFurnace : MonoBehaviour
         if (!_healthInit && _health != null)
         {
             _healthInit = true;
-            _health.SetMaxHealth(furnaceMaxHealth, false);
-            _health.SetCurrentHealth(furnaceMaxHealth);
             _health.OnDamaged += OnDamaged;
         }
     }
@@ -89,8 +89,9 @@ public class SkyPrisonGrayFurnace : MonoBehaviour
     {
         if (_health == null || _health.IsDead) return;
         if (_health.CurrentHealth >= _health.MaxHealth) return;
-        if (Time.time - _lastDamageTime < regenDelaySeconds) return;
-        _health.ApplyHeal(regenPerSecond * dt);
+        float rate = _health.MaxHealth * regenFractionPerSecond;
+        if (Time.time - _lastDamageTime >= regenDelaySeconds) rate *= idleRegenMultiplier;
+        _health.ApplyHeal(rate * dt);
     }
 
     private void TickMiasma(float dt)

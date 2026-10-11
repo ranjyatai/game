@@ -308,15 +308,18 @@ public class UnitOverheadHealthBridge : MonoBehaviour
     }
 
     public void ShowDamageNumberByKey(string damageTypeKey, float amount, bool isHeal = false,
-        bool isPositiveCrit = false, bool isNegativeCrit = false, bool isLethalShot = false)
+        bool isPositiveCrit = false, bool isNegativeCrit = false, bool isLethalShot = false, bool isWeakness = false)
     {
         if (overheadView == null || amount <= 0f)
             return;
 
         EnsureBattleParameterDatabase();
         Color color = ResolveDamageNumberColor(damageTypeKey, isHeal);
+        if (isWeakness && !isHeal) color = WeaknessNumberColor;       // 打中弱点(抗性为负)：琥珀色，让玩家看得出这一下打对了
         overheadView.ShowDamageNumber(amount, color, isHeal, isPositiveCrit, isNegativeCrit, isLethalShot);
     }
+
+    private static readonly Color WeaknessNumberColor = new Color(1f, 0.74f, 0.22f, 1f);
 
     private Color ResolveDamageNumberColor(string damageTypeKey, bool isHeal)
     {

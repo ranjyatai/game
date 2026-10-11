@@ -21,7 +21,11 @@ static class SkyPrisonDevHotkeys
                 afp.AddAFP(500);
                 Debug.Log("[DevHotkey] F5：+500 AFP，当前 " + afp.CurrentAFP);
             }
-            if (Input.GetKeyDown(KeyCode.F8))
+            if (Input.GetKeyDown(KeyCode.F8) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)))
+            {
+                SkyPrisonScreenBanner.Show("战术研修解放");       // Ctrl+F8：预览「战术研修解放」横带
+            }
+            else if (Input.GetKeyDown(KeyCode.F8))
             {
                 SkyPrisonAfpUpgrades.DebugMagazineDiscount = !SkyPrisonAfpUpgrades.DebugMagazineDiscount;
                 SkyPrisonAfpUpgrades.ClearPending();      // 触发窗口刷新价格

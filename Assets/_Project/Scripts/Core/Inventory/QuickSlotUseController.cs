@@ -45,7 +45,7 @@ public class QuickSlotUseController : MonoBehaviour
         // return 后面，_inputSettings 一旦是null（资源没找到），连带 TickCooldownDisplay
         // 也永远不会跑，冷却遮罩/读秒/数量角标全部卡死在prefab烤的默认状态，跟实际有没有
         // 在冷却毫无关系。按键使用和显示刷新分开，互不拖累。
-        if (_inputSettings != null)
+        if (_inputSettings != null && !SkyPrisonMinimapWindow.IsOpen)       // 战术地图开着时 1–4 是选标记槽，不能同时用药
         {
             for (int i = 0; i < QuickSlotRuntime.SlotCount; i++)
             {

@@ -1678,8 +1678,10 @@ public class SkyPrisonUnitDefinitionInspectorPanel
             if (keyProp != null)
                 keyProp.stringValue = def.key;
 
+            // 补键用参数库里的默认值，不能一律填 0——moveSpeedRate(移动速度倍率)默认是 100，
+            // 填 0 等于把单位定身(IsStatusImmobilized)，归巢者/颂赞者/几个 NPC 都因此站着不动过。
             if (valueProp != null)
-                valueProp.floatValue = 0f;
+                valueProp.floatValue = def.defaultValue;
 
             existing.Add(def.key);
         }

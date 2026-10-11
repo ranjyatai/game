@@ -39,6 +39,7 @@ MonoBehaviour:
 
       MEMENTO
       erosion threat assessment: low.'
+  coordinates: 
   raidDayOutputs:
   - {fileID: 11400000, guid: 322e4bd24b2c0a74098834aae404bfb9, type: 2}
   - {fileID: 11400000, guid: b2dc36bef92bc6741b6d0128b2279d29, type: 2}

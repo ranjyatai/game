@@ -1550,6 +1550,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
 
         weaponEntry.currentMagazineAmmo -= _currentWeaponExt.ammoPerShot;
         OnWeaponAmmoChanged?.Invoke();
+        if (SkyPrisonAfpAnomalyBurst.IsPlayerAttacker(ResolveAttackerStats())) SkyPrisonCombatLog.OnShot(_currentWeaponExt.ammoPerShot);   // 编辑器战斗记录
     }
 
     /// <summary>强制切换到指定 moduleKey，传空串切回 unarmed。</summary>
@@ -2104,7 +2105,11 @@ public class UnitActionModuleRuntime : MonoBehaviour
 
         // 暴击判定：正向暴击和负向暴击互斥——先掷正向暴击，没触发再掷负向暴击，
         // 一次攻击最多命中一种，不会同时发生。
-        float critMultiplier = ResolveCritMultiplier(attackerStats, out bool isPositiveCrit, out bool isNegativeCrit);
+        // 弱点：这一击的伤害类型在目标身上抗性为负。AFP「弱点特效」据此加暴击率，「暴击特效」放大暴击伤害
+        bool weakHit = SkyPrisonAfpWeakCrit.IsWeakHit(targetStats, skill);
+        float critMultiplier = ResolveCritMultiplier(attackerStats, out bool isPositiveCrit, out bool isNegativeCrit,
+            SkyPrisonAfpWeakCrit.BonusCritRate(attackerStats, weakHit), SkyPrisonAfpWeakCrit.BonusCritDamage(attackerStats));
+        if (isPositiveCrit) SkyPrisonAfpWeakCrit.OnCrit(attackerStats, _currentWeaponExt, ResolveCurrentWeaponEntry());   // Lv3 会心回收
 
         // 物理伤害：跟属性伤害是分开判定、分开结算的两笔独立伤害（一把武器可以同时
         // 斩击物理 + 灼热 + 电磁 + 冻结，互不影响），暴击倍率对每一笔都统一生效。
@@ -2115,7 +2120,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
         // 打击力度略有差异"，而不是"这次攻击运气好/差"（那个是暴击的事）。
         float physicalDamage = atk * skill.damageMultiplier * critMultiplier * ResolveDamageVariance();
         physicalDamage *= ResolveDefenseMultiplier(targetStats);
-        physicalDamage *= ResolveResistMultiplier(targetStats, skill.damageTypeKey + "Resist");
+        physicalDamage *= ResolveResistMultiplier(targetStats, PhysicalResistKey(skill.damageTypeKey));
         physicalDamage *= SkyPrisonAfpUpgrades.AttackMultiplier(attackerStats, true);      // AFP「物理攻击强化」(只对玩家生效)
         bool lethalShot = SkyPrisonAfpPhysicalMastery.ApplyToHit(attackerStats, _currentWeaponExt, ResolveCurrentWeaponEntry(), targetHealth, ref physicalDamage);   // AFP「物理专精」：大剑斩杀 / 枪械致命弹药
         physicalDamage *= SkyPrisonAfpAnomalyBurst.VulnerabilityMultiplier(attackerStats, targetHealth);                                           // AFP「异常增伤」
@@ -2131,7 +2136,8 @@ public class UnitActionModuleRuntime : MonoBehaviour
             targetHealth.GetComponent<UnitOverheadHealthBridge>()
          ?? targetHealth.GetComponentInChildren<UnitOverheadHealthBridge>(true);
 
-        healthBridge?.ShowDamageNumberByKey(skill.damageTypeKey, physicalDamage, false, isPositiveCrit, isNegativeCrit, lethalShot);
+        bool physWeak = SkyPrisonAfpWeakCrit.IsWeakKey(targetStats, PhysicalResistKey(skill.damageTypeKey));
+        healthBridge?.ShowDamageNumberByKey(skill.damageTypeKey, physicalDamage, false, isPositiveCrit, isNegativeCrit, lethalShot, physWeak);
         if (lethalShot)                                  // 致命子弹：命中点闪光 + 冷绿冲击环 + 脆响
         {
             var lethalCol = targetHealth.GetComponentInChildren<Collider>();
@@ -2221,7 +2227,8 @@ public class UnitActionModuleRuntime : MonoBehaviour
                 {
                     targetHealth.ApplyDamage(attributeDamage);
                     usurpDealt += attributeDamage;
-                    healthBridge?.ShowDamageNumberByKey(hit.attributeKey, attributeDamage, false, isPositiveCrit, isNegativeCrit);
+                    healthBridge?.ShowDamageNumberByKey(hit.attributeKey, attributeDamage, false, isPositiveCrit, isNegativeCrit, false,
+                        SkyPrisonAfpWeakCrit.IsWeakKey(targetStats, hit.attributeKey + "Resist"));
                 }
 
                 // 1 点属性伤害 = 1 点对应异常累计，再叠加这一条词条自己的蓄积倍率。
@@ -2232,6 +2239,8 @@ public class UnitActionModuleRuntime : MonoBehaviour
         }
 
         SkyPrisonAfpUsurper.OnDealDamage(attackerStats, _currentWeaponExt, targetHealth, usurpDealt);
+        if (SkyPrisonAfpAnomalyBurst.IsPlayerAttacker(attackerStats))       // 编辑器战斗记录(打包后是空函数)
+            SkyPrisonCombatLog.OnPlayerHit(targetHealth, skill, physicalDamage, usurpDealt - physicalDamage, weakHit, isPositiveCrit, killWasAlive && targetHealth.IsDead);
 
         if (killWasAlive && targetHealth.IsDead) SkyPrisonAfpPhysicalMastery.OnKill(attackerStats, targetHealth, _currentWeaponExt);
 
@@ -2252,6 +2261,24 @@ public class UnitActionModuleRuntime : MonoBehaviour
              ?? targetHealth.GetComponentInParent<EquipmentWeightController>();
             float stunFinal = skill.stunDuration * (targetWeight != null ? targetWeight.StunMultiplier : 1f);
             float knockbackFinal = skill.knockbackForce * (targetWeight != null ? targetWeight.KnockbackMultiplier : 1f);
+            float weakImpact = SkyPrisonAfpWeakCrit.ImpactMultiplier(attackerStats, weakHit);      // AFP「弱点特效」：打弱点冲击力加强
+
+            // 失衡条(中级以上的 Memento)：平时不吃每一下的小硬直 / 击退，伤害累积满了才失衡；低级怪照旧每下小硬直
+            SkyPrisonStagger stagger = SkyPrisonStagger.For(targetHealth);
+            if (stagger != null)
+            {
+                bool armorBreak = SkyPrisonAfpWeakCrit.ArmorBreak(attackerStats, weakHit, isPositiveCrit);       // Lv3 破甲冲击
+                float staggerAmount = usurpDealt * Mathf.Max(0f, skill.staggerMultiplier) * weakImpact
+                                    * (armorBreak ? SkyPrisonAfpWeakCrit.WeakCritStaggerMultiplier : 1f);
+                bool staggered = stagger.AddStagger(staggerAmount, armorBreak);
+                stunFinal = 0f;                                   // 失衡本身的硬直由失衡条施加
+                if (!staggered) knockbackFinal = 0f;              // 只有打出失衡的那一下才击退
+            }
+            else
+            {
+                stunFinal *= weakImpact;
+                knockbackFinal *= weakImpact;
+            }
 
             if (stunFinal > 0.02f)
                 targetAction?.ForceHitStun(stunFinal);
@@ -2296,17 +2323,17 @@ public class UnitActionModuleRuntime : MonoBehaviour
     // 正向暴击和负向暴击互斥：先掷正向暴击，没触发再掷负向暴击，一次攻击最多命中一种。
     // 暴击伤害倍率/负向暴击伤害倍率都是"触发后最终伤害是原伤害的百分之多少"（150% = ×1.5，
     // 70% = ×0.7），不是"在1.0基础上再加/减多少"。
-    private float ResolveCritMultiplier(UnitBattleStatRuntime stats, out bool isPositiveCrit, out bool isNegativeCrit)
+    private float ResolveCritMultiplier(UnitBattleStatRuntime stats, out bool isPositiveCrit, out bool isNegativeCrit, float bonusCritRate = 0f, float bonusCritDamage = 0f)
     {
         isPositiveCrit = false;
         isNegativeCrit = false;
         if (stats == null) return 1f;
 
-        float critRate = stats.GetFinalValue("critRate", 0f) / PercentScale;
+        float critRate = stats.GetFinalValue("critRate", 0f) / PercentScale + bonusCritRate;
         if (critRate > 0f && UnityEngine.Random.value < critRate)
         {
             isPositiveCrit = true;
-            float mult = stats.GetFinalValue("critDamageMultiplier", 0f) / PercentScale;
+            float mult = stats.GetFinalValue("critDamageMultiplier", 0f) / PercentScale + bonusCritDamage;
             return Mathf.Max(0f, mult);
         }
 
@@ -2346,12 +2373,21 @@ public class UnitActionModuleRuntime : MonoBehaviour
     // impactResist）和属性抗性（heatResist/shockResist/corrosionResist/freezeResist）走的是
     // 同一套读取逻辑，只是 key 不同。封顶 90%，不让抗性叠加到 100% 变成免疫。
     private const float MaxResistClamp = 0.9f;
+    // 抗性填负数 = 弱点(−50% → 吃 1.5 倍)；最多弱到 −100%(2 倍)
+    private const float MaxWeaknessClamp = 1f;
+
+    /// <summary>物理伤害类型对应的抗性 key。子弹(bullet)没有单独的抗性项，按冲击算——否则枪完全不吃物理抗性/弱点。</summary>
+    public static string PhysicalResistKey(string damageTypeKey)
+    {
+        if (string.Equals(damageTypeKey, "bullet", System.StringComparison.OrdinalIgnoreCase)) return "impactResist";
+        return damageTypeKey + "Resist";
+    }
 
     public static float ResolveResistMultiplier(UnitBattleStatRuntime targetStats, string resistKey)
     {
         if (targetStats == null || string.IsNullOrWhiteSpace(resistKey)) return 1f;
         float resist = targetStats.GetFinalValue(resistKey, 0f) / PercentScale; // 抗性也是 Percentage 字段，同样要 /100
-        resist = Mathf.Clamp(resist, 0f, MaxResistClamp);
+        resist = Mathf.Clamp(resist, -MaxWeaknessClamp, MaxResistClamp);
         return 1f - resist;
     }
 

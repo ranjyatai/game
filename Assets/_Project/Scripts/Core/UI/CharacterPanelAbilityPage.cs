@@ -167,7 +167,7 @@ public sealed class CharacterPanelAbilityPage : MonoBehaviour
                     id = "cycle",
                     name = Loc("ui_afp_ab_cycle", "回转") + " " + SkyPrisonAfpAbsorbShield.TierName(cycleTier),
                     effect = string.Format(Loc("ui_afp_ab_cycle_state_fmt", "击杀 +{0}% LP"), Mathf.RoundToInt(SkyPrisonAfpPhysicalMastery.KillLpFraction[ci] * 100f)),
-                    detail = string.Format(Loc("charpanel_ability_cycle_desc_v5", "仅限剑。击杀敌人时，恢复最大 LP 的 {0}%。击杀生命上限 250 以上的目标，恢复量 ×3。破坏物不触发。"),
+                    detail = string.Format(Loc("charpanel_ability_cycle_desc_v6", "仅限剑。击杀敌人时，恢复最大 LP 的 {0}%。击杀生命上限 300 以上的目标，恢复量 ×3。破坏物不触发。"),
                         Mathf.RoundToInt(SkyPrisonAfpPhysicalMastery.KillLpFraction[ci] * 100f)),
                     source = Loc("charpanel_ability_phys_source_v5", "来源：适应强化「物理攻击强化」每 5 级 + 科技树节点"),
                     nextHint = pNext < 0 ? Loc("charpanel_ability_maxtier", "已达最高档")
@@ -193,6 +193,34 @@ public sealed class CharacterPanelAbilityPage : MonoBehaviour
                         : string.Format(Loc("charpanel_ability_lethal_next_v6", "再 {0} 级升至 {1}：每第 {2} 发 +{3}%"), pNext, SkyPrisonAfpAbsorbShield.TierName(lethalTier + 1),
                             SkyPrisonAfpPhysicalMastery.DeadlyEvery, Mathf.RoundToInt(SkyPrisonAfpPhysicalMastery.DeadlyBonus[ln] * 100f)),
                     icon = SkyPrisonAfpIcons.Bullet, tier = lethalTier, maxTier = SkyPrisonAfpPhysicalMastery.MaxTier,
+                    cooling = false, cooldownLeft = 0f, cooldownTotal = 0f,
+                });
+            }
+            if (SkyPrisonAfpWeakCrit.WeakLevel >= SkyPrisonAfpWeakCrit.MaxLevel && SkyPrisonAfpAbsorbShield.NodeUnlocked(SkyPrisonAfpWeakCrit.WeakNodeId))
+            {
+                list.Add(new Entry
+                {
+                    id = "armorbreak",
+                    name = Loc("ui_afp_ab_armorbreak", "破甲冲击"),
+                    effect = Loc("ui_afp_ab_armorbreak_short", "弱点暴击 失衡×3 · 无视霸体"),
+                    detail = Loc("charpanel_ability_armorbreak_desc", "命中目标弱点并触发暴击时，失衡累积 ×3。失衡累积满时，无视霸体打断目标的冲刺、扑击或蓄力。"),
+                    source = Loc("charpanel_ability_armorbreak_source", "来源：适应强化「弱点特效」3 级 + 科技树节点"),
+                    nextHint = Loc("charpanel_ability_maxtier", "已达最高档"),
+                    icon = SkyPrisonAfpIcons.Bolt, tier = 1, maxTier = 1,
+                    cooling = false, cooldownLeft = 0f, cooldownTotal = 0f,
+                });
+            }
+            if (SkyPrisonAfpWeakCrit.CritLevel >= SkyPrisonAfpWeakCrit.MaxLevel && SkyPrisonAfpAbsorbShield.NodeUnlocked(SkyPrisonAfpWeakCrit.CritNodeId))
+            {
+                list.Add(new Entry
+                {
+                    id = "critrecover",
+                    name = Loc("ui_afp_ab_critrecover", "会心回收"),
+                    effect = Loc("ui_afp_ab_critrecover_short", "枪暴击 40% 退弹 · 剑暴击回 4% LP"),
+                    detail = Loc("charpanel_ability_critrecover_desc", "枪械暴击时，有 40% 概率不消耗这发弹药。剑暴击时，恢复最大 LP 的 4%。"),
+                    source = Loc("charpanel_ability_critrecover_source", "来源：适应强化「暴击特效」3 级 + 科技树节点"),
+                    nextHint = Loc("charpanel_ability_maxtier", "已达最高档"),
+                    icon = SkyPrisonAfpIcons.Bullet, tier = 1, maxTier = 1,
                     cooling = false, cooldownLeft = 0f, cooldownTotal = 0f,
                 });
             }

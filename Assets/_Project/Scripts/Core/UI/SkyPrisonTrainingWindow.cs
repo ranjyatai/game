@@ -61,6 +61,8 @@ public sealed class SkyPrisonTrainingWindow : MonoBehaviour
         public List<int> kids = new List<int>(), extraParents = new List<int>();
         public RectTransform rt; public Image bg, bar; public TMP_Text name, tag; public List<TMP_Text> nameFx = new List<TMP_Text>(); public List<RectTransform> outlineSets = new List<RectTransform>(); public Vector2 pos;
         public NodeState state;
+        public bool visible = true;      // 还没被主线显现的节点不画、不能选(见 TechTreeReveal)
+        public TMP_Text newBadge;        // 节点左上角的淡红 NEW(新显现、还没看过的节点)
     }
 
     sealed class EdgeView { public NodeView from; public List<NodeView> kids = new List<NodeView>(); public Image outSeg, outGlow; public List<Image> trunkSegs = new List<Image>(), trunkGlows = new List<Image>(); public List<Vector2> trunkRange = new List<Vector2>(); public List<Image> kidSegs = new List<Image>(), kidGlows = new List<Image>(); }
@@ -251,8 +253,30 @@ public sealed class SkyPrisonTrainingWindow : MonoBehaviour
             var t = AddText(rt, "Label", _views[i].tabName, 46, TextAlignmentOptions.MidlineLeft, Faint, FontStyles.Bold);
             t.raycastTarget = false; _tabTexts.Add(t);
             var line = AddLine(rt, "Line", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(220f, 4f), ColdGreen);
+            line.enabled = false;                    // 各标签自己的下划线不再显示，改由下面一条共用的滑块滑过去
             _tabLines.Add(line);
         }
+        _tabSlider = AddLine(_tabHost, "TabSlider", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(220f, 4f), ColdGreen).rectTransform;
+        _tabSliderSnap = true;
+    }
+    RectTransform _tabSlider;
+    bool _tabSliderSnap;
+    const float TabSliderSpeed = 16f;
+
+    // 滑块目标：当前标签的 x 与文字实际宽度
+    void DriveTabSlider()
+    {
+        if (_tabSlider == null || _tab < 0 || _tab >= _tabTexts.Count) return;
+        float x = _tab * 440f;
+        float w = Mathf.Clamp(_tabTexts[_tab].preferredWidth, 120f, 420f);
+        Vector2 pos = _tabSlider.anchoredPosition, size = _tabSlider.sizeDelta;
+        if (_tabSliderSnap) { pos.x = x; size.x = w; _tabSliderSnap = false; }
+        else
+        {
+            float k = 1f - Mathf.Exp(-TabSliderSpeed * Time.unscaledDeltaTime);
+            pos.x = Mathf.Lerp(pos.x, x, k); size.x = Mathf.Lerp(size.x, w, k);
+        }
+        _tabSlider.anchoredPosition = pos; _tabSlider.sizeDelta = size;
     }
 
     string TabNameFor(TechTreeGraphAsset g, int index)
@@ -514,7 +538,7 @@ public sealed class SkyPrisonTrainingWindow : MonoBehaviour
 
         for (int c = 0; c < 3; c++)
         {
-            var nt = AddText(rt, "Name" + c, nv.data.nodeName, 34, TextAlignmentOptions.TopLeft, ChannelMask[c], FontStyles.Bold);
+            var nt = AddText(rt, "Name" + c, nv.data.GetLocalizedName(), 34, TextAlignmentOptions.TopLeft, ChannelMask[c], FontStyles.Bold);
             Anchor(nt.rectTransform, 0f, 0f, 1f, 1f);
             nt.rectTransform.offsetMin = new Vector2(IconS + 40f, 44f); nt.rectTransform.offsetMax = new Vector2(-16f, -14f);
             nt.raycastTarget = false; nt.enableWordWrapping = true; nt.overflowMode = TextOverflowModes.Ellipsis;
@@ -524,6 +548,18 @@ public sealed class SkyPrisonTrainingWindow : MonoBehaviour
         nv.tag = AddText(rt, "Tag", "", 28, TextAlignmentOptions.BottomLeft, Faint, FontStyles.Normal);
         Anchor(nv.tag.rectTransform, 0f, 0f, 1f, 1f); nv.tag.rectTransform.offsetMin = new Vector2(IconS + 40f, 12f); nv.tag.rectTransform.offsetMax = new Vector2(-16f, -80f);
         nv.tag.raycastTarget = false;
+
+        // 新显现节点的 NEW：无填充的淡红字，贴在方框左上角，缓缓呼吸(和背包的 NEW 同款)；鼠标移上去 / 选中后消失
+        nv.newBadge = AddText(rt, "NewBadge", "NEW", 26, TextAlignmentOptions.BottomLeft, new Color(1f, 0.45f, 0.45f, 1f), FontStyles.Bold);
+        var br = nv.newBadge.rectTransform;
+        br.anchorMin = br.anchorMax = new Vector2(0f, 1f); br.pivot = new Vector2(0f, 0f);
+        br.anchoredPosition = new Vector2(10f, 4f); br.sizeDelta = new Vector2(120f, 36f);
+        nv.newBadge.raycastTarget = false;
+        nv.newBadge.gameObject.SetActive(false);
+        var trig = rt.gameObject.AddComponent<UnityEngine.EventSystems.EventTrigger>();
+        var enter = new UnityEngine.EventSystems.EventTrigger.Entry { eventID = UnityEngine.EventSystems.EventTriggerType.PointerEnter };
+        enter.callback.AddListener(_ => { if (TechTreeReveal.MarkSeen(captured.data.nodeId)) captured.newBadge.gameObject.SetActive(false); });
+        trig.triggers.Add(enter);
     }
 
     // ── 详情栏 ────────────────────────────────────────────────
@@ -590,13 +626,15 @@ public sealed class SkyPrisonTrainingWindow : MonoBehaviour
         if (sound && index != _tab) SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Switch);
         for (int i = 0; i < _views.Count; i++) _views[i].content.gameObject.SetActive(i == index);
         _tab = index;
+        if (!sound) _tabSliderSnap = true;           // 打开窗口时直接就位，玩家切换时才滑
         _zoom = MaxZoom; _zoomTarget = MaxZoom;      // 每次打开、每次切标签都从最大缩放开始，再自己滚轮缩小
         _pan = Vector2.zero; ApplyPan(true);
-        for (int i = 0; i < _tabTexts.Count; i++) { _tabTexts[i].color = i == index ? White : Faint; _tabLines[i].enabled = i == index; }
+        for (int i = 0; i < _tabTexts.Count; i++) { _tabTexts[i].color = i == index ? White : Faint; }
         // 默认选中：第一个「可以学」的节点，没有就根节点
         var gv = _views[index];
         NodeView pick = null;
-        foreach (var nv in gv.nodes) { ComputeState(nv); if (nv.state == NodeState.Available) { pick = nv; break; } }
+        ApplyVisibility(gv);
+        foreach (var nv in gv.nodes) { ComputeState(nv); if (nv.visible && nv.state == NodeState.Available) { pick = nv; break; } }
         if (pick == null && gv.nodes.Count > 0) pick = gv.nodes[0];
         _holdProgress = 0f;
         Select(pick, true);
@@ -605,6 +643,7 @@ public sealed class SkyPrisonTrainingWindow : MonoBehaviour
     void Select(NodeView nv, bool snap = false)
     {
         _sel = nv; _holdProgress = 0f; _needRelease = true;
+        if (nv != null) TechTreeReveal.MarkSeen(nv.data.nodeId);      // 选中 = 看过了，NEW 消失(键盘 / 手柄选择也算)
         Refresh();
         if (nv != null) CenterOn(nv, snap);
     }
@@ -705,13 +744,16 @@ public sealed class SkyPrisonTrainingWindow : MonoBehaviour
         if (nv.parent >= 0)
         {
             var p = gv.nodes[nv.parent]; bool m = LevelOf(p.data.nodeId) >= 1; ok &= m;
-            lines.Add(Req(m, p.data.nodeName));
+            lines.Add(Req(m, p.data.GetLocalizedName()));
         }
         foreach (var req in nv.data.secondaryRequirements)
         {
             int have = LevelOf(req.targetNodeId); bool m = have >= req.requiredLevel; ok &= m;
             var rn = TechTreeRuntime.Instance != null ? TechTreeRuntime.Instance.FindNode(req.targetNodeId) : null;
-            lines.Add(Req(m, (rn != null ? rn.nodeName : req.targetNodeId) + (req.requiredLevel > 1 ? " Lv." + req.requiredLevel : "")));
+            string rname = rn != null ? rn.GetLocalizedName() : req.targetNodeId;
+            var rg = TechTreeRuntime.Instance != null ? TechTreeRuntime.Instance.GraphOf(req.targetNodeId) : null;
+            if (rg != null && rn != null && !TechTreeReveal.IsNodeVisible(rg, rg.nodes.IndexOf(rn))) rname = "？？？";      // 还没出现的节点不提前剧透名字
+            lines.Add(Req(m, rname + (req.requiredLevel > 1 ? " Lv." + req.requiredLevel : "")));
         }
         if (nv.data.externalCondition != TechTreeExternalCondition.None)
         {
@@ -731,17 +773,48 @@ public sealed class SkyPrisonTrainingWindow : MonoBehaviour
         else nv.state = PrereqMet(nv, out _) ? NodeState.Available : NodeState.Locked;
     }
 
+    // 按「显现」状态显示 / 隐藏节点和连线：位置不动(布局按整棵树排好)，所以新节点长出来时别的节点不会移位
+    void ApplyVisibility(GraphView gv)
+    {
+        foreach (var nv in gv.nodes)
+        {
+            nv.visible = TechTreeReveal.IsNodeVisible(gv.graph, nv.idx);
+            if (nv.rt != null && nv.rt.gameObject.activeSelf != nv.visible) nv.rt.gameObject.SetActive(nv.visible);
+        }
+        foreach (var e in gv.edges)
+        {
+            bool anyKid = false;
+            float lo = float.MaxValue, hi = float.MinValue;
+            for (int k = 0; k < e.kids.Count; k++)
+            {
+                bool kv = e.from.visible && e.kids[k].visible;
+                e.kidSegs[k].gameObject.SetActive(kv); e.kidGlows[k].gameObject.SetActive(kv);
+                if (!kv) continue;
+                anyKid = true; lo = Mathf.Min(lo, e.kids[k].pos.y); hi = Mathf.Max(hi, e.kids[k].pos.y);
+            }
+            lo = Mathf.Min(lo, e.from.pos.y); hi = Mathf.Max(hi, e.from.pos.y);
+            e.outSeg.gameObject.SetActive(anyKid); e.outGlow.gameObject.SetActive(anyKid);
+            for (int i = 0; i < e.trunkSegs.Count; i++)
+            {
+                bool tv = anyKid && e.trunkRange[i].x >= lo - 0.5f && e.trunkRange[i].y <= hi + 0.5f;
+                e.trunkSegs[i].gameObject.SetActive(tv); e.trunkGlows[i].gameObject.SetActive(tv);
+            }
+        }
+    }
+
     void Refresh()
     {
         if (_views.Count == 0) return;
         if (_pointsText != null) _pointsText.text = (TechTreeRuntime.Instance != null ? TechTreeRuntime.Instance.AvailablePoints : 0).ToString();
         var gv = _views[_tab];
         _glows.Clear();
+        ApplyVisibility(gv);
         foreach (var nv in gv.nodes)
         {
             ComputeState(nv);
             int lv = LevelOf(nv.data.nodeId);
             bool sel = nv == _sel;
+            if (nv.newBadge != null) nv.newBadge.gameObject.SetActive(TechTreeReveal.IsNodeNew(gv.graph, nv.idx));
             Color nameC = nv.state == NodeState.Locked ? new Color(1f, 1f, 1f, 0.5f) : nv.state == NodeState.Maxed ? Purple : White;
             for (int c = 0; c < 3; c++) nv.nameFx[c].color = Mask(c, nameC);
             nv.bg.color = sel ? new Color(0.22f, 0.31f, 0.27f, 1f)
@@ -826,6 +899,15 @@ public sealed class SkyPrisonTrainingWindow : MonoBehaviour
     // 荧光呼吸：已点亮的节点和路线一起缓缓明暗
     void PulseGlows()
     {
+        if (_views.Count > 0)      // NEW 标记呼吸(同背包：0.35~1，约 2 秒一个周期)
+        {
+            float na = Mathf.Lerp(0.35f, 1f, (Mathf.Sin(Time.unscaledTime * 3.2f) + 1f) * 0.5f);
+            foreach (var nv in _views[_tab].nodes)
+            {
+                if (nv.newBadge == null || !nv.newBadge.gameObject.activeSelf) continue;
+                var nc = nv.newBadge.color; nc.a = na; nv.newBadge.color = nc;
+            }
+        }
         float w = 0.72f + 0.28f * Mathf.Sin(Time.unscaledTime * 1.7f);
         for (int i = 0; i < _glows.Count; i++)
         {
@@ -841,7 +923,8 @@ public sealed class SkyPrisonTrainingWindow : MonoBehaviour
         if (nv == null) return;
         var d = nv.data;
         int lv = LevelOf(d.nodeId);
-        _dName.text = d.nodeName;
+        _dName.text = d.GetLocalizedName();
+        FitDetailName();
         for (int c = 0; c < 3; c++)
         {
             bool has = d.icon != null;
@@ -854,7 +937,8 @@ public sealed class SkyPrisonTrainingWindow : MonoBehaviour
         _dName.color = nv.state == NodeState.Maxed ? Purple : White;
         _dLevel.text = "Lv." + lv + " / " + d.maxLevel;
 
-        string body = !string.IsNullOrEmpty(d.designerNote) ? d.designerNote : d.description;
+        string locDesc = d.GetLocalizedDescription();
+        string body = !string.IsNullOrEmpty(locDesc) ? locDesc : d.designerNote;   // 玩家可见文案在 description；designerNote 只是设计者备注，没填 description 时才兜底
         body = (body ?? "").Replace("效果说明：\n", "").Replace("效果说明：", "");
         // 备注里手写的「前置：…」那一行由下面的前置条件逐条显示，这里去掉
         var kept = new List<string>();
@@ -869,7 +953,8 @@ public sealed class SkyPrisonTrainingWindow : MonoBehaviour
         {
             TechTreeLevelData ld = null; foreach (var l in d.levels) if (l.level == i) { ld = l; break; }
             int cost = 0; if (ld != null) foreach (var c in ld.costs) if (c.item == null) cost += c.amount;
-            string note = d.maxLevel > 1 && ld != null && !string.IsNullOrEmpty(ld.note) ? ld.note : "";
+            // 只有 1 级的节点(AFP系统解放 / 战术地图解放)也要显示等级说明，以前这里限定 maxLevel > 1，单级节点下面只剩一个圆点
+            string note = ld != null ? (ld.GetLocalizedNote() ?? "") : "";
             bool done = i <= lv;
             string left = (done ? "<color=#7CFFC0FF>●</color> " : "<alpha=#77>○ ") + (d.maxLevel > 1 ? "Lv." + i + "  " : "") + note;
             string right = done ? "" : "   " + cost + " " + _L("training_points", "研修点");
@@ -899,6 +984,7 @@ public sealed class SkyPrisonTrainingWindow : MonoBehaviour
     {
         if (!_built) return;
         SkyPrisonFloatingWindowKit.DriveHintBarAvoidance(_boxRt, _corners);
+        DriveTabSlider();
         if (PlayerCombatStateRuntime.IsInCombat) { Close(); return; }
         if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null) EventSystem.current.SetSelectedGameObject(null);
 
@@ -1030,8 +1116,8 @@ public sealed class SkyPrisonTrainingWindow : MonoBehaviour
         NodeView best = null; float bestScore = float.MaxValue;
         foreach (var nv in gv.nodes)
         {
-            if (nv == _sel) continue;
-            Vector2 d = nv.pos - _sel.pos;           // 内容坐标本身就是 y 向上为正(下面的节点 y 更小)，不要再翻转
+            if (nv == _sel || !nv.visible) continue;
+            Vector2 d = nv.pos - _sel.pos;          // 内容坐标本身就是 y 向上为正(下面的节点 y 更小)，不要再翻转
             float along = dir.x != 0 ? d.x * dir.x : d.y * dir.y;
             float perp = dir.x != 0 ? Mathf.Abs(d.y) : Mathf.Abs(d.x);
             if (dir.x != 0 && dir.y != 0) { along = d.x * dir.x + d.y * dir.y; perp = Mathf.Abs(d.x * dir.y - d.y * dir.x); }
@@ -1255,6 +1341,22 @@ public sealed class SkyPrisonTrainingWindow : MonoBehaviour
     // ── UI 小工具 ─────────────────────────────────────────────
     static RectTransform MakeRect(string name, Transform parent, Vector2 amin, Vector2 amax) =>
         SkyPrisonFloatingWindowKit.MakeRect(name, parent, amin, amax);
+
+    // 详情区标题：放得下就保持 68 号大字；放不下一档一档缩小(最小 DetailNameMinSize)直到整行放得下(英文 / 日文节点名普遍比中文长)；
+    // 缩到最小还放不下才用省略号。不换行：标题区只有一行高，换两行会压到下面的等级行。
+    const float DetailNameMaxSize = 68f, DetailNameMinSize = 38f;
+    void FitDetailName()
+    {
+        float width = _dName.rectTransform.rect.width;
+        _dName.fontSize = DetailNameMaxSize;
+        if (width <= 1f) return;
+        for (float size = DetailNameMaxSize; size >= DetailNameMinSize; size -= 2f)
+        {
+            _dName.fontSize = size;
+            if (_dName.GetPreferredValues(_dName.text).x <= width) return;
+        }
+        _dName.fontSize = DetailNameMinSize;
+    }
 
     static TMP_Text AddText(RectTransform parent, string name, string text, float size, TextAlignmentOptions align, Color color, FontStyles style)
     {

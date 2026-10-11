@@ -59,12 +59,22 @@ public class DialogueSubtitleHUD : MonoBehaviour
         // "字幕文字乱码堆积"（不是真的乱码，是好几个孤儿实例的文字重叠在了同一个
         // 屏幕位置）。改成先在场景里找有没有已经存在的实例，有就复用、顺手清掉
         // 多余的，确认真的一个都没有才新建。
-        var existing = FindObjectsByType<DialogueSubtitleHUD>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        // 2026-10-12：FindObjectsByType 找不到 HideAndDontSave 的物体(下面新建时就带这个标记)，所以以前这段从来没清掉过，
+        // 编辑器里每进一次 Play 就多一个孤儿，累计到 67 个，其中一个一直挂着旧台词。改用 Resources.FindObjectsOfTypeAll(能找到隐藏物体)。
+        // 编辑器还有 SkyPrisonPlayModeLeakCleaner 在退出 Play 时统一清理，这里是双保险。
+        var existing = new System.Collections.Generic.List<DialogueSubtitleHUD>();
+        foreach (var h in Resources.FindObjectsOfTypeAll<DialogueSubtitleHUD>())
+        {
+            if (h == null) continue;
+            var hgo = h.gameObject;
+            // 预制体资产也会被 FindObjectsOfTypeAll 找到：不在场景里、也没有 DontSave 标记的跳过
+            if (hgo.scene.IsValid() || (hgo.hideFlags & HideFlags.DontSave) != 0) existing.Add(h);
+        }
 
-        if (existing.Length > 0)
+        if (existing.Count > 0)
         {
             Instance = existing[0];
-            for (int i = 1; i < existing.Length; i++)
+            for (int i = 1; i < existing.Count; i++)
                 if (existing[i] != null) Destroy(existing[i].gameObject);
             return;
         }

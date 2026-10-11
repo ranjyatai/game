@@ -53,12 +53,13 @@ MonoBehaviour:
     projectileVfxScale: {x: 1, y: 1, z: 1}
     impactVfx: {fileID: 0}
     impactPropPrefab: {fileID: 0}
-  damageMultiplier: 1.4
+  damageMultiplier: 4
   damageTypeKey: strike
   attributeHits: []
   lpCost: 0
   knockbackForce: 5.5
   stunDuration: 0.55
+  staggerMultiplier: 1
   startupTime: 0.05
   activeTime: 0.05
   recoveryTime: 0.15

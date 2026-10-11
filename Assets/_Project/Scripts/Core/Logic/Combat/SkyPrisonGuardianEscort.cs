@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 守卫者的护卫特质：附近有咏唱者或灰炉（需要被保护的 Memento）时，倾向于待在它们身边当"盾"，
+/// 守卫者的护卫特质：附近有咏唱者、灰炉或颂赞者（需要被保护的 Memento）时，倾向于待在它们身边当"盾"，
 /// 而不是自己去追玩家。
 ///   · 护卫对象由策划**明确认定**：优先用 designatedProtectees（组件上拖场景里的单位，或运行时 SetProtectee 指定），
 ///     有指定就只护卫它们（取其中存活且最近的）；一个都没指定才退回"按单位定义名关键字找附近的 Caster/GrayFurnace"兜底；
@@ -25,7 +25,7 @@ public class SkyPrisonGuardianEscort : MonoBehaviour
     [Tooltip("搜索护卫对象的半径(米)。")]
     [SerializeField] private float escortSearchRadius = 14f;
     [Tooltip("要护卫的单位定义名里包含这些关键字之一就算（不区分大小写）。")]
-    [SerializeField] private string[] protecteeNameKeywords = { "Caster", "GrayFurnace" };
+    [SerializeField] private string[] protecteeNameKeywords = { "Caster", "GrayFurnace", "Chanter" };
 
     [Header("站位")]
     [Tooltip("站在护卫对象朝玩家那一侧多远(米)。")]

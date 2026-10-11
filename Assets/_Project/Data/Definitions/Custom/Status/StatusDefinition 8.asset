@@ -1,0 +1,128 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a59a8e3c3a10b8549b3d66632ce92121, type: 3}
+  m_Name: StatusDefinition 8
+  m_EditorClassIdentifier: Assembly-CSharp::StatusDefinition
+  statusId: status_berserk
+  displayName: "\u72C2\u66B4"
+  note: "\u9882\u8D5E\u8005\u65BD\u52A0\uFF1A\u653B\u51FB\u2191 \u9632\u5FA1\u2193
+    \u79FB\u901F\u2191 \u884C\u52A8\u901F\u5EA6\u2191(\u884C\u52A8\u901F\u5EA6\u7531
+    SkyPrisonBerserkActionSpeed \u5904\u7406)"
+  description: "\u72C2\u66B4\uFF1A\u653B\u51FB\u529B\u4E0E\u884C\u52A8\u901F\u5EA6\u63D0\u5347\uFF0C\u9632\u5FA1\u529B\u4E0B\u964D\u3002"
+  localizedNames:
+  - languageCode: zh-CN
+    text: "\u72C2\u66B4"
+  - languageCode: ja
+    text: "\u72C2\u66B4"
+  - languageCode: en
+    text: Berserk
+  localizedDescriptions:
+  - languageCode: zh-CN
+    text: "\u72C2\u66B4\uFF1A\u653B\u51FB\u529B\u4E0E\u884C\u52A8\u901F\u5EA6\u63D0\u5347\uFF0C\u9632\u5FA1\u529B\u4E0B\u964D\u3002"
+  - languageCode: ja
+    text: "\u72C2\u66B4\uFF1A\u653B\u6483\u529B\u3068\u884C\u52D5\u901F\u5EA6\u304C\u4E0A\u6607\u3057\u3001\u9632\u5FA1\u529B\u304C\u4F4E\u4E0B\u3059\u308B\u3002"
+  - languageCode: en
+    text: 'Berserk: attack and action speed up, defense down.'
+  isStandard: 0
+  isBuff: 1
+  isHidden: 0
+  showInHud: 0
+  icon: {fileID: 21300000, guid: 6e63faa8012a17a4ab0965f889253542, type: 3}
+  grantMode: 0
+  accumulationSourceKey: 
+  accumulationThreshold: 100
+  durationType: 1
+  baseDuration: 8
+  durationUpdateMode: 0
+  maxDuration: 0
+  canStack: 0
+  baseStack: 1
+  maxStack: 1
+  stackUpdateMode: 2
+  attributeModifiers:
+  - enabled: 1
+    attributeKey: atk
+    attributeDisplayName: "\u653B\u51FB\u529B"
+    attributeValueType: 1
+    attributeOperator: 1
+    stackScaling: 1
+    value: 1.25
+    boolValue: 0
+    note: "\u653B\u51FB\u2191"
+  - enabled: 1
+    attributeKey: def
+    attributeDisplayName: "\u9632\u5FA1\u529B"
+    attributeValueType: 1
+    attributeOperator: 1
+    stackScaling: 1
+    value: 0.7
+    boolValue: 0
+    note: "\u9632\u5FA1\u2193"
+  - enabled: 1
+    attributeKey: moveSpeedRate
+    attributeDisplayName: "\u79FB\u52A8\u901F\u5EA6\u500D\u7387"
+    attributeValueType: 2
+    attributeOperator: 1
+    stackScaling: 1
+    value: 1.25
+    boolValue: 0
+    note: "\u79FB\u901F\u2191"
+  enableDot: 0
+  dotTickInterval: 1
+  dotTargetResource: 0
+  dotValueMode: 0
+  dotBaseValue: 0
+  dotPercentValue: 0
+  dotReferenceAttributeKey: 
+  dotReferenceAttributeDisplayName: 
+  dotReferenceAttributeValueType: 1
+  dotAttributeRatio: 1
+  dotStackMode: 0
+  dotStackAddValue: 0
+  dotAffectedByResistance: 1
+  dotCanKill: 1
+  dotDamageTypeKey: 
+  dotDamageTypeDisplayName: 
+  onApplyTriggerKey: 
+  onTickTriggerKey: 
+  tickInterval: 0
+  onRemoveTriggerKey: 
+  onExpireTriggerKey: 
+  onApplyVfxKey: 
+  persistentVfxKey: 
+  tickVfxKey: 
+  tickVfxInterval: 0
+  onRemoveVfxKey: 
+  onExpireVfxKey: 
+  onApplySfxKey: 
+  onRemoveSfxKey: 
+  onExpireSfxKey: 
+  enableRegain: 0
+  regainRatio: 0
+  useStatusOutline: 1
+  statusOutlineColor: {r: 3.2, g: 0.18, b: 0.12, a: 1}
+  statusOutlineWidthPixels: 2.5
+  statusOutlineWidthVariance: 0.6
+  statusOutlineFlowSpeed: 0.6
+  statusOutlineNoiseScale: 0.3
+  statusOutlineFadeInSeconds: 0.35
+  statusOutlineFadeOutSeconds: 0.6
+  statusGlowRadiusPixels: 12
+  statusGlowIntensity: 1
+  statusGlowInnerColor: {r: 1, g: 0.22, b: 0.16, a: 1}
+  statusGlowOuterColor: {r: 0.85, g: 0.04, b: 0.04, a: 1}
+  statusGlowVariance: 0.7
+  statusGlowNoiseScale: 5
+  useStatusFlash: 0
+  statusFlashColor: {r: 1, g: 0.45, b: 0.45, a: 1}
+  statusFlashDuration: 0.3
+  statusFlashAlphaDip: 0.35

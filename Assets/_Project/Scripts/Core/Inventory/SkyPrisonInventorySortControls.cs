@@ -320,6 +320,14 @@ namespace SkyPrison.Runtime.UI
             float boxH  = Mathf.Abs(tl.y - bl.y);
             float rowH  = Mathf.Max(24f, boxH > 1f ? boxH * 0.95f : 34f);
             int fontSize = Mathf.Max(12, Mathf.RoundToInt(rowH * 0.48f));
+            // 展开列表的字号不能比收起时那个按钮上的字小。弹层是独立的 Overlay 画布(字号直接是屏幕像素)，而按钮上的字在背包窗口的相机画布里，
+            // 画布缩放 / 窗口缩放都不一样，没法直接换算；所以用「字号占标签高度的比例」× 下拉框在屏幕上的高度，得到按钮上的字在屏幕上的真实像素大小，取较大的那个
+            if (_dropdownLabel != null)
+            {
+                float labelH = _dropdownLabel.rectTransform.rect.height;
+                if (labelH > 1f && boxH > 1f)
+                    fontSize = Mathf.Max(fontSize, Mathf.RoundToInt(_dropdownLabel.fontSize / labelH * boxH));
+            }
 
             // 独立 Overlay Canvas：Overlay 永远盖过 Camera 画布，确保盖过色收差快照(1101)、即时可点。
             var go = new GameObject("[InvSort] Popup", typeof(RectTransform));

@@ -36,9 +36,30 @@ public static class SkyPrisonAfpUpgrades
     public const float Inflation = 1.06f;
     public const string ModifierSource = "afp_upgrade";
 
+    public const string LpKey = "lp";
+    public const string LpNodeId = "seeker_afp_load";
+    static readonly float[] LpBonusTable = { 0f, 15f, 30f, 50f };      // 累计：+15 / +30 / +50 → 115 / 130 / 150
+    public static float LpBonusAt(int level) => LpBonusTable[Mathf.Clamp(level, 0, LpBonusTable.Length - 1)];
+    /// <summary>当前这一局 AFP 带来的额外 LP 上限。</summary>
+    public static float LpBonus
+    {
+        get { for (int i = 0; i < All.Length; i++) if (All[i].key == LpKey) return LpBonusAt(Level(All[i])); return 0f; }
+    }
+
     public static readonly Def[] All =
     {
         new Def { key = "hp", statKey = "maxHp", labelKey = "ui_afp_up_hp", labelFallback = "追加生命", perLevel = 4f, maxLevel = 99, unit = "" },
+        // 负荷耐受(LP 上限)：三段(用户 10-11 定)，最多到 150(基础 100 + 50)；固定价，第一段中等价位。闪避/奔跑消耗按基础上限算，多出的上限是实打实的余量
+        new Def { key = LpKey, statKey = "", labelKey = "ui_afp_up_lp", labelFallback = "负荷耐受", perLevel = 0f, maxLevel = 3, unit = "", fixedPrices = new[] { 600, 2400, 7000 },
+            valueAt = lv => LpBonusAt(lv),
+            visible = () => SkyPrisonAfpAbsorbShield.NodeUnlocked(LpNodeId) },      // 研修节点「词条：负荷耐受」点亮才出现
+        // 弱点特效 / 暴击特效(用户 10-12 定)：研修节点点亮才出现；三段固定价；Lv3 各有质变(破甲冲击 / 会心回收)，见 SkyPrisonAfpWeakCrit
+        new Def { key = SkyPrisonAfpWeakCrit.WeakKey, statKey = "", labelKey = "ui_afp_up_weak", labelFallback = "弱点特效", perLevel = 0f, maxLevel = SkyPrisonAfpWeakCrit.MaxLevel, unit = "%", fixedPrices = new[] { 600, 2400, 7000 },
+            valueAt = lv => SkyPrisonAfpWeakCrit.WeakCritRate[Mathf.Clamp(lv, 0, SkyPrisonAfpWeakCrit.MaxLevel)],
+            visible = () => SkyPrisonAfpAbsorbShield.NodeUnlocked(SkyPrisonAfpWeakCrit.WeakNodeId) },
+        new Def { key = SkyPrisonAfpWeakCrit.CritKey, statKey = "", labelKey = "ui_afp_up_crit", labelFallback = "暴击特效", perLevel = 0f, maxLevel = SkyPrisonAfpWeakCrit.MaxLevel, unit = "%", fixedPrices = new[] { 800, 3000, 8000 },
+            valueAt = lv => SkyPrisonAfpWeakCrit.CritDamageBonus[Mathf.Clamp(lv, 0, SkyPrisonAfpWeakCrit.MaxLevel)],
+            visible = () => SkyPrisonAfpAbsorbShield.NodeUnlocked(SkyPrisonAfpWeakCrit.CritNodeId) },
         new Def { key = "magazine", statKey = "", labelKey = "ui_afp_up_magazine", labelFallback = "扩容弹匣", perLevel = 10f, maxLevel = 3, unit = "{r}", fixedPrices = new[] { 350, 2200, 7500 } },
         new Def { key = "physAtk", statKey = "", labelKey = "ui_afp_up_phys", labelFallback = "物理攻击强化", perLevel = 0.5f, maxLevel = 99 },
         new Def { key = "attrAtk", statKey = "", labelKey = "ui_afp_up_attr", labelFallback = "属性攻击强化", perLevel = 0.5f, maxLevel = 99 },
@@ -62,6 +83,8 @@ public static class SkyPrisonAfpUpgrades
         new Def { key = SkyPrisonAfpDrones.CdKey, statKey = "", labelKey = "ui_afp_up_drone_cd", labelFallback = "浮游炮冷却缩短", perLevel = 10f, maxLevel = 6, basePrice = 150,
             visible = () => SkyPrisonAfpDrones.NodeOn },
     };
+
+    public static int LevelByKey(string key) => LevelOf(key);
 
     static int LevelOf(string key)
     {
@@ -259,6 +282,9 @@ public static class SkyPrisonAfpUpgrades
         // 追加生命：上限涨了多少，当前血量就同步回多少(只涨上限不回血的话，玩家点了没感觉)；上限降(清零)时 clamp 自己处理
         if (health != null && !health.IsDead && health.MaxHealth > oldMax + 0.01f && oldMax > 1f)
             health.ApplyHeal(health.MaxHealth - oldMax);
+        // LP 上限：不走属性加成(LP 控制器不读外部加成)，直接写给 LP 控制器；清零时传 0
+        var load = player.GetComponentInChildren<UnitLoadRuntime>(true);
+        if (load != null) load.SetBonusMaxLoad(LpBonus);
     }
 
     public static void ResetAll()
@@ -267,6 +293,7 @@ public static class SkyPrisonAfpUpgrades
         pending.Clear();
         purchases = 0;
         SkyPrisonAfpPhysicalMastery.ResetCounter();
+        SkyPrisonAfpWeakCrit.ResetSession();
         ApplyToPlayer();
         SkyPrisonAfpLifeInsurance.FindOnPlayer()?.ResetCooldown();    // 新的一局，生命保险冷却清零
         foreach (var fk in new[] { "heat", "shock", "corrosion", "freeze" }) SkyPrisonAfpAbsorbShield.FindOnPlayer(fk)?.RestoreNow();

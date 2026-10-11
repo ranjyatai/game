@@ -127,6 +127,7 @@ MonoBehaviour:
     dodgeForwardKey: dodge_forward
     dodgeBackKey: dodge_back
     deathKey: Die
+    reloadKey: Reload
     driveMovementAnimation: 1
     movementAnimationFade: 0.08
     oneShotLockSeconds: 0.18
@@ -145,15 +146,16 @@ MonoBehaviour:
   deathDissolveNoiseScale: 0.6
   dropProfiles:
   - {fileID: 11400000, guid: 48c31c8ed0fbc444d918a799668a9204, type: 2}
+  afpYield: 250
   parameterValues:
   - parameterKey: maxHp
-    value: 100
+    value: 2000
   - parameterKey: maxLp
     value: 100
   - parameterKey: atk
-    value: 17
+    value: 20
   - parameterKey: def
-    value: 0
+    value: 4
   - parameterKey: critRate
     value: 0
   - parameterKey: critDamageMultiplier
@@ -219,14 +221,14 @@ MonoBehaviour:
   - parameterKey: strikeResist
     value: 0
   - parameterKey: impactResist
-    value: 0
+    value: -20
   - parameterKey: heatResist
     value: 0
   - parameterKey: shockResist
-    value: 0
+    value: -50
   - parameterKey: corrosionResist
-    value: 0
+    value: 60
   - parameterKey: freezeResist
-    value: 0
+    value: -20
   - parameterKey: new_attribute
     value: 0
