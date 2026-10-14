@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class SkyPrisonMissingScriptCleaner
 {
-    [MenuItem("Tools/Sky Prison/Units/Clean Missing Scripts In Selected Prefabs")]
+    [MenuItem("天空囚笼/校验与清理/清理选中预制体的 Missing Script", false, 214)]
     public static void CleanSelectedPrefabs()
     {
         Object[] selected = Selection.objects;
@@ -30,7 +30,7 @@ public static class SkyPrisonMissingScriptCleaner
         Debug.Log($"[SkyPrisonMissingScriptCleaner] Cleaned {prefabCount} prefab(s), removed {removedTotal} missing script component(s).");
     }
 
-    [MenuItem("Tools/Sky Prison/Units/Clean Missing Scripts In Selected Prefabs", true)]
+    [MenuItem("天空囚笼/校验与清理/清理选中预制体的 Missing Script", true)]
     public static bool ValidateCleanSelectedPrefabs()
     {
         foreach (Object obj in Selection.objects)
@@ -42,7 +42,7 @@ public static class SkyPrisonMissingScriptCleaner
         return false;
     }
 
-    [MenuItem("Tools/Sky Prison/Units/Clean Missing Scripts In All Unit Prefabs")]
+    [MenuItem("天空囚笼/校验与清理/清理全部单位预制体的 Missing Script", false, 213)]
     public static void CleanAllUnitPrefabs()
     {
         string[] guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/_Project/Prefabs/Data/Units" });

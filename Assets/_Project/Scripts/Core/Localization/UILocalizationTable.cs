@@ -230,6 +230,7 @@ public class UILocalizationTable : ScriptableObject
         "ui_settings_volume_voice",  // 语音
         // 语言 Tab
         "ui_settings_language",      // 语言
+        "ui_settings_voice_language", // 语音语言
         // 键鼠 Tab
         "ui_settings_mouse_sensitivity", // 鼠标灵敏度
         "ui_settings_invert_y",      // Y轴反转
@@ -247,6 +248,7 @@ public class UILocalizationTable : ScriptableObject
         "ui_settings_clear_cache_action", // 清除
         "ui_settings_clear_cache_title",       // 清除缓存？
         "ui_settings_clear_cache_body_format", // 当前缓存占用 {0}，清除后素材需要重新生成，确定要清除吗？
+        "ui_settings_dialogue_autoplay", // 对话自动播放
         // 手柄 Tab 图例——按 action 显示的功能名，之前直接拿 binding.displayName
         // 原始中文当 L() 的 key 用，永远查不到表、只会原样显示中文，跟这里没关系
         // 但功能上是同一批文字，一起列进来方便以后用编辑器同步工具核对。
@@ -339,6 +341,14 @@ public class UILocalizationTable : ScriptableObject
         "shop_sell_empty",
         "ui_hint_switch_tab",
         "ui_hint_adjust_qty",
+        "ui_hint_confirm_repair",
+        "workshop_repair_title",
+        "workshop_repair_message",
+        "workshop_repair_confirm",
+        "workshop_repair_confirm_all",
+        "workshop_repair_item_action",
+        "workshop_repair_cancel",
+        "workshop_repair_empty",
         "shop_gain_label",
         "shop_confirm_sell_button",
         "shop_sell_cart_empty",
@@ -354,6 +364,69 @@ public class UILocalizationTable : ScriptableObject
         // item_cat_consumable等几个上面已经有了，这里补齐武器/防具两个新用到的。
         "item_cat_weapon",
         "item_cat_armor",
+        // NPC对话窗口——任务列表浏览态/接受任务浏览态共用的"返回"、空列表提示
+        "npc_dialogue_back",
+        "npc_dialogue_no_active_quests",
+        "npc_dialogue_no_acceptable_quests",
+        // 接受任务二次确认弹窗
+        "quest_accept_confirm_cancel",
+        "quest_accept_confirm_start",
+        "quest_accept_confirm_directive_tag",
+        "quest_accept_confirm_reward_label",
+        "quest_accept_confirm_no_reward",
+        "quest_accept_confirm_track_quest",
+        // HAZARD RANK 徽标标签——任务日志(QuestLogController)和接受任务确认弹窗共用同一个key
+        "quest_hazard_rank_label",
+        // NPC对话交互提示("按E 与xx对话")
+        "npc_interact_talk_generic",
+        "npc_interact_talk_with",
+        "door_interact_open",
+        "door_interact_close",
+        "door_interact_locked",
+        "switch_interact_operate",
+        "switch_interact_locked",
+        // NPC对话窗口底部按键提示条
+        "ui_hint_select",
+        "ui_hint_select_option",
+        // 任务日志——放弃任务(Delete键)二次确认弹窗
+        "questlog_hint_abandon",
+        // 任务日志——追踪/追踪中任务(T键，只在某条任务展开看详情时生效)
+        "questlog_hint_track",
+        "questlog_hint_untrack",
+        "questlog_abandon_confirm_title",
+        "questlog_abandon_confirm_message",
+        "questlog_abandon_confirm_confirm",
+        "questlog_abandon_confirm_cancel",
+        // 任务日志——窗口本体，之前这批一直没真正接入字典表，靠硬编码中文兜底撑着
+        "questlog_hover_progress",
+        "questlog_title",
+        "questlog_tab_inprogress",
+        "questlog_tab_completed",
+        // 追踪中任务专属分类，固定排在主线任务上面——跟BuildTrackedBadge的
+        // 角标方案是二选一，最终选了这个(角标会跟节点链最后一个节点的文字重叠)。
+        "questlog_section_primary",
+        "questlog_section_mainline",
+        "questlog_section_side",
+        "questlog_section_characterarc",
+        "questlog_current_objective",
+        "questlog_field_region",
+        "questlog_field_giver",
+        "questlog_field_state",
+        "questlog_state_complete",
+        "questlog_state_inprogress",
+
+        // 任务结算(交任务)弹窗
+        "quest_complete_confirm_directive_tag",
+        "quest_complete_confirm_send_to_stash",
+        "quest_complete_confirm_later",
+        "quest_complete_confirm_confirm",
+        "quest_complete_confirm_bag_full",
+
+        // 交付确认弹窗
+        "quest_delivery_confirm_directive_tag",
+        "quest_delivery_confirm_cancel",
+        "quest_delivery_confirm_confirm",
+        "quest_delivery_confirm_holding",
     };
 #endif
 }

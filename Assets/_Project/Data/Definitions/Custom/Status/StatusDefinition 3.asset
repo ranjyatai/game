@@ -15,17 +15,17 @@ MonoBehaviour:
   statusId: status_iced
   displayName: "\u51BB\u7ED3"
   note: 
-  description: 
+  description: "\u88AB\u51BB\u7ED3\uFF1A\u671F\u95F4\u539F\u5730\u9759\u6B62\uFF0C\u65E0\u6CD5\u79FB\u52A8\u3001\u95EA\u907F\u4E0E\u8DF3\u8DC3\u3002"
   localizedNames:
   - languageCode: zh-CN
     text: "\u51BB\u7ED3"
   - languageCode: ja
     text: "\u51CD\u7D50"
   - languageCode: en
-    text: Iced
+    text: Frozen
   localizedDescriptions:
   - languageCode: zh-CN
-    text: 
+    text: "\u88AB\u51BB\u7ED3\uFF1A\u671F\u95F4\u539F\u5730\u9759\u6B62\uFF0C\u65E0\u6CD5\u79FB\u52A8\u3001\u95EA\u907F\u4E0E\u8DF3\u8DC3\u3002"
   - languageCode: ja
     text: 
   - languageCode: en
@@ -35,18 +35,27 @@ MonoBehaviour:
   isHidden: 0
   showInHud: 1
   icon: {fileID: 21300000, guid: d9728ae62f2fe4343a4f59fe69d3e729, type: 3}
-  grantMode: 0
-  accumulationSourceKey: 
-  accumulationThreshold: 0
+  grantMode: 1
+  accumulationSourceKey: accum_status_iced
+  accumulationThreshold: 100
   durationType: 1
-  baseDuration: 0
+  baseDuration: 3
   durationUpdateMode: 0
   maxDuration: 0
   canStack: 0
   baseStack: 1
   maxStack: 1
   stackUpdateMode: 2
-  attributeModifiers: []
+  attributeModifiers:
+  - enabled: 1
+    attributeKey: moveSpeedRate
+    attributeDisplayName: "\u79FB\u52A8\u901F\u5EA6\u500D\u7387"
+    attributeValueType: 2
+    attributeOperator: 1
+    stackScaling: 1
+    value: 0
+    boolValue: 0
+    note: "\u539F\u5730\u9759\u6B62"
   enableDot: 0
   dotTickInterval: 1
   dotTargetResource: 0
@@ -79,3 +88,21 @@ MonoBehaviour:
   onExpireSfxKey: 
   enableRegain: 0
   regainRatio: 0
+  useStatusOutline: 0
+  statusOutlineColor: {r: 4, g: 0.25, b: 0.03, a: 1}
+  statusOutlineWidthPixels: 3
+  statusOutlineWidthVariance: 0.6
+  statusOutlineFlowSpeed: 0.6
+  statusOutlineNoiseScale: 0.3
+  statusOutlineFadeInSeconds: 0.35
+  statusOutlineFadeOutSeconds: 0.6
+  statusGlowRadiusPixels: 12
+  statusGlowIntensity: 1
+  statusGlowInnerColor: {r: 1, g: 0.6, b: 0.12, a: 1}
+  statusGlowOuterColor: {r: 1, g: 0.3, b: 0.06, a: 1}
+  statusGlowVariance: 0.7
+  statusGlowNoiseScale: 5
+  useStatusFlash: 0
+  statusFlashColor: {r: 1, g: 0.45, b: 0.45, a: 1}
+  statusFlashDuration: 0.3
+  statusFlashAlphaDip: 0.35

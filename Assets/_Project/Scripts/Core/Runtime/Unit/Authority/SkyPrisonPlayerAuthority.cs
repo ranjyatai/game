@@ -205,18 +205,11 @@ public class SkyPrisonPlayerAuthority : MonoBehaviour
             }
         }
 
-        if (candidate == null)
-        {
-            for (int i = 0; i < RegisteredUnits.Count; i++)
-            {
-                SkyPrisonUnitRuntimeIdentity unit = RegisteredUnits[i];
-                if (unit != null && unit.isActiveAndEnabled)
-                {
-                    candidate = unit;
-                    break;
-                }
-            }
-        }
+        // 以前这里有一段"找不到Player身份的单位就随便抓一个已注册单位顶替"的兜底——
+        // 场景里同时有多个单位时(比如测试NPC/敌人还在场)，这段代码一旦抢在真正的
+        // 玩家角色完成注册之前跑，就会把随便某个单位错认成玩家，同时把真正的玩家
+        // 降级成Ally(蓝色描边)。宁可"暂时没有玩家"，也不要"认错玩家"，所以删掉这个
+        // 随便顶替的兜底，找不到明确是Player身份的单位就不设置，不瞎猜。
 
         if (candidate != null)
             SetCurrentPlayer(candidate);

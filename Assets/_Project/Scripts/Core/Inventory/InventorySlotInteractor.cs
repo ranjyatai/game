@@ -55,7 +55,11 @@ namespace SkyPrison.Runtime.UI
         // StashInventoryInteraction 下面——两者互斥，谁先找到就是谁。
         private IInventorySlotController Ctrl()
         {
-            if (_ctrl != null) return _ctrl;
+            // _ctrl 是接口类型，背后是 MonoBehaviour——接口的 != null 不会走
+            // UnityEngine.Object 重载的假null检测，父级面板控制器万一被销毁重建，
+            // 这里会一直缓存着已经销毁的旧引用不重新查找。转成 UnityEngine.Object
+            // 再判一次空，才能正确识别"已经Destroy"。
+            if (_ctrl != null && (UnityEngine.Object)_ctrl != null) return _ctrl;
             _ctrl = GetComponentInParent<SkyPrisonInventoryInteraction>();
             if (_ctrl == null) _ctrl = GetComponentInParent<StashInventoryInteraction>();
             return _ctrl;

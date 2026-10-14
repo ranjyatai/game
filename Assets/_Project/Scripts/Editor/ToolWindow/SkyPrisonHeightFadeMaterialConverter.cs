@@ -17,7 +17,7 @@ public static class SkyPrisonHeightFadeMaterialConverter
     private const string TargetShaderName = "SkyPrison/Lit With Height Fade";
     private const string SourceShaderName = "Universal Render Pipeline/Lit";
 
-    [MenuItem("Assets/Sky Prison/转换为高度淡出Lit材质（选中的材质/文件夹）")]
+    [MenuItem("Assets/天空囚笼/转换为高度淡出Lit材质（选中的材质/文件夹）")]
     private static void ConvertSelection()
     {
         Shader targetShader = Shader.Find(TargetShaderName);
@@ -59,7 +59,7 @@ public static class SkyPrisonHeightFadeMaterialConverter
         EditorUtility.DisplayDialog("完成", $"已转换 {materials.Count} 个材质。", "确定");
     }
 
-    [MenuItem("Assets/Sky Prison/转换为高度淡出Lit材质（选中的材质/文件夹）", true)]
+    [MenuItem("Assets/天空囚笼/转换为高度淡出Lit材质（选中的材质/文件夹）", true)]
     private static bool ValidateConvertSelection()
     {
         return Selection.objects != null && Selection.objects.Length > 0;

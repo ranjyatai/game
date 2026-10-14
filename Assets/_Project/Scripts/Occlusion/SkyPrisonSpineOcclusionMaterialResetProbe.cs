@@ -270,7 +270,6 @@ public sealed class SkyPrisonSpineOcclusionMaterialResetProbeV1 : ScriptableRend
     }
 
 #if UNITY_EDITOR
-    [MenuItem("Tools/Sky Prison/Rendering/Install Spine Occlusion Material Reset Probe V1")]
     private static void InstallFeatureMenu()
     {
         ScriptableRendererData[] renderers = Resources.FindObjectsOfTypeAll<ScriptableRendererData>();

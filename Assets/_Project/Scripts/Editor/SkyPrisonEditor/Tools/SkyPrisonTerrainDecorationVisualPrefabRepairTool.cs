@@ -59,7 +59,7 @@ public static class SkyPrisonTerrainDecorationVisualPrefabRepairTool
         "SkyPrisonTerrainDecorationPushablePhysicsTest"
     };
 
-    [MenuItem("Tools/Sky Prison/Terrain Decoration/Prefab/Repair Selected Visual Prefab Asset")]
+    [MenuItem("天空囚笼/地形装饰物/修复选中视觉预制体", false, 146)]
     public static void RepairSelectedVisualPrefabAssetMenu()
     {
         List<string> paths = ResolveSelectedPrefabAssetPaths();
@@ -79,7 +79,7 @@ public static class SkyPrisonTerrainDecorationVisualPrefabRepairTool
             "知道了");
     }
 
-    [MenuItem("Tools/Sky Prison/Terrain Decoration/Prefab/Repair All TerrainDecoration Visual Prefabs")]
+    [MenuItem("天空囚笼/地形装饰物/修复全部视觉预制体", false, 145)]
     public static void RepairAllTerrainDecorationVisualPrefabsMenu()
     {
         string[] guids = AssetDatabase.FindAssets("t:Prefab", new[] { DefaultVisualPrefabFolder });

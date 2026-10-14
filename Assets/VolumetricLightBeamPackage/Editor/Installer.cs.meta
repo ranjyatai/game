@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 0e4939abb726c394c8f2cd04891c5a08
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 99888
+  packageName: Volumetric Light Beam
+  packageVersion: 2.2.8
+  assetPath: Assets/VolumetricLightBeamPackage/Editor/Installer.cs
+  uploadId: 941772

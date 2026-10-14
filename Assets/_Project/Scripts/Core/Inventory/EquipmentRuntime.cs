@@ -234,6 +234,20 @@ public class EquipmentRuntime : MonoBehaviour
             ? targetSlotOverride.Value
             : definitionSlot;
 
+        // 背包物品右键"装备"（没有明确指定槽位，targetSlotOverride为空）：武器道具的
+        // equipment.slot固定写死是Weapon，之前不管主武器槽有没有人占着都硬点到
+        // Weapon、顶替掉已经装备的那把。现在改成：主武器槽被占用、副武器槽还空着时，
+        // 自动改投副武器槽，不再顶替——玩家想要"顶替"的话，本来就有单独的"卸下"操作
+        // 先清空主武器槽，或者从角色面板专门点副武器槽呼出背包(那条路本来就会带着
+        // targetSlotOverride，不受这条自动改投逻辑影响)。只对武器槽生效，护甲没有
+        // "主/副"这个概念，不做同样的处理。
+        if (!targetSlotOverride.HasValue && definitionSlot == EquipmentSlotType.Weapon
+            && GetEquipped(EquipmentSlotType.Weapon) != null
+            && GetEquipped(EquipmentSlotType.WeaponSecondary) == null)
+        {
+            slot = EquipmentSlotType.WeaponSecondary;
+        }
+
         var currentlyEquipped = GetEquipped(slot);
         if (currentlyEquipped != null)
         {

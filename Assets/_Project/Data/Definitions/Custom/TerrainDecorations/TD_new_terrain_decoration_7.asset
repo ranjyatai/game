@@ -79,13 +79,14 @@ MonoBehaviour:
   visualRandomRotationMin: {x: 0, y: 0, z: 0}
   visualRandomRotationMax: {x: 0, y: 0, z: 0}
   visualRandomRotationAffectsRules: 0
-  collisionMode: 1
+  collisionMode: 2
   collisionSize: {x: 1, y: 1, z: 1}
   collisionOffset: {x: 0, y: 0.5, z: 0}
   blockPlayer: 1
   blockEnemy: 1
   blockVision: 0
   blockProjectile: 0
+  walkableSurface: {fileID: 0}
   lockRuleSpaceFromVisualRandomRotation: 1
   frontBackPlaneMode: 1
   ruleForwardLocal: {x: 0, y: 0, z: 1}
@@ -95,6 +96,9 @@ MonoBehaviour:
   fadeWhenBlockingPlayer: 1
   fadeAlpha: 0.564
   fadeDuration: 0.12
+  enableHeightFade: 0
+  heightFadeThreshold: 15
+  heightFadeDistance: 2
   frontBackOcclusionWidthMultiplier: 1
   frontBackOcclusionHeightMultiplier: 1
   frontBackOcclusionDepthMultiplier: 1

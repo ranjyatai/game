@@ -28,6 +28,19 @@ public class TechTreeRuntime : MonoBehaviour
     // nodeId → 当前等级缓存（从存档读）
     private readonly Dictionary<string, int> _levelCache = new Dictionary<string, int>();
     private bool _cacheDirty = true;
+    private readonly List<TechTreeGraphAsset> _graphs = new List<TechTreeGraphAsset>();
+
+    /// <summary>全部科技树(探索者、战略家…)，战术研修窗口按这个顺序做标签页。</summary>
+    public IReadOnlyList<TechTreeGraphAsset> Graphs => _graphs;
+
+    /// <summary>某个节点所在的那张图(主前置下标是图内编号，要在自己那张图里查)。</summary>
+    public TechTreeGraphAsset GraphOf(string nodeId)
+    {
+        foreach (var g in _graphs)
+            foreach (var n in g.nodes)
+                if (n.nodeId == nodeId) return g;
+        return null;
+    }
 
     private void Awake()
     {
@@ -35,9 +48,11 @@ public class TechTreeRuntime : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        if (graphAsset == null)
-            graphAsset = GameAssetLoader.TechTree;
-        if (graphAsset == null)
+        _graphs.Clear();
+        foreach (var g in GameAssetLoader.TechTrees) if (g != null && !_graphs.Contains(g)) _graphs.Add(g);
+        if (graphAsset != null && !_graphs.Contains(graphAsset)) _graphs.Insert(0, graphAsset);
+        if (graphAsset == null && _graphs.Count > 0) graphAsset = _graphs[0];
+        if (_graphs.Count == 0)
             Debug.LogError("[TechTreeRuntime] 找不到 TechTreeGraphAsset。请执行菜单 Sky Prison → 重建 Asset Manifest。");
 
         BaseManager.OnFacilityUpgraded += HandleFacilityUpgraded;
@@ -79,47 +94,76 @@ public class TechTreeRuntime : MonoBehaviour
         return lv;
     }
 
+    /// <summary>直接读存档里的等级，不依赖已加载的 Graph（战略家树等不在运行时 Graph 里的节点也能查）。</summary>
+    public static int SavedLevel(string nodeId)
+    {
+        var list = SaveManager.Player?.techTree?.nodeLevels;
+        if (list == null) return 0;
+        for (int i = 0; i < list.Count; i++)
+            if (list[i].key == nodeId) return list[i].value;
+        return 0;
+    }
+
+    public static bool IsExternalConditionMet(TechTreeExternalCondition c)
+    {
+        switch (c)
+        {
+            case TechTreeExternalCondition.NightModeAppeared: return SkyPrisonRaidEntry.AnyNightEnabled();
+            default: return true;
+        }
+    }
+
+    public static string ExternalConditionText(TechTreeExternalCondition c)
+    {
+        return c == TechTreeExternalCondition.NightModeAppeared ? DoorText.Get("training_reason_night", "夜间模式尚未出现") : DoorText.Get("training_reason_condition", "条件未满足");
+    }
+
     public TechTreeNodeData FindNode(string nodeId)
     {
-        if (graphAsset == null) return null;
-        foreach (var n in graphAsset.nodes)
-            if (n.nodeId == nodeId) return n;
+        foreach (var g in _graphs)
+            foreach (var n in g.nodes)
+                if (n.nodeId == nodeId) return n;
         return null;
     }
 
     // ── 升级节点 ──────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// 尝试将节点升一级。
-    /// 返回 true = 成功；false 时 reason 说明失败原因。
-    /// </summary>
-    public bool TryLevelUp(string nodeId, out string reason)
+    /// <summary>只检查、不扣点：这个节点现在能不能升一级。不能时 reason 说明还差什么(界面详情里逐条显示用)；cost 是升这一级要花的研修点。</summary>
+    public bool CheckLevelUp(string nodeId, out string reason, out int cost)
     {
-        reason = "";
+        reason = ""; cost = 0;
         var data = SaveManager.Player?.techTree;
         if (data == null) { reason = "存档未就绪"; return false; }
-        if (graphAsset == null) { reason = "科技树未加载"; return false; }
+        if (_graphs.Count == 0) { reason = "科技树未加载"; return false; }
 
         var node = FindNode(nodeId);
         if (node == null)          { reason = $"找不到节点：{nodeId}"; return false; }
         if (!node.enabled)         { reason = "节点未启用"; return false; }
 
         int currentLevel = GetNodeLevel(nodeId);
-        if (currentLevel >= node.maxLevel) { reason = "已达最高等级"; return false; }
+        if (currentLevel >= node.maxLevel) { reason = DoorText.Get("training_reason_maxed", "已达最高等级"); return false; }
 
         int targetLevel = currentLevel + 1;
         var levelData   = GetLevelData(node, targetLevel);
         if (levelData == null) { reason = "等级数据缺失"; return false; }
+        cost = GetPointCost(levelData);
 
-        // 主前置节点检查（父节点必须至少 LV1）
-        if (node.primaryParentIndex >= 0 && node.primaryParentIndex < graphAsset.nodes.Count)
+        // 主前置节点检查（父节点必须至少 LV1；下标是自己那张图里的编号）
+        var graph = GraphOf(nodeId);
+        if (graph != null && node.primaryParentIndex >= 0 && node.primaryParentIndex < graph.nodes.Count)
         {
-            var parent = graphAsset.nodes[node.primaryParentIndex];
+            var parent = graph.nodes[node.primaryParentIndex];
             if (GetNodeLevel(parent.nodeId) < 1)
             {
-                reason = $"需先解锁「{parent.nodeName}」";
+                reason = string.Format(DoorText.Get("training_reason_need_unlock_fmt", "需先解锁「{0}」"), parent.GetLocalizedName());
                 return false;
             }
+        }
+
+        if (!IsExternalConditionMet(node.externalCondition))
+        {
+            reason = ExternalConditionText(node.externalCondition);
+            return false;
         }
 
         // 次级前置检查
@@ -129,18 +173,27 @@ public class TechTreeRuntime : MonoBehaviour
             if (reqLevel < req.requiredLevel)
             {
                 var reqNode = FindNode(req.targetNodeId);
-                reason = $"需「{reqNode?.nodeName ?? req.targetNodeId}」达到 LV{req.requiredLevel}（当前 LV{reqLevel}）";
+                reason = string.Format(DoorText.Get("training_reason_need_level_fmt", "需「{0}」达到 LV{1}（当前 LV{2}）"), reqNode != null ? reqNode.GetLocalizedName() : req.targetNodeId, req.requiredLevel, reqLevel);
                 return false;
             }
         }
 
-        // 科技点检查（costs 里 item==null 的条目视为科技点消耗）
-        int pointCost = GetPointCost(levelData);
-        if (data.availablePoints < pointCost)
+        if (data.availablePoints < cost)
         {
-            reason = $"科技点不足（需要 {pointCost}，剩余 {data.availablePoints}）";
+            reason = string.Format(DoorText.Get("training_reason_points_fmt", "研修点不足（需要 {0}，剩余 {1}）"), cost, data.availablePoints);
             return false;
         }
+        return true;
+    }
+
+    /// <summary>
+    /// 尝试将节点升一级。
+    /// 返回 true = 成功；false 时 reason 说明失败原因。</summary>
+    public bool TryLevelUp(string nodeId, out string reason)
+    {
+        if (!CheckLevelUp(nodeId, out reason, out int pointCost)) return false;
+        var data = SaveManager.Player.techTree;
+        int targetLevel = GetNodeLevel(nodeId) + 1;
 
         // 执行升级
         data.availablePoints -= pointCost;
@@ -163,9 +216,10 @@ public class TechTreeRuntime : MonoBehaviour
     {
         var result = new Dictionary<string, float>();
         var data   = SaveManager.Player?.techTree;
-        if (data == null || graphAsset == null) return result;
+        if (data == null || _graphs.Count == 0) return result;
 
-        foreach (var node in graphAsset.nodes)
+        foreach (var g in _graphs)
+        foreach (var node in g.nodes)
         {
             int lv = GetNodeLevel(node.nodeId);
             if (lv <= 0) continue;

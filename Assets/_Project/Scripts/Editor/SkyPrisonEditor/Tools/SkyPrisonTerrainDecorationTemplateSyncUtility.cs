@@ -20,7 +20,7 @@ public static class SkyPrisonTerrainDecorationTemplateSyncUtility
         "MossRoot"
     };
 
-    [MenuItem("Tools/Sky Prison/Map/地形装饰物/模板/把当前矫正实例写回源头模板")]
+    [MenuItem("天空囚笼/地形装饰物/把当前矫正实例写回源头模板", false, 140)]
     public static void SyncSelectedInstanceToRuntimeTemplateMenu()
     {
         GameObject selected = Selection.activeGameObject;

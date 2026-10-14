@@ -49,6 +49,7 @@ public static class LogicSentenceContextUtility
         "cond_ready_to_attack_target",
         "act_move_unit_to_spawn_position",
         "cond_unit_to_current_target_distance_compare", "cond_unit_current_target_exists",
+        "cond_target_in_xz_range", "act_keep_distance_band", "act_stop_keep_distance_band", "act_dash", "act_leap_over_target", "act_flank_run_by", "act_claw_combo", "act_evade_away", "cond_unit_doing_tactical_action", "act_designate_protectee",
         "cond_unit_has_detected_hostile_unit", "cond_unit_can_see_hostile_unit",
         "cond_unit_behavior_type_is", "cond_unit_has_move_target", "cond_unit_move_failed_by_stuck",
     };
@@ -56,8 +57,10 @@ public static class LogicSentenceContextUtility
     // 触发器中隐藏的 AI 专属词条（感知/移动/AI 状态机/AI 目标管理）
     private static readonly HashSet<string> TriggerBlockedTemplateIds = new HashSet<string>
     {
-        // AI 初始化与周期事件（触发器有自己的事件系统）
-        "event_initialize",
+        // event_initialize 不再屏蔽——运行时 TriggerPackageRuntime.Start() 本来就直接
+        // 触发同一个 event_initialize（见该文件注释），触发器并没有另一套独立的"进入
+        // 地图"事件；之前这条注释说"触发器有自己的事件系统"但从未真正实现，屏蔽掉的
+        // 后果是编辑器里永远选不到"刚进入地图时触发"这个本来就支持的事件。
 
         // AI 感知条件
         "cond_unit_can_see_unit",
@@ -69,6 +72,16 @@ public static class LogicSentenceContextUtility
         "cond_unit_has_last_heard_position",
         "cond_unit_has_last_known_position",
         "cond_unit_to_current_target_distance_compare",
+        "cond_target_in_xz_range",
+        "act_keep_distance_band",
+        "act_stop_keep_distance_band",
+        "act_dash",
+        "act_leap_over_target",
+        "act_flank_run_by",
+        "act_claw_combo",
+        "act_evade_away",
+        "cond_unit_doing_tactical_action",
+        "act_designate_protectee",
         "cond_unit_no_current_target",
         "cond_unit_current_target_exists",
         "cond_unit_behavior_type_is",

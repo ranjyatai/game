@@ -73,6 +73,10 @@ public class GroundSurfaceMaterialDefinition : ScriptableObject
     public string displayName = "新地表材质";
     public string category = "基础地表";
     public bool isStandard = false;
+    [Tooltip("仅作地面标签：不是用来刷地面的纹理，只给装饰物的「可站立表面」/ 地面标记提供\n" +
+             "脚步声、摩擦、噪声这些规则（例如「金属」只给铁轨用）。\n" +
+             "勾上后不出现在放置工具的地表笔刷列表里；编辑页里归到最底部默认折叠的分组。")]
+    public bool surfaceTagOnly = false;
     [TextArea(2, 5)] public string note = "";
 
     [Header("视觉")]
@@ -101,6 +105,10 @@ public class GroundSurfaceMaterialDefinition : ScriptableObject
     [Header("纹理散布")]
     public GroundSurfaceTextureDistributionMode textureDistributionMode = GroundSurfaceTextureDistributionMode.SeamlessTiling;
     [Min(0.01f)] public float textureWorldSize = 4f;
+    [Tooltip("刷到 Terrain 时地形层的平铺按上面的「纹理世界尺寸」，而不是放置工具默认的 4 米。\n" +
+             "贴图里画的是按米对齐的图案（比如白模地面的 1 米 / 5 米网格）时打开。\n" +
+             "默认关：很多旧材质的纹理世界尺寸填着从没生效过的值，打开会改变它们在地图上的纹理密度。")]
+    public bool terrainTileUsesTextureWorldSize = false;
     [Min(0.01f)] public float randomScaleMin = 0.9f;
     [Min(0.01f)] public float randomScaleMax = 1.15f;
     [Range(0f, 1f)] public float randomOffsetStrength = 1f;
@@ -172,6 +180,36 @@ public class GroundSurfaceMaterialDefinition : ScriptableObject
     [Range(0f, 2f)] public float brightness = 1f;
     [Range(0f, 2f)] public float contrast = 1f;
     [Range(0f, 2f)] public float saturation = 1f;
+
+    [Header("虚空")]
+    [Tooltip("虚空地表：刷到地形上的地方地面整块消失（逐像素裁剪，边缘是平滑曲线，不像 Terrain 挖洞那样有锯齿台阶），\n" +
+             "角色不能走上去（移动系统把它当墙）。没有脚步声——不挂音效包、地面标签保持「未指定」。\n\n" +
+             "只去掉画面，Terrain 碰撞还在：需要物体真正掉下去的地方仍用挖洞工具。\n" +
+             "首次用放置工具刷时自动给地形挂 SkyPrisonTerrainGrateBinder 并换格栅版地形着色器。\n" +
+             "和「格栅镂空」互斥，一张地形同一时间只支持一种虚空材质。")]
+    public bool isVoid = false;
+
+    [Header("格栅镂空")]
+    [Tooltip("刷到地形上的地方变成金属格栅：按格栅图案镂空，透出地形下方的建筑群。\n\n" +
+             "只镂空视觉，碰撞不变——角色照常站在上面走。\n" +
+             "首次用放置工具刷这个材质时，会自动给地形挂 SkyPrisonTerrainGrateBinder 并换成格栅版地形着色器。\n" +
+             "一张地形同一时间只支持一种格栅材质。")]
+    public bool seeThroughGrate = false;
+    [Tooltip("格子间距（米）：相邻两根栅条中心之间的距离。")]
+    [Min(0.05f)] public float grateCellSize = 0.5f;
+    [Tooltip("栅条宽度（米）。等于格子间距时就是实心地面。")]
+    [Min(0.005f)] public float grateBarWidth = 0.08f;
+    [Tooltip("镂空遮罩：白 = 实心栅条，黑 = 镂空。\n" +
+             "要和「基础纹理」是同一套像素布局（同尺寸、栅条在同一位置）——遮罩按这个地形层自己的\n" +
+             "平铺尺寸采样，镂空位置和颜色贴图上画的栅条逐像素对齐。\n" +
+             "不能直接用颜色贴图的 Alpha：Textures/Ground/Surface/ 下的地表贴图导入时会被强制去掉\n" +
+             "Alpha（URP 地形把 diffuse 的 Alpha 当光滑度），所以遮罩单独一张黑白图，放 Textures/Ground/Mask/。\n" +
+             "留空则用上面的格子间距 / 栅条宽度程序化生成（白模阶段用）。")]
+    public Texture2D grateMaskTexture;
+    [Tooltip("不勾（默认）读 R 通道——黑白遮罩；勾选读 Alpha 通道——遮罩贴图本身带透明孔洞时用。")]
+    public bool grateMaskUseAlpha = false;
+    [Tooltip("遮罩值低于这个就镂空。")]
+    [Range(0.01f, 0.99f)] public float grateMaskThreshold = 0.5f;
 
     [Header("地面规则")]
     public GroundSurfaceType surfaceType = GroundSurfaceType.Default;

@@ -424,6 +424,10 @@ public class SkyPrisonLocalizationPage : SkyPrisonEditorPageBase
         { "ui_menu_steam_store", ("Steam 商店",   "Steam ストア",                 "Steam Store")       },
         { "ui_menu_quit",        ("退出游戏",     "終了",                         "Quit")              },
         { "ui_menu_press_any",   ("按任意键开始", "何かボタンを押してください",   "PRESS ANY BUTTON")  },
+        // 设置界面 - 语言Tab
+        { "ui_settings_voice_language", ("语音语言", "音声言語", "Voice Language") },
+        // 设置界面 - 玩法Tab
+        { "ui_settings_dialogue_autoplay", ("对话自动播放", "会話自動再生", "Dialogue Auto-Play") },
     };
 
     private void FillDefaultTexts()

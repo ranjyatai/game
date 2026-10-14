@@ -15,6 +15,11 @@ public class SavedItemEntry
     /// <summary>当前耐久度。-1 = 不参与耐久系统。</summary>
     public int durability = -1;
 
+    /// <summary>热武器：当前弹匣内弹药数。-1 = 不参与弹匣系统。之前这里没存，存档读回来
+    /// 弹匣会被 InventoryItemEntry 构造函数的"掉落/生成时默认满弹匣"规则重新填满，
+    /// 等于每次读档都白送一次满弹夹。</summary>
+    public int magazineAmmo = -1;
+
     /// <summary>武器组件：是否已鉴定。</summary>
     public bool isIdentified = true;
 
@@ -37,6 +42,7 @@ public class SavedItemEntry
         itemKey      = entry.definition?.itemKey ?? "";
         count        = entry.count;
         durability   = entry.currentDurability;
+        magazineAmmo = entry.currentMagazineAmmo;
         isIdentified = entry.isIdentified;
         rolledBonuses  = entry.rolledBonuses  ?? new List<RolledModBonus>();
         installedMods  = entry.installedMods  ?? new List<InstalledModEntry>();
@@ -55,6 +61,10 @@ public class SavedItemEntry
 
         var result = new InventoryItemEntry(def, Math.Max(1, count));
         if (durability >= 0) result.currentDurability = durability;
+        // magazineAmmo 存的是负数(-1)表示"这把武器存档时不参与弹匣系统"，不应该覆盖
+        // 构造函数按当前 def 算出来的默认值(近战武器/不吃弹药武器本来就该是-1)；
+        // 只有存档时明确参与弹匣系统(>=0)才用存档值覆盖构造函数给的默认满弹匣。
+        if (magazineAmmo >= 0) result.currentMagazineAmmo = magazineAmmo;
         if (rolledBonuses?.Count > 0) result.rolledBonuses = rolledBonuses;
         if (installedMods?.Count > 0) result.installedMods = installedMods;
         if (dyeColors?.Length == 3) result.dyeColors = dyeColors;

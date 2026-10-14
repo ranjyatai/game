@@ -19,6 +19,12 @@ public class CurrencyRuntime : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+        // 和背包一样要跨场景常驻，否则换图货币会清零
+        if (Application.isPlaying)
+        {
+            transform.SetParent(null, true);
+            DontDestroyOnLoad(gameObject);
+        }
     }
 
     private void OnDestroy()
@@ -42,6 +48,26 @@ public class CurrencyRuntime : MonoBehaviour
     }
 
     public void Add(string currencyId, long delta) => Set(currencyId, Get(currencyId) + delta);
+
+    // ── 存档 ──────────────────────────────────────────────────────────────
+
+    public List<SavedCurrencyEntry> Serialize()
+    {
+        var list = new List<SavedCurrencyEntry>();
+        foreach (var kv in _amounts)
+            if (kv.Value > 0) list.Add(new SavedCurrencyEntry { currencyId = kv.Key, amount = kv.Value });
+        return list;
+    }
+
+    /// <summary>读档 / 新游戏：先把现有货币全部清零（触发变化事件，界面能刷新），再按存档数据写回。</summary>
+    public void Deserialize(List<SavedCurrencyEntry> saved)
+    {
+        foreach (var id in new List<string>(_amounts.Keys)) Set(id, 0);
+        _amounts.Clear();
+        if (saved == null) return;
+        foreach (var s in saved)
+            if (s != null && !string.IsNullOrEmpty(s.currencyId)) Set(s.currencyId, s.amount);
+    }
 
     /// <summary>扣款：不足返回 false（不扣）。</summary>
     public bool Spend(string currencyId, long cost)

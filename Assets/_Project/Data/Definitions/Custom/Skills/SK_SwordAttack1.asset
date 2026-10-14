@@ -33,6 +33,9 @@ MonoBehaviour:
     dashVfx: {fileID: 0}
     dashVfxAnchor: 0
     dashVfxCharacterAnchorOffset: {x: 0, y: 0, z: 0}
+  playOnUpperBodyOverlay: 0
+  loopWhileHeld: 0
+  loopWindowSeconds: 0.3333333
   hitbox:
     shape: 0
     offset: {x: 0, y: 0}
@@ -49,6 +52,7 @@ MonoBehaviour:
     projectileVfx: {fileID: 0}
     projectileVfxScale: {x: 1, y: 1, z: 1}
     impactVfx: {fileID: 0}
+    impactPropPrefab: {fileID: 0}
   damageMultiplier: 1
   damageTypeKey: slash
   attributeHits: []
@@ -60,6 +64,7 @@ MonoBehaviour:
   recoveryTime: 0.2
   nextComboSkillKey: 
   swingVFX: {fileID: 11400000, guid: acd504fa9e0e3cf4a97d0b2471ffdc53, type: 2}
+  swingVfxOffset: {x: 0, y: 0, z: 0}
   travelVfx: {fileID: 0}
   travelVfxAnchor: 1
   travelVfxCharacterAnchorOffset: {x: 0, y: 0, z: 0}

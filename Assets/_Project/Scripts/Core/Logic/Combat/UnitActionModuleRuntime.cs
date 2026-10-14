@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using Effekseer;
+using RVFX.MuzzleFlashesImpacts;
+using RVFX.Tools;
 using Spine;
 using Spine.Unity;
 using UnityEngine;
@@ -40,6 +42,16 @@ public class UnitActionModuleRuntime : MonoBehaviour
         "跟hit_end绑一起：hit_end管的是近战判定框关闭/挥空音效，跟悬停该什么时候\n" +
         "结束是两件不同的事，动画上未必是同一帧。")]
     [SerializeField] private string jumpStayEventKey = "jump_stay";
+    [Tooltip("换弹动画里弹夹脱手的那一帧打的 Spine 事件名——Spine 那边同一帧把手上弹夹的\n" +
+        "Attachment 隐藏，这边同时在世界空间生成一个独立的掉落弹夹道具，两者靠同一帧\n" +
+        "对齐，看起来就是弹夹从手上直接掉出去了。")]
+    [SerializeField] private string magazineDropEventKey = "Reload";
+    [Tooltip("枪械攻击动画里，枪口真正开火的那一帧打的 Spine 事件名——弹药消耗从\n" +
+        "\"按下攻击键那一刻\"改成绑在这个事件上，扣弹时机跟枪口火光实际出现同步。\n" +
+        "一段动画里可以打多个这个事件（点射/连发一次打好几发），每个事件各扣一发；\n" +
+        "按键那一刻仍然会检查弹匣够不够（不够整个攻击都出不去），只是真正扣减延后\n" +
+        "到这里。")]
+    [SerializeField] private string gunFireEventKey = "gun";
 
     [Header("空手攻击扬尘")]
     [Tooltip("空手攻击扬尘相对角色根节点、朝当前朝向的前方偏移。不追踪拳头骨骼——不同角色骨架规格不一(部分敌人没有专门的手部骨骼)，追踪出来的位置时准时不准，固定偏移对所有角色稳定一致。")]
@@ -91,6 +103,29 @@ public class UnitActionModuleRuntime : MonoBehaviour
     private bool _hasSeenRealDodgeStartForFacingHold = false;
     private int _attackCancelDodgeBackHeldFacing = 1;
 
+    /// <summary>射击被闪避打断、默认后撤这条路径专用(SkyPrisonPlayerInputRouter.
+    /// RequestDodgeDefaultBackward)——复用跟近战"攻击取消后撤步"完全同一套朝向冻结+
+    /// 安全释放机制(见Update()里_holdingFacingForAttackCancelDodgeBack那段)，不用为
+    /// 这第二个后撤步来源重新写一遍race condition处理。调用方必须在真正调用
+    /// actionController.RequestDodge(..., Back, ...)之前调这个，顺序反了朝向会先转
+    /// 一帧再冻住，冻的是错的朝向。</summary>
+    public void HoldFacingForDefaultBackDodge()
+    {
+        if (animationDriver == null) return;
+
+        animationDriver.SetFacingHold(true);
+        _holdingFacingForAttackCancelDodgeBack = true;
+        _hasSeenRealDodgeStartForFacingHold = false;
+        _attackCancelDodgeBackHeldFacing = animationDriver.Facing;
+    }
+
+    /// <summary>角色当前真正的视觉朝向(-1/1，跟 SpineAnimationDriver_Current.Facing 同一套
+    /// 值)——路由脚本算"后撤方向"不能用 movement.FacingInput，那个是移动意图/速度兜底，
+    /// 后撤闪避结束时如果玩家没有真实按键、残留速度会让它在原地"回弹"指向刚才闪避
+    /// 位移的方向(背对真实朝向)，下一次闪避拿这个当基准算出来的后撤方向会跟视觉朝向
+    /// 反着来。直接读渲染用的这份朝向，两边永远是同一个数据源，不会再分叉。</summary>
+    public int VisualFacingSign => animationDriver != null ? animationDriver.Facing : 1;
+
     // 空中攻击悬停：触发那一刻冻结跳跃垂直物理(movement.SetJumpVerticalPhysicsFrozen)，
     // 正常情况下 jump_stay 触发时解除（2026-07-21从hit_end改过来，见HandleSpineEvent）。
     // Update() 里有个兜底——如果攻击因为别的原因中途结束(比如中途被打断进HitStun)、
@@ -101,7 +136,9 @@ public class UnitActionModuleRuntime : MonoBehaviour
     // 冻结播放速度；ReleaseChargeAttack() 被调用时如果还是这个TrackEntry（没被别的
     // 动作打断掉），就把播放速度恢复，让动画继续播完剩下的部分。
     private TrackEntry _chargeHeldTrackEntry;
-    public bool IsChargeHeld => _chargeHeldTrackEntry != null;
+    // 只有"确实还处在攻击状态"才算在蓄力：被打进受击硬直/被闪避打断后，蓄力定格的动画句柄还留在字段里，
+    // 光判断句柄非空会把"已经被打断"误当成"仍在蓄力"。
+    public bool IsChargeHeld => _chargeHeldTrackEntry != null && (actionController == null || actionController.IsAttacking);
 
     // 玩家点得很快时，松开蓄力键那一刻动画可能还没播到charge_hold定格帧
     // （_chargeHeldTrackEntry还是null），ReleaseChargeAttack会直接空跑返回——之后
@@ -135,6 +172,9 @@ public class UnitActionModuleRuntime : MonoBehaviour
     private float _travelVfxUntil;
     private ChargeDashVfxAnchorMode _travelVfxAnchorMode;
     private Vector3 _travelVfxCharacterAnchorOffset;
+    // 生成时的缩放（含朝向镜像），每帧跟随时乘上透视补偿重新设置。
+    private Vector3 _travelVfxBaseScale = Vector3.one;
+    private Vector3 _chargeDashVfxBaseScale = Vector3.one;
 
     // 从charge_hold触发那一刻记录时间，ReleaseChargeAttack时算握住了多久，满
     // charge.fullChargeHoldSeconds才算"蓄满"，HandleHit结算伤害时读这个标记加成。
@@ -179,6 +219,11 @@ public class UnitActionModuleRuntime : MonoBehaviour
     /// 这些"换装备"才触发的事件（那些事件在同一把枪连续开火/换弹时根本不会触发）。</summary>
     public static event System.Action OnWeaponAmmoChanged;
 
+    /// <summary>C# 事件只能在声明它的类内部触发——InventoryRuntime 丢弃弹药时也需要
+    /// 通知武器切换HUD刷新，但事件只能从这个类自己的代码里 Invoke，所以开一个公开
+    /// 方法给外部调用方转发。</summary>
+    public static void RaiseWeaponAmmoChanged() => OnWeaponAmmoChanged?.Invoke();
+
     public WeaponCombatModule CurrentModule => _currentModule;
     /// <summary>当前是否处于空手模组（未装备武器，或装备的武器没配 weaponModuleKey 落回默认）。</summary>
     public bool IsUnarmed => _currentModule == unarmedModule;
@@ -187,6 +232,82 @@ public class UnitActionModuleRuntime : MonoBehaviour
     /// 里判断用的是同一个值，两次判断必须一致。</summary>
     public float CurrentDodgeThrustOpenAfterFraction =>
         (_currentModule ?? unarmedModule)?.dodgeThrustOpenAfterFraction ?? 0.6f;
+    /// <summary>当前生效模组配置的手型叠加动画名字，给 SpineAnimationDriver 的手部叠加
+    /// 轨道用——同一个"当前模组，没配就落回空手模组"解析规则，跟上面 Dodge Thrust 那个
+    /// 一致，避免两处各写一份、以后改了空手模组名字漏改一处。</summary>
+    public string CurrentHandPoseAnimationKey =>
+        (_currentModule ?? unarmedModule)?.handPoseAnimationKey;
+    /// <summary>当前生效模组是否允许按住轻攻击键连发（枪械），给 InputRouter 判断要不要
+    /// 在按键松开前持续补发轻攻击用。</summary>
+    public bool AutoFireLightAttackWhileHeld =>
+        (_currentModule ?? unarmedModule)?.autoFireLightAttackWhileHeld ?? false;
+    /// <summary>当前正在播的技能是不是"按住持续循环"的机枪式连发——给 InputRouter 判断
+    /// 松开攻击键时要不要调 ReleaseHeldLightAttack() 主动收尾用（这类技能不会在动画
+    /// Complete时自动结束攻击状态，见 SpineAnimationDriver_Current.UpdateHeavyAttackOverlay）。</summary>
+    public bool CurrentSkillLoopsWhileHeld => _currentSkill != null && _currentSkill.loopWhileHeld;
+
+    /// <summary>按住攻击键的连发有没有"武装"——弹药/LP见底强制打断连发之后会置false，
+    /// 玩家必须先松开攻击键(GetActionUp)重新武装，InputRouter那边"按住自动补发"的
+    /// 判断才会重新生效。没有这个的话，弹药/LP归零那一刻子弹虽然正确停了，但只要
+    /// 玩家手指还按着鼠标没松开，资源一回一点点(比如LP自然回复)，下一帧自动补发的
+    /// 判断就会立刻把新的一轮连发悄悄打开——玩家可能早就不再有意识地"按着开火"了
+    /// (比如只是走路，鼠标其实还压着没释放)，忽然自己开了一枪，体验上很莫名其妙。
+    /// 要求"打断后必须先松再按"，是大多数游戏"打空了得松手重新扣扳机"的标准手感。</summary>
+    public bool AutoFireArmed { get; private set; } = true;
+
+    /// <summary>射击时按闪避键、当前技能是机枪式连发(loopWhileHeld)时由 InputRouter
+    /// 调用——不是像近战那样"取消攻击、接一段前闪/后闪"，就是单纯把枪当场关掉：硬性
+    /// 清空Track2(不留任何还在mix/循环推进的旧片段)，立即把攻击状态收回Normal，
+    /// 不走"播完收枪后摇动画才收尾"那条需要时间的流程。调用方紧接着会把这次按键
+    /// 当成完全没有在攻击、走普通闪避判定，两者顺序执行，不共用状态机。</summary>
+    public void HardStopLoopingAttackForDodge()
+    {
+        // 2026-08-25 追加：这里之前误设成true——如果玩家闪避那一刻手指还压着开火键
+        // 没放开(边闪避边射击的场景本来就常见)，"按住自动补发"那段逻辑会在闪避刚
+        // 开始、currentState 变成 Dodge、IsAttacking 变成 false 的这一帧，立刻判定
+        // "现在没在攻击、键还按着"重新发起一次攻击请求——由于此时正处于Dodge，
+        // CanEnterAttack() 会拒绝，请求被缓冲(_bufferedAttackKind)，一旦Dodge的锁定
+        // 窗口结束(哪怕只是一瞬间)，缓冲请求立刻补发、把 currentState 从 Dodge 又拽回
+        // Attack——而movement层的闪避(dodgeState)是独立状态机，不会跟着一起被打断，
+        // 于是出现"movement.IsDodging还是true，但actionController.CurrentState已经
+        // 变回Attack"这种撕裂状态，动画那边一直读到Attack状态，闪避角色的持续动作/
+        // 时长纠正全都套用不上，表现就是"很短的闪避"。改成false，要求玩家闪避之后
+        // 必须先松开攻击键、重新按一次才会继续开火，缓冲请求也会被TryPlayerRequestLightAttack
+        // 里的AutoFireArmed检查挡住，不会在闪避途中把状态抢回去。
+        animationDriver?.HardStopHeavyAttackOverlay();
+        actionController?.NotifyAttackAnimationComplete();
+        AutoFireArmed = false;
+    }
+
+    /// <summary>按住攻击键的机枪式连发松开时由 InputRouter 调用——结束循环播放、把攻击
+    /// 状态收回Normal。对非loopWhileHeld的技能是安全的空操作（IsAttacking为false时
+    /// 直接跳过，不会误伤正常的一次性攻击流程）。真正的手指松开事件，重新武装连发。</summary>
+    public void ReleaseHeldLightAttack()
+    {
+        AutoFireArmed = true;
+        if (!CurrentSkillLoopsWhileHeld) return;
+        if (actionController == null || !actionController.IsAttacking) return;
+
+        // 不在这里直接调 NotifyAttackAnimationComplete()——StopHeavyAttackOverlayLoop()
+        // 现在会先播一段收枪后摇动画，播完由它自己的Complete回调触发收尾，这段时间
+        // 依然是Attack状态，好让"闪避取消攻击"有跟近战一致的窗口（见该方法内注释）。
+        animationDriver?.StopHeavyAttackOverlayLoop();
+    }
+
+    /// <summary>由 InputRouter 在 actionController.RequestLightAttack() 真正让角色进入
+    /// Attack 状态之后立刻调用——machine枪式连发不会走 Complete 事件收尾(见
+    /// SpineAnimationDriver_Current.UpdateHeavyAttackOverlay 的注释)，UnitActionController.
+    /// EnterAttack() 挂的"Complete 迟迟不触发就强制解锁"兜底超时(至少1.5秒)会在还按着
+    /// 攻击键、动画还在正常循环的情况下把攻击状态误伤强制打断——表现就是手没松开，
+    /// 角色的持枪姿势却每隔一段时间自己放下再抬起来，不是真正连续的射击。这里复用
+    /// 蓄力定格那套已有的 SuspendAttackLockFallback，跟"技能选定→真正进入Attack状态"
+    /// 这个时序绑在一起，比在 TryPlayerRequestLightAttack 里调更早、那时候 currentState
+    /// 还没变成Attack，SuspendAttackLockFallback 内部的状态检查会直接跳过不生效。</summary>
+    public void SuspendAttackLockFallbackIfLooping()
+    {
+        if (CurrentSkillLoopsWhileHeld)
+            actionController?.SuspendAttackLockFallback();
+    }
     public SkillDefinition        CurrentSkill  => _currentSkill;
     public int                    ComboIndex    => _comboIndex;
     /// <summary>当前生效的判定框——武器视觉挂件（WeaponVisualRuntime）装备近战武器时
@@ -309,6 +430,13 @@ public class UnitActionModuleRuntime : MonoBehaviour
         if (actionController != null)
             actionController.BufferedAttackReady -= HandleBufferedAttackReady;
 
+        if (_shellEjectInstance != null)
+        {
+            Destroy(_shellEjectInstance);
+            _shellEjectInstance = null;
+            _shellEjectEmitter = null;
+        }
+
         // TODO: inventoryRuntime.OnEquipmentChanged -= HandleEquipmentChanged;
     }
 
@@ -321,7 +449,10 @@ public class UnitActionModuleRuntime : MonoBehaviour
         if (kind == UnitActionController.AttackRequestKind.Light)
         {
             if (TryPlayerRequestLightAttack())
+            {
                 actionController.RequestLightAttack();
+                SuspendAttackLockFallbackIfLooping();
+            }
         }
         else if (kind == UnitActionController.AttackRequestKind.Heavy)
         {
@@ -330,8 +461,38 @@ public class UnitActionModuleRuntime : MonoBehaviour
         }
     }
 
+    // 弹匣打空、背包里还有备用弹药时自动换弹，不用每次都手动按 R。只对玩家生效；
+    // 正在攻击/换弹中不触发（等这一枪的动画打完）；检查间隔 0.15 秒，不每帧查背包。
+    [Header("自动换弹")]
+    [Tooltip("玩家弹匣打空、背包里还有备用弹药时自动换弹。关掉就回到手动按换弹键。")]
+    [SerializeField] private bool autoReloadWhenEmpty = true;
+    private float _autoReloadCheckAt;
+    private int _ownerIsPlayerCache = -1;
+
+    private bool IsPlayerOwned()
+    {
+        if (_ownerIsPlayerCache >= 0) return _ownerIsPlayerCache == 1;
+        var binder = GetComponent<UnitDefinitionRuntimeBinder>() ?? GetComponentInParent<UnitDefinitionRuntimeBinder>(true);
+        if (binder == null || binder.UnitDefinitionAsset == null) return false;
+        _ownerIsPlayerCache = binder.UnitDefinitionAsset.characterIdentity == CharacterIdentity.Player ? 1 : 0;
+        return _ownerIsPlayerCache == 1;
+    }
+
+    private void TickAutoReload()
+    {
+        if (!autoReloadWhenEmpty || Time.time < _autoReloadCheckAt) return;
+        _autoReloadCheckAt = Time.time + 0.15f;
+        if (_currentWeaponExt == null || !_currentWeaponExt.usesAmmo || actionController == null) return;
+        if (!IsPlayerOwned()) return;
+        if (actionController.IsReloading || actionController.IsAttacking) return;
+        InventoryItemEntry entry = ResolveCurrentWeaponEntry();
+        if (entry == null || entry.currentMagazineAmmo >= _currentWeaponExt.ammoPerShot) return;
+        TryPlayerRequestReload();      // 内部会检查：背包有没有备用弹、当前状态能不能进换弹
+    }
+
     private void Update()
     {
+        TickAutoReload();
         if (_comboIndex > 0 && Time.time > _comboResetTime)
         {
             _comboIndex = 0;
@@ -428,7 +589,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
         var inventory = InventoryRuntimeBootstrap.Instance?.Inventory;
         if (ext == null || inventory == null) return;
 
-        int room = Mathf.Max(0, ext.magazineSize - entry.currentMagazineAmmo);
+        int room = Mathf.Max(0, ext.EffectiveMagazineSize - entry.currentMagazineAmmo);
         int available = inventory.GetAmmoCount(ext.ammoCaliber);
         int take = Mathf.Min(room, available);
         if (take <= 0) return;
@@ -449,6 +610,21 @@ public class UnitActionModuleRuntime : MonoBehaviour
         return eq.GetEquipped(eq.ActiveWeaponSlot);
     }
 
+    /// <summary>换弹耗时 = 武器基础耗时(ext.reloadDurationSeconds) 除以"换弹速度"这个
+    /// 战斗属性。先占位接进 UnitBattleStatRuntime，方便以后成长/装备/技能加成直接往
+    /// 这个 key 上叠加，不用等真正有加成来源了再回头重构——跟 atk/critRate 用的是
+    /// 同一套 GetFinalValue(key, fallback) 读法，reloadSpeed 也是百分比存法（100=100%
+    /// =原速，150=换弹时间缩短到2/3），不是0~1小数，读出来记得除以 PercentScale。
+    /// 没挂 UnitBattleStatRuntime，或者这个 key 还没配任何加成来源时，落回100%原速，
+    /// 不影响现在的手感。</summary>
+    private float ResolveReloadDurationSeconds(ItemEquipmentExtension ext)
+    {
+        UnitBattleStatRuntime stats = ResolveAttackerStats();
+        float reloadSpeedPercent = stats != null ? stats.GetFinalValue("reloadSpeed", PercentScale) : PercentScale;
+        float multiplier = Mathf.Max(0.01f, reloadSpeedPercent / PercentScale);
+        return ext.reloadDurationSeconds / multiplier;
+    }
+
     /// <summary>由 InputRouter 在玩家按下换弹键时调用——检查武器是否吃弹药、弹匣是否
     /// 已满、背包是否还有备用弹药、当前状态是否允许进入换弹，都通过才真正进入Reload
     /// 状态。真正的弹药数值变化延迟到换弹自然结束才发生，见 UpdateReloadCompletion。</summary>
@@ -460,13 +636,21 @@ public class UnitActionModuleRuntime : MonoBehaviour
         InventoryItemEntry weaponEntry = ResolveCurrentWeaponEntry();
         ItemEquipmentExtension ext = weaponEntry?.definition?.equipment;
         if (ext == null || !ext.usesAmmo) return false;
-        if (weaponEntry.currentMagazineAmmo >= ext.magazineSize) return false; // 弹匣已满，不用换
+        if (weaponEntry.currentMagazineAmmo >= ext.EffectiveMagazineSize) return false; // 弹匣已满，不用换
 
         var inventory = InventoryRuntimeBootstrap.Instance?.Inventory;
         if (inventory == null || inventory.GetAmmoCount(ext.ammoCaliber) <= 0) return false; // 背包没备用弹药
 
-        if (!actionController.RequestReload(ext.reloadDurationSeconds))
+        if (!actionController.RequestReload(ResolveReloadDurationSeconds(ext)))
             return false;
+
+        // 跟攻击同一个约定（CancelSprintOrSneakForAttack）——枪械模组勾了
+        // blockAttackWhileSprintOrSneak 的话，按下换弹键也应该把奔跑/潜行降级成
+        // 正常走路，而不是全程保持奔跑姿态换弹。换弹本身允许移动(Reload状态不锁
+        // locomotion)，但"允许走"和"允许全速奔跑/潜行"是两回事，跟开火时的规则
+        // 保持一致。
+        if (_currentModule != null)
+            CancelSprintOrSneakForAttack(_currentModule);
 
         _reloadTargetEntry = weaponEntry;
         return true;
@@ -483,7 +667,8 @@ public class UnitActionModuleRuntime : MonoBehaviour
         if (Time.time >= _chargeDashVfxUntil)
             return;
 
-        _chargeDashVfxHandle.SetLocation(ResolveChargeDashVfxWorldPosition());
+        _chargeDashVfxHandle.SetLocation(ResolveChargeDashVfxWorldPosition(out float scaleCompensation));
+        _chargeDashVfxHandle.SetScale(_chargeDashVfxBaseScale * scaleCompensation);
     }
 
     /// <summary>通用位移特效跟随——跟 UpdateChargeDashVfxFollow 是同一个道理，只是给
@@ -496,7 +681,199 @@ public class UnitActionModuleRuntime : MonoBehaviour
         if (Time.time >= _travelVfxUntil)
             return;
 
-        _travelVfxHandle.SetLocation(ResolveDashVfxWorldPosition(_travelVfxAnchorMode, _travelVfxCharacterAnchorOffset));
+        _travelVfxHandle.SetLocation(ResolveTravelVfxWorldPosition(out float scaleCompensation));
+        _travelVfxHandle.SetScale(_travelVfxBaseScale * scaleCompensation);
+    }
+
+    // ── 枪械视觉：枪口火光 / 弹壳抛出（外购VFX包，普通GameObject，不是Effekseer） ──
+
+    private GameObject _shellEjectInstance;
+    private ShellEjectionEmitter _shellEjectEmitter;
+
+    /// <summary>弹壳抛出实例常驻挂在角色身上，跟枪口火光/弹幕那种"每次开火现场生成"
+    /// 不一样——ShellEjectionEmitter底层是ParticleSystem.Emit(1)，同一个发射器要一直
+    /// 活着才能反复补发，不能每发都new/Destroy一次。fx_tip是Spine PointAttachment，
+    /// 不是真Transform，没法直接Parent，所以改成每帧在Update()里手动同步位置，跟
+    /// UpdateTravelVfxFollow同一个模式。</summary>
+    private void RefreshShellEjectInstance()
+    {
+        if (_shellEjectInstance != null)
+        {
+            Destroy(_shellEjectInstance);
+            _shellEjectInstance = null;
+            _shellEjectEmitter = null;
+        }
+
+        GameObject prefab = _currentModule != null ? _currentModule.shellEjectPrefab : null;
+        if (prefab == null)
+            return;
+
+        _shellEjectInstance = Instantiate(prefab, ResolveWeaponTipWorldPosition(false), Quaternion.identity);
+        if (_currentModule.shellEjectScale != 1f)
+            _shellEjectInstance.transform.localScale *= Mathf.Max(0.01f, _currentModule.shellEjectScale);
+        ApplyWorld3DLayerAndSorting(_shellEjectInstance, 5);
+        _shellEjectEmitter = _shellEjectInstance.GetComponent<ShellEjectionEmitter>();
+    }
+
+    /// <summary>外购VFX包(RVFX)的Prefab默认层是Default、排序层是Default+sortingOrder=0，
+    /// 跟项目里其它VFX(剑气/血液)统一走的"World3D层 + Default排序层 + 角色Z*100算出
+    /// 的sortingOrder"这套2.5D排序约定完全没关系——不设的话，要么被遮挡/深度判定系统
+    /// 当成不存在的东西直接吃掉，要么排序错乱被角色/场景物挡在后面，表现就是"代码确实
+    /// 生成了，但画面上完全看不见"。跟 BloodVFXManager.SetLayerRecursive/
+    /// GetUnitSortingOrder 是同一套公式，直接照抄保持项目统一。</summary>
+    private void ApplyWorld3DLayerAndSorting(GameObject go, int sortingOrderOffset)
+    {
+        if (go == null) return;
+
+        int world3DLayer = LayerMask.NameToLayer("World3D");
+        int unitSortOrder = Mathf.RoundToInt(transform.position.z * 100f);
+
+        var psRenderers = go.GetComponentsInChildren<ParticleSystemRenderer>(true);
+        foreach (var r in psRenderers)
+        {
+            r.sortingLayerName = "Default";
+            r.sortingOrder = unitSortOrder + sortingOrderOffset;
+        }
+
+        var meshRenderers = go.GetComponentsInChildren<MeshRenderer>(true);
+        foreach (var r in meshRenderers)
+        {
+            r.sortingLayerName = "Default";
+            r.sortingOrder = unitSortOrder + sortingOrderOffset;
+        }
+
+        // LineRenderer(弹道拖尾用的那个)不是MeshRenderer的子类，上面那段漏不到它——
+        // 之前一直没看到拖尾，根因就是这个：层对了，但排序层/sortingOrder还是默认的
+        // Default+0，被角色/地面/墙这些不透明几何体正常深度排序挡在后面，没有真的
+        // "看不见"，是被挡住了。
+        var lineRenderers = go.GetComponentsInChildren<LineRenderer>(true);
+        foreach (var r in lineRenderers)
+        {
+            r.sortingLayerName = "Default";
+            r.sortingOrder = unitSortOrder + sortingOrderOffset;
+        }
+
+        if (world3DLayer >= 0)
+            SetLayerRecursive(go, world3DLayer);
+    }
+
+    private static void SetLayerRecursive(GameObject go, int layer)
+    {
+        go.layer = layer;
+        foreach (Transform child in go.transform)
+            SetLayerRecursive(child.gameObject, layer);
+    }
+
+    // 外购VFX包(RVFX)的Prefab全都没挂自动销毁——ParticleSystem的stopAction是None，
+    // 实测过了不是"自带清理逻辑"，得手动Destroy(go, 延迟)兜底，不然每开一枪就在
+    // 场景里留一个不会消失的GameObject。这个时长比粒子实际播放时长留了一点余量。
+    private const float MuzzleFlashAutoDestroySeconds = 1.5f;
+
+    /// <summary>gun事件触发的一次性视觉：枪口火光现场生成一份(手动定时销毁)，弹壳
+    /// 发射器补发一发。两个都留空/没装弹壳武器时安静跳过。muzzlePosition/fireDirection
+    /// 由调用方算好传进来——双持武器要跟子弹出生点用同一侧锚点，交替索引只能推进
+    /// 一次。
+    ///
+    /// 火光本体(爆闪粒子那几组)整体不跟着开火方向转——这几组是围着Prefab本地Z轴
+    /// 放射状喷出去的，是照"摄像机顺着枪口方向往前看"的标准FPS视角设计的；这个
+    /// 项目是侧面2.5D视角，如果把整个Prefab转成对齐水平开火方向，喷溅平面会被转到
+    /// 几乎正对屏幕纵深，侧面看过去喷溅体积大部分陷进纵深里，只剩中心不挑朝向的
+    /// 柔光团看得见——这才是"怎么调缩放都还是很小"的真正原因，不是纯尺寸问题。
+    /// 保持identity不转，让喷溅平面自然朝着摄像机(默认摆放朝向)。
+    ///
+    /// 弹道拖尾(BulletTrailEmitter)是单独一条线，不受这条限制——单独把它的朝向转到
+    /// 跟子弹实际飞行方向一致，不影响火光爆闪的朝向。</summary>
+    // 靠墙开枪时枪口火光/拖尾会"跟着角色一起被45度视角吃进墙里"——这两个是普通
+    // Transparent队列的Renderer，正常参与ZTest，真实世界坐标只要落在墙体网格背后
+    // （靠墙站时锚点很容易贴到墙面Z范围内）就会被墙的不透明深度直接挡住，跟角色
+    // 本体那套GPU深度遮挡轮廓不是一回事——角色有专门的描边兜底，特效没有，挡住了
+    // 就是纯粹看不见。不改真正的子弹/命中逻辑坐标（那个必须准），只把纯视觉的枪口
+    // 火光/弹壳单独朝摄像机方向顶出一点，顶开贴墙这几厘米的深度冲突，视觉上不会有
+    // 违和感（本来就是紧贴角色的瞬时特效）。
+    private const float MuzzleVisualCameraBias = 0.35f;
+
+    private Vector3 ApplyMuzzleVisualCameraBias(Vector3 worldPosition)
+    {
+        Camera cam = Camera.main;
+        if (cam == null)
+            return worldPosition;
+
+        Vector3 towardCamera = -cam.transform.forward;
+        return worldPosition + towardCamera * MuzzleVisualCameraBias;
+    }
+
+    private void PlayGunFireVisuals(Vector3 muzzlePosition, Vector3 fireDirection)
+    {
+        WeaponCombatModule mod = _currentModule;
+        if (mod == null)
+            return;
+
+        Vector3 visualMuzzlePosition = ApplyMuzzleVisualCameraBias(muzzlePosition);
+
+        if (mod.muzzleFlashPrefab != null)
+        {
+            GameObject muzzleFlash = Instantiate(mod.muzzleFlashPrefab, visualMuzzlePosition, Quaternion.identity);
+            if (mod.muzzleFlashScale != 1f)
+                muzzleFlash.transform.localScale *= Mathf.Max(0.01f, mod.muzzleFlashScale);
+
+            // BulletTrailEmitter 组件在 Prefab 里默认是禁用的(m_Enabled=0)——它自己的
+            // OnEnable() 会立刻按当前朝向现场生成拖尾线段(SpawnInternal，方向直接算
+            // 死存进那一段LineRenderer的起止点，之后再改transform.rotation对已经生成
+            // 的线段毫无影响)。之前的坑就在这：Instantiate() 期间它已经用Prefab默认
+            // 朝向自动触发过一次了，我后面才设rotation，等于白设，拖尾方向永远是错的、
+            // 而且没人会再触发第二次生成。现在改成禁用组件占位，这里先摆好朝向，再把
+            // enabled=true——它自己的OnEnable这才第一次真正触发，用的已经是摆好之后
+            // 的正确朝向。
+            if (fireDirection.sqrMagnitude > 0.0001f)
+            {
+                var trailEmitter = muzzleFlash.GetComponentInChildren<BulletTrailEmitter>(true);
+                if (trailEmitter != null)
+                {
+                    trailEmitter.transform.rotation = Quaternion.LookRotation(fireDirection, Vector3.up);
+
+                    // 拖尾的射线要跟真子弹在同一个平面上算——FireProjectileSkill 把子弹
+                    // 的 Z 对齐到角色脚底深度，而枪口锚点挂在 45 度倾斜的 Spine 上，Z 比
+                    // 脚底往墙里深了一截（实测 ~1.8）。贴墙朝侧面开枪时，射线从这个深度
+                    // 出发等于贴着墙面走，一两米就撞上墙的网格碰撞体，拖尾长度只剩 1~4、
+                    // 基本看不见；而真子弹在脚底深度飞得好好的。
+                    //
+                    // 做法：生成那一刻把发射器临时挪到脚底深度发射线，生成完再挪回枪口。
+                    // BulletTrailEmitter 的 followEmitterTransform 默认开（线段存在发射器
+                    // 本地空间），挪回去时整条拖尾跟着回到枪口，画面位置不变，长度按
+                    // 子弹平面算。
+                    Transform trailTransform = trailEmitter.transform;
+                    Vector3 visualTrailPosition = trailTransform.position;
+                    Vector3 physicsTrailPosition = visualTrailPosition;
+                    physicsTrailPosition.z = transform.position.z;
+                    trailTransform.position = physicsTrailPosition;
+                    trailEmitter.enabled = true;
+                    trailTransform.position = visualTrailPosition;
+                }
+            }
+
+            ApplyWorld3DLayerAndSorting(muzzleFlash, 5);
+
+            // 火光和拖尾改走跟角色本体相同的落地深度遮挡（锚点=Spine 根节点，与
+            // SpineOcclusionComposite 取 unity_ObjectToWorld 平移的是同一个点）。
+            // 上面的 MuzzleVisualCameraBias 对它们已不再需要，保留是为了弹壳。
+            Vector3 occlusionAnchor = skeletonAnimation != null
+                ? skeletonAnimation.transform.position
+                : transform.position;
+            SkyPrisonUnitAttachedVfxBinder.Bind(muzzleFlash, occlusionAnchor);
+
+            Destroy(muzzleFlash, MuzzleFlashAutoDestroySeconds);
+        }
+
+        if (_shellEjectEmitter != null)
+        {
+            // 开火这一刻才对齐一次位置，不再每帧连续追(见UpdateShellEjectFollow旧实现
+            // 已删)——这套ParticleSystem是moveWithTransform=1的"WorldSpace"变体，已经
+            // 抛出来在下落的弹壳仍然会跟着发射器Transform挪动。之前每帧把发射器摁回
+            // 固定锚点，锚点本身还会随开火动作小幅抬手，等于每帧都把"已经在下落"的弹壳
+            // 一起拽着走，叠加下来就是弹壳看起来在往上飘，而不是自然抛物线掉落。
+            _shellEjectInstance.transform.position = visualMuzzlePosition;
+            _shellEjectEmitter.Spawn();
+        }
     }
 
     /// <summary>播放一次 SkillDefinition.travelVfx 并在 durationSeconds 内逐帧跟随角色
@@ -508,7 +885,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
 
         _travelVfxAnchorMode = skill.travelVfxAnchor;
         _travelVfxCharacterAnchorOffset = skill.travelVfxCharacterAnchorOffset;
-        Vector3 vfxSpawnPosition = ResolveDashVfxWorldPosition(_travelVfxAnchorMode, _travelVfxCharacterAnchorOffset);
+        Vector3 vfxSpawnPosition = ResolveTravelVfxWorldPosition(out float travelScaleCompensation);
 
         float facing = animationDriver != null ? animationDriver.Facing : 1f;
 
@@ -524,7 +901,8 @@ public class UnitActionModuleRuntime : MonoBehaviour
         // 装饰性粒子造型是不对称手性图形，镜像朝右时单靠旋转转不出镜像版本，必须用
         // 负缩放做真正的几何翻转——跟冲刺特效/挥剑特效验证过的一样是Y轴取负。
         Vector3 vfxScale = facing == -1 ? new Vector3(1f, -1f, 1f) : Vector3.one;
-        _travelVfxHandle.SetScale(vfxScale);
+        _travelVfxBaseScale = vfxScale;
+        _travelVfxHandle.SetScale(vfxScale * travelScaleCompensation);
 
         int vfxLayer = LayerMask.NameToLayer("World3D");
         if (vfxLayer < 0) vfxLayer = 0;
@@ -538,8 +916,24 @@ public class UnitActionModuleRuntime : MonoBehaviour
     private const string ChargeDashVfxFxTipSlotName = "fx_tip";
     private const string ChargeDashVfxFxTipAttachmentName = "fx_tip";
 
-    private Vector3 ResolveChargeDashVfxWorldPosition() =>
-        ResolveDashVfxWorldPosition(_chargeDashVfxAnchorMode, _chargeDashVfxCharacterAnchorOffset);
+    // 冲刺/位移特效是 Effekseer，换不了着色器，靠沿视线推到脚底深度避免贴墙被吃
+    // （见 SkyPrisonUnitAttachedVfxBinder.SlideToOwnerFootDepth）。只套在特效专用的
+    // 这两个入口上——ResolveDashVfxWorldPosition 本身还给枪口/子弹出生点用，不能动。
+    // scaleCompensation：透视相机下推近镜头会变大，乘到特效缩放上保持屏幕尺寸不变。
+    private const float DashVfxOcclusionDepthMargin = 1f;
+
+    private Vector3 ResolveChargeDashVfxWorldPosition(out float scaleCompensation) =>
+        SkyPrisonUnitAttachedVfxBinder.SlideToOwnerFootDepth(
+            ResolveDashVfxWorldPosition(_chargeDashVfxAnchorMode, _chargeDashVfxCharacterAnchorOffset),
+            VfxOwnerFootPosition, DashVfxOcclusionDepthMargin, out scaleCompensation);
+
+    private Vector3 ResolveTravelVfxWorldPosition(out float scaleCompensation) =>
+        SkyPrisonUnitAttachedVfxBinder.SlideToOwnerFootDepth(
+            ResolveDashVfxWorldPosition(_travelVfxAnchorMode, _travelVfxCharacterAnchorOffset),
+            VfxOwnerFootPosition, DashVfxOcclusionDepthMargin, out scaleCompensation);
+
+    private Vector3 VfxOwnerFootPosition =>
+        skeletonAnimation != null ? skeletonAnimation.transform.position : transform.position;
 
     // 通用版本——蓄力冲刺特效和闪避接突刺的位移特效共用同一套锚点解析逻辑，
     // 区别只在于各自缓存的锚点模式/偏移量。
@@ -574,24 +968,77 @@ public class UnitActionModuleRuntime : MonoBehaviour
         return vfxAnchor.position;
     }
 
+    private int _weaponTipAlternateIndex;
+
+    /// <summary>按 Slot 名字直接找 Point Attachment 世界坐标——跟 ResolveDashVfxWorldPosition
+    /// 里 WeaponTip 分支的算法完全一样，唯一区别是 Slot 名字不是写死的常量，而是外面传
+    /// 进来的（不同武器皮肤的 fx_tip Slot 名字都不一样，比如京极五式军铳左右手分别叫
+    /// {fx_tip}gun_kyougokuType05_L / _R，不是通用的"fx_tip"）。找不到就退回角色骨骼
+    /// 根节点。</summary>
+    private Vector3 ResolveSlotWorldPosition(string slotName)
+    {
+        if (!string.IsNullOrWhiteSpace(slotName) && skeletonAnimation != null && skeletonAnimation.Skeleton != null)
+        {
+            Skeleton skeleton = skeletonAnimation.Skeleton;
+            Slot slot = skeleton.FindSlot(slotName);
+            if (slot != null)
+            {
+                Attachment attachment = skeleton.GetAttachment(slot.Data.Index, slotName);
+                if (attachment is PointAttachment point)
+                {
+                    point.ComputeWorldPosition(slot.Bone.AppliedPose, out float localX, out float localY);
+                    return skeletonAnimation.transform.TransformPoint(new Vector3(localX, localY, 0f));
+                }
+            }
+        }
+
+        Transform fallback = skeletonAnimation != null ? skeletonAnimation.transform : transform;
+        return fallback.position;
+    }
+
+    /// <summary>当前模组的武器尖端锚点——双持武器(weaponTipSlotNames配了两个以上)每次
+    /// 开火按顺序交替使用左右手，不会一直只从同一侧发射；单武器/没配就固定用第一个
+    /// (或没配时退回旧的 ResolveDashVfxWorldPosition(WeaponTip) 兜底路径)。advance=true
+    /// 才会真正把交替索引往后推一格——一次开火里枪口火光/子弹出生点/弹壳要用同一侧，
+    /// 只能有一个调用方推进索引，其余传false复用同一个结果。</summary>
+    private Vector3 ResolveWeaponTipWorldPosition(bool advance)
+    {
+        string[] slotNames = _currentModule != null ? _currentModule.weaponTipSlotNames : null;
+        if (slotNames == null || slotNames.Length == 0)
+            return ResolveDashVfxWorldPosition(ChargeDashVfxAnchorMode.WeaponTip, Vector3.zero);
+
+        int index = _weaponTipAlternateIndex % slotNames.Length;
+        if (advance)
+            _weaponTipAlternateIndex++;
+
+        return ResolveSlotWorldPosition(slotNames[index]);
+    }
+
     /// <summary>hit_start 触发、且 skill.isProjectileSkill 时调用——从武器尖端(fx_tip)
     /// 生成一发真正会飞的剑气抛射物，方向跟着角色朝向镜像(面右朝右下偏转，面左朝
     /// 左下偏转，偏转角度由 skill.projectile.launchAngleDownDegrees 配置)，同时给
-    /// 角色施加一个跟发射方向相反的小顿挫后坐力。</summary>
-    private void FireProjectileSkill(SkillDefinition skill)
+    /// 角色施加一个跟发射方向相反的小顿挫后坐力。spawnPosition由调用方算好传进来——
+    /// 双持武器(比如双枪)要跟枪口火光用同一侧锚点，交替索引只能推进一次，不能这里
+    /// 自己再单独解析一遍。</summary>
+    /// <summary>弹幕技能的实际发射方向——facingSign==-1(面右)对应世界+X，facingSign==1
+    /// (面左)对应世界-X，这个映射已经在攻击取消后撤步那次实测确认过。抽出来单独一个
+    /// 方法是因为枪口火光(带弹道拖尾的那个变体)现在也要按这个方向摆朝向，不能只有
+    /// 子弹自己知道往哪飞、火光却永远朝着固定方向不跟着转。</summary>
+    private Vector3 ResolveProjectileDirection(SkillDefinition skill)
     {
-        if (skill == null || skill.projectile == null) return;
-
-        // facingSign==-1(面右)对应世界+X，facingSign==1(面左)对应世界-X——这个映射
-        // 已经在攻击取消后撤步那次实测确认过，直接复用，不用再验证一遍。
         int facingSign = animationDriver != null ? animationDriver.Facing : 1;
         float horizontalSign = facingSign == -1 ? 1f : -1f;
 
         float angleRad = skill.projectile.launchAngleDownDegrees * Mathf.Deg2Rad;
         Vector3 direction = new Vector3(horizontalSign * Mathf.Cos(angleRad), -Mathf.Sin(angleRad), 0f);
         if (direction.sqrMagnitude > 0.0001f) direction.Normalize();
+        return direction;
+    }
 
-        Vector3 spawnPosition = ResolveDashVfxWorldPosition(ChargeDashVfxAnchorMode.WeaponTip, Vector3.zero);
+    private void FireProjectileSkill(SkillDefinition skill, Vector3 spawnPosition, Vector3 direction)
+    {
+        if (skill == null || skill.projectile == null) return;
+
         // 深度(Z)按角色脚底深度对齐，不用武器尖端锚点自己的Z——武器/手臂挂在骨骼上，
         // 挥砍/持械姿势不同时Z会跟着抖动，用角色根节点(约等于脚底)的Z更稳定，也跟
         // 这个2.5D项目里其它按深度排序的效果(比如脚步扬尘)是同一个基准。
@@ -646,24 +1093,26 @@ public class UnitActionModuleRuntime : MonoBehaviour
 
     public SkillDefinition RequestLightAttack()
     {
-        if (_currentModule == null || actionController == null) return null;
-        if (!actionController.CanEnterAttackPublic())          return null;
+        if (_currentModule == null || actionController == null) { if (debugLogs) Debug.LogWarning($"[LightAtk] {name}: 无模组/无控制器 module={(_currentModule != null)} ctrl={(actionController != null)}", this); return null; }
+        if (!actionController.CanEnterAttackPublic())          { if (debugLogs) Debug.LogWarning($"[LightAtk] {name}: 当前状态不能进攻击", this); return null; }
 
         var combo = _currentModule.lightAttackCombo;
-        if (combo == null || combo.Count == 0) return null;
+        if (combo == null || combo.Count == 0) { if (debugLogs) Debug.LogWarning($"[LightAtk] {name}: 连段为空", this); return null; }
 
         _comboIndex = _comboIndex % combo.Count;
         SkillDefinition skill = combo[_comboIndex];
-        if (skill == null) return null;
+        if (skill == null) { if (debugLogs) Debug.LogWarning($"[LightAtk] {name}: 连段[{_comboIndex}]是空技能", this); return null; }
 
-        if (!TryConsumeSkillLP(skill)) return null;
+        if (!TryConsumeSkillLP(skill)) { if (debugLogs) Debug.LogWarning($"[LightAtk] {name}: LP 不够(技能{skill.skillKey} lp={skill.lpCost})", this); return null; }
 
         _chargeHeldTrackEntry = null; // 新的一次攻击开始，清掉上一次可能残留的蓄力定格状态
         _chargeHeldSkill = null;
         _chargeReleaseRequestedEarly = false;
         _pendingAttackWasFullyCharged = false;
         _attackActivePhaseStarted = false;
-        actionController?.SetChargeMovementAllowed(false); // 轻攻击不是蓄力技，防止上一次蓄力攻击万一没走ReleaseChargeAttack正常收尾，残留的"蓄力时允许走路"状态漏到这次普通轻攻击里
+        // 同TryPlayerRequestLightAttack：默认清掉蓄力残留状态，但playOnUpperBodyOverlay
+        // 技能（如双枪射击）要跟着放行，允许攻击全程正常移动/转向。
+        actionController?.SetChargeMovementAllowed(skill.playOnUpperBodyOverlay);
         AttackRequestSequence++;
         _currentSkill   = skill;
         _comboIndex     = (_comboIndex + 1) % combo.Count;
@@ -719,6 +1168,30 @@ public class UnitActionModuleRuntime : MonoBehaviour
     /// <summary>由 InputRouter 调用。检查能否出招 → 扣 LP → 设 _currentSkill → 返回是否继续触发
     /// actionController。出招SE不在这里播——绑在hit_start事件上，跟判定框一起开，见
     /// HandleSpineEvent。</summary>
+    /// <summary>某些武器模组（比如双枪）没配重攻击技能，右键这个按键就该改去触发换弹，
+    /// 而不是按下去毫无反应——由 InputRouter 在 TryPlayerRequestHeavyAttack 失败、且
+    /// 判断出"根本没配重攻击"这个具体原因时调用。近战武器/heavyAttack 配了技能的模组
+    /// 这里返回 false，右键继续按原来的重攻击流程走，不受影响。</summary>
+    public bool ShouldHeavyAttackFallBackToReload()
+    {
+        WeaponCombatModule mod = _currentModule ?? unarmedModule;
+        return mod != null && mod.heavyAttack == null;
+    }
+
+    /// <summary>潜行/奔跑状态下这个模组的攻击优先级更高——不是拦住按键不让出招，而是
+    /// 反过来：只要按了攻击键，直接把奔跑/潜行状态取消掉，正常出招（近战武器默认不
+    /// 勾这个开关，边走边打、边跑边打都行；枪械勾了之后，按下攻击键会强制打断
+    /// 奔跑/潜行，立刻开火，不需要玩家自己先松键停下再开枪）。不会拦截/返回true
+    /// 阻止出招，只做取消奔跑/潜行这一件事。</summary>
+    private void CancelSprintOrSneakForAttack(WeaponCombatModule mod)
+    {
+        if (!mod.blockAttackWhileSprintOrSneak || movement == null)
+            return;
+
+        if (movement.IsRunHeld || movement.IsSneakHeld)
+            movement.CancelSprintAndSneak();
+    }
+
     public bool TryPlayerRequestLightAttack()
     {
         if (actionController == null || !actionController.CanEnterAttackPublic()) return false;
@@ -729,14 +1202,42 @@ public class UnitActionModuleRuntime : MonoBehaviour
         _comboIndex = _comboIndex % combo.Count;
         SkillDefinition skill = combo[_comboIndex];
         if (skill == null) return false;
-        if (!TryConsumeSkillLP(skill)) return false;
-        if (!TryConsumeAmmoForAttack()) return false;
+        // 弹药/LP见底强制打断连发之后，AutoFireArmed会被置false，要求玩家先松开
+        // 攻击键(ReleaseHeldLightAttack里重新武装)才能再次进场——这个检查统一放在
+        // 这个唯一入口，而不是只在InputRouter"按住自动补发"那一处判断：闪避取消攻击/
+        // 硬直期间攒下的缓冲攻击请求(HandleBufferedAttackReady)都会绕开InputRouter
+        // 那次检查、直接调这个方法，不在这里兜底的话，玩家手指全程没松开、资源被
+        // 闪避打断后又自然回满的情况下，缓冲请求会在没人"重新扣扳机"的情况下悄悄
+        // 把连发重新打开，见 AutoFireArmed 字段注释。
+        if (skill.loopWhileHeld && !AutoFireArmed) return false;
+        // 机枪式连发(loopWhileHeld)不在这里真扣LP——真正的消耗挪到每次gun事件按发扣
+        // (跟弹药同一套"进场只查、每发才真扣"的模式)。这里只查一下"完全没有LP了就
+        // 不让进"当兜底，不实际消费：如果在这里就跟其它技能一样直接扣一次进场费，
+        // 快速点击、还没等到第一发gun事件就松手打断循环的情况下，LP已经被扣了但连
+        // 一颗子弹都没打出去——这种"点一下就白扣"的体验是玩家反馈之后改的。
+        if (skill.loopWhileHeld)
+        {
+            if (!HasAnyLPForAttack()) return false;
+        }
+        else if (!TryConsumeSkillLP(skill))
+        {
+            return false;
+        }
+        if (!HasAmmoForAttack()) { PlayDryFireSE(); return false; }
+        // 取消奔跑/潜行必须放在所有"这次出招到底成不成"的检查(LP/弹药)都通过之后——
+        // 之前放在方法最开头，弹匣打空时按攻击键虽然最终 return false 什么都没打出去，
+        // 但奔跑状态已经被提前打断了，表现就是"没打出子弹，奔跑速度却莫名其妙掉了"。
+        CancelSprintOrSneakForAttack(mod);
         _currentSkill   = skill;
         _comboIndex     = (_comboIndex + 1) % combo.Count;
         _comboResetTime = Time.time + ComboResetWindow;
         _chargeReleaseRequestedEarly = false; // 新一次攻击开始，清掉上一次可能残留的标记
         _attackActivePhaseStarted = false;
-        actionController?.SetChargeMovementAllowed(false); // 轻攻击不是蓄力技，防止上一次蓄力攻击残留的"蓄力时允许走路"状态漏进来
+        // 大多数轻攻击不是蓄力技，默认清掉"蓄力时允许走路"状态，防止上一次蓄力攻击残留
+        // 状态漏进来；但像双枪射击这种勾了playOnUpperBodyOverlay（上半身覆盖轨道播放）
+        // 的技能，本来就要求下半身移动/转向不受影响，所以跟着这个标记放行，跟重攻击那边
+        // isChargeSkill的处理是同一个道理。
+        actionController?.SetChargeMovementAllowed(skill.playOnUpperBodyOverlay);
         return true;
     }
 
@@ -751,7 +1252,8 @@ public class UnitActionModuleRuntime : MonoBehaviour
         SkillDefinition skill = mod.heavyAttack;
         if (skill == null) return false;
         if (!TryConsumeSkillLP(skill)) return false;
-        if (!TryConsumeAmmoForAttack()) return false;
+        if (!HasAmmoForAttack()) { PlayDryFireSE(); return false; }
+        CancelSprintOrSneakForAttack(mod);
         _currentSkill   = skill;
         _comboIndex     = 0;
         _comboResetTime = 0f;
@@ -776,9 +1278,17 @@ public class UnitActionModuleRuntime : MonoBehaviour
         WeaponCombatModule mod = _currentModule ?? unarmedModule;
         if (mod == null) return false;
         SkillDefinition skill = mod.aerialAttack;
-        if (skill == null) return false;
-        if (!TryConsumeSkillLP(skill)) return false;
-        if (!TryConsumeAmmoForAttack()) return false;
+        if (skill == null)
+        {
+            Debug.Log($"[AerialDiag] TryPlayerRequestAerialAttack false: mod={mod.moduleKey}, aerialAttack skill is NULL", this);
+            return false;
+        }
+        if (!TryConsumeSkillLP(skill))
+        {
+            Debug.Log($"[AerialDiag] TryPlayerRequestAerialAttack false: TryConsumeSkillLP failed, lpCost={skill.lpCost}", this);
+            return false;
+        }
+        if (!HasAmmoForAttack()) { PlayDryFireSE(); Debug.Log("[AerialDiag] TryPlayerRequestAerialAttack false: HasAmmoForAttack failed", this); return false; }
         _currentSkill   = skill;
         _comboIndex     = 0;
         _comboResetTime = 0f;
@@ -815,7 +1325,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
         SkillDefinition skill = mod.dodgeThrustAttack;
         if (skill == null) return false;
         if (!TryConsumeSkillLP(skill)) return false;
-        if (!TryConsumeAmmoForAttack()) return false;
+        if (!HasAmmoForAttack()) { PlayDryFireSE(); return false; }
         _currentSkill   = skill;
         _comboIndex     = 0;
         _comboResetTime = 0f;
@@ -843,7 +1353,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
         SkillDefinition skill = mod.dodgeThrustAttack;
         if (skill == null) return false;
         if (!TryConsumeSkillLP(skill)) return false;
-        if (!TryConsumeAmmoForAttack()) return false;
+        if (!HasAmmoForAttack()) { PlayDryFireSE(); return false; }
         _currentSkill   = skill;
         _comboIndex     = 0;
         _comboResetTime = 0f;
@@ -902,11 +1412,24 @@ public class UnitActionModuleRuntime : MonoBehaviour
             isForward = dot > AttackCancelForwardDodgeDotThreshold;
         }
 
+        // 机枪式连发(loopWhileHeld)的Track2是loop=true的循环TrackEntry，Spine自己
+        // 独立按帧跑，不会因为下面 RequestAttackCancelDodgeBack 把 currentState 改成
+        // Dodge 就自动停——闪避真的成功触发之后才需要硬性清掉Track2（放在真正调用
+        // 之前会有反例：TP不够导致 RequestAttackCancelDodgeBack 失败时，攻击其实还在
+        // 正常继续，不该被这里提前打断）。不清的话，闪避期间Track2会继续循环、gun
+        // 事件照常触发，一边闪避一边"自己开枪"疯狂消耗LP/弹药，闪避结束后想靠
+        // NotifyAttackAnimationComplete 收尾又会被"currentState!=Attack就直接return"
+        // 的保护挡住，角色卡死在举枪姿势收不回来。见 HardStopHeavyAttackOverlay 内注释。
+        bool loopSkillActive = CurrentSkillLoopsWhileHeld;
+
         if (isForward)
         {
             // 前闪：沿玩家实际按的方向走，是真正的闪避动作，不用冻结朝向——正常的
             // UpdateFacing() 本来就会让角色面朝这个方向，不需要额外处理。
-            return actionController.RequestAttackCancelDodgeBack(realInput.normalized, UnitMovementController.DodgeRuntimeState.Forward);
+            bool forwardStarted = actionController.RequestAttackCancelDodgeBack(realInput.normalized, UnitMovementController.DodgeRuntimeState.Forward);
+            if (forwardStarted && loopSkillActive)
+                animationDriver?.HardStopHeavyAttackOverlay();
+            return forwardStarted;
         }
 
         // 后闪：朝向"保持不变"改成直接冻结 SpineAnimationDriver_Current.UpdateFacing()——
@@ -932,6 +1455,10 @@ public class UnitActionModuleRuntime : MonoBehaviour
             // 朝向会被永久卡住转不动。
             animationDriver.SetFacingHold(false);
             _holdingFacingForAttackCancelDodgeBack = false;
+        }
+        else if (started && loopSkillActive)
+        {
+            animationDriver?.HardStopHeavyAttackOverlay();
         }
         return started;
     }
@@ -967,13 +1494,13 @@ public class UnitActionModuleRuntime : MonoBehaviour
         ApplyModule(unarmedModule);
     }
 
-    /// <summary>当前武器不需要弹药（近战/未装备）时直接放行；需要弹药时检查弹匣
-    /// (currentMagazineAmmo，不是背包)够不够，够就扣掉返回true，不够整个不扣、返回
-    /// false（打不出去，需要先按换弹键）。2026-07-21：弹药消耗来源从"直接扣背包"
-    /// 改成"扣弹匣"，背包只在换弹(TryPlayerRequestReload/UpdateReloadCompletion)时
-    /// 才会被扣。找不到装备实例(比如AI敌人没走EquipmentRuntime这条路)时视为放行，
-    /// 不该被弹药规则卡住。</summary>
-    private bool TryConsumeAmmoForAttack()
+    /// <summary>当前武器不需要弹药（近战/未装备）时直接放行；需要弹药时只看弹匣
+    /// (currentMagazineAmmo，不是背包)够不够，不实际扣——真正的扣减挪到了 gun 事件
+    /// 触发时（见 HandleSpineEvent 里 gunFireEventKey 那个分支），这里只负责在按下
+    /// 攻击键那一刻判断"这次能不能出招"，不能用没弹药的枪播一整套攻击动画。找不到
+    /// 装备实例(比如AI敌人没走EquipmentRuntime这条路)时视为放行，不该被弹药规则
+    /// 卡住。</summary>
+    private bool HasAmmoForAttack()
     {
         if (_currentWeaponExt == null || !_currentWeaponExt.usesAmmo)
             return true;
@@ -982,12 +1509,48 @@ public class UnitActionModuleRuntime : MonoBehaviour
         if (weaponEntry == null)
             return true;
 
+        return weaponEntry.currentMagazineAmmo >= _currentWeaponExt.ammoPerShot;
+    }
+
+    private float _lastDryFireSETime = -999f;
+    private const float DryFireSEMinIntervalSeconds = 0.35f;
+
+    /// <summary>弹匣打空、玩家还在按攻击键时的提示音——HasAmmoForAttack() 判定失败的
+    /// 5个出招入口(轻/重/空中/闪避突刺/奔跑突刺)统一走这里，不用每处各写一份。播的是
+    /// 模组自己的 dryFireSE，没配就安静跳过，不会报错。
+    ///
+    /// 带了一个最小间隔——枪械那边的"按住连发"(autoFireLightAttackWhileHeld)一旦弹匣
+    /// 打空，TryPlayerRequestLightAttack 每次都会因为没弹药提前返回，永远进不了Attack
+    /// 状态，InputRouter 那段"按住自动补发"的判断(!IsAttacking)会一直成立，不加限制
+    /// 的话这里会跟着每帧触发一次，扳机空响音效变成机关枪连响，不是想要的"哒"一声。</summary>
+    private void PlayDryFireSE()
+    {
+        if (_currentModule == null) return;
+        if (Time.time - _lastDryFireSETime < DryFireSEMinIntervalSeconds) return;
+
+        _lastDryFireSETime = Time.time;
+        PlaySkillSE(ResolveSE(_currentModule.dryFireSE, null), ResolveVolume(null, _currentModule), transform.position);
+    }
+
+    /// <summary>真正扣一发弹药——由 Spine 动画里的 gun 事件触发（见 HandleSpineEvent），
+    /// 跟枪口火光实际出现的那一帧同步，而不是按下攻击键那一刻就先扣掉。一段攻击动画
+    /// 里可以打好几个 gun 事件（连发/点射），每次事件都会各自尝试扣一发，弹匣打空后
+    /// 剩下的事件静默跳过（不报错，也不会扣成负数），不影响动画正常播完。</summary>
+    private void ConsumeOneShotAmmo()
+    {
+        if (_currentWeaponExt == null || !_currentWeaponExt.usesAmmo)
+            return;
+
+        InventoryItemEntry weaponEntry = ResolveCurrentWeaponEntry();
+        if (weaponEntry == null)
+            return;
+
         if (weaponEntry.currentMagazineAmmo < _currentWeaponExt.ammoPerShot)
-            return false;
+            return;
 
         weaponEntry.currentMagazineAmmo -= _currentWeaponExt.ammoPerShot;
         OnWeaponAmmoChanged?.Invoke();
-        return true;
+        if (SkyPrisonAfpAnomalyBurst.IsPlayerAttacker(ResolveAttackerStats())) SkyPrisonCombatLog.OnShot(_currentWeaponExt.ammoPerShot);   // 编辑器战斗记录
     }
 
     /// <summary>强制切换到指定 moduleKey，传空串切回 unarmed。</summary>
@@ -1020,6 +1583,23 @@ public class UnitActionModuleRuntime : MonoBehaviour
     private void ApplyModule(WeaponCombatModule module)
     {
         if (module == null || module == _currentModule) return;
+
+        // 2026-08-25：切武器（滚轮/手柄快速切换）之前完全没管"当前是不是还卡在攻击
+        // 状态里"——机枪式连发(loopWhileHeld)按住开火键期间，Track2是循环播的
+        // TrackEntry，正常靠玩家松开开火键触发ReleaseHeldLightAttack()才会停下并把
+        // currentState收回Normal。如果玩家没松键就直接切到别的武器，这条收尾从来
+        // 没机会跑：Track2背后那个循环entry继续挂着，actionController.currentState
+        // 永远卡在Attack——CanRequestLocomotionAction()一看到currentState==Attack
+        // 就直接拒绝，表现就是切到别的武器之后闪避(右键)彻底没反应，且因为在
+        // TrySpendDodge之前就被拦下，连LP都不会扣。必须在真正切换模组之前，把上一把
+        // 武器可能还留着的攻击/覆盖轨道状态清干净，跟正常松开开火键走的是同一套
+        // 收尾（HardStopHeavyAttackOverlay+NotifyAttackAnimationComplete）。
+        if (actionController != null && actionController.IsAttacking)
+        {
+            animationDriver?.HardStopHeavyAttackOverlay();
+            actionController.NotifyAttackAnimationComplete();
+        }
+
         _currentModule  = module;
         _currentSkill   = null;
         _comboIndex     = 0;
@@ -1027,6 +1607,10 @@ public class UnitActionModuleRuntime : MonoBehaviour
 
         if (hitbox != null && hitbox.IsActive)
             hitbox.Deactivate();
+
+        _weaponTipAlternateIndex = 0;
+        AutoFireArmed = true;
+        RefreshShellEjectInstance();
 
         if (debugLogs) Debug.Log($"[ActionModule] 切换模组 → {_currentModule?.moduleKey ?? "null"}", this);
     }
@@ -1053,14 +1637,59 @@ public class UnitActionModuleRuntime : MonoBehaviour
         return s_ResourcesModuleCache.TryGetValue(key, out var found) ? found : null;
     }
 
+    // ── 占位骨架兜底：按时间开关近战判定框 ───────────────────────────────
+    // 近战判定框原本只由 Spine 的 hit_start/hit_end 事件开关。还没做美术的占位骨架(比如归巢者、
+    // 守卫者共用的那套)根本没有这两个事件，挥拳再多次也不会产生判定。AI 发起近战攻击后，
+    // 如果当前单位所有可见骨架里都找不到 hit_start 事件，就改按技能的 startupTime/activeTime 开关判定框。
+    // 真骨架带事件之后这里自动不生效，不用回来改。
+    public bool SkeletonHasHitEvent()
+    {
+        foreach (var sa in GetComponentsInChildren<Spine.Unity.SkeletonAnimation>(false))
+        {
+            var data = sa != null && sa.Skeleton != null ? sa.Skeleton.Data : null;
+            if (data != null && data.FindEvent(hitStartEventKey) != null) return true;
+        }
+        return false;
+    }
+
+    public void BeginPlaceholderHitWindow(SkillDefinition skill)
+    {
+        if (skill == null || hitbox == null || skill.isProjectileSkill) return;
+        if (SkeletonHasHitEvent()) return;
+        StartCoroutine(PlaceholderHitWindowRoutine(skill));
+    }
+
+    private System.Collections.IEnumerator PlaceholderHitWindowRoutine(SkillDefinition skill)
+    {
+        yield return new WaitForSeconds(Mathf.Max(0.01f, skill.startupTime));
+        if (_currentSkill != skill) yield break;          // 中途被打断/换招了
+        _hitLandedThisActive = false;
+        _attackActivePhaseStarted = true;
+        hitbox.Activate(skill);
+        yield return new WaitForSeconds(Mathf.Max(0.05f, skill.activeTime));
+        hitbox.Deactivate();
+    }
+
     // ── Spine Event ───────────────────────────────────────────────────────
 
     private void HandleSpineEvent(TrackEntry trackEntry, Spine.Event e)
     {
         if (e == null) return;
 
-        Debug.Log($"[ActionModule] 诊断：Spine事件={e.Data.Name}，_currentSkill={_currentSkill?.skillKey ?? "NULL"}，" +
-                  $"isChargeSkill={(_currentSkill != null ? _currentSkill.isChargeSkill.ToString() : "N/A")}", this);
+        // 这条原来没有任何守卫，无条件执行。
+        //
+        // HandleSpineEvent 是 Spine 动画事件回调——每个脚步、每次攻击、每个
+        // hit_start/hit_end 都会触发。奔跑时脚步频率最高，于是每帧都在做字符串插值
+        // （两次 ?. 加一个三元）和 Debug.Log 的完整堆栈提取。实测奔跑掉到 17 帧。
+        //
+        // 而且因为它不看 debugLogs 字段，「关闭所有逐帧调试日志开关」那个清理工具
+        // 永远抓不到它——清理器改的是序列化字段，这行压根不读字段。
+        // 同一个类第 51 行就有 debugLogs，套上即可。
+        if (debugLogs)
+        {
+            Debug.Log($"[ActionModule] 诊断：Spine事件={e.Data.Name}，_currentSkill={_currentSkill?.skillKey ?? "NULL"}，" +
+                      $"isChargeSkill={(_currentSkill != null ? _currentSkill.isChargeSkill.ToString() : "N/A")}", this);
+        }
 
         if (e.Data.Name == hitStartEventKey)
         {
@@ -1074,13 +1703,22 @@ public class UnitActionModuleRuntime : MonoBehaviour
             // 跟动作差出一整个蓄力时长。现在改成绑hit_start，判定框什么时候真正
             // 打开，音效就什么时候响，轻攻击/重攻击/蓄力技/弹幕技统一都准。
             if (_currentSkill != null)
+            {
                 PlaySkillSE(ResolveSE(_currentSkill.swingSE, _currentModule?.swingSE),
                     ResolveVolume(_currentSkill, _currentModule) * Mathf.Max(0f, _currentSkill.swingSEVolume),
                     transform.position);
 
+                // 发技语音——播的是攻击者自己的语音（吼声/喊招），不是目标的，
+                // 跟上面的挥砍 SE 绑同一个时机（判定框真正打开那一刻）。
+                UnitDefinitionRuntimeBinder selfBinder = GetComponent<UnitDefinitionRuntimeBinder>()
+                                                       ?? GetComponentInParent<UnitDefinitionRuntimeBinder>(true);
+                if (selfBinder?.UnitDefinitionAsset != null)
+                    UnitVoicePlayback.Play(selfBinder.UnitDefinitionAsset.skillCastVoiceLines, transform.position);
+            }
+
             if (_currentSkill != null && _currentSkill.isProjectileSkill)
             {
-                FireProjectileSkill(_currentSkill);
+                FireProjectileSkill(_currentSkill, ResolveWeaponTipWorldPosition(true), ResolveProjectileDirection(_currentSkill));
             }
             else if (hitbox != null)
             {
@@ -1134,6 +1772,96 @@ public class UnitActionModuleRuntime : MonoBehaviour
                     PlaySkillSE(ResolveSE(_currentSkill.whiffSE, _currentModule?.whiffSE), ResolveVolume(_currentSkill, _currentModule), transform.position);
             }
         }
+        else if (e.Data.Name == magazineDropEventKey)
+        {
+            SpawnMagazineDropProp();
+
+            // 换弹不走 SkillDefinition 那条路(TryPlayerRequestReload 直接调
+            // actionController.RequestReload，不会设_currentSkill)，所以这里
+            // ResolveSE/ResolveVolume 的 skill 参数传null，音量只看模组自己的
+            // seVolume，跟 swingSE/hitSE 那几处"技能优先、模组兜底"的解析规则保持
+            // 同一个调用形状，不用另写一套。
+            if (_currentModule != null)
+                PlaySkillSE(ResolveSE(_currentModule.reloadSE, null), ResolveVolume(null, _currentModule), transform.position);
+        }
+        else if (e.Data.Name == gunFireEventKey)
+        {
+            // 双枪这类武器的攻击动画（比如 Attack_Gun_2）压根没有打 hit_start 事件——
+            // 美术那边就是直接把"gun"这一个事件当成开枪的唯一触发点用的，音效/语音/
+            // 弹幕发射/扣弹药全都得挂在这上面，不能指望 hit_start 分支来做这些事。
+            // 一段动画里可以打多个 gun 事件做点射/连发，每次都完整走一遍这一套。
+            //
+            // 同样道理，攻击取消后撤步(TryPlayerRequestAttackCancelDodgeBack)要求
+            // _attackActivePhaseStarted==true 才放行——这个标记原来只在 hit_start 里置
+            // true，双枪没有 hit_start，永远不会满足，导致 allowAttackCancelDodgeBack
+            // 就算勾了也没用。这里补上，让开枪之后也能跟大剑一样闪避取消后摇。
+            _attackActivePhaseStarted = true;
+
+            // 弹匣打空之后必须先拦住，不能让下面的开枪流程照常走一遍——之前只有
+            // ConsumeOneShotAmmo() 会检查弹药够不够，但那是"扣不扣得动"，跟"这一枪
+            // 到底该不该真的打出去"是两件事：机枪式连发(loopWhileHeld)的循环是靠Spine
+            // 自己反复播放同一段动画维持的，不会每发都重新走 TryPlayerRequestLightAttack
+            // 那道"没弹药就不让进Attack"的入场检查——只有第一发经过那道检查，后面每次
+            // gun事件都会无视弹药真的打出子弹/枪口火光/开枪音，弹药归零之后子弹会一直
+            // "打不完"。这里补上：打空了就放一声扳机空响、主动收尾循环(等价于松开
+            // 攻击键)，不再走下面的视觉/音效/弹幕流程。
+            if (!HasAmmoForAttack())
+            {
+                PlayDryFireSE();
+                animationDriver?.StopHeavyAttackOverlayLoop();
+                // 资源打断连发(不是玩家主动松手)，要求先松再按才能重新开火——见
+                // AutoFireArmed 字段注释，不然攻击键手指没松开、资源自然回一点点，
+                // 下一帧"按住自动补发"会悄悄重新开一枪，玩家可能早就不是在有意识地
+                // 按着开火了(比如只是在走路)，忽然自己开枪，体验很奇怪。
+                AutoFireArmed = false;
+                return;
+            }
+
+            // LP同理——机枪式连发只在TryPlayerRequestLightAttack进场那一刻扣过一次，
+            // 之后不管连开多久都不再消耗，跟"近战每一下都单独扣LP"比起来明显偏宜。
+            // 这里按发消耗，跟弹药走同一个模式：不够就停，不会出现"LP早就见底了，
+            // 子弹却还在无限打"。TryConsumeSkillLP本身就是"查够不够顺便扣"的原子操作，
+            // 不需要再单独peek一次。
+            if (_currentSkill != null && !TryConsumeSkillLP(_currentSkill))
+            {
+                animationDriver?.StopHeavyAttackOverlayLoop();
+                AutoFireArmed = false;
+                return;
+            }
+
+            // 双持武器（比如双枪）这一枪从哪侧锚点打出去，只在这里解析一次、推进一格
+            // 交替索引——枪口火光和子弹出生点必须是同一侧，不能各自单独解析各推进一次
+            // (那样会两边各自左右横跳，不是"交替")。方向同理：枪口火光(带弹道拖尾的
+            // 变体)要跟子弹实际飞行方向一致，不能永远朝着Prefab里写死的默认朝向。
+            Vector3 muzzlePosition = ResolveWeaponTipWorldPosition(true);
+            Vector3 fireDirection = _currentSkill != null && _currentSkill.projectile != null
+                ? ResolveProjectileDirection(_currentSkill)
+                : new Vector3(animationDriver != null && animationDriver.Facing == -1 ? 1f : -1f, 0f, 0f);
+
+            PlayGunFireVisuals(muzzlePosition, fireDirection);
+
+            if (_currentSkill != null)
+            {
+                // maxAudibleSeconds封顶——枪声素材常常是带长尾混响的完整录音，机枪式
+                // 连发触发间隔比这个尾音短得多，不封顶的话几十发打下来会把Unity Audio
+                // 的并发音源上限占满，表现就是打一阵之后枪声突然消失（见PlaySkillSE
+                // 内部注释）。近战swingSE(hit_start那个分支)不传这个参数，维持原样——
+                // 近战攻击间隔够长，不会有这个问题。
+                PlaySkillSE(ResolveSE(_currentSkill.swingSE, _currentModule?.swingSE),
+                    ResolveVolume(_currentSkill, _currentModule) * Mathf.Max(0f, _currentSkill.swingSEVolume),
+                    transform.position, maxAudibleSeconds: 0.4f);
+
+                UnitDefinitionRuntimeBinder selfBinder = GetComponent<UnitDefinitionRuntimeBinder>()
+                                                       ?? GetComponentInParent<UnitDefinitionRuntimeBinder>(true);
+                if (selfBinder?.UnitDefinitionAsset != null)
+                    UnitVoicePlayback.Play(selfBinder.UnitDefinitionAsset.skillCastVoiceLines, transform.position);
+
+                if (_currentSkill.isProjectileSkill)
+                    FireProjectileSkill(_currentSkill, muzzlePosition, fireDirection);
+            }
+
+            ConsumeOneShotAmmo();
+        }
         else if (_currentSkill != null && _currentSkill.isChargeSkill && e.Data.Name == _currentSkill.charge.chargeHoldEventKey)
         {
             trackEntry.TimeScale = 0f;
@@ -1172,6 +1900,38 @@ public class UnitActionModuleRuntime : MonoBehaviour
     }
 
     /// <summary>
+    /// 换弹动画脱夹那一帧触发——生成一个独立于 Spine 骨架的世界空间掉落弹夹道具，
+    /// 用一段小弧线抛到落地点然后自毁。Spine 那边应该在同一帧把手上弹夹的
+    /// Attachment 隐藏（纯动画权重，不需要代码配合），两边靠同一个事件帧对齐，
+    /// 视觉上就是弹夹直接从手上掉出去、不会跟着后续挥手/转身的动作被拖着走。
+    /// </summary>
+    private void SpawnMagazineDropProp()
+    {
+        GameObject prefab = _currentModule != null ? _currentModule.magazineDropPrefab : null;
+        if (prefab == null)
+            return;
+
+        float facingSign = animationDriver != null ? -animationDriver.Facing : 1f;
+        Vector2 spawnOffset = _currentModule.magazineDropSpawnOffset;
+        Vector2 landOffset = _currentModule.magazineDropLandOffset;
+
+        Vector3 spawnPosition = transform.position
+            + new Vector3(facingSign * spawnOffset.x, spawnOffset.y, 0f);
+        Vector3 landPosition = spawnPosition
+            + new Vector3(facingSign * landOffset.x, landOffset.y, 0f);
+
+        GameObject go = Instantiate(prefab, spawnPosition, Quaternion.identity);
+        go.transform.position = spawnPosition;
+
+        var renderer = go.GetComponentInChildren<Renderer>();
+        if (renderer != null)
+            renderer.sortingOrder = Mathf.RoundToInt(transform.position.z * 100f) + 1;
+
+        LootDropTossEffect.Apply(go, spawnPosition, landPosition, arcHeight: 0.35f, duration: 0.4f);
+        Destroy(go, 3f);
+    }
+
+    /// <summary>
     /// 玩家松开蓄力键时调用（由 InputRouter 接蓄力键的"松开"事件）。如果动画确实还
     /// 停在 charge_hold 那一帧（没被闪避/受击等打断），把播放速度恢复，让动画继续
     /// 播完剩下的部分（比如刺出去）。已经被打断的话什么都不做——TrackEntry换掉之后
@@ -1179,6 +1939,17 @@ public class UnitActionModuleRuntime : MonoBehaviour
     /// </summary>
     public void ReleaseChargeAttack()
     {
+        // 蓄力被打断(受击硬直/闪避等)后，定格的动画句柄不会自动清掉。此时松手不能再放出突刺位移——
+        // 之前只靠"句柄非空"判断，被打断后一松手仍然会冲出去，看起来像"蓄力被打后反而放出突刺"。
+        if (_chargeHeldTrackEntry != null && actionController != null && !actionController.IsAttacking)
+        {
+            _chargeHeldTrackEntry = null;
+            _chargeHeldSkill = null;
+            _chargeReleaseRequestedEarly = false;
+            actionController.SetChargeMovementAllowed(false);
+            return;
+        }
+
         if (_chargeHeldTrackEntry == null || _chargeHeldSkill == null)
         {
             // 这个项目有两套并行的输入路径（主输入+兜底按键）都会调用这个方法，不是
@@ -1263,7 +2034,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
                 // 武器Skin自动切换位置），找不到就退回骨骼所在的 Transform 兜底。
                 _chargeDashVfxAnchorMode = charge.dashVfxAnchor;
                 _chargeDashVfxCharacterAnchorOffset = charge.dashVfxCharacterAnchorOffset;
-                Vector3 vfxSpawnPosition = ResolveChargeDashVfxWorldPosition();
+                Vector3 vfxSpawnPosition = ResolveChargeDashVfxWorldPosition(out float dashScaleCompensation);
 
                 // 朝左用默认姿势(identity)，朝右在这基础上加180度。
                 Quaternion dashVfxRotation = animationDriver.Facing == -1
@@ -1279,7 +2050,8 @@ public class UnitActionModuleRuntime : MonoBehaviour
                 Vector3 dashVfxScale = Vector3.one;
                 if (animationDriver.Facing == -1)
                     dashVfxScale = new Vector3(1f, -1f, 1f);
-                _chargeDashVfxHandle.SetScale(dashVfxScale);
+                _chargeDashVfxBaseScale = dashVfxScale;
+                _chargeDashVfxHandle.SetScale(dashVfxScale * dashScaleCompensation);
                 // 挥剑特效(SkyPrisonSwordSlashTrailController)会显式把特效渲染层设成"World3D"，
                 // 不设的话 Effekseer 会退回默认0号(Default)层——如果摄像机剔除遮罩没勾Default，
                 // 位置/旋转全对，画面上还是什么都看不见。这里踩过同样的坑，补上同样的设置。
@@ -1322,15 +2094,22 @@ public class UnitActionModuleRuntime : MonoBehaviour
         if (targetHealth == null) return;
         if (targetHealth.IsDead) return;
 
+        SkyPrisonShattererLeg hitLeg = other != null ? other.GetComponent<SkyPrisonShattererLeg>() : null;
+
         UnitBattleStatRuntime attackerStats = ResolveAttackerStats();
         UnitBattleStatRuntime targetStats = targetHealth.GetComponent<UnitBattleStatRuntime>()
                                          ?? targetHealth.GetComponentInParent<UnitBattleStatRuntime>();
+        bool killWasAlive = !targetHealth.IsDead;           // AFP「回转」：这一击把活着的敌人打死才算击杀
         float atk = ResolveAttackPower(attackerStats);
         if (_pendingAttackWasFullyCharged && skill.isChargeSkill) atk *= skill.charge.fullChargeDamageMultiplier;
 
         // 暴击判定：正向暴击和负向暴击互斥——先掷正向暴击，没触发再掷负向暴击，
         // 一次攻击最多命中一种，不会同时发生。
-        float critMultiplier = ResolveCritMultiplier(attackerStats, out bool isPositiveCrit, out bool isNegativeCrit);
+        // 弱点：这一击的伤害类型在目标身上抗性为负。AFP「弱点特效」据此加暴击率，「暴击特效」放大暴击伤害
+        bool weakHit = SkyPrisonAfpWeakCrit.IsWeakHit(targetStats, skill);
+        float critMultiplier = ResolveCritMultiplier(attackerStats, out bool isPositiveCrit, out bool isNegativeCrit,
+            SkyPrisonAfpWeakCrit.BonusCritRate(attackerStats, weakHit), SkyPrisonAfpWeakCrit.BonusCritDamage(attackerStats));
+        if (isPositiveCrit) SkyPrisonAfpWeakCrit.OnCrit(attackerStats, _currentWeaponExt, ResolveCurrentWeaponEntry());   // Lv3 会心回收
 
         // 物理伤害：跟属性伤害是分开判定、分开结算的两笔独立伤害（一把武器可以同时
         // 斩击物理 + 灼热 + 电磁 + 冻结，互不影响），暴击倍率对每一笔都统一生效。
@@ -1341,7 +2120,14 @@ public class UnitActionModuleRuntime : MonoBehaviour
         // 打击力度略有差异"，而不是"这次攻击运气好/差"（那个是暴击的事）。
         float physicalDamage = atk * skill.damageMultiplier * critMultiplier * ResolveDamageVariance();
         physicalDamage *= ResolveDefenseMultiplier(targetStats);
-        physicalDamage *= ResolveResistMultiplier(targetStats, skill.damageTypeKey + "Resist");
+        physicalDamage *= ResolveResistMultiplier(targetStats, PhysicalResistKey(skill.damageTypeKey));
+        physicalDamage *= SkyPrisonAfpUpgrades.AttackMultiplier(attackerStats, true);      // AFP「物理攻击强化」(只对玩家生效)
+        bool lethalShot = SkyPrisonAfpPhysicalMastery.ApplyToHit(attackerStats, _currentWeaponExt, ResolveCurrentWeaponEntry(), targetHealth, ref physicalDamage);   // AFP「物理专精」：大剑斩杀 / 枪械致命弹药
+        physicalDamage *= SkyPrisonAfpAnomalyBurst.VulnerabilityMultiplier(attackerStats, targetHealth);                                           // AFP「异常增伤」
+
+        // 受击修正（守卫者的盾等）：目标身上有 IIncomingHitModifier 就让它改一下这笔物理伤害
+        IncomingHitModifiers.Apply(targetHealth, true, skill.damageTypeKey, transform.position.x, ref physicalDamage);
+        if (hitLeg != null) hitLeg.AbsorbHit(ref physicalDamage);      // 打腿：先扣腿的血，本体只吃一部分
 
         // 伤害数字、命中SE、hitLanded 标记必须在 ApplyDamage 之前完成，
         // 否则 ApplyDamage 同步触发 Kill() → ApplyDeathVisual 会把头顶 UI 隐藏，
@@ -1350,29 +2136,73 @@ public class UnitActionModuleRuntime : MonoBehaviour
             targetHealth.GetComponent<UnitOverheadHealthBridge>()
          ?? targetHealth.GetComponentInChildren<UnitOverheadHealthBridge>(true);
 
-        healthBridge?.ShowDamageNumberByKey(skill.damageTypeKey, physicalDamage, false, isPositiveCrit, isNegativeCrit);
+        bool physWeak = SkyPrisonAfpWeakCrit.IsWeakKey(targetStats, PhysicalResistKey(skill.damageTypeKey));
+        healthBridge?.ShowDamageNumberByKey(skill.damageTypeKey, physicalDamage, false, isPositiveCrit, isNegativeCrit, lethalShot, physWeak);
+        if (lethalShot)                                  // 致命子弹：命中点闪光 + 冷绿冲击环 + 脆响
+        {
+            var lethalCol = targetHealth.GetComponentInChildren<Collider>();
+            SkyPrisonAfpLethalFx.Play(lethalCol != null ? lethalCol.bounds.center : targetHealth.transform.position + Vector3.up);
+        }
 
         _hitLandedThisActive = true;
 
-        // 命中 SE（3D 空间音效，从受击位置发出）
-        PlaySkillSE(ResolveSE(skill.hitSE, _currentModule?.hitSE), ResolveVolume(skill, _currentModule), targetHealth.transform.position);
+        // 2026-08-25：武器耐久磨损之前只挂在 UnitCombatHitbox（近战判定框）自己的命中
+        // 处理里，枪械走的是 SkyPrisonSwordQiProjectile 直接调这个方法，完全不经过
+        // UnitCombatHitbox，磨损逻辑压根没被触发过——表现就是"枪械耐久基本不会掉"。
+        // 挪到这里（近战 hitbox 通过 OnHit→HandleHit 最终也会汇聚到这同一个方法）
+        // 保证不管命中来源是近战判定框还是弹幕，磨损只在真正命中时结算一次，不用
+        // 每种命中来源各自维护一份。
+        if (EquipmentRuntime.Instance != null)
+        {
+            UnitDefinitionRuntimeBinder selfIdentityBinder = GetComponent<UnitDefinitionRuntimeBinder>()
+                                                           ?? GetComponentInParent<UnitDefinitionRuntimeBinder>(true);
+            bool selfIsPlayer = selfIdentityBinder != null && selfIdentityBinder.UnitDefinitionAsset != null
+                              && selfIdentityBinder.UnitDefinitionAsset.characterIdentity == CharacterIdentity.Player;
+            if (selfIsPlayer)
+            {
+                var weaponEntry = EquipmentRuntime.Instance.GetEquipped(EquipmentRuntime.Instance.ActiveWeaponSlot);   // 磨损的是当前生效的那把，不是永远磨主武器槽
+                if (weaponEntry != null)
+                    DurabilitySystem.Wear(weaponEntry);
+            }
+        }
+
+        UnitDefinitionRuntimeBinder targetBinder =
+            targetHealth.GetComponent<UnitDefinitionRuntimeBinder>()
+         ?? targetHealth.GetComponentInParent<UnitDefinitionRuntimeBinder>(true);
+        UnitDefinition targetDefinition = targetBinder != null ? targetBinder.UnitDefinitionAsset : null;
+
+        // 2026-08-19：道具/可破坏物品（箱子这类）打中时不该播武器的"命中SE"（金属
+        // 磕碰/挥砍音）——那是给"打中一个活物"设计的反馈。这类单位改成播它自己的
+        // 语音（下面 hurtVoiceLines/死亡时 UnitDeathController 里的 deathVoiceLines），
+        // 没配语音就安静地不出声，不强行退回武器 SE。
+        bool isItemOrDestructible = targetDefinition != null &&
+            (targetDefinition.defineType == UnitDefineType.Item || targetDefinition.defineType == UnitDefineType.Destructible);
+
+        if (!isItemOrDestructible)
+        {
+            // 命中 SE（3D 空间音效，从受击位置发出）
+            PlaySkillSE(ResolveSE(skill.hitSE, _currentModule?.hitSE), ResolveVolume(skill, _currentModule), targetHealth.transform.position);
+        }
 
         // 血液飞溅特效：类型和颜色来自被打单位的 UnitDefinition
         {
             UnitBloodVFXType targetBloodType = UnitBloodVFXType.Normal;
             Color targetBloodColor = new Color(0.72f, 0.02f, 0.02f, 1f);
-            UnitDefinitionRuntimeBinder targetBinder =
-                targetHealth.GetComponent<UnitDefinitionRuntimeBinder>()
-             ?? targetHealth.GetComponentInParent<UnitDefinitionRuntimeBinder>(true);
-            if (targetBinder?.UnitDefinitionAsset != null)
+            if (targetDefinition != null)
             {
-                targetBloodType  = targetBinder.UnitDefinitionAsset.bloodVFXType;
-                targetBloodColor = targetBinder.UnitDefinitionAsset.bloodColor;
+                targetBloodType  = targetDefinition.bloodVFXType;
+                targetBloodColor = targetDefinition.bloodColor;
             }
             BloodVFXManager.Instance?.SpawnSplash(targetHealth.gameObject, transform.position, targetBloodColor, targetBloodType);
         }
 
         targetHealth.ApplyDamage(physicalDamage);
+        float usurpDealt = physicalDamage;                    // 科技树「篡夺者」：这一击造成的总伤害(物理 + 属性)，结算完转成生命回复
+
+        // 受击语音——只在这一下没有直接打死目标时播（打死了的话 UnitDeathController.
+        // Kill() 会播死亡语音，同一下命中不该同时听到"受击闷哼"又听到"死亡惨叫"）。
+        if (targetDefinition != null && !targetHealth.IsDead)
+            UnitVoicePlayback.Play(targetDefinition.hurtVoiceLines, targetHealth.transform.position);
 
         // 属性伤害（斩击/打击物理之外，灼热/电磁/腐蚀/冻结这些）：每一种都独立结算一次伤害、
         // 独立累计一次异常，互不影响——一把武器可以同时挂好几种属性。伤害倍率=0 的属性条目
@@ -1389,10 +2219,16 @@ public class UnitActionModuleRuntime : MonoBehaviour
                 // 防御是物理概念，属性伤害走自己独立的抗性通道。
                 float attributeDamage = atk * hit.attributeDamageMultiplier * critMultiplier * ResolveDamageVariance();
                 attributeDamage *= ResolveResistMultiplier(targetStats, hit.attributeKey + "Resist");
+                attributeDamage *= SkyPrisonAfpUpgrades.AttackMultiplier(attackerStats, false);   // AFP「属性攻击强化」(只对玩家生效)
+                attributeDamage *= SkyPrisonAfpAnomalyBurst.VulnerabilityMultiplier(attackerStats, targetHealth);   // AFP「异常增伤」
+                IncomingHitModifiers.Apply(targetHealth, false, hit.attributeKey, transform.position.x, ref attributeDamage);
+                if (hitLeg != null) hitLeg.AbsorbHit(ref attributeDamage);
                 if (attributeDamage > 0f)
                 {
                     targetHealth.ApplyDamage(attributeDamage);
-                    healthBridge?.ShowDamageNumberByKey(hit.attributeKey, attributeDamage, false, isPositiveCrit, isNegativeCrit);
+                    usurpDealt += attributeDamage;
+                    healthBridge?.ShowDamageNumberByKey(hit.attributeKey, attributeDamage, false, isPositiveCrit, isNegativeCrit, false,
+                        SkyPrisonAfpWeakCrit.IsWeakKey(targetStats, hit.attributeKey + "Resist"));
                 }
 
                 // 1 点属性伤害 = 1 点对应异常累计，再叠加这一条词条自己的蓄积倍率。
@@ -1401,6 +2237,12 @@ public class UnitActionModuleRuntime : MonoBehaviour
                     targetAnomaly?.ApplyAccumulation(hit.attributeKey, buildupAmount, gameObject);
             }
         }
+
+        SkyPrisonAfpUsurper.OnDealDamage(attackerStats, _currentWeaponExt, targetHealth, usurpDealt);
+        if (SkyPrisonAfpAnomalyBurst.IsPlayerAttacker(attackerStats))       // 编辑器战斗记录(打包后是空函数)
+            SkyPrisonCombatLog.OnPlayerHit(targetHealth, skill, physicalDamage, usurpDealt - physicalDamage, weakHit, isPositiveCrit, killWasAlive && targetHealth.IsDead);
+
+        if (killWasAlive && targetHealth.IsDead) SkyPrisonAfpPhysicalMastery.OnKill(attackerStats, targetHealth, _currentWeaponExt);
 
         // 硬直 + 击退（死亡后不施加）
         if (!targetHealth.IsDead)
@@ -1413,10 +2255,35 @@ public class UnitActionModuleRuntime : MonoBehaviour
                 targetHealth.GetComponent<UnitMovementController>()
              ?? targetHealth.GetComponentInParent<UnitMovementController>();
 
-            if (skill.stunDuration > 0f)
-                targetAction?.ForceHitStun(skill.stunDuration);
+            // 重装兵器：目标装备总重进入超重 / 过载档（或科技树加成）时，硬直和击退按比例减免
+            EquipmentWeightController targetWeight =
+                targetHealth.GetComponent<EquipmentWeightController>()
+             ?? targetHealth.GetComponentInParent<EquipmentWeightController>();
+            float stunFinal = skill.stunDuration * (targetWeight != null ? targetWeight.StunMultiplier : 1f);
+            float knockbackFinal = skill.knockbackForce * (targetWeight != null ? targetWeight.KnockbackMultiplier : 1f);
+            float weakImpact = SkyPrisonAfpWeakCrit.ImpactMultiplier(attackerStats, weakHit);      // AFP「弱点特效」：打弱点冲击力加强
 
-            if (skill.knockbackForce > 0f)
+            // 失衡条(中级以上的 Memento)：平时不吃每一下的小硬直 / 击退，伤害累积满了才失衡；低级怪照旧每下小硬直
+            SkyPrisonStagger stagger = SkyPrisonStagger.For(targetHealth);
+            if (stagger != null)
+            {
+                bool armorBreak = SkyPrisonAfpWeakCrit.ArmorBreak(attackerStats, weakHit, isPositiveCrit);       // Lv3 破甲冲击
+                float staggerAmount = usurpDealt * Mathf.Max(0f, skill.staggerMultiplier) * weakImpact
+                                    * (armorBreak ? SkyPrisonAfpWeakCrit.WeakCritStaggerMultiplier : 1f);
+                bool staggered = stagger.AddStagger(staggerAmount, armorBreak);
+                stunFinal = 0f;                                   // 失衡本身的硬直由失衡条施加
+                if (!staggered) knockbackFinal = 0f;              // 只有打出失衡的那一下才击退
+            }
+            else
+            {
+                stunFinal *= weakImpact;
+                knockbackFinal *= weakImpact;
+            }
+
+            if (stunFinal > 0.02f)
+                targetAction?.ForceHitStun(stunFinal);
+
+            if (knockbackFinal > 0.01f)
             {
                 if (targetMovement == null)
                 {
@@ -1426,8 +2293,8 @@ public class UnitActionModuleRuntime : MonoBehaviour
                 {
                     float dirX = Mathf.Sign(targetHealth.transform.position.x - transform.position.x);
                     if (dirX == 0f) dirX = 1f;
-                    Vector3 impulse = new Vector3(dirX * skill.knockbackForce, 0f, 0f);
-                    if (debugLogs) Debug.Log($"[Knockback] 施加击退 dir={dirX} force={skill.knockbackForce} impulse={impulse} → {targetHealth.name}", this);
+                    Vector3 impulse = new Vector3(dirX * knockbackFinal, 0f, 0f);
+                    if (debugLogs) Debug.Log($"[Knockback] 施加击退 dir={dirX} force={knockbackFinal} impulse={impulse} → {targetHealth.name}", this);
                     targetMovement.ApplyKnockback(impulse);
                 }
             }
@@ -1456,17 +2323,17 @@ public class UnitActionModuleRuntime : MonoBehaviour
     // 正向暴击和负向暴击互斥：先掷正向暴击，没触发再掷负向暴击，一次攻击最多命中一种。
     // 暴击伤害倍率/负向暴击伤害倍率都是"触发后最终伤害是原伤害的百分之多少"（150% = ×1.5，
     // 70% = ×0.7），不是"在1.0基础上再加/减多少"。
-    private float ResolveCritMultiplier(UnitBattleStatRuntime stats, out bool isPositiveCrit, out bool isNegativeCrit)
+    private float ResolveCritMultiplier(UnitBattleStatRuntime stats, out bool isPositiveCrit, out bool isNegativeCrit, float bonusCritRate = 0f, float bonusCritDamage = 0f)
     {
         isPositiveCrit = false;
         isNegativeCrit = false;
         if (stats == null) return 1f;
 
-        float critRate = stats.GetFinalValue("critRate", 0f) / PercentScale;
+        float critRate = stats.GetFinalValue("critRate", 0f) / PercentScale + bonusCritRate;
         if (critRate > 0f && UnityEngine.Random.value < critRate)
         {
             isPositiveCrit = true;
-            float mult = stats.GetFinalValue("critDamageMultiplier", 0f) / PercentScale;
+            float mult = stats.GetFinalValue("critDamageMultiplier", 0f) / PercentScale + bonusCritDamage;
             return Mathf.Max(0f, mult);
         }
 
@@ -1495,7 +2362,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
     // 跟"伤害-防御"直接相减不一样，防御再高也只会让倍率无限逼近0，不会出现直接扣成0伤害。
     private const float DefenseMitigationK = 100f;
 
-    private static float ResolveDefenseMultiplier(UnitBattleStatRuntime targetStats)
+    public static float ResolveDefenseMultiplier(UnitBattleStatRuntime targetStats)
     {
         if (targetStats == null) return 1f;
         float def = Mathf.Max(0f, targetStats.GetFinalValue("def", 0f));
@@ -1506,12 +2373,21 @@ public class UnitActionModuleRuntime : MonoBehaviour
     // impactResist）和属性抗性（heatResist/shockResist/corrosionResist/freezeResist）走的是
     // 同一套读取逻辑，只是 key 不同。封顶 90%，不让抗性叠加到 100% 变成免疫。
     private const float MaxResistClamp = 0.9f;
+    // 抗性填负数 = 弱点(−50% → 吃 1.5 倍)；最多弱到 −100%(2 倍)
+    private const float MaxWeaknessClamp = 1f;
 
-    private static float ResolveResistMultiplier(UnitBattleStatRuntime targetStats, string resistKey)
+    /// <summary>物理伤害类型对应的抗性 key。子弹(bullet)没有单独的抗性项，按冲击算——否则枪完全不吃物理抗性/弱点。</summary>
+    public static string PhysicalResistKey(string damageTypeKey)
+    {
+        if (string.Equals(damageTypeKey, "bullet", System.StringComparison.OrdinalIgnoreCase)) return "impactResist";
+        return damageTypeKey + "Resist";
+    }
+
+    public static float ResolveResistMultiplier(UnitBattleStatRuntime targetStats, string resistKey)
     {
         if (targetStats == null || string.IsNullOrWhiteSpace(resistKey)) return 1f;
         float resist = targetStats.GetFinalValue(resistKey, 0f) / PercentScale; // 抗性也是 Percentage 字段，同样要 /100
-        resist = Mathf.Clamp(resist, 0f, MaxResistClamp);
+        resist = Mathf.Clamp(resist, -MaxWeaknessClamp, MaxResistClamp);
         return 1f - resist;
     }
 
@@ -1527,9 +2403,20 @@ public class UnitActionModuleRuntime : MonoBehaviour
 
     private bool TryConsumeSkillLP(SkillDefinition skill)
     {
+        // 主城里出招就算进入战斗：HUD 显示 HP/LP，LP 从这一刻起正常扣（见 SkyPrisonHubCombatGate）。
+        if (skill != null) SkyPrisonHubCombatGate.NotifyCombat();
         if (skill == null || skill.lpCost <= 0f) return true;
         if (_loadRuntime == null) return true;
         return _loadRuntime.TrySpendLoadAction(skill.lpCost, $"Skill:{skill.skillKey}");
+    }
+
+    /// <summary>只查还有没有LP，不实际扣——机枪式连发(loopWhileHeld)进场时用这个当
+    /// 兜底(完全没LP就不让进场播动画)，真正按发消耗挪到每次gun事件调TryConsumeSkillLP，
+    /// 避免快速点击、还没等到第一发就松手时被提前扣掉一次进场费却什么都没打出去。</summary>
+    private bool HasAnyLPForAttack()
+    {
+        SkyPrisonHubCombatGate.NotifyCombat();
+        return _loadRuntime == null || _loadRuntime.CurrentLoad > 0.0001f;
     }
 
     // 技能 SE 非空优先，否则用武器模组级默认
@@ -1543,7 +2430,7 @@ public class UnitActionModuleRuntime : MonoBehaviour
     // volumeScale 是技能/模组整体的音量倍率(ResolveVolume，必要时再叠加swingSEVolume这类
     // 分类倍率)；entry.volume 是随机抽中的这一条素材自己的音量倍率，两层各管各的，最终
     // 相乘。
-    private static void PlaySkillSE(SkillSoundEntry[] entries, float volumeScale, Vector3 worldPos)
+    private static void PlaySkillSE(SkillSoundEntry[] entries, float volumeScale, Vector3 worldPos, float maxAudibleSeconds = 0f)
     {
         if (entries == null || entries.Length == 0) return;
         SkillSoundEntry entry = entries[Random.Range(0, entries.Length)];
@@ -1565,7 +2452,19 @@ public class UnitActionModuleRuntime : MonoBehaviour
         source.volume = vol;
         source.spatialBlend = 0f;
         source.Play();
-        Object.Destroy(go, entry.clip.length + 0.1f);
+
+        // 2026-08-25：双枪连发实测出的坑——枪声素材(比如MachineGun_A那组)本身是带
+        // 真实混响尾音的完整录音，单条长达6~8秒，而机枪式连发大概每0.13~0.33秒就打
+        // 一发、每发都在这里new一个新的AudioSource播完整条素材。几十发打下来，几十个
+        // 6~8秒的音源全部叠在一起同时播放，很快就把Unity Audio的Real Voice上限(项目
+        // 设置里默认32)占满——超出上限的音源会被静音(virtualize)，表现就是"打了几十
+        // 发之后枪声突然消失"，不是代码没触发，是Unity音频系统把新声音的声道让给了
+        // 更早还没播完的那几十个长尾音。maxAudibleSeconds>0时提前截断，让每个音源
+        // 只占一小段时间就销毁腾出声道，不再无限叠加。
+        float lifetime = entry.clip.length;
+        if (maxAudibleSeconds > 0f)
+            lifetime = Mathf.Min(lifetime, maxAudibleSeconds);
+        Object.Destroy(go, lifetime + 0.1f);
     }
 
     // ── 引用解析 ─────────────────────────────────────────────────────────

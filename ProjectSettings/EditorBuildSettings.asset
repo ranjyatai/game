@@ -11,15 +11,15 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Hub_Base.unity
     guid: a611a03f7bba500448cea80e78211192
-  - enabled: 0
-    path: Assets/_Project/Maps/Raid/OldFactory/UnknownWorkshop/UnknownWorkshop.unity
-    guid: de2fa38a7bb10e0408e528b159982075
   - enabled: 1
     path: Assets/_Project/Maps/Hub/StillVault/Still Vault/Still Vault.unity
     guid: 9b7763310e2f7db428d270f4a2e4f346
   - enabled: 1
     path: Assets/_Project/Scenes/LoadingScene.unity
     guid: dce092905fd3e174ca8386014edda544
+  - enabled: 1
+    path: Assets/_Project/Maps/Raid/OldFactory/Old Factory/Old Factory.unity
+    guid: c02929878b5e86f42a590af294a1c8be
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

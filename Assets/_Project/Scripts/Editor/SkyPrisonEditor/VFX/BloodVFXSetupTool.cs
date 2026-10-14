@@ -12,7 +12,7 @@ public static class BloodVFXSetupTool
     private const string SplashFolder       = "Assets/RVFX/BloodEffectsPack/1_URP/Blood/Splash";
     private const string DecalFolder        = "Assets/RVFX/BloodEffectsPack/1_URP/Blood/Decal_Projector";
 
-    [MenuItem("SkyPrison/Setup Blood VFX")]
+    [MenuItem("天空囚笼/渲染/配置血迹 VFX", false, 194)]
     public static void Run()
     {
         // 确保 Resources 文件夹存在

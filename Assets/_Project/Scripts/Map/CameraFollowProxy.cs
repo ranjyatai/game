@@ -35,6 +35,15 @@ public class CameraFollowProxy : MonoBehaviour
     private Vector3 _smoothVelocity;
     private bool _smoothInitialized;
 
+    /// <summary>玩家引用为空或已失效（比如手摆的玩家被删了，改由玩家初始点生成）时补上新玩家。</summary>
+    public void SetPlayerIfMissing(Transform newPlayer)
+    {
+        if (newPlayer == null)
+            return;
+        if (player == null || !player.gameObject.activeInHierarchy)
+            player = newPlayer;
+    }
+
     private void LateUpdate()
     {
         if (player == null) return;

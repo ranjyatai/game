@@ -14,7 +14,7 @@ public static class SkyPrisonTerrainDecorationSelectedRootPhysicsTool
     private const string UnitBodyLayerName = "UnitBody";
     private const string PhysicsColliderRootName = "PushableColliderRoot";
 
-    [MenuItem("Tools/Sky Prison/Terrain Decoration/Physics/Force Install Physics On Selected Runtime Root")]
+    [MenuItem("天空囚笼/地形装饰物/物理/Force Install Physics On Selected Runtime Root", false, 144)]
     public static void ForceInstallPhysicsOnSelectedRuntimeRoot()
     {
         Transform selected = Selection.activeTransform;
@@ -48,7 +48,7 @@ public static class SkyPrisonTerrainDecorationSelectedRootPhysicsTool
         Debug.Log($"[SkyPrison] Physics installed on runtime root: {GetPath(root)}", root.gameObject);
     }
 
-    [MenuItem("Tools/Sky Prison/Terrain Decoration/Physics/Force Clean Physics From Selected Runtime Root")]
+    [MenuItem("天空囚笼/地形装饰物/物理/Force Clean Physics From Selected Runtime Root", false, 143)]
     public static void ForceCleanPhysicsFromSelectedRuntimeRoot()
     {
         Transform selected = Selection.activeTransform;

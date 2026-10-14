@@ -54,6 +54,11 @@ public class GameBootstrap : MonoBehaviour
         techGo.AddComponent<TechTreeRuntime>();
         Object.DontDestroyOnLoad(techGo);
 
+        // AFPRuntime
+        var afpGo = new GameObject("[AFPRuntime]");
+        afpGo.AddComponent<AFPRuntime>();
+        Object.DontDestroyOnLoad(afpGo);
+
         // LoadingScreenUI（需要在 SceneLoader 之后，确保能订阅到事件）
         var uiGo = new GameObject("[LoadingScreenUI]");
         uiGo.AddComponent<LoadingScreenUI>();

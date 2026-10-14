@@ -97,6 +97,12 @@ public class PlayerDeathDecisionController : MonoBehaviour, IDeathDecisionHandle
     {
         yield return new WaitForSecondsRealtime(deathPopupDelay);
         InventoryItemEntry reviveEntry = FindReviveItem(out bool onGCD);
+        // 背包里没有任何复活道具：没有可选的，不弹窗，直接走接受死亡 → 结算 → 返回据点
+        if (reviveEntry == null)
+        {
+            DeclineReviveAndDie();
+            yield break;
+        }
         PlayerDeathReviveUI.Show(this, reviveEntry, onGCD);
     }
 

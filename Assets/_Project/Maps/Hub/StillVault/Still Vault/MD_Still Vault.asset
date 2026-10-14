@@ -30,10 +30,14 @@ MonoBehaviour:
     text: 
   - languageCode: en
     text: 
+  coordinates: "35\xB041\u203204\u2033N  139\xB045\u203246\u2033E"
+  raidDayOutputs: []
+  raidNightOutputs: []
+  lootBoxes: []
   scenePath: Assets/_Project/Maps/Hub/StillVault/Still Vault/Still Vault.unity
   sceneGuid: 9b7763310e2f7db428d270f4a2e4f346
   mapBoundsCenter: {x: 0, y: 0, z: 0}
-  mapBoundsSize: {x: 122, y: 6, z: 122}
+  mapBoundsSize: {x: 400, y: 6, z: 400}
   enablePhysicalMapBounds: 1
   mapBoundsWallThickness: 2
   mapBoundsWallHeight: 12
@@ -42,28 +46,42 @@ MonoBehaviour:
   enableFogOfWar: 1
   fogStrength: 0.72
   fogSoftEdgeWidth: 3.5
-  environmentPreset: 1
+  environmentPreset: 6
   skyRenderModel: {fileID: 0}
-  skyboxMaterial: {fileID: 2100000, guid: b77ec6dacd80fc840ac92894afab788c, type: 2}
-  ambientColor: {r: 0.8584906, g: 0.83974725, b: 0.827451, a: 0.12156863}
-  environmentAreaLightColor: {r: 0.91194963, g: 0.70296794, b: 0.63529414, a: 1}
-  environmentAreaLightIntensity: 0.35
+  skyboxMaterial: {fileID: 2100000, guid: 340d9b8bc2904b3d809e1ec0f510e874, type: 2}
+  ambientColor: {r: 0.03, g: 0.036, b: 0.045, a: 1}
+  environmentReflectionIntensity: 0
+  environmentAreaLightColor: {r: 0.16, g: 0.2, b: 0.26, a: 1}
+  environmentAreaLightIntensity: 0
   environmentAreaLightSize: 16
   environmentAreaLightPosition: {x: 0, y: 8, z: 0}
   environmentAreaLightEuler: {x: 90, y: 0, z: 0}
-  mainLightColor: {r: 0.9748427, g: 0.8689268, b: 0.677485, a: 1}
-  mainLightIntensity: 0.6
+  mainLightColor: {r: 0.3, g: 0.36, b: 0.45, a: 1}
+  mainLightIntensity: 0
   mainLightEuler: {x: 50, y: -30, z: 0}
   enableSceneFog: 0
-  sceneFogColor: {r: 0.6693218, g: 0.79278994, b: 0.8396226, a: 1}
-  fogStartDistance: 20
-  fogEndDistance: 80
+  sceneFogColor: {r: 0.03, g: 0.038, b: 0.05, a: 1}
+  fogStartDistance: 6
+  fogEndDistance: 42
+  enableHeightFog: 1
+  heightFogColorStart: {r: 0.89411765, g: 0.86048806, b: 0.91823894, a: 0.047058824}
+  heightFogColorEnd: {r: 0.15307939, g: 0.2372731, b: 0.4056604, a: 1}
+  heightFogIntensity: 0.255
+  heightFogColorDuo: 1
+  heightFogDistanceStart: 4
+  heightFogDistanceEnd: 60
+  heightFogDistanceFalloff: 2.68
+  heightFogHeightStart: 0
+  heightFogHeightEnd: 12
+  heightFogHeightFalloff: 2.081
+  heightFogNoiseSpeed: {x: 0.5, y: 0.5, z: 0}
+  heightFogNoiseDistanceEnd: 30
   postProcessProfile: {fileID: 0}
   environmentFxPrefab: {fileID: 0}
   enableDayNightCycle: 0
   startTimeOfDay: 12
-  enableWeather: 1
-  weatherType: 1
+  enableWeather: 0
+  weatherType: 0
   dustWeather:
     intensity: 1.35
   rainWeather:

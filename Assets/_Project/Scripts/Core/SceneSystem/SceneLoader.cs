@@ -20,6 +20,8 @@ public class SceneLoader : MonoBehaviour
     /// <summary>玩家确认后、场景激活前，通知 UI 做淡出黑屏。</summary>
     public static event Action            OnLoadFadeOut;
     public static event Action            OnLoadComplete;
+    /// <summary>本内快速切图（SwitchMap / 回主菜单用的那种 0.2 秒黑屏）完全揭幕的那一刻触发。地名牌等「进新地图后的提示」监听它。</summary>
+    public static event Action            OnQuickSwitchComplete;
     /// <summary>LoadingScreenUI 的黑底揭幕动画（0.25s）真正播放完毕那一刻触发。
     /// LoadRoutine 的 onComplete 回调要等这个才执行，不能提前——不然存档快照会
     /// 拍到还没揭幕、纯黑或半透明黑的画面。</summary>
@@ -237,6 +239,7 @@ public class SceneLoader : MonoBehaviour
         Destroy(overlay.gameObject);
 
         IsLoading = false;
+        OnQuickSwitchComplete?.Invoke();
     }
 
     private CanvasGroup CreateQuickSwitchOverlay()
@@ -380,6 +383,14 @@ public class SceneLoader : MonoBehaviour
 
         // 等 1 帧让场景 Awake/Start 跑完，再做第一次 canvas 遮盖
         yield return null;
+
+        // 环境（天空盒/环境光/雾）校正必须放在这里、"揭幕"阶段之前显式跑一次——
+        // 不依赖 SceneManager.sceneLoaded 这个被动事件是否已经先触发过。场景激活到
+        // 这里之间已经至少过了一帧，场景里的 Awake/Start 都跑完了，此时校正不会
+        // 跟场景自己的初始化逻辑抢跑；而 IsAwaitingReveal 这时还是 true，玩家还看
+        // 不到画面，就算这一步本身要等一帧才生效也不会有闪烁。
+        SkyPrisonMapEnvironmentRuntimeSync.SyncNow();
+
         HideGameCanvases();
 
         // ── 阶段3：70→100% 真实反映 BootCoordinator 的 Phase0~Phase3 完成度 ──

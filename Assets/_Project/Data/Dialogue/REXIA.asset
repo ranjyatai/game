@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbd21fdfff5a36846b983a822cb5180b, type: 3}
+  m_Name: REXIA
+  m_EditorClassIdentifier: Assembly-CSharp::NPCDialogueDefinition
+  sentenceLibrary: {fileID: 11400000, guid: 774539939f6abf043a991a2fbe07df68, type: 2}
+  npcName: []
+  variants:
+  - conditions: []
+    greetingSentenceIds:
+    - REXIA-001
+    - REXIA-003
+    options:
+    - label:
+      - languageCode: zh-CN
+        text: "\u63A5\u53D7\u6218\u672F\u7814\u4FEE"
+      - languageCode: ja
+        text: "\u6226\u8853\u7814\u4FEE\u3092\u53D7\u3051\u308B"
+      - languageCode: en
+        text: Take field training
+      actionType: 7
+      visibilityConditions: []
+      targetSentenceIds: []
+      closeAfterShow: 0
+      targetWindowPrefab: {fileID: 0}
+      returnToDialogueAfterWindowClose: 0
+      targetWindowPayload: {fileID: 0}
+      questFlag: 
+      questToAccept: {fileID: 0}
+      subOptions: []
+    - label:
+      - languageCode: zh-CN
+        text: "\u8981\u8D70\u4E86"
+      - languageCode: ja
+        text: "\u3082\u3046\u884C\u304F\u3088"
+      - languageCode: en
+        text: Leaving
+      actionType: 0
+      visibilityConditions: []
+      targetSentenceIds:
+      - REXIA-004
+      closeAfterShow: 1
+      targetWindowPrefab: {fileID: 0}
+      returnToDialogueAfterWindowClose: 0
+      targetWindowPayload: {fileID: 0}
+      questFlag: 
+      questToAccept: {fileID: 0}
+      subOptions: []
+  idleChatterDelaySeconds: 18
+  idleChatterSentenceIds:
+  - REXIA-007
+  - REXIA-008
+  - REXIA-009
+  references:
+    version: 2
+    RefIds: []

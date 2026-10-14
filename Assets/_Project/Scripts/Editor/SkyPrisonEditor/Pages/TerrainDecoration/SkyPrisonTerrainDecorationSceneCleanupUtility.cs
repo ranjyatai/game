@@ -38,43 +38,43 @@ public static class SkyPrisonTerrainDecorationSceneCleanupUtility
         "EditorGizmoRoot"
     };
 
-    [MenuItem("Tools/Sky Prison/Map/地形装饰物/选择残留预览体")]
+    [MenuItem("天空囚笼/地形装饰物/选择残留预览体", false, 132)]
     public static void SelectPreviewResidues()
     {
         SelectObjects(FindPreviewResidues(), "残留预览体");
     }
 
-    [MenuItem("Tools/Sky Prison/Map/地形装饰物/删除残留预览体")]
+    [MenuItem("天空囚笼/地形装饰物/删除残留预览体", false, 133)]
     public static void DeletePreviewResidues()
     {
         DeleteObjectsWithConfirm(FindPreviewResidues(), "残留预览体");
     }
 
-    [MenuItem("Tools/Sky Prison/Map/地形装饰物/选择非托管标准节点残留")]
+    [MenuItem("天空囚笼/地形装饰物/选择非托管标准节点残留", false, 136)]
     public static void SelectUnmanagedStandardNodeResidues()
     {
         SelectObjects(FindUnmanagedStandardNodeResidues(), "非托管标准节点残留");
     }
 
-    [MenuItem("Tools/Sky Prison/Map/地形装饰物/删除非托管标准节点残留")]
+    [MenuItem("天空囚笼/地形装饰物/删除非托管标准节点残留", false, 137)]
     public static void DeleteUnmanagedStandardNodeResidues()
     {
         DeleteObjectsWithConfirm(FindUnmanagedStandardNodeResidues(), "非托管标准节点残留");
     }
 
-    [MenuItem("Tools/Sky Prison/Map/地形装饰物/选择疑似残留碰撞盒")]
+    [MenuItem("天空囚笼/地形装饰物/选择疑似残留碰撞盒", false, 134)]
     public static void SelectSuspiciousCollisionBoxes()
     {
         SelectObjects(FindSuspiciousCollisionBoxes(), "疑似残留碰撞盒");
     }
 
-    [MenuItem("Tools/Sky Prison/Map/地形装饰物/删除疑似残留碰撞盒")]
+    [MenuItem("天空囚笼/地形装饰物/删除疑似残留碰撞盒", false, 135)]
     public static void DeleteSuspiciousCollisionBoxes()
     {
         DeleteObjectsWithConfirm(FindSuspiciousCollisionBoxes(), "疑似残留碰撞盒");
     }
 
-    [MenuItem("Tools/Sky Prison/Map/地形装饰物/选择全部疑似残留")]
+    [MenuItem("天空囚笼/地形装饰物/选择全部疑似残留", false, 130)]
     public static void SelectAllTerrainDecorationResidues()
     {
         HashSet<GameObject> set = new HashSet<GameObject>();
@@ -84,7 +84,7 @@ public static class SkyPrisonTerrainDecorationSceneCleanupUtility
         SelectObjects(set.ToList(), "全部疑似残留");
     }
 
-    [MenuItem("Tools/Sky Prison/Map/地形装饰物/删除当前选中的疑似残留")]
+    [MenuItem("天空囚笼/地形装饰物/删除当前选中的疑似残留", false, 131)]
     public static void DeleteSelectedResiduesOnly()
     {
         GameObject[] selected = Selection.gameObjects;
@@ -156,13 +156,13 @@ public static class SkyPrisonTerrainDecorationSceneCleanupUtility
             .ToList();
     }
 
-    [MenuItem("Tools/Sky Prison/Map/地形装饰物/选择托管但无模型的赃碰撞实例")]
+    [MenuItem("天空囚笼/地形装饰物/选择托管但无模型的脏碰撞实例", false, 138)]
     public static void SelectManagedCollisionOnlyDecorations()
     {
         SelectObjects(FindManagedCollisionOnlyDecorations(), "托管但无模型的赃碰撞实例");
     }
 
-    [MenuItem("Tools/Sky Prison/Map/地形装饰物/删除托管但无模型的赃碰撞实例")]
+    [MenuItem("天空囚笼/地形装饰物/删除托管但无模型的脏碰撞实例", false, 139)]
     public static void DeleteManagedCollisionOnlyDecorations()
     {
         DeleteObjectsWithConfirm(FindManagedCollisionOnlyDecorations(), "托管但无模型的赃碰撞实例");

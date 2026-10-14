@@ -70,39 +70,39 @@ public static class SkyPrisonSceneCoordinateOverlay
         }
     }
 
-    [MenuItem("Tools/Sky Prison/Scene/坐标网格/显示 Scene 坐标 %#g")]
+    [MenuItem("天空囚笼/地图/坐标网格/显示 Scene 坐标 %#g", false, 122)]
     private static void ToggleEnabled()
     {
         Enabled = !Enabled;
     }
 
-    [MenuItem("Tools/Sky Prison/Scene/坐标网格/显示 Scene 坐标 %#g", true)]
+    [MenuItem("天空囚笼/地图/坐标网格/显示 Scene 坐标 %#g", true)]
     private static bool ToggleEnabledValidate()
     {
         Menu.SetChecked("Tools/Sky Prison/Scene/坐标网格/显示 Scene 坐标 %#g", Enabled);
         return true;
     }
 
-    [MenuItem("Tools/Sky Prison/Scene/坐标网格/优先使用 MapBounds")]
+    [MenuItem("天空囚笼/地图/坐标网格/优先使用 MapBounds", false, 123)]
     private static void ToggleUseMapBounds()
     {
         UseMapBounds = !UseMapBounds;
     }
 
-    [MenuItem("Tools/Sky Prison/Scene/坐标网格/优先使用 MapBounds", true)]
+    [MenuItem("天空囚笼/地图/坐标网格/优先使用 MapBounds", true)]
     private static bool ToggleUseMapBoundsValidate()
     {
         Menu.SetChecked("Tools/Sky Prison/Scene/坐标网格/优先使用 MapBounds", UseMapBounds);
         return true;
     }
 
-    [MenuItem("Tools/Sky Prison/Scene/坐标网格/网格间隔 4")]
+    [MenuItem("天空囚笼/地图/坐标网格/网格间隔 4", false, 124)]
     private static void SetStep4() => Step = 4f;
 
-    [MenuItem("Tools/Sky Prison/Scene/坐标网格/网格间隔 8")]
+    [MenuItem("天空囚笼/地图/坐标网格/网格间隔 8", false, 125)]
     private static void SetStep8() => Step = 8f;
 
-    [MenuItem("Tools/Sky Prison/Scene/坐标网格/网格间隔 16")]
+    [MenuItem("天空囚笼/地图/坐标网格/网格间隔 16", false, 126)]
     private static void SetStep16() => Step = 16f;
 
     private static void OnSceneGUI(SceneView sceneView)

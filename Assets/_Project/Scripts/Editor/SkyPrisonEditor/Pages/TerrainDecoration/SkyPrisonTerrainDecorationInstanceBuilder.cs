@@ -70,6 +70,7 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         BuildCollisionFromDefinition(root, collisionRoot, visualRoot, definitionSO);
         BuildPhysicsStructureFromDefinition(root, visualRoot, collisionRoot, definition);
         BuildOcclusionFromDefinition(root, ruleRoot, visualRoot, definitionSO);
+        BuildWalkableSurfaceMarker(root, definitionSO);
         ApplyStandardLayers(root, definitionSO);
 
         EditorUtility.SetDirty(root);
@@ -77,18 +78,78 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
             Debug.Log(BuildResultLog(root, definition, definitionSO), root);
     }
 
+    /// <summary>
+    /// 按定义的 walkableSurface 在根节点挂 / 收 GroundSurfaceMarker。
+    ///
+    /// 为什么在 Builder 而不是 RuntimeApplier：
+    /// Applier 里确实有一份同样的逻辑（ApplyWalkableSurface），但它只在 ApplyDefinition()
+    /// 里跑，而 ApplyDefinition() 只有右键 ContextMenu 一个入口——OnEnable 明确不调它。
+    /// 于是放置和重建流程走完，碰撞体建好了、marker 却永远是空的，脚步声查不到地表。
+    /// 结构生成唯一归 Builder，marker 是结构的一部分，就该在这里。
+    ///
+    /// 挂在根节点：GroundQueryService 命中碰撞体后是 GetComponentInParent 往上找的，
+    /// 根节点是所有碰撞结构的祖先，Box / Mesh / CustomRoot 三种模式都覆盖得到。
+    /// </summary>
+    private static void BuildWalkableSurfaceMarker(GameObject root, SerializedObject definitionSO)
+    {
+        var surface = GetObject<GroundSurfaceMaterialDefinition>(definitionSO, "walkableSurface", null);
+        GroundSurfaceMarker marker = root.GetComponent<GroundSurfaceMarker>();
+
+        if (surface == null)
+        {
+            // 从「能踩」改回「不能踩」时要收掉，否则残留一个 surfaceDefinition 为空的
+            // marker，会让 GroundQueryService 认为这里有地面却没有材质——比完全没有
+            // marker 更难查。
+            if (marker != null)
+                Undo.DestroyObjectImmediate(marker);
+            return;
+        }
+
+        if (marker == null)
+            marker = Undo.AddComponent<GroundSurfaceMarker>(root);
+
+        marker.surfaceDefinition = surface;
+        marker.surfaceType = surface.surfaceType;
+        EditorUtility.SetDirty(marker);
+    }
+
     private static void BuildCollisionFromDefinition(GameObject root, Transform collisionRoot, Transform visualRoot, SerializedObject definitionSO)
     {
         int collisionMode = GetEnumIndex(definitionSO, "collisionMode", CollisionNone);
-        bool blockPlayer = GetBool(definitionSO, "blockPlayer", true);
-        bool blockEnemy = GetBool(definitionSO, "blockEnemy", true);
-        bool blockProjectile = GetBool(definitionSO, "blockProjectile", true);
+        // 层映射统一走 TerrainDecorationDefinition.ResolveCollisionLayerName，
+        // 避免 Builder 和 RuntimeApplier 各写一份判定后漂移。
+        string collisionLayer = ResolveBlockingLayer(definitionSO.targetObject as TerrainDecorationDefinition, root.name);
 
         ClearGeneratedCollisionChildren(collisionRoot);
 
+        // 商店素材的 PF 常常自带 MeshCollider，它们跟着 InstantiatePrefab 一起进了
+        // VisualRoot。以前这里只管 CollisionRoot，于是定义里写着"碰撞模式=无"、
+        // CollisionRoot 也确实关掉了，视觉子树里那份碰撞却仍然生效——
+        // 表现是纯视觉物件照样把角色绊住（铁轨 MeshCollider 顶面 0.0208，
+        // 地形 0，Motor 按"离脚底最近"选地面，走过去就是一连串 2cm 台阶）。
+        //
+        // 碰撞归定义管：Box/Mesh 由 Builder 在 CollisionRoot 里生成，None 就是没有。
+        // 视觉子树一律不参与碰撞。CustomRoot 例外——那个模式本来就是"我自己接管"。
+        if (collisionMode != CollisionCustomRoot)
+            DisableCollidersUnder(visualRoot);
+
+        // 探测碰撞体必须生成在 CollisionRoot 下，不能放 VisualRoot。
+        //
+        // SkyPrisonTerrainDecorationFrontOccluderTrigger 的自判定用的是
+        // occluderColliderRoot，而它为空时自动找的是「最近的 CollisionRoot」
+        // （见该类 autoFindNearestCollisionRoot / FindChildInAncestors(transform, "CollisionRoot")）。
+        // 放在 VisualRoot 下它永远找不到 —— 上一版就是这么把探测体建在了错的地方，
+        // 层、数量、开关全对，就是打不到。
+        //
+        // 尺寸仍然按 VisualRoot 的渲染包围盒算，所以传两个根进去。
+        bool hasProbe = BuildOccluderProbeCollider(definitionSO, collisionRoot, visualRoot);
+
         if (collisionMode == CollisionNone)
         {
-            collisionRoot.gameObject.SetActive(false);
+            // 有探测体时不能关掉 CollisionRoot：节点是关的，底下的碰撞体不参与射线，
+            // 等于没生成。这类装饰物「没有实体碰撞」体现在探测体所在的
+            // OccluderProbe 层被排除在所有移动 mask 之外，而不是靠关节点。
+            collisionRoot.gameObject.SetActive(hasProbe);
             return;
         }
 
@@ -98,6 +159,17 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         {
             Vector3 size = GetVector3(definitionSO, "collisionSize", Vector3.one);
             Vector3 offset = GetVector3(definitionSO, "collisionOffset", Vector3.zero);
+
+            // 空气墙：碰撞盒直接贴合视觉包围盒。
+            // 视觉存在的唯一意义就是把体积画出来，两者要是能不一致，画出来的体积就是假的，
+            // 摆放时看到的和实际挡人的范围会对不上——比没有可视化更糟。
+            if (GetBool(definitionSO, "editorOnlyVisual", false) &&
+                TryGetLocalVisualBounds(visualRoot, out Bounds visualBounds))
+            {
+                size = visualBounds.size;
+                offset = visualBounds.center;
+            }
+
             if (size.sqrMagnitude <= 0.0001f)
                 size = Vector3.one;
 
@@ -107,7 +179,7 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
             box.isTrigger = false;
             box.size = AbsSize(size);
             box.center = offset;
-            SetLayerIfExists(boxNode.gameObject, ResolveBlockingLayer(blockPlayer, blockEnemy, blockProjectile));
+            SetLayerIfExists(boxNode.gameObject, collisionLayer);
             return;
         }
 
@@ -115,7 +187,7 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         {
             Transform meshRoot = EnsureChild(collisionRoot, MainCollisionMeshRootName);
             ResetLocalTransform(meshRoot);
-            BuildMeshCollisionProxies(meshRoot, visualRoot, ResolveBlockingLayer(blockPlayer, blockEnemy, blockProjectile));
+            BuildMeshCollisionProxies(meshRoot, visualRoot, collisionLayer);
             return;
         }
 
@@ -1033,6 +1105,32 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         if (visualRoot == null)
             return;
 
+        // 只给 LOD0 建碰撞。GetComponentsInChildren 会把所有 LOD 层级的网格都抓进来，
+        // 而 renderer.enabled 过滤不掉它们——LODGroup 是运行时才切换启用状态的，
+        // 编辑器里各级渲染器都是启用的。
+        //
+        // 不过滤的后果是一个物件叠出 N 个形状互不相同的凹面 MeshCollider（站台实测 4 个）：
+        // 脚底射线取到的是 LOD3 的粗糙面，身体扫掠却撞在 LOD0 的面上，几个碰撞体的
+        // 穿透解算互相打架，把角色一点点推出去——表现就是"站上平台后会滑下来"。
+        var lodMembers = new HashSet<Renderer>();
+        var lod0Members = new HashSet<Renderer>();
+        foreach (LODGroup group in visualRoot.GetComponentsInChildren<LODGroup>(true))
+        {
+            if (group == null) continue;
+            LOD[] lods = group.GetLODs();
+            for (int l = 0; l < lods.Length; l++)
+            {
+                Renderer[] rs = lods[l].renderers;
+                if (rs == null) continue;
+                for (int r = 0; r < rs.Length; r++)
+                {
+                    if (rs[r] == null) continue;
+                    lodMembers.Add(rs[r]);
+                    if (l == 0) lod0Members.Add(rs[r]);
+                }
+            }
+        }
+
         List<MeshFilter> meshFilters = new List<MeshFilter>(visualRoot.GetComponentsInChildren<MeshFilter>(true));
         int created = 0;
         for (int i = 0; i < meshFilters.Count; i++)
@@ -1043,6 +1141,18 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
 
             Renderer renderer = source.GetComponent<Renderer>();
             if (renderer != null && !renderer.enabled)
+                continue;
+
+            // 约定：名字以 _VisualOnly 结尾的网格只用来显示，不生成碰撞。
+            // 台阶就是这样做的：看到的是一级级的台阶（Mesh_VisualOnly），脚踩的是旁边 CollisionProxy 节点里的
+            // 斜坡楔形（只有 MeshFilter、没有 Renderer，所以不显示但会生成碰撞）。台阶的竖直立面不进物理，不会绊脚。
+            if (source.gameObject.name.EndsWith("_VisualOnly", System.StringComparison.Ordinal))
+                continue;
+
+            // 属于某个 LODGroup、但不在 LOD0 里的，跳过。
+            // 同一个渲染器可能同时挂在多级 LOD 上，所以判定要看"在不在 LOD0"，
+            // 而不是"在不在 LOD1 以上"。
+            if (renderer != null && lodMembers.Contains(renderer) && !lod0Members.Contains(renderer))
                 continue;
 
             GameObject proxy = new GameObject("__PhysicsMeshCollider_" + created.ToString("00") + "_" + MakeSafeName(source.gameObject.name));
@@ -1540,18 +1650,199 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         target.localScale = source.lossyScale;
     }
 
+    /// <summary>
+    /// 取 VisualRoot 下所有 Renderer 的合并包围盒，换算到 CollisionRoot 的本地空间。
+    ///
+    /// 用 Renderer.bounds（世界空间）再逐点变换回来，而不是直接读 mesh.bounds：
+    /// 视觉子树里可能有旋转和缩放，mesh.bounds 是模型空间的，直接拿会算错。
+    /// </summary>
+    private static bool TryGetLocalVisualBounds(Transform visualRoot, out Bounds localBounds)
+    {
+        localBounds = default;
+        if (visualRoot == null)
+            return false;
+
+        Renderer[] renderers = visualRoot.GetComponentsInChildren<Renderer>(true);
+        if (renderers == null || renderers.Length == 0)
+            return false;
+
+        Transform space = visualRoot.parent != null ? visualRoot.parent : visualRoot;
+        bool hasAny = false;
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer r = renderers[i];
+            if (r == null)
+                continue;
+
+            Bounds world = r.bounds;
+            Vector3 min = world.min;
+            Vector3 max = world.max;
+
+            // 世界 AABB 的八个角逐个变换回本地空间，再重新求 AABB。
+            for (int c = 0; c < 8; c++)
+            {
+                Vector3 corner = new Vector3(
+                    (c & 1) == 0 ? min.x : max.x,
+                    (c & 2) == 0 ? min.y : max.y,
+                    (c & 4) == 0 ? min.z : max.z);
+
+                Vector3 local = space.InverseTransformPoint(corner);
+                if (!hasAny)
+                {
+                    localBounds = new Bounds(local, Vector3.zero);
+                    hasAny = true;
+                }
+                else
+                {
+                    localBounds.Encapsulate(local);
+                }
+            }
+        }
+
+        return hasAny;
+    }
+
     private static void ApplyStandardLayers(GameObject root, SerializedObject definitionSO)
     {
         Transform visualRoot = root.transform.Find(VisualRootName);
-        if (visualRoot != null)
-            SetLayerRecursivelyIfExists(visualRoot.gameObject, "World3D");
+        if (visualRoot == null)
+            return;
+
+        // 空气墙这类工具物件的视觉留在 Default(0)：本项目四台相机的 cullingMask 都不含
+        // 第 0 位，所以游戏里一帧都不渲染，而 Scene 视图有自己的层显示开关、照常可见。
+        bool editorOnly = GetBool(definitionSO, "editorOnlyVisual", false);
+        SetLayerRecursivelyIfExists(visualRoot.gameObject, editorOnly ? "Default" : "World3D");
     }
 
-    private static string ResolveBlockingLayer(bool blockPlayer, bool blockEnemy, bool blockProjectile)
+    /// <summary>
+    /// 关掉视觉子树里的碰撞体。
+    ///
+    /// 用 enabled=false 而不是删除：VisualRoot 底下是 PF 实例，删组件会产生
+    /// "移除组件"这种破坏性 override，PF 更新或 Revert 时容易出问题；禁用只是
+    /// 一个普通属性 override，可逆、也能在 Inspector 里一眼看出来。
+    /// 触发器不动——那些是别的系统在用（遮挡、区域判定），不是地面碰撞。
+    /// </summary>
+    private const string OccluderProbeObjectName = "OccluderProbe_Box";
+
+    /// <summary>
+    /// 给「碰撞模式=无、但要参与前后遮挡」的装饰物生成一个只用于遮挡判定的碰撞体。
+    ///
+    /// 为什么需要：前后遮挡判定是「从相机向角色采样点射线，看有没有先命中遮挡物
+    /// 自己 VisualRoot 下的碰撞体」。草丛这类 collisionMode=None 的装饰物身上一个
+    /// 碰撞体都没有，射线唯一能打到的是地形——而那属于 OtherHit，
+    /// debugGlobalOtherHitOnly 明确规定不作为遮挡依据。三条判定路径全空，
+    /// 结果就是角色永远画在草前面。
+    ///
+    /// 为什么不会挡住移动：碰撞体放在 OccluderProbe 层，那一层不出现在
+    /// UnitMovementController.blockingLayers / TerrainGroundMotorV5.bodyBlockMask 里。
+    /// 射线检测只看 layerMask、不看物理碰撞矩阵，所以遮挡判定照样命中。
+    /// 「能遮挡」和「能穿过去」本来就是两件事，只是原实现把它们绑在同一个碰撞体上了。
+    ///
+    /// 形状用贴合视觉包围盒的 Box 就够——射线只需要一个靶子，不需要还原叶片轮廓。
+    /// </summary>
+    /// <summary>
+    /// 生成遮挡探测碰撞体，返回是否真的存在一个。
+    /// 父节点是 collisionRoot（触发器只在那里找），尺寸按 visualRoot 的渲染包围盒算。
+    /// </summary>
+    private static bool BuildOccluderProbeCollider(SerializedObject definitionSO, Transform collisionRoot, Transform visualRoot)
     {
-        // 暂时统一走 World3D，避免凭空发明不存在的层。
-        // 后续若你有专用 DecorationPhysics / ProjectileBlocker 层，再在这里集中映射。
-        return "World3D";
+        if (collisionRoot == null || visualRoot == null)
+            return false;
+
+        // 上一版建在 VisualRoot 下，这里要把残留的收掉，否则同时存在两个。
+        Transform legacy = visualRoot.Find(OccluderProbeObjectName);
+        if (legacy != null)
+            Undo.DestroyObjectImmediate(legacy.gameObject);
+
+        Transform existing = collisionRoot.Find(OccluderProbeObjectName);
+        bool wanted = GetBool(definitionSO, "generateOccluderProbeCollider", false);
+
+        if (!wanted)
+        {
+            // 关掉之后要收干净，否则残留一个碰撞体继续参与遮挡判定，
+            // 而定义上已经看不出它的存在了。
+            if (existing != null)
+                Undo.DestroyObjectImmediate(existing.gameObject);
+            return false;
+        }
+
+        if (!TryGetLocalVisualBounds(visualRoot, out Bounds localBounds))
+        {
+            Debug.LogWarning(
+                $"[TD_Builder] {visualRoot.parent?.name}：开启了遮挡探测碰撞体，" +
+                "但 VisualRoot 下取不到 Renderer 包围盒，没有生成。", visualRoot);
+            return false;
+        }
+
+        Transform probe = existing != null
+            ? existing
+            : new GameObject(OccluderProbeObjectName).transform;
+
+        if (existing == null)
+        {
+            Undo.RegisterCreatedObjectUndo(probe.gameObject, "Create Occluder Probe");
+            probe.SetParent(collisionRoot, false);
+        }
+
+        probe.localPosition = Vector3.zero;
+        probe.localRotation = Quaternion.identity;
+        probe.localScale = Vector3.one;
+        SetLayerIfExists(probe.gameObject, TerrainDecorationDefinition.OccluderProbeLayerName);
+
+        BoxCollider box = EnsureComponent<BoxCollider>(probe.gameObject);
+        box.isTrigger = false;   // 触发器明确排除 Trigger，这里必须是实体
+        box.enabled = true;
+        box.center = localBounds.center;
+        box.size = localBounds.size;
+        return true;
+    }
+
+    private static void DisableCollidersUnder(Transform visualRoot)
+    {
+        if (visualRoot == null)
+            return;
+
+        Collider[] colliders = visualRoot.GetComponentsInChildren<Collider>(true);
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            Collider c = colliders[i];
+            if (c == null || c.isTrigger || !c.enabled)
+                continue;
+
+            Undo.RecordObject(c, "Disable Visual Collider");
+            c.enabled = false;
+            EditorUtility.SetDirty(c);
+        }
+    }
+
+    /// <summary>
+    /// 把「挡不挡单位 / 挡不挡子弹」两个开关映射到具体的层。
+    ///
+    ///   挡单位 + 挡子弹  -> World3D（默认，和一切既有几何体一致）
+    ///   挡单位 + 不挡子弹 -> Obstacle_UnitOnly
+    ///   都不挡            -> WalkableProbe（还能被地表查询射线打中，用来出脚步声）
+    ///
+    /// 「不挡单位但挡子弹」是第四种组合，全项目 0 个定义用到，没有为它单独开层——
+    /// 落到 World3D 并打警告。真需要时再加，那时候也有具体场景验证设计。
+    ///
+    /// 为什么谁都不挡的那档还要留实体碰撞体：GroundQueryService 靠向下射线找地表，
+    /// 且明确排除 trigger。射线检测只看 layerMask、不看物理碰撞矩阵，所以只要
+    /// WalkableProbe 不在移动 mask 里，就能做到射线看得见、移动看不见。
+    /// </summary>
+    private static string ResolveBlockingLayer(TerrainDecorationDefinition definition, string fallbackName)
+    {
+        if (definition == null)
+            return "World3D";
+
+        if (!definition.BlocksUnits && definition.blockProjectile)
+        {
+            Debug.LogWarning(
+                $"[TD Builder] 「{fallbackName}」勾了阻挡子弹但没勾阻挡单位。" +
+                "这个组合还没有专用层，暂时按「两者都挡」处理。");
+        }
+
+        return definition.ResolveCollisionLayerName();
     }
 
     private static Material FindOcclusionMaskMaterial()
@@ -1635,9 +1926,25 @@ public static class SkyPrisonTerrainDecorationInstanceBuilder
         int layer = LayerMask.NameToLayer(layerName);
         if (layer < 0)
             return;
+
+        int probeLayer = LayerMask.NameToLayer(TerrainDecorationDefinition.OccluderProbeLayerName);
+
         Transform[] children = go.GetComponentsInChildren<Transform>(true);
         for (int i = 0; i < children.Length; i++)
+        {
+            // 遮挡探测碰撞体必须留在 OccluderProbe 层，不能被刷成 World3D。
+            //
+            // 它挂在 VisualRoot 底下，而这里是把 VisualRoot 整棵子树刷成同一层，
+            // 又排在 BuildOccluderProbeCollider 之后 —— 上一版就是这么把探测体刷到
+            // World3D 的，结果 World3D 在 blockingLayers 里，草直接变成了障碍物。
+            if (probeLayer >= 0 && children[i].name == OccluderProbeObjectName)
+            {
+                children[i].gameObject.layer = probeLayer;
+                continue;
+            }
+
             children[i].gameObject.layer = layer;
+        }
     }
 
     private static string BuildResultLog(GameObject root, TerrainDecorationDefinition definition, SerializedObject definitionSO)

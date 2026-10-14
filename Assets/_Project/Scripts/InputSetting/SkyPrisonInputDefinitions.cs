@@ -25,6 +25,7 @@ public enum SkyPrisonInputAction
     Map = 31,
     Menu = 32,
     CharacterPanel = 33,
+    QuestLog = 34,
 
     CyclePickup = 50,   // 拾取目标切换（默认 R）
 

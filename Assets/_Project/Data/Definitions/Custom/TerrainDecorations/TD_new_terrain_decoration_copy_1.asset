@@ -121,7 +121,7 @@ MonoBehaviour:
   visualRandomRotationMin: {x: 0, y: -90, z: 0}
   visualRandomRotationMax: {x: 0, y: 90, z: 0}
   visualRandomRotationAffectsRules: 1
-  collisionMode: 1
+  collisionMode: 2
   collisionSize: {x: 4.042808, y: 4.019485, z: 10.72662}
   collisionOffset: {x: 0.03662059, y: 2.149028, z: 2.291431}
   blockPlayer: 1

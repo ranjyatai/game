@@ -99,6 +99,54 @@ public class MapWeatherController : MonoBehaviour
             Instance = null;
     }
 
+    // ── 运行时开关(触发器 act_set_weather_active 用)──────────────────────────
+    // 只做"这张地图已经配好的天气"整体开/关，不做类型切换——粒子范围/密度/下落
+    // 速度那一整套(FitShapeToMapBounds/FitVFXBoxToMapBounds)是照具体资产和这张
+    // 地图边界手动反推出来的，运行时重新生成/切换预制体风险远大于收益，不在这次
+    // 范围内。开关只影响"已经在这张地图上的这份天气"要不要显示/发声。
+    private GameObject _particleInstance;
+    private AudioSource _ambientSource;
+    private float _configuredAmbientVolume;
+    private RaindropFX_GPU _raindropComponent;
+    private float _configuredLensIntensity;
+    private bool _active = true;
+    private Coroutine _activeFadeRoutine;
+
+    /// <summary>开关这张地图已配置的天气（粒子显隐 + 环境音音量 + 镜头湿润扭曲强度，
+    /// 平滑过渡而非瞬间切换）。地图没配天气的部分（对应引用为 null）不受影响。</summary>
+    public void SetActive(bool active)
+    {
+        if (_active == active) return;
+        _active = active;
+
+        _particleInstance?.SetActive(active);
+
+        if (_activeFadeRoutine != null) StopCoroutine(_activeFadeRoutine);
+        _activeFadeRoutine = StartCoroutine(FadeWeatherToggle(active));
+    }
+
+    private System.Collections.IEnumerator FadeWeatherToggle(bool active)
+    {
+        float startAmbient = _ambientSource != null ? _ambientSource.volume : 0f;
+        float targetAmbient = active ? _configuredAmbientVolume : 0f;
+        float startLens = _raindropComponent != null ? _raindropComponent.distortion.value : 0f;
+        float targetLens = active ? _configuredLensIntensity : 0f;
+
+        const float duration = 1f;
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = t / duration;
+            if (_ambientSource != null) _ambientSource.volume = Mathf.Lerp(startAmbient, targetAmbient, k);
+            if (_raindropComponent != null) _raindropComponent.distortion.value = Mathf.Lerp(startLens, targetLens, k);
+            yield return null;
+        }
+        if (_ambientSource != null) _ambientSource.volume = targetAmbient;
+        if (_raindropComponent != null) _raindropComponent.distortion.value = targetLens;
+        _activeFadeRoutine = null;
+    }
+
     // Rain VFX[URP]资产暴露出来的Vector3属性名，World Rain系列prefab（World Rain
     // Splash Spawner脚本）都是按这个名字读写生成范围盒子的，跟贴图/预制体本身没关系，
     // 是资产作者定死的字符串，改不了。
@@ -140,6 +188,8 @@ public class MapWeatherController : MonoBehaviour
         source.playOnAwake = false;
         source.spatialBlend = 0f; // 环境音，不做3D定位
         source.volume = 0f;
+        _ambientSource = source;
+        _configuredAmbientVolume = volume;
         StartCoroutine(PlayAmbientDelayed(source, volume));
     }
 
@@ -167,6 +217,7 @@ public class MapWeatherController : MonoBehaviour
     private void SpawnParticles(MapWeatherRegistry.Entry entry)
     {
         GameObject go = Instantiate(entry.weatherPrefab, transform, false);
+        _particleInstance = go;
 
         // Rain VFX[URP]资产走的是VFX Graph（VisualEffect组件），不是传统ParticleSystem，
         // 范围盒子是一个暴露出来的Vector3属性，不是ParticleSystem.ShapeModule，
@@ -408,6 +459,7 @@ public class MapWeatherController : MonoBehaviour
 
         raindrop.enable.overrideState = true;
         raindrop.distortion.overrideState = true;
+        _raindropComponent = raindrop;
 
         GameObject volumeGo = new GameObject("SkyPrisonRainLensVolume");
         volumeGo.transform.SetParent(transform, false);
@@ -431,7 +483,8 @@ public class MapWeatherController : MonoBehaviour
 
         raindrop.enable.value = true;
         raindrop.distortion.value = 0f;
-        StartCoroutine(FadeLensDistortion(raindrop, Mathf.Clamp01(intensity) * MaxLensDistortion));
+        _configuredLensIntensity = Mathf.Clamp01(intensity) * MaxLensDistortion;
+        StartCoroutine(FadeLensDistortion(raindrop, _configuredLensIntensity));
     }
 
     private System.Collections.IEnumerator FadeLensDistortion(RaindropFX_GPU raindrop, float target)

@@ -23,7 +23,7 @@ public static class DeathReviveLocalizationSetup
 
     private static readonly List<string> SupportedCodes = new List<string> { "zh-CN", "ja-JP", "en-US" };
 
-    [MenuItem("Sky Prison/本地化/填充死亡弹窗默认译文")]
+    [MenuItem("天空囚笼/UI/填充死亡弹窗默认译文", false, 184)]
     public static void Run()
     {
         var table = AssetDatabase.LoadAssetAtPath<UILocalizationTable>(TablePath);

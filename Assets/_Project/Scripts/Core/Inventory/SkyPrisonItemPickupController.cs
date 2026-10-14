@@ -6,7 +6,11 @@ using UnityEngine.UI;
 namespace SkyPrison.Runtime.UI
 {
     /// <summary>
-    /// 世界掉落物拾取控制器。
+    /// 物品拾取提示 UI——纯 UI 渲染器，不再自己扫描范围/响应输入。
+    /// 统一交互重构后，"附近有哪些可交互对象、当前选中哪个、E/G键怎么响应"全部
+    /// 收拢到 SkyPrisonInteractionController 一处（不然物品和NPC各扫一遍范围、
+    /// 各自响应E键，会出现同时弹两个提示、同时触发两边交互的 bug）。这里只保留
+    /// UI 构建/刷新逻辑，由外部通过 ShowItemPrompt/HideItemPrompt 驱动。
     /// 提示条样式与 SkyPrisonWindowHintBar 保持一致：
     ///   ScreenSpaceOverlay + WorldToScreenPoint 定位，
     ///   HorizontalLayoutGroup + ContentSizeFitter 自动布局，
@@ -21,17 +25,13 @@ namespace SkyPrison.Runtime.UI
         private const int   FontSize   = 40;
         private const int   SortOrder  = 1140;
 
-        [SerializeField] private float pickupRadius = 2.4f;
         [SerializeField] private float promptHeight = 2.2f;
 
         private SkyPrisonInputSettings           _input;
-        private SkyPrisonWindowManager_V1        _windows;
         private SkyPrisonInputPromptIconDatabase _iconDb;
         private UILocalizationTable              _locTable;
 
-        private readonly List<LootDropWorldObject> _inRange = new();
-        private int                 _selectedIdx;
-        private LootDropWorldObject _currentTarget;
+        private int _selectedIdx;
 
         // ── 提示 UI ───────────────────────────────────────────────────────────
         private Canvas          _canvas;
@@ -51,21 +51,10 @@ namespace SkyPrison.Runtime.UI
         private LootDropWorldObject _promptFor;
         private int                 _promptCount;
 
-        // Sort 比较器缓存：避免每帧 lambda 闭包分配
-        private Vector3 _sortRefPos;
-        private System.Comparison<LootDropWorldObject> _sortComparison;
-
         // Camera 缓存
         private Camera _cam;
 
         // ── 生命周期 ──────────────────────────────────────────────────────────
-
-        private void Awake()
-        {
-            _sortComparison = (a, b) =>
-                (a.transform.position - _sortRefPos).sqrMagnitude.CompareTo(
-                (b.transform.position - _sortRefPos).sqrMagnitude);
-        }
 
         private void OnEnable()
         {
@@ -83,108 +72,26 @@ namespace SkyPrison.Runtime.UI
             _promptFor = null;
         }
 
-        private void Update()
+        // ── 对外驱动 API ──────────────────────────────────────────────────────
+        // 由 SkyPrisonInteractionController 统一扫描/选中后调用，本类不再自己
+        // 扫描范围或响应输入。
+
+        public void ShowItemPrompt(LootDropWorldObject loot, int count, int selectedIndex)
         {
-            GameObject playerGo = SkyPrisonPlayerAuthority.CurrentPlayerUnit != null
-                ? SkyPrisonPlayerAuthority.CurrentPlayerUnit.gameObject : null;
-
-            if (playerGo == null) { ClearSelection(); HidePrompt(); return; }
-            // HasAnyWindowOpen() 只认走 windowManager.Open() 注册过的窗口，设置窗口/暂停菜单
-            // 这类纯手写全屏窗口只设 ExternalBlock 静态标记，漏了这条会导致那些窗口开着的
-            // 时候按 E 照样能拾取东西——跟 SkyPrisonInteractionController 同一个 bug。
-            if ((Windows() != null && _windows.HasAnyWindowOpen()) || SkyPrisonWindowManager_V1.AnyBlockingWindowOpen)
-                { ClearSelection(); HidePrompt(); return; }
-
-            RefreshInRange(playerGo.transform.position);
-
-            if (_inRange.Count == 0) { ClearSelection(); HidePrompt(); return; }
-
-            _selectedIdx = Mathf.Clamp(_selectedIdx, 0, _inRange.Count - 1);
-            LootDropWorldObject target = _inRange[_selectedIdx];
-
-            if (target != _currentTarget)
+            if (loot == null || loot.Item == null)
             {
-                _currentTarget?.GetComponent<LootDropVisual>()?.SetSelected(false);
-                _currentTarget = target;
-                _currentTarget.GetComponent<LootDropVisual>()?.SetSelected(true);
-            }
-
-            ShowPrompt(target, _inRange.Count);
-
-            SkyPrisonInputSettings input = GetInput();
-            if (input == null) return;
-
-            if (input.GetActionDown(SkyPrisonInputAction.CyclePickup) && _inRange.Count > 1)
-            {
-                _selectedIdx = (_selectedIdx + 1) % _inRange.Count;
-                SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Switch);
-            }
-
-            if (input.GetActionDown(SkyPrisonInputAction.Interact))
-                TryPickup(target);
-        }
-
-        // ── 范围检测 ──────────────────────────────────────────────────────────
-
-        private void RefreshInRange(Vector3 pos)
-        {
-            _inRange.Clear();
-            float r2 = pickupRadius * pickupRadius;
-            var list = LootDropWorldObject.Active;
-            for (int i = 0; i < list.Count; i++)
-            {
-                LootDropWorldObject l = list[i];
-                if (l == null || l.Item == null) continue;
-                if ((l.transform.position - pos).sqrMagnitude <= r2)
-                    _inRange.Add(l);
-            }
-            _sortRefPos = pos;
-            _inRange.Sort(_sortComparison);
-
-            if (_currentTarget != null && !_inRange.Contains(_currentTarget))
-            {
-                _currentTarget.GetComponent<LootDropVisual>()?.SetSelected(false);
-                _currentTarget = null;
-                _selectedIdx   = 0;
-            }
-        }
-
-        // ── 拾取逻辑 ──────────────────────────────────────────────────────────
-
-        private void TryPickup(LootDropWorldObject loot)
-        {
-            InventoryRuntime inv = InventoryRuntimeBootstrap.Instance?.Inventory;
-            if (inv == null || loot == null || loot.Item == null) return;
-
-            int leftover = inv.AddItem(loot.Item, loot.Count);
-            int accepted = loot.Count - leftover;
-
-            if (accepted <= 0)
-            {
-                SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Forbidden);
+                if (loot != null)
+                    Debug.LogWarning($"[SkyPrisonItemPickupController] '{loot.name}' 的 Item 为空，跳过显示提示。", loot);
+                HideItemPrompt();
                 return;
             }
-
-            SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Pickup);
-
-            if (leftover <= 0)
-            {
-                loot.GetComponent<LootDropVisual>()?.SetSelected(false);
-                _currentTarget = null;
-                Destroy(loot.gameObject);
-            }
-            else
-            {
-                loot.SetRemaining(leftover);
-            }
+            _selectedIdx = selectedIndex;
+            ShowPrompt(loot, count);
         }
 
-        private void ClearSelection()
+        public void HideItemPrompt()
         {
-            _currentTarget?.GetComponent<LootDropVisual>()?.SetSelected(false);
-            _currentTarget = null;
-            _selectedIdx   = 0;
-            _inRange.Clear();
+            HidePrompt();
         }
 
         // ── 提示 UI 驱动 ──────────────────────────────────────────────────────
@@ -213,8 +120,18 @@ namespace SkyPrison.Runtime.UI
                 }
                 else
                 {
+                    // sp.z<=0 意味着提示点在相机背后——正常站在掉落物旁边不该发生，
+                    // 出现这条日志说明 _cam 缓存到了错误的相机（比如场景里同时存在
+                    // 别的 MainCamera 候选）。
+                    Debug.LogWarning($"[SkyPrisonItemPickupController] '{loot.name}' 提示点在相机背后" +
+                                      $"(sp.z={sp.z:F2})，隐藏提示。cam={_cam.name}", loot);
                     _canvas.gameObject.SetActive(false);
                 }
+            }
+            else
+            {
+                Debug.LogWarning($"[SkyPrisonItemPickupController] 找不到相机(Camera.main为空)，" +
+                                  $"无法显示 '{loot.name}' 的拾取提示。");
             }
         }
 
@@ -531,12 +448,6 @@ namespace SkyPrison.Runtime.UI
                 _input?.EnsureDefaults();
             }
             return _input;
-        }
-
-        private SkyPrisonWindowManager_V1 Windows()
-        {
-            if (_windows == null) _windows = FindObjectOfType<SkyPrisonWindowManager_V1>();
-            return _windows;
         }
 
         private SkyPrisonInputPromptIconDatabase GetIconDb()

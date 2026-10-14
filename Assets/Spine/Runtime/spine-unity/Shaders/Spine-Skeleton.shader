@@ -89,7 +89,17 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
     }
 
     SubShader {
-        Tags { "Queue"="Transparent" "IgnoreProjector"="True" "RenderType"="Transparent" "PreviewType"="Plane" }
+        // Queue 必须和 SpineOcclusionComposite 一致（那边是 Transparent+40）。
+        //
+        // 高度雾是一个 Queue=Transparent(3000) 的全屏透明覆盖层（Height Fog Global，
+        // Cull Front + ZTest Always），谁画在它之前谁被盖上雾。
+        // 原来这里是 Transparent(3000)，和雾同队列，先后完全由距离排序决定——
+        // 角色一移动就在"被雾盖"和"不被盖"之间跳；而遮挡时换成的合成材质是 +40，
+        // 永远在雾之后、永远不被盖。同一个角色两种状态吃雾行为不同，色差就是这么来的。
+        //
+        // 统一到 +40 之后两者都确定性地排在雾之后（都不吃覆盖层的雾），
+        // 雾改由两个着色器各自在片元里算一次，值相同，切换材质不再跳色。
+        Tags { "Queue"="Transparent+40" "IgnoreProjector"="True" "RenderType"="Transparent" "PreviewType"="Plane" }
 
         Fog { Mode Off }
         Cull Off
@@ -120,6 +130,17 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
             #pragma fragment frag
             #include "UnityCG.cginc"
             #include "CGIncludes/Spine-Common.cginc"
+            // 高度雾：场景几何（URP Lit）本来就吃这套雾，角色不吃的话，角色永远是
+            // 未加雾的原色、场景是加了雾的冷色，两者贴在一起的边缘就有明显色差。
+            // 注意路径——插件注释里写的是 Core/Library/，实际文件在 Core/Includes/。
+            //
+            // 雾的 include 是给 URP 着色器库写的，里面用了 _TimeParameters（URP 的时间
+            // 变量）。Spine 走的是内置管线的 CGPROGRAM，只有 UnityCG.cginc，没有这个
+            // 变量，直接 include 会报 undeclared identifier。
+            // 内置管线里 _Time.y 就是秒数，按 URP 的分量约定桥接过去。
+            // 这一行必须排在 include 之前。
+            #define _TimeParameters float4(_Time.y, sin(_Time.y), cos(_Time.y), unity_DeltaTime.x)
+            #include "Assets/BOXOPHOBIC/Atmospheric Height Fog/Core/Includes/AtmosphericHeightFog.cginc"
 
             sampler2D _MainTex;
 
@@ -129,6 +150,14 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
             fixed4 _SkyPrison_EnvTint;
             float _SkyPrison_EnvTintStrength;
             float _SkyPrison_EnvDarken;
+            // 逐像素灯光（由 SkyPrisonCharacterEnvironmentLightReceiver 通过 MaterialPropertyBlock 填）。
+            // 每个像素按自己的世界坐标算附近灯的受光，减在 _SkyPrison_EnvDarken 上。数量为 0 时和原来完全一致。
+            float4 _SkyPrison_EnvLampPos[4];    // xyz 世界位置, w 范围
+            float4 _SkyPrison_EnvLampDir[4];    // xyz 朝向, w cos(外角)；点光源 w = -2
+            float4 _SkyPrison_EnvLampParam[4];  // x 强度×颜色亮度, y cos(内角)
+            float4 _SkyPrison_EnvLampColor[4];  // rgb 灯色相（按亮度归一）
+            float _SkyPrison_EnvLampCount;
+            float _SkyPrison_EnvLampDarkenGain;
             float _SkyPrison_EnvSaturation;
             float _SkyPrison_EnvContrast;
             float _SkyPrison_EnvExposure;
@@ -177,7 +206,8 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
                 float4 pos : SV_POSITION;
                 float2 uv : TEXCOORD0;
                 float4 vertexColor : COLOR;
-                float2 worldPosXY : TEXCOORD1;
+                // 从 float2 扩成 float3：高度雾按世界 Y 算衰减，只有 XY 不够。
+                float3 worldPos : TEXCOORD1;
                 float4 screenPos : TEXCOORD2;
             };
 
@@ -186,7 +216,7 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
                 o.pos = UnityObjectToClipPos(v.vertex);
                 o.uv = v.uv;
                 o.vertexColor = PMAGammaToTargetSpace(v.vertexColor);
-                o.worldPosXY = mul(unity_ObjectToWorld, v.vertex).xy;
+                o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
                 o.screenPos = ComputeScreenPos(o.pos);
                 return o;
             }
@@ -196,31 +226,89 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
             }
 
             // 跟 SpineOcclusionComposite.shader 的 GetCharSilhouetteEdge 同一套算法：
-            // 屏幕空间8邻域采样，中心比邻域最小值多出来的部分就是"轮廓边缘"。这里采样
+            // 屏幕空间圆形邻域采样，中心比邻域最小值多出来的部分就是"轮廓边缘"。这里采样
             // 的是每单位专属蒙版，不是全场合并蒙版，不会跟其他单位重叠焊接。
             float GetStatusOutlineSilhouetteEdge(float2 screenUV, float widthPixels) {
                 if (_SkyPrison_StatusOutlinePresenceActive < 0.5)
                     return 0.0;
 
-                float2 texel = abs(_SkyPrison_StatusOutlinePresence_TexelSize.xy) * max(1.0, widthPixels);
-
-                float neighborMin = 1.0;
-                neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2( texel.x, 0)));
-                neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2(-texel.x, 0)));
-                neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2(0,  texel.y)));
-                neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2(0, -texel.y)));
-                neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2( texel.x,  texel.y)));
-                neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2(-texel.x,  texel.y)));
-                neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2( texel.x, -texel.y)));
-                neighborMin = min(neighborMin, SampleStatusOutlinePresenceRaw(screenUV + float2(-texel.x, -texel.y)));
+                // 圆形 16 方向、内外两圈（宽度 ±0.5px）取邻域最小值再平均：原来方形 8 邻域 +
+                // 二值结果会在转角处出锯齿台阶和缺口，两圈平均给内侧边缘一个像素的抗锯齿过渡。
+                float2 texel = abs(_SkyPrison_StatusOutlinePresence_TexelSize.xy);
+                float rIn = max(0.5, widthPixels - 0.5);
+                float rOut = max(1.0, widthPixels + 0.5);
+                float minIn = 1.0;
+                float minOut = 1.0;
+                [unroll] for (int k = 0; k < 16; k++)
+                {
+                    float a = k * 0.39269908;
+                    float2 dir = float2(cos(a), sin(a)) * texel;
+                    minIn = min(minIn, SampleStatusOutlinePresenceRaw(screenUV + dir * rIn));
+                    minOut = min(minOut, SampleStatusOutlinePresenceRaw(screenUV + dir * rOut));
+                }
 
                 float center = SampleStatusOutlinePresenceRaw(screenUV);
-                return saturate(center - neighborMin);
+                return saturate(center - 0.5 * (minIn + minOut));
             }
 
-            float3 SkyPrisonApplyOverlayEnvironment(float3 rgb) {
+            // 这个像素（世界坐标）被附近的灯照亮多少。公式和 Receiver.cs 里的 CPU 版一致：
+            // 范围前 55% 满亮度、后 45% 平滑落到 0；聚光灯只在最外侧约 30% 角度内渐变。
+            // 受光按角色「逻辑上垂直站立」的位置算：Spine 网格为了正对镜头整体绕 X 轴倾斜了 45°
+            // （头往后仰），直接用倾斜后的像素位置，头部会被算得更低、更靠后，和灯的距离/角度都不对。
+            // 按网格自己的上/右轴拆出离脚高度和左右偏移，重建成垂直站立的位置（灯光投影着色器同一套）。
+            float3 SkyPrisonUprightWorldPos(float3 wp)
+            {
+                float3 root = float3(unity_ObjectToWorld._m03, unity_ObjectToWorld._m13, unity_ObjectToWorld._m23);
+                float3 upW = normalize(float3(unity_ObjectToWorld._m01, unity_ObjectToWorld._m11, unity_ObjectToWorld._m21));
+                float3 rightW = normalize(float3(unity_ObjectToWorld._m00, unity_ObjectToWorld._m10, unity_ObjectToWorld._m20));
+                float3 d = wp - root;
+                return root + rightW * dot(d, rightW) + float3(0.0, dot(d, upW), 0.0);
+            }
+
+            float SkyPrisonLampLevelAt(float3 worldPos, out float3 lampHue)
+            {
+                worldPos = SkyPrisonUprightWorldPos(worldPos);
+                // 和地面、灯光投影同一套 URP 物理衰减（强度/距离² + 范围末端平滑 + 聚光内外角）。
+                // 以前用的是「范围前 55% 满亮度」的风格化曲线，再乘上为了照亮地面而调得很大的强度
+                // （挂 14 米高的灯强度 200+），光锥边缘衰减只剩 1% 也能把角色照满——地面已经黑了，
+                // 人却是亮的。现在强度在 C# 里按「满亮度门槛」归一化，level = 1 就是照满。
+                float level = 0.0;
+                float3 colorSum = float3(0.0, 0.0, 0.0);
+                int n = (int)_SkyPrison_EnvLampCount;
+                [unroll] for (int k = 0; k < 4; k++)
+                {
+                    if (k < n)
+                    {
+                        float3 toP = worldPos - _SkyPrison_EnvLampPos[k].xyz;
+                        float d2 = max(dot(toP, toP), 0.0001);
+                        float range = max(_SkyPrison_EnvLampPos[k].w, 0.0001);
+                        float q = d2 / (range * range);
+                        float f = saturate(1.0 - q * q);
+                        float atten = f * f / d2;
+                        float cosOuter = _SkyPrison_EnvLampDir[k].w;
+                        if (cosOuter > -1.5)
+                        {
+                            float cosA = dot(_SkyPrison_EnvLampDir[k].xyz, toP * rsqrt(d2));
+                            float u = saturate((cosA - cosOuter) / max(_SkyPrison_EnvLampParam[k].y - cosOuter, 0.0001));
+                            atten *= u * u;
+                        }
+                        float c = _SkyPrison_EnvLampParam[k].x * atten;
+                        level += c;
+                        colorSum += _SkyPrison_EnvLampColor[k].rgb * c;
+                    }
+                }
+                lampHue = level > 0.0001 ? colorSum / level : float3(1.0, 1.0, 1.0);
+                return level;
+            }
+
+            float3 SkyPrisonApplyOverlayEnvironment(float3 rgb, float3 worldPos) {
                 float tintStrength = saturate(_SkyPrison_EnvTintStrength);
-                float darken = saturate(_SkyPrison_EnvDarken);
+                float3 lampHue;
+                float lampLevel = SkyPrisonLampLevelAt(worldPos, lampHue);
+                float darken = saturate(_SkyPrison_EnvDarken - lampLevel * _SkyPrison_EnvLampDarkenGain);
+                // 灯色逐像素：被灯照到多少，色调就往灯色靠多少。以前色相是 C# 在腰部一个点算的，
+                // 光锥越往上越窄，走到光圈边缘时腰部先出锥，腿还亮着却没有灯色。
+                float3 tintColor = lerp(_SkyPrison_EnvTint.rgb, lampHue, saturate(lampLevel));
                 float saturation = max(0.0, _SkyPrison_EnvSaturation);
                 float contrast = max(0.0, _SkyPrison_EnvContrast);
                 float exposure = _SkyPrison_EnvExposure;
@@ -231,11 +319,11 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
                 rgb = lerp(luminance.xxx, rgb, saturation);
                 rgb = (rgb - 0.5) * contrast + 0.5;
 
-                float3 envTinted = rgb * _SkyPrison_EnvTint.rgb;
+                float3 envTinted = rgb * tintColor;
                 rgb = lerp(rgb, envTinted, tintStrength);
 
                 float shadowMask = saturate(1.0 - luminance);
-                float3 shadowTinted = rgb * _SkyPrison_EnvTint.rgb;
+                float3 shadowTinted = rgb * tintColor;
                 rgb = lerp(rgb, shadowTinted, shadowMask * shadowTintStrength);
 
                 rgb *= (1.0 - darken);
@@ -261,7 +349,7 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
                 baseColor.rgb *= edgeKeep;
 
                 float3 straightRgb = alpha > 0.0001 ? baseColor.rgb / alpha : 0;
-                straightRgb = SkyPrisonApplyOverlayEnvironment(straightRgb);
+                straightRgb = SkyPrisonApplyOverlayEnvironment(straightRgb, i.worldPos);
 
                 // 手绘阴影遮罩：黑=阴影、白=不变，直接乘上去。用edgeKeep在图集
                 // 部件轮廓边缘做淡出（跟颜色通道同一套规则——新加的逐像素效果都要
@@ -270,6 +358,11 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
                 float shadowMask = tex2D(_SkyPrison_ShadowMask, i.uv).r;
                 float shadowStrength = saturate(_SkyPrison_ShadowMaskStrength) * edgeKeep;
                 straightRgb *= lerp(1.0, shadowMask, shadowStrength);
+
+                // 高度雾。放在这里而不是最后：状态描边/闪烁/溶解边缘那些是叠加的发光，
+                // 属于可读性元素，被雾冲淡会影响判读。雾只作用于身体本色。
+                float4 skyPrisonFog = GetAtmosphericHeightFog(i.worldPos);
+                straightRgb = ApplyAtmosphericHeightFog(straightRgb, skyPrisonFog);
 
                 float occlusionAlpha = saturate(_SkyPrison_OcclusionAlpha);
                 float occlusionTintStrength = saturate(_SkyPrison_OcclusionTintStrength);
@@ -285,7 +378,7 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
                     // 不再调制取样宽度——极细的发光线在Bloom降采样链路里会直接丢失、
                     // 怎么调Intensity都不发光，之前的"宽度也跟着变"就是这么把Bloom搞没的。
                     // 取样宽度固定用配置值，保证线一直够粗、Bloom稳定能抓住。
-                    float2 flowUV = i.worldPosXY * _SkyPrison_StatusOutlineNoiseScale + float2(0, _Time.y * _SkyPrison_StatusOutlineFlowSpeed);
+                    float2 flowUV = i.worldPos.xy * _SkyPrison_StatusOutlineNoiseScale + float2(0, _Time.y * _SkyPrison_StatusOutlineFlowSpeed);
                     float flowNoise = tex2D(_SkyPrison_DissolveNoiseTex, flowUV).r;
 
                     float edge = GetStatusOutlineSilhouetteEdge(screenUV, _SkyPrison_StatusOutlineWidthPixels);
@@ -322,7 +415,7 @@ Shader "Spine/Skeleton_SkyPrison_3DNativeFootDepthProxy_V11_HardFootDepth" {
                 // 死亡溶解第二阶段：世界空间噪波逐像素阈值裁剪 + 阈值附近发光描边。
                 float dissolveAmount = saturate(_SkyPrison_DissolveAmount);
                 if (dissolveAmount > 0.0001) {
-                    float noiseValue = tex2D(_SkyPrison_DissolveNoiseTex, i.worldPosXY * _SkyPrison_DissolveNoiseScale).r;
+                    float noiseValue = tex2D(_SkyPrison_DissolveNoiseTex, i.worldPos.xy * _SkyPrison_DissolveNoiseScale).r;
                     clip(noiseValue - dissolveAmount);
                     float edgeWidth = max(_SkyPrison_DissolveEdgeWidth, 0.001);
                     float edgeGlow = 1.0 - saturate((noiseValue - dissolveAmount) / edgeWidth);

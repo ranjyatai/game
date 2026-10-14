@@ -76,6 +76,11 @@ public class SkyPrisonVisionManager : MonoBehaviour
     [SerializeField] private bool debugLogs = false;
 
     private static readonly RaycastHit[] s_VisionRaycastBuffer = new RaycastHit[32];
+    private static int s_OccluderProbeLayerCache = -2;
+    private static int s_OccluderProbeLayer => s_OccluderProbeLayerCache != -2 ? s_OccluderProbeLayerCache : (s_OccluderProbeLayerCache = LayerMask.NameToLayer("OccluderProbe"));
+
+    [Tooltip("战术地图 / 迷雾遮罩的视线扇形：挡视线物的顶面至少要比射线发出点(≈脚底)高这么多米才算墙；更矮的(台阶、一米高的高台)能看过去。")]
+    [SerializeField, Min(0f)] private float losMinBlockerHeight = 1.8f;
 
     // 预分配感知同步用的次要目标缓冲，避免每帧 new 数组
     private const int kMaxSecondaryStatic = 16;
@@ -221,6 +226,10 @@ public class SkyPrisonVisionManager : MonoBehaviour
 
         UnitDefinition ud = binder.UnitDefinitionAsset;
         if (ud.ignoreFogOfWar)
+            return false;
+
+        // 夜视仪开启期间迷雾失效：只影响"玩家看到什么"，不影响 AI 的视线判定。
+        if (SkyPrisonNightVisionMode.IsActive)
             return false;
 
         RuntimeFaction faction = ResolveFaction(ud);
@@ -660,6 +669,9 @@ public class SkyPrisonVisionManager : MonoBehaviour
         }
     }
 
+    /// <summary>夜间副本里玩家阵营的视野半径倍率（AXIA 11 → 7）。敌人视野不变，AI 判定不动；夜视仪开着时迷雾整体失效，不受影响。</summary>
+    public const float NightPlayerVisionMultiplier = 7f / 11f;
+
     private VisionUnitEntry BuildEntry(UnitDefinitionRuntimeBinder binder, UnitDefinition ud)
     {
         RuntimeFaction faction = ResolveFaction(ud);
@@ -676,7 +688,7 @@ public class SkyPrisonVisionManager : MonoBehaviour
             faction = faction,
             originWorld = origin,
             forwardWorld = forward,
-            radius = Mathf.Max(0f, ud.visionRadius),
+            radius = Mathf.Max(0f, ud.visionRadius) * (faction == RuntimeFaction.PlayerFaction && SkyPrisonRaidRunContext.Night ? NightPlayerVisionMultiplier : 1f),
             angle = useCircle ? 360f : Mathf.Clamp(ud.visionAngle, 1f, 360f),
             useCircle = useCircle,
             useFacingDirection = useFacing,
@@ -1092,6 +1104,50 @@ public class SkyPrisonVisionManager : MonoBehaviour
 
         DrawVisionBlockerDebugLine(from, to, false);
         return false;
+    }
+
+    /// <summary>
+    /// 沿一条射线找最近的「挡视线物」的距离。和单位显隐(IsTerrainVisionBlocked)的区别：这里的规则更宽——
+    /// 地形装饰的 blockVision=true，显式的 Vision_Blocker_Box 算，没配显式盒子的墙只要有实体(非触发器)碰撞体也算。
+    /// 战术地图的探索范围用它做「视线扇形」，所以在房间外不会把墙里面的房间标成走过。
+    /// 没有挡视线物返回 false，distance = maxDistance。
+    /// </summary>
+    public bool TryGetVisionBlockDistance(Vector3 origin, Vector3 direction, float maxDistance, out float distance)
+        => TryGetVisionBlock(origin, direction, maxDistance, out distance, out _);
+
+    /// <summary>同上，并返回挡住视线的那个东西的顶面高度(世界 y)——迷雾遮罩用它算墙的立面在屏幕上盖住了多少地面。</summary>
+    public bool TryGetVisionBlock(Vector3 origin, Vector3 direction, float maxDistance, out float distance, out float topY)
+    {
+        topY = origin.y;
+        distance = maxDistance;
+        if (!enableTerrainVisionBlockers || maxDistance <= 0.001f) return false;
+
+        float pad = Mathf.Clamp(terrainVisionBlockerStartPadding, 0f, Mathf.Max(0f, maxDistance - 0.001f));
+        int hitCount = Physics.RaycastNonAlloc(origin + direction * pad, direction, s_VisionRaycastBuffer, Mathf.Max(0f, maxDistance - pad), ~0, terrainVisionBlockerTriggerInteraction);
+        if (hitCount == 0) return false;
+
+        float best = float.MaxValue;
+        for (int i = 0; i < hitCount; i++)
+        {
+            Collider c = s_VisionRaycastBuffer[i].collider;
+            if (c == null || !c.enabled || !c.gameObject.activeInHierarchy) continue;
+            TerrainDecorationRuntimeBinder binder = c.GetComponentInParent<TerrainDecorationRuntimeBinder>();
+            if (binder == null || binder.definition == null || !binder.definition.blockVision) continue;
+            // 战术地图 / 迷雾遮罩用的「视线扇形」比单位显隐宽一点：除了显式的 Vision_Blocker_Box，blockVision 装饰物自己的实体碰撞体(墙的网格碰撞体)也算墙。
+            // 不少墙没配显式挡视线盒，只有网格碰撞体；但触发器(BackTrigger / FrontTrigger 这类大范围体积)不算，不然会被它们当墙。
+            if (!IsExplicitVisionBlockerCollider(c.transform) && c.isTrigger) continue;
+            // 遮挡探测盒(OccluderProbe 层)不是真实几何，形状可以和模型差很多(中枢圆柱外面是方盒子)，不当墙
+            if (!IsExplicitVisionBlockerCollider(c.transform) && c.gameObject.layer == s_OccluderProbeLayer) continue;
+            // 矮的挡不住视线：顶面比射线发出点(≈脚底)高不到 losMinBlockerHeight 的(台阶 / 一米高的高台 / 矮箱子)，站着能看过去，不算墙
+            if (c.bounds.max.y - origin.y < losMinBlockerHeight) continue;
+            float hitDist = s_VisionRaycastBuffer[i].distance + pad;
+            if (hitDist >= best) continue;
+            best = hitDist;
+            topY = c.bounds.max.y;
+        }
+        if (best == float.MaxValue) return false;
+        distance = best;
+        return true;
     }
 
     private static bool IsExplicitVisionBlockerCollider(Transform hitTransform)

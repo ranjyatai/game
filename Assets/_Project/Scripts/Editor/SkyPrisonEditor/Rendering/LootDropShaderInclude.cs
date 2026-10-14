@@ -16,7 +16,7 @@ public static class LootDropShaderInclude
         "Hidden/SP/CharPresenceCapture",
     };
 
-    [MenuItem("SkyPrison/Rendering/修复掉落物 Build 打包 ★")]
+    [MenuItem("天空囚笼/渲染/修复掉落物 Build 打包", false, 192)]
     public static void FixBuildIncludes()
     {
         FixAlwaysIncludedShaders();

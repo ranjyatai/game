@@ -17,7 +17,7 @@ public sealed class EquipmentWeightController : MonoBehaviour
 {
     public enum WeightTier { Light, Normal, Heavy, Overload }
 
-    // 阈值（kg），可由 UnitBattleStatRuntime 覆盖
+    // 阈值（石英，游戏里的重量单位，和背包重量条同一个单位），可由 UnitBattleStatRuntime 覆盖
     [SerializeField] private float lightThreshold    = 10f;
     [SerializeField] private float heavyThreshold    = 25f;
     [SerializeField] private float overloadThreshold = 40f;
@@ -109,6 +109,44 @@ public sealed class EquipmentWeightController : MonoBehaviour
         WeightTier.Overload => 0.70f,
         _                   => 1.0f,
     };
+
+    /// <summary>
+    /// 重装兵器线的额外硬直 / 击退减免（0~1，科技树节点写入）。0 = 没有。
+    /// 档位自带的基础减免：超重 -15%，过载 -30%；科技树再叠加（相乘），上限 90%。
+    /// 只看装备总重（石英），不看背包——塞满背包不会触发。移动惩罚仍由 UnitMovementController 的背负系统负责，这里不重复处理。
+    /// </summary>
+    public float TechStaggerResist { get; set; }
+
+    // 战略家树「重装兵器 I~IV」：节点 id = heavy_arms_1..4，等级读存档。I/II/III 额外 -15/-30/-45/-60%。不会减到零：硬直和击退至少保留 25%。
+    public const string HeavyArmsNodePrefix = "strategist_heavy_arms_";
+    private static readonly float[] HeavyArmsResist = { 0f, 0.15f, 0.30f, 0.45f, 0.60f };
+
+    private int HeavyArmsTier()
+    {
+        int t = 0;
+        for (int i = 1; i <= 4; i++)
+            if (TechTreeRuntime.SavedLevel(HeavyArmsNodePrefix + i) >= 1) t = i;
+        return t;
+    }
+
+    private float TierBaseStagger => CurrentTier == WeightTier.Overload ? 0.70f : CurrentTier == WeightTier.Heavy ? 0.85f : 1f;
+    private bool AtHeavyOrAbove => CurrentTier == WeightTier.Heavy || CurrentTier == WeightTier.Overload;
+
+    private float TechResistNow()
+    {
+        float r = TechStaggerResist;
+        if (AtHeavyOrAbove)                      // 科技树加成只在重装档以上生效
+            r = Mathf.Max(r, HeavyArmsResist[HeavyArmsTier()]);
+        return Mathf.Clamp01(r);
+    }
+
+    private const float StaggerFloor = 0.25f;   // 再重的装备也不会完全免疫：硬直 / 击退至少保留 25%
+
+    /// <summary>硬直时间倍率。</summary>
+    public float StunMultiplier => Mathf.Clamp(TierBaseStagger * (1f - TechResistNow()), StaggerFloor, 1f);
+
+    /// <summary>击退力倍率。</summary>
+    public float KnockbackMultiplier => Mathf.Clamp(TierBaseStagger * (1f - TechResistNow()), StaggerFloor, 1f);
 
     /// <summary>过载时禁止奔跑。</summary>
     public bool CanSprint => CurrentTier != WeightTier.Overload;

@@ -63,7 +63,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SkyPrison_ShadowMask:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: c34e8e00edc65aa49b9959f63ed8df1c, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -197,7 +197,7 @@ Material:
     - _SkyPrison_HologramTrailLength: 0.4
     - _SkyPrison_LogicalDepthZ: 0
     - _SkyPrison_OcclusionAlpha: 1
-    - _SkyPrison_ShadowMaskStrength: 0
+    - _SkyPrison_ShadowMaskStrength: 0.6
     - _SkyPrison_StatusFlashActive: 0
     - _SkyPrison_StatusFlashAlphaDip: 0.35
     - _SkyPrison_StatusFlashCenterHeight: 0.9
@@ -247,7 +247,7 @@ Material:
     - _OutlineColor: {r: 1, g: 1, b: 0, a: 1}
     - _SP_DepthRevealColor: {r: 1, g: 0.83, b: 0, a: 1}
     - _SkyPrison_DissolveEdgeColor: {r: 0.5, g: 0.04, b: 0.02, a: 1}
-    - _SkyPrison_EnvTint: {r: 0.78, g: 0.88, b: 0.82, a: 1}
+    - _SkyPrison_EnvTint: {r: 1, g: 0.41479012, b: 0, a: 1}
     - _SkyPrison_FootWorldPos: {r: 0, g: 0, b: 0, a: 1}
     - _SkyPrison_HiddenOutlineColor: {r: 1, g: 0.16, b: 0.16, a: 1}
     - _SkyPrison_HologramFillColor: {r: 1, g: 0.35, b: 0.35, a: 0.8}

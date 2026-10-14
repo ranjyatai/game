@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b8baf4b591eadf4caa6748b7d88fd3a, type: 3}
+  m_Name: RAID_03_GoldenKingdom
+  m_EditorClassIdentifier: Assembly-CSharp::RaidDefinition
+  raidId: golden_land
+  order: 3
+  displayName:
+    texts: []
+  description:
+    texts: []
+  dangerLevel: 1
+  hasNight: 1
+  nightOpen: 0
+  nightDescription:
+    texts: []
+  nightUnlockConditions: []
+  nightUnlockMatch: 0
+  targetScene: ElDorado
+  arrivalPosition: {x: 0, y: 0, z: 0}
+  requiresSubway: 0
+  mapPosition: {x: 0.62, y: 0.62}
+  thumbnail: {fileID: 0}
+  nightThumbnail: {fileID: 0}
+  dayOpenByDefault: 0
+  unlockConditions: []
+  unlockMatch: 0

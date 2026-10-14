@@ -105,8 +105,9 @@ public class ExtractionTerminal : MonoBehaviour, IInteractable
     {
         SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Confirm);
 
-        // 1. 标记章节完成
+        // 1. 标记章节完成并结束 AFP 会话
         MarkChapterCleared();
+        AFPRuntime.Instance?.EndSession();
 
         // 2. 收集本局统计
         var player   = SkyPrisonPlayerAuthority.Instance?.CurrentPlayerGameObject;

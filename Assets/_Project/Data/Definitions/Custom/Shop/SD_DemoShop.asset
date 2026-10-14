@@ -15,8 +15,11 @@ MonoBehaviour:
   shopId: demo_shop
   displayName: "\u4F9B\u7ED9\u7AD9"
   displayNameKey: shop_name_demo_shop
+  vendorUnitDefinition: {fileID: 11400000, guid: 04e0c90e408f3f640985757651f20d58, type: 2}
   defaultCurrencyId: token
   currentLevel: 1
+  stockMode: 0
+  randomDisplayCount: 5
   items:
   - item: {fileID: 11400000, guid: fc9adaa2b8db57847ac9293baba2ed42, type: 2}
     fixedCount: 0
@@ -24,28 +27,41 @@ MonoBehaviour:
     currencyOverride: token
     priceOverride: 0
     unlockLevel: 1
-  - item: {fileID: 11400000, guid: 322e4bd24b2c0a74098834aae404bfb9, type: 2}
+    randomPriceMin: 0
+    randomPriceMax: 0
+  - item: {fileID: 11400000, guid: f06b17b6144790d47b4b13bdb9f0d530, type: 2}
     fixedCount: 0
     stock: -1
     currencyOverride: token
-    priceOverride: 0
+    priceOverride: 2
     unlockLevel: 1
+    randomPriceMin: 0
+    randomPriceMax: 0
   - item: {fileID: 11400000, guid: b2dc36bef92bc6741b6d0128b2279d29, type: 2}
     fixedCount: 0
     stock: -1
     currencyOverride: token
     priceOverride: 0
     unlockLevel: 1
+    randomPriceMin: 0
+    randomPriceMax: 0
   - item: {fileID: 11400000, guid: b5d45b5d7a5da464caa7ec6fa58a0f0c, type: 2}
     fixedCount: 0
     stock: 3
     currencyOverride: token
     priceOverride: 0
     unlockLevel: 1
+    randomPriceMin: 0
+    randomPriceMax: 0
   - item: {fileID: 11400000, guid: ae4322e69aa8b564bb3221c07ee184e9, type: 2}
     fixedCount: 0
     stock: 10
     currencyOverride: token
     priceOverride: 20
     unlockLevel: 1
+    randomPriceMin: 0
+    randomPriceMax: 0
   refreshStockOnChapterStart: 1
+  enableSelling: 1
+  sellPriceMultiplier: 0.5
+  sellCategoryWhitelist: 

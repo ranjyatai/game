@@ -11,6 +11,16 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class SkyPrisonSwordQiProjectile : MonoBehaviour
 {
+    // 在飞的抛射物登记表：怪物的"躲子弹"要看真正飞来的子弹，不是猜玩家有没有开火。
+    private static readonly List<SkyPrisonSwordQiProjectile> s_active = new List<SkyPrisonSwordQiProjectile>();
+    public static IReadOnlyList<SkyPrisonSwordQiProjectile> Active => s_active;
+    private void OnEnable() { if (!s_active.Contains(this)) s_active.Add(this); }
+    private void OnDisable() { s_active.Remove(this); }
+    public GameObject Owner => _owner;
+    public Vector3 Direction => _direction;
+    public float Speed => _speed;
+    public float HitRadius => _hitRadius;
+
     private GameObject _owner;
     private UnitActionModuleRuntime _ownerActionModule;
     private SkillDefinition _skill;
@@ -20,6 +30,7 @@ public class SkyPrisonSwordQiProjectile : MonoBehaviour
     private bool _destroyOnHit;
     private float _dieAt;
     private EffekseerHandle _vfxHandle;
+    private const float ImpactPropAutoDestroySeconds = 8f;
     private readonly HashSet<Collider> _hitAlready = new HashSet<Collider>();
     // 复用的 SphereCast 结果缓冲区，避免每帧 new 一个数组。飞行路径上同时挂着的目标
     // 数量不会很多，8 个足够，真超了也只是漏检最远的几个，不会报错。
@@ -39,10 +50,40 @@ public class SkyPrisonSwordQiProjectile : MonoBehaviour
 
         var go = new GameObject($"SwordQiProjectile_{skill.skillKey}");
         go.transform.position = spawnPosition;
+        if (IsPlayerOwner(owner)) ApplyCrateAimAssist(go.transform, direction);
 
         var projectile = go.AddComponent<SkyPrisonSwordQiProjectile>();
         projectile.Initialize(owner, ownerActionModule, skill, direction);
         return projectile;
+    }
+
+    // 瞄准吸附：子弹只沿 X 飞，深度（Z）对不齐就穿过去。出生时若前方有箱子且深度差在吸附范围内，
+    // 把子弹 Z 拉到箱子的 Z，远近都好打。只对大体水平的射击生效。
+    private static bool IsPlayerOwner(GameObject owner)
+    {
+        var player = SkyPrisonPlayerAuthority.CurrentPlayerUnit;
+        return owner != null && player != null && owner == player.gameObject;
+    }
+
+    private const float CrateAssistRangeX = 18f;
+    private const float CrateAssistMaxDz = 3f;
+    private static void ApplyCrateAimAssist(Transform t, Vector3 dir)
+    {
+        if (Mathf.Abs(dir.x) < 0.5f) return;
+        float sign = Mathf.Sign(dir.x);
+        Vector3 pos = t.position;
+        float bestDz = float.MaxValue; float bestZ = pos.z;
+        foreach (var c in Object.FindObjectsByType<SkyPrisonBreakableCrateEffect>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        {
+            if (c == null) continue;
+            Vector3 cp = c.transform.position;
+            float dx = (cp.x - pos.x) * sign;
+            if (dx < 0f || dx > CrateAssistRangeX) continue;
+            float dz = Mathf.Abs(cp.z - pos.z);
+            if (dz > CrateAssistMaxDz || dz >= bestDz) continue;
+            bestDz = dz; bestZ = cp.z;
+        }
+        if (bestDz != float.MaxValue) t.position = new Vector3(pos.x, pos.y, bestZ);
     }
 
     private void Initialize(GameObject owner, UnitActionModuleRuntime ownerActionModule, SkillDefinition skill, Vector3 direction)
@@ -102,6 +143,8 @@ public class SkyPrisonSwordQiProjectile : MonoBehaviour
     {
         if (Time.time >= _dieAt)
         {
+#if UNITY_EDITOR
+#endif
             DestroySelf();
             return;
         }
@@ -125,7 +168,7 @@ public class SkyPrisonSwordQiProjectile : MonoBehaviour
             Collider candidate = SweepHitsBuffer[i].collider;
             if (candidate == null) continue;
 
-            if (TryProcessHit(candidate, SweepHitsBuffer[i].point))
+            if (TryProcessHit(candidate, SweepHitsBuffer[i].point, SweepHitsBuffer[i].normal))
             {
                 // Destroy() 是延迟到这一帧结束才真正销毁的，这里还能正常访问 this——
                 // 用 _destroyOnHit 直接判断要不要提前结束，不用等着看组件是不是"已经
@@ -144,18 +187,108 @@ public class SkyPrisonSwordQiProjectile : MonoBehaviour
     {
         // 保底：正常情况下 Update() 里的 SphereCast 扫掠应该已经先一步抓到命中，这里
         // 命中点直接用弹幕当前位置(transform.position)，不会跟扫掠版本对不上太多。
+        // 触发器回调本身不带碰撞法线，用飞行方向的反方向近似——贴花朝向会跟真实墙面
+        // 法线有一点误差，但这条路径本来就只是SphereCast扫掠漏检时的保底，不常触发。
         if (other == null) return;
-        TryProcessHit(other, transform.position);
+        TryProcessHit(other, transform.position, -_direction);
     }
 
     /// <summary>命中判定+伤害结算共用逻辑，SphereCast 扫掠和 OnTriggerEnter 触发器
     /// 两条检测路径都调这个方法，靠 _hitAlready 去重，不会同一个目标结算两次。
-    /// hitPoint 只用来生成命中特效的位置，不影响伤害结算本身。返回 true 表示这次
-    /// 命中被处理了（不代表弹幕一定被销毁——destroyOnHit=false 时可以继续飞）。</summary>
-    private bool TryProcessHit(Collider other, Vector3 hitPoint)
+    /// hitPoint/hitNormal 只用来生成命中特效的位置/朝向，不影响伤害结算本身。返回
+    /// true 表示这次命中被处理了（不代表弹幕一定被销毁——destroyOnHit=false 时可以
+    /// 继续飞）。</summary>
+    /// <summary>
+    /// 会挡住弹道的几何体所在层。白名单而不是黑名单——扫掠用的是 Physics.AllLayers，
+    /// 用黑名单的话任何新层默认都会挡子弹，很容易误伤。
+    ///
+    /// 不含 Obstacle_UnitOnly：那一层就是「挡单位、不挡子弹」的装饰物。
+    /// 不含 WalkableProbe：那一层谁都不挡，只用来给地表查询当靶子。
+    /// </summary>
+    private static readonly string[] ProjectileBlockingLayerNames =
+    {
+        "World3D",
+        "StaticObstacle",
+    };
+
+    private static int _projectileBlockMask = -1;
+
+    private static int ProjectileBlockMask
+    {
+        get
+        {
+            if (_projectileBlockMask >= 0)
+                return _projectileBlockMask;
+
+            int mask = 0;
+            for (int i = 0; i < ProjectileBlockingLayerNames.Length; i++)
+            {
+                int layer = LayerMask.NameToLayer(ProjectileBlockingLayerNames[i]);
+                if (layer >= 0)
+                    mask |= 1 << layer;
+            }
+
+            _projectileBlockMask = mask;
+            return _projectileBlockMask;
+        }
+    }
+
+    /// <summary>
+    /// 这个碰撞体是不是"墙"——撞上就该让弹道停下。
+    /// </summary>
+    private static bool BlocksProjectile(Collider other)
+    {
+        // 受击框、前后遮挡代理、视野遮挡盒全是 trigger。它们不是实体，不该挡弹道。
+        if (other.isTrigger)
+            return false;
+
+        // 地面不吃子弹。TerrainCollider 铺满整张图且和墙共用 World3D 层，按层没法分开，
+        // 只能按类型排除。UnitMovementController 的水平 CapsuleCast 出于同样的理由
+        // 也排除了 TerrainCollider（否则角色会被地面当成墙挡住）。
+        if (other is TerrainCollider)
+            return false;
+
+        return (ProjectileBlockMask & (1 << other.gameObject.layer)) != 0;
+    }
+
+    private bool TryProcessHit(Collider other, Vector3 hitPoint, Vector3 hitNormal)
     {
         if (_owner != null && other.transform.IsChildOf(_owner.transform)) return false;
         if (_hitAlready.Contains(other)) return false;
+
+        // 先判几何阻挡：命中墙就地消失，不结算伤害。
+        // 放在敌对判定之前——墙挡子弹跟谁发射的、打不打得到人都没有关系。
+        if (BlocksProjectile(other))
+        {
+#if UNITY_EDITOR
+#endif
+            if (_skill.projectile.impactVfx != null)
+            {
+                EffekseerHandle wallImpact = EffekseerSystem.PlayEffect(_skill.projectile.impactVfx, hitPoint);
+                int impactLayer = LayerMask.NameToLayer("World3D");
+                wallImpact.layer = impactLayer < 0 ? 0 : impactLayer;
+            }
+
+            if (_skill.projectile.impactPropPrefab != null)
+            {
+                // 外购VFX包的弹孔贴花/命中爆闪Prefab默认朝+Z摆放(常见约定)，用法线对齐
+                // 摆到墙面上；法线取不到(sqrMagnitude太小)时退回"背对弹道方向"当近似。
+                Vector3 normal = hitNormal.sqrMagnitude > 0.0001f ? hitNormal.normalized : -_direction;
+                Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, normal);
+                GameObject impactProp = Instantiate(_skill.projectile.impactPropPrefab, hitPoint, rotation);
+                // 外购VFX包默认层/排序层跟项目2.5D排序约定(World3D层+Default排序层)
+                // 没关系，不设的话要么被遮挡系统吃掉要么被墙本身挡住看不见——用一个很低
+                // 的固定排序值(跟BloodVFXManager贴花那套DecalSortingOrder同一个思路)，
+                // 确保弹孔贴在墙上但不会盖到角色/道具前面。
+                ApplyWorld3DLayerAndDecalSorting(impactProp);
+                // 这个包的Prefab没有自带自动销毁(ParticleSystem.stopAction实测是None)，
+                // 手动兜底清理，弹孔贴花给够时间让玩家看清楚再消失。
+                Destroy(impactProp, ImpactPropAutoDestroySeconds);
+            }
+
+            DestroySelf();
+            return true;
+        }
 
         UnitCombatHurtbox hurtbox =
             other.GetComponent<UnitCombatHurtbox>()
@@ -180,7 +313,13 @@ public class SkyPrisonSwordQiProjectile : MonoBehaviour
         if (targetAction != null && targetAction.IsDodging) return false;
 
         _hitAlready.Add(other);
-        _ownerActionModule?.ResolveSkillHit(_skill, other);
+#if UNITY_EDITOR
+#endif
+        // ?. 不会走 UnityEngine.Object 的假null检测——弹道飞行期间发射者单位如果中途
+        // 被销毁(destroyOnHit=false时弹道可能比发射者活得久)，?.ResolveSkillHit 会对
+        // 已销毁对象抛 MissingReferenceException。改成显式 != null 判断。
+        if (_ownerActionModule != null)
+            _ownerActionModule.ResolveSkillHit(_skill, other);
 
         if (_skill.projectile.impactVfx != null)
         {
@@ -200,5 +339,39 @@ public class SkyPrisonSwordQiProjectile : MonoBehaviour
         if (_vfxHandle.exists)
             _vfxHandle.Stop();
         Destroy(gameObject);
+    }
+
+    // 弹孔贴在墙上，不跟着任何单位走——不用BloodVFXManager那套"角色Z*100"公式，
+    // 直接给一个很低的固定排序值，跟BloodVFXManager贴花那套DecalSortingOrder
+    // 同一个思路：垫在角色/道具后面，但还是比墙本身早画一点，不会被吃掉。
+    private const int ImpactPropSortingOrder = -32760;
+
+    private static void ApplyWorld3DLayerAndDecalSorting(GameObject go)
+    {
+        if (go == null) return;
+
+        int world3DLayer = LayerMask.NameToLayer("World3D");
+
+        foreach (var r in go.GetComponentsInChildren<ParticleSystemRenderer>(true))
+        {
+            r.sortingLayerName = "Default";
+            r.sortingOrder = ImpactPropSortingOrder;
+        }
+
+        foreach (var r in go.GetComponentsInChildren<MeshRenderer>(true))
+        {
+            r.sortingLayerName = "Default";
+            r.sortingOrder = ImpactPropSortingOrder;
+        }
+
+        if (world3DLayer >= 0)
+            SetLayerRecursive(go, world3DLayer);
+    }
+
+    private static void SetLayerRecursive(GameObject go, int layer)
+    {
+        go.layer = layer;
+        foreach (Transform child in go.transform)
+            SetLayerRecursive(child.gameObject, layer);
     }
 }

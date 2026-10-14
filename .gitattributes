@@ -1,0 +1,36 @@
+# Git LFS：大的二进制资源走 LFS，不进 git 对象库。
+#
+# 只对「以后修改并提交」的文件生效，不改写历史——仓库历史已有 8.6 GB，
+# 迁移历史（git lfs migrate）要强制推送、所有 clone 重来，另行安排。
+# LFS 文件占 GitHub 账号的 LFS 存储/流量额度，每个版本单独计算。
+
+# Unity TerrainData：二进制，一份几十 MB，每刷一次地面就是一个新版本。
+# 只匹配地形数据，不能写成 *.asset——大部分 .asset 是文本 YAML 的 ScriptableObject，进 LFS 就没法 diff/合并了。
+Assets/**/Terrain/TD_*.asset filter=lfs diff=lfs merge=lfs -text
+
+# 贴图
+*.png filter=lfs diff=lfs merge=lfs -text
+*.jpg filter=lfs diff=lfs merge=lfs -text
+*.jpeg filter=lfs diff=lfs merge=lfs -text
+*.psd filter=lfs diff=lfs merge=lfs -text
+*.tga filter=lfs diff=lfs merge=lfs -text
+*.tif filter=lfs diff=lfs merge=lfs -text
+*.tiff filter=lfs diff=lfs merge=lfs -text
+*.exr filter=lfs diff=lfs merge=lfs -text
+*.hdr filter=lfs diff=lfs merge=lfs -text
+
+# 模型
+*.fbx filter=lfs diff=lfs merge=lfs -text
+*.obj filter=lfs diff=lfs merge=lfs -text
+*.blend filter=lfs diff=lfs merge=lfs -text
+
+# 音频
+*.wav filter=lfs diff=lfs merge=lfs -text
+*.mp3 filter=lfs diff=lfs merge=lfs -text
+*.ogg filter=lfs diff=lfs merge=lfs -text
+*.aif filter=lfs diff=lfs merge=lfs -text
+*.aiff filter=lfs diff=lfs merge=lfs -text
+
+# 视频
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+*.mov filter=lfs diff=lfs merge=lfs -text

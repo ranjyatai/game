@@ -15,6 +15,7 @@ Material:
   m_InvalidKeywords:
   - _INVERTMASK_ON
   - _PREMULTIPLYALPHA_ON
+  - _SKYPRISON_USEHOLOGRAMFILL_ON
   - _STRAIGHT_ALPHA_INPUT
   - _USE8NEIGHBOURHOOD_ON
   - _USEHARDDISCARD_ON
@@ -47,6 +48,18 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _SkyPrison_CharacterMaskTex:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SkyPrison_CleanCharacterOutlineTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SkyPrison_DissolveNoiseTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SkyPrison_ShadowMask:
+        m_Texture: {fileID: 2800000, guid: c34e8e00edc65aa49b9959f63ed8df1c, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -122,6 +135,8 @@ Material:
     - _RawDepthBias: 0.001
     - _RawDepthSoftness: 0.002
     - _RawDiscardThreshold: 0.01
+    - _SP_DepthRevealAlpha: 0.6
+    - _SP_DepthRevealEnable: 0
     - _SampleBothY: 0
     - _SkyPrisonBehindOccluderGate: 1
     - _SkyPrisonCharacterBaseDepth: 0.5
@@ -142,18 +157,51 @@ Material:
     - _SkyPrison_CompositeZTest: 8
     - _SkyPrison_DebugBodyMaskAlpha: 0.75
     - _SkyPrison_DebugBodyMaskMode: 0
+    - _SkyPrison_DissolveAmount: 0
+    - _SkyPrison_DissolveDarken: 0
+    - _SkyPrison_DissolveEdgeWidth: 0.12
+    - _SkyPrison_DissolveNoiseScale: 0.6
     - _SkyPrison_EnableBodyClip: 1
     - _SkyPrison_EnableHiddenOutline: 1
+    - _SkyPrison_EnvContrast: 1
+    - _SkyPrison_EnvDarken: 0
+    - _SkyPrison_EnvExposure: 0
+    - _SkyPrison_EnvSaturation: 1
+    - _SkyPrison_EnvShadowTintStrength: 0
+    - _SkyPrison_EnvTintStrength: 0
     - _SkyPrison_FootDepthBias: 0
     - _SkyPrison_FootDepthDebugTint: 0
     - _SkyPrison_FootDepthStrength: 1
     - _SkyPrison_FootVerticalDepthScale: 0
     - _SkyPrison_HiddenOutlineAlpha: 1
+    - _SkyPrison_HiddenOutlineFarSampleScale: 2.35
+    - _SkyPrison_HiddenOutlineMinStableVotes: 2
+    - _SkyPrison_HiddenOutlineNoiseThreshold: 0.35
+    - _SkyPrison_HiddenOutlineStableFilter: 1
     - _SkyPrison_HiddenOutlineWidthPixels: 2
+    - _SkyPrison_HologramAlpha: 0.75
+    - _SkyPrison_HologramCycleLength: 4
+    - _SkyPrison_HologramGridBright: 1.4
+    - _SkyPrison_HologramGridDensity: 14
+    - _SkyPrison_HologramGridLineWidth: 0.08
+    - _SkyPrison_HologramSilhouetteAlpha: 0
+    - _SkyPrison_HologramSweepRangeY: 4
+    - _SkyPrison_HologramTrailLength: 0.4
     - _SkyPrison_LogicalDepthZ: 0
     - _SkyPrison_OcclusionAlpha: 1
+    - _SkyPrison_ShadowMaskStrength: 0.6
+    - _SkyPrison_StatusFlashActive: 0
+    - _SkyPrison_StatusFlashAlphaDip: 0.35
+    - _SkyPrison_StatusFlashProgress: 0
+    - _SkyPrison_StatusOutlineFlowSpeed: 0.6
+    - _SkyPrison_StatusOutlineIntensity: 0
+    - _SkyPrison_StatusOutlineNoiseScale: 1.2
+    - _SkyPrison_StatusOutlineWidthPixels: 3
+    - _SkyPrison_StatusOutlineWidthVariance: 0.6
     - _SkyPrison_StencilRef: 41
+    - _SkyPrison_UseCleanCharacterOutlineTex: 1
     - _SkyPrison_UseFootDepthCompensation: 1
+    - _SkyPrison_UseHologramFill: 1
     - _SkyPrison_ZTest: 4
     - _StencilComp: 6
     - _StencilReadMask: 255
@@ -184,8 +232,14 @@ Material:
     - _MaskUvScaleOffset: {r: 1, g: 1, b: 0, a: 0}
     - _OccludedTint: {r: 1, g: 1, b: 1, a: 0}
     - _OutlineColor: {r: 1, g: 1, b: 0, a: 1}
+    - _SP_DepthRevealColor: {r: 1, g: 0.83, b: 0, a: 1}
+    - _SkyPrison_DissolveEdgeColor: {r: 0.5, g: 0.04, b: 0.02, a: 1}
+    - _SkyPrison_EnvTint: {r: 1, g: 0.41479012, b: 0, a: 1}
     - _SkyPrison_FootWorldPos: {r: 0, g: 0, b: 0, a: 1}
     - _SkyPrison_HiddenOutlineColor: {r: 1, g: 0.83, b: 0, a: 1}
+    - _SkyPrison_HologramFillColor: {r: 0.55, g: 0.95, b: 1, a: 1}
+    - _SkyPrison_StatusFlashColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SkyPrison_StatusOutlineColor: {r: 2.2, g: 0.7, b: 0.05, a: 1}
     - _TintColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

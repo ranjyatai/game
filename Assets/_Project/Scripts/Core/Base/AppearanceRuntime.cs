@@ -78,6 +78,25 @@ public class AppearanceRuntime : MonoBehaviour
     {
         _skeleton = skeleton;
         ApplyCurrentAppearance();
+
+        // 换地图后玩家单位是新生成的：出生那一刻合并皮肤，武器(枪)的几何没有进到网格里——实测同一个骨架，
+        // 稍后再重新合并一次，三角形索引就从 1926 变成 2058（多出的正好是枪），手上的枪才出现。
+        // 装备事件那条路（在场景里从背包装备）发生在玩家完全就绪之后，所以不受影响。
+        // 这里在玩家就绪后补合并两次，已经是同一骨架同一状态，重复合并是幂等的。
+        if (_delayedReapply != null) StopCoroutine(_delayedReapply);
+        _delayedReapply = StartCoroutine(DelayedReapply(skeleton));
+    }
+
+    private Coroutine _delayedReapply;
+
+    private System.Collections.IEnumerator DelayedReapply(SkeletonAnimation skeleton)
+    {
+        // 用不缩放时间：读条期间 timeScale 是 0。0.3 秒让出生流程（材质 / 动画 / 判定）先跑完，1.2 秒兜底再来一次。
+        yield return new WaitForSecondsRealtime(0.3f);
+        if (_skeleton == skeleton && skeleton != null) ApplyCurrentAppearance();
+        yield return new WaitForSecondsRealtime(0.9f);
+        if (_skeleton == skeleton && skeleton != null) ApplyCurrentAppearance();
+        _delayedReapply = null;
     }
 
     public void UnregisterPlayerSkeleton()

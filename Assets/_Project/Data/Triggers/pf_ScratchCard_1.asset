@@ -50,6 +50,7 @@ MonoBehaviour:
               assetReference: {fileID: 11400000, guid: cf5baf4a9d586aa4ab53c515b5d10886, type: 2}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           - slotId: amount
             value:
               valueType: 1
@@ -67,6 +68,7 @@ MonoBehaviour:
               assetReference: {fileID: 0}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           conditionChildren: []
           thenChildren: []
           elseChildren: []
@@ -91,6 +93,7 @@ MonoBehaviour:
               assetReference: {fileID: 8300000, guid: a897082a966a8754594d60ca2276f948, type: 3}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           - slotId: volume
             value:
               valueType: 2
@@ -108,6 +111,7 @@ MonoBehaviour:
               assetReference: {fileID: 0}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           - slotId: pitch
             value:
               valueType: 2
@@ -125,6 +129,7 @@ MonoBehaviour:
               assetReference: {fileID: 0}
               sceneObjectId: 
               sceneObjectName: 
+              expressionOperator: 0
           conditionChildren: []
           thenChildren: []
           elseChildren: []

@@ -13,6 +13,7 @@ public class BootstrapSceneController : MonoBehaviour
 
     private void Start()
     {
-        SceneLoader.LoadScene(mainMenuScene);
+        // 先播开头商标 / 片头列表（天空囚笼/片头/商标动画列表），玩家点一下跳过全部；列表为空则直接进主界面
+        SkyPrisonIntroPlayer.PlayThen(() => SceneLoader.LoadScene(mainMenuScene));
     }
 }

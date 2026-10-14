@@ -12,7 +12,8 @@ namespace SkyPrison.Editor.UI
     /// 风格与背包窗口完全一致：
     ///   - 面板内 B&W 高斯模糊（SkyPrisonInventoryBlurBackground + UVTracker 挂 panel）
     ///   - 暗色半透叠加 (0.03, 0.04, 0.05, 0.84)
-    ///   - 四角白色 L 形角标 len=20 thickness=2（同背包 AddCornerBrackets）
+    ///   - 四角白色 L 形角标，用 SkyPrisonFloatingWindowKit 标准尺寸(39/3.9)，
+    ///     跟角色信息面板保持一致（这个窗口没有额外运行时缩放）
     ///   - 按钮白色 1px 细线外框（ButtonFeedback 自动处理 hover → 冷绿）
     /// </summary>
     public static class CreatePlayerDeathRevivePrefab
@@ -29,7 +30,7 @@ namespace SkyPrison.Editor.UI
         }
 
         // ── 菜单入口（首次创建） ──────────────────────────────────────────────
-        [MenuItem("Tools/Sky Prison/UI/Create Player Death Revive Popup")]
+        [MenuItem("天空囚笼/UI/Create Player Death Revive Popup", false, 173)]
         public static void Create()
         {
             var root = new GameObject("PF_PlayerDeathRevive");
@@ -89,7 +90,7 @@ namespace SkyPrison.Editor.UI
             // ── 窗口面板（560 × 400，居中）────────────────────────────────────
             var panel = CreateChildRect(root, "WindowPanel",
                 new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                Vector2.zero, new Vector2(780f, 620f));
+                Vector2.zero, new Vector2(1200f, 690f));
 
             // 1. 模糊背景层（填满面板）
             var blurBgRT = CreateChildRect(panel, "BlurBackground",
@@ -110,14 +111,15 @@ namespace SkyPrison.Editor.UI
             panelBg.raycastTarget = true;
 
             // 3. 四角白色 L 形角标（len=20px, thickness=2px，与背包 AddCornerBrackets 完全一致）
-            AddCornerBrackets(panel, Color.white, 20f, 2f);
+            AddCornerBrackets(panel, Color.white,
+                SkyPrisonFloatingWindowKit.CornerBracketLength, SkyPrisonFloatingWindowKit.CornerBracketThickness);
 
             // 4. 标题区 + 标题文字
             var titleArea = CreateChildRect(panel, "TitleArea",
-                new Vector2(0f, 0.82f), new Vector2(1f, 0.97f),
+                new Vector2(0f, 0.80f), new Vector2(1f, 0.98f),
                 new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
             titleArea.gameObject.AddComponent<Image>().color = Color.clear;
-            var titleTxt = AddTMP(titleArea, "Title", "生命维持警告", 34,
+            var titleTxt = AddTMP(titleArea, "Title", "生命维持警告", 68,
                                   TextAlignmentOptions.Center,
                                   new Color(0.75f, 0.42f, 0.42f, 1f), FontStyles.Bold);
             StretchFull(titleTxt.rectTransform);
@@ -125,10 +127,10 @@ namespace SkyPrison.Editor.UI
             // 标题外框（工作台可见；运行时由 FitTitleFrame 精确适配文字宽度）
             var frameRT = CreateChildRect(titleArea, "TitleFrame",
                 new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(280f, 52f));
+                new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(560f, 112f));
             frameRT.SetSiblingIndex(0); // 文字层下方
             frameRT.gameObject.AddComponent<Image>().color = Color.clear;
-            AddBorderLines(frameRT, new Color(0.75f, 0.42f, 0.42f, 0.85f), 3.5f);
+            AddBorderLines(frameRT, new Color(0.75f, 0.42f, 0.42f, 0.85f), 2f);
 
             // 5. 标题下分割线（白色极淡）
             AddLine(panel, "TitleSep",
@@ -144,7 +146,7 @@ namespace SkyPrison.Editor.UI
             BuildSelectorContent(selArea);
 
             // 7. 警告红字（稍靠下）
-            var warnTxt = AddTMP(panel, "Warning", "死亡将会造成背包所持物品的损失", 15,
+            var warnTxt = AddTMP(panel, "Warning", "死亡将会造成背包所持物品的损失", 28,
                                  TextAlignmentOptions.Center,
                                  new Color(0.75f, 0.42f, 0.42f, 0.90f), FontStyles.Normal);
             SetAnchors(warnTxt.rectTransform, 0.05f, 0.19f, 0.95f, 0.25f);
@@ -192,14 +194,14 @@ namespace SkyPrison.Editor.UI
             rt.gameObject.AddComponent<Button>();
 
             // 白色 1px 外框（ButtonFeedback 挂上后 hover 整体变冷绿）
-            AddOutline(rt, Color.white, 3f);
+            AddOutline(rt, Color.white, 2f);
 
             // 标签
             var lblRT = CreateChildRect(rt, "Label",
                 Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
             var txt = lblRT.gameObject.AddComponent<TextMeshProUGUI>();
             txt.text          = label;
-            txt.fontSize      = 18;
+            txt.fontSize      = 32;
             txt.alignment     = TextAlignmentOptions.Center;
             txt.color         = textColor;
             txt.raycastTarget = false;
@@ -274,22 +276,22 @@ namespace SkyPrison.Editor.UI
             // 图标（居中，无深色背景框）
             var iconRT = CreateChildRect(card, "Icon",
                 new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(0.5f, 0.5f), new Vector2(0f, 20f), new Vector2(120f, 120f));
+                new Vector2(0.5f, 0.5f), new Vector2(0f, 30f), new Vector2(170f, 170f));
             iconRT.gameObject.AddComponent<Image>().color = new Color(1f,1f,1f,0f); // 占位
 
             // 冷绿选框
             var sf = CreateChildRect(iconRT, "SelFrame",
                 Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
             sf.gameObject.AddComponent<Image>().color = Color.clear;
-            AddBorderLines(sf, coldGreen, 1.5f);
+            AddBorderLines(sf, coldGreen, 2f);
 
             // 数量：叠在图标右下角内（参考物品窗口 ×N 位置）
             // pivot=(1,0) anchor 底右角，anchoredPos.y=0 底边与图标底边齐平
             var cntRT = CreateChildRect(iconRT, "Count",
                 new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f),
-                new Vector2(-4f, 0f), new Vector2(72f, 30f));
+                new Vector2(-6f, 4f), new Vector2(110f, 48f));
             var cntTxt = cntRT.gameObject.AddComponent<TextMeshProUGUI>();
-            cntTxt.text = "<size=65%>×</size>1"; cntTxt.fontSize = 26;
+            cntTxt.text = "<size=65%>×</size>1"; cntTxt.fontSize = 38;
             cntTxt.alignment = TextAlignmentOptions.BottomRight;
             cntTxt.color = new Color(.88f,.88f,.90f,1f); cntTxt.raycastTarget = false;
             cntTxt.enableWordWrapping = false;
@@ -298,12 +300,12 @@ namespace SkyPrison.Editor.UI
             var font = GetFont(); if (font != null) cntTxt.font = font;
 
             // 道具名（图标下方）
-            var nameTxt = AddTMP(card, "Name", "临时补救模组", 22, TextAlignmentOptions.Center,
+            var nameTxt = AddTMP(card, "Name", "临时补救模组", 36, TextAlignmentOptions.Center,
                                  new Color(.9f,.9f,.92f,1f), FontStyles.Normal);
             SetAnchors(nameTxt.rectTransform, .05f, .16f, .95f, .38f);
 
             // GCD
-            var gcdTxt = AddTMP(card, "GCD", "", 17, TextAlignmentOptions.Center,
+            var gcdTxt = AddTMP(card, "GCD", "", 28, TextAlignmentOptions.Center,
                                 new Color(.88f,.58f,.18f,1f), FontStyles.Normal);
             SetAnchors(gcdTxt.rectTransform, .05f, .00f, .95f, .12f);
         }

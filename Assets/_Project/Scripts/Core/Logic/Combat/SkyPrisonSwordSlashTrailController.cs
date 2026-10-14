@@ -58,6 +58,11 @@ public class SkyPrisonSwordSlashTrailController : MonoBehaviour
         "不同特效，不再是同武器类别共用同一个。这个字段只在技能没配 swingVFX 时才会用到\n" +
         "（手动兜底覆盖），正常情况应该留空，让技能数据决定播什么。")]
     [SerializeField] private EffekseerEffectAsset effectAssetOverride;
+
+    [Tooltip("贴墙挥砍时，特效沿视线往镜头方向推到「脚底前方这么多米」的深度，避免被身后的墙吃掉。\n" +
+             "按弧线大小给：太小弧线上半段仍会被墙切掉；太大则离脚底这么近的前方遮挡物挡不住特效。\n" +
+             "透视相机下推近会自动缩小补偿，屏幕上的大小不变。")]
+    [SerializeField, Min(0f)] private float occlusionDepthMargin = 3f;
     [Tooltip("排查用：关掉之后播放时不套用骨骼当前旋转，用默认朝向——用来判断特效\n" +
              "看不见是不是因为挥砍动画这一帧骨骼转到了刁钻角度，把特效转得看不见了。")]
     [SerializeField] private bool applyBoneRotation = true;
@@ -261,6 +266,15 @@ public class SkyPrisonSwordSlashTrailController : MonoBehaviour
         if (currentSkill != null && currentSkill.swingVfxOffset != Vector3.zero)
             worldPos += _skeletonAnimation.transform.TransformVector(currentSkill.swingVfxOffset);
 
+        // 刀尖在倾斜的 Spine 平面上，越高越往身后深，贴墙挥砍时特效会落进墙后被深度
+        // 测试吃掉。沿视线推到脚底深度：屏幕位置不变，身后的墙挡不住、身前的遮挡物
+        // 照样挡（见 SkyPrisonUnitAttachedVfxBinder.SlideToOwnerFootDepth）。
+        //
+        // 余量要按弧线大小给，不是按刀尖：实测刀尖本身已在脚底前 ~0.7，被吃掉的是弧线
+        // 上半段——它和刀尖同在倾斜平面上，越往上越深。余量 1 不够、10 可以，取 3。
+        worldPos = SkyPrisonUnitAttachedVfxBinder.SlideToOwnerFootDepth(
+            worldPos, _skeletonAnimation.transform.position, occlusionDepthMargin, out float slideScaleCompensation);
+
         _debugLastWorldPosition = worldPos;
         _debugLastWorldRotation = worldRot;
         _hasDebugLastPosition = true;
@@ -284,7 +298,7 @@ public class SkyPrisonSwordSlashTrailController : MonoBehaviour
             _currentHandle.SetRotation(worldRot);
         }
 
-        Vector3 appliedScale = effectScale;
+        Vector3 appliedScale = effectScale * slideScaleCompensation;
         if (facingDriver != null && facingDriver.Facing == -1)
             appliedScale = Vector3.Scale(appliedScale, facingMirrorScaleSign);
         _currentHandle.SetScale(appliedScale);

@@ -7,7 +7,7 @@ public class SkyPrisonLootDropWindow : EditorWindow
 {
     private SkyPrisonLootDropPage _page;
 
-    [MenuItem("Tools/掉落物设置")]
+    [MenuItem("天空囚笼/设置/掉落物设置", false, 104)]
     public static void Open()
     {
         var w = GetWindow<SkyPrisonLootDropWindow>("掉落物设置");

@@ -17,6 +17,11 @@ namespace SkyPrison.Runtime.UI
     [CreateAssetMenu(fileName = "SkyPrisonHUDStyleProfile_V1", menuName = "Sky Prison/UI/HUD Style Profile V1", order = 2201)]
     public sealed class SkyPrisonHUDStyleProfile_V1 : ScriptableObject
     {
+        // 玩家血条的红色(受伤残影)：停留多久、之后以多快追上绿色。改这里一处，样式资产 / 预制体里存的旧值每次加载都会被它覆盖。
+        // 停留时间长、追赶慢，是给「篡夺者」(受伤后在残影还在的窗口内打回去能回血)留出反应时间。
+        public const float HpLagHoldSeconds = 5.0f;     // 受伤后红色停在原位的秒数(每次再受伤重新计时)
+        public const float HpLagChaseSpeed = 0.2f;      // 之后追赶的速度：每秒追掉整条血的 20%(整条追完要 5 秒；掉 25% 的血约 1.25 秒追完)
+
         [Header("Sprites - Base")]
         public Sprite basePlateSprite;
         public Sprite scanLineSprite;
@@ -312,8 +317,8 @@ namespace SkyPrison.Runtime.UI
             playerLoadStatusWidthScale = Mathf.Clamp(playerLoadStatusWidthScale, 0f, 3.00f);
             playerLoadStatusHeightScale = Mathf.Clamp(playerLoadStatusHeightScale, 0f, 3.00f);
             hpFillChangeDuration = Mathf.Max(0f, hpFillChangeDuration);
-            hpDamageLagHoldDuration = hpDamageLagHoldDuration < 1.0f ? 2.35f : Mathf.Max(0f, hpDamageLagHoldDuration);
-            hpDamageLagCatchupDuration = hpDamageLagCatchupDuration < 1.0f ? 2.5f : Mathf.Max(0f, hpDamageLagCatchupDuration);
+            hpDamageLagHoldDuration = HpLagHoldSeconds;
+            hpDamageLagCatchupDuration = HpLagChaseSpeed;
             lpFillChangeDuration = Mathf.Max(0f, lpFillChangeDuration);
             loadLabelSegmentWidth = Mathf.Max(0f, loadLabelSegmentWidth);
             loadNumberSegmentWidth = Mathf.Max(0f, loadNumberSegmentWidth);

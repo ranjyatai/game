@@ -13,41 +13,24 @@ MonoBehaviour:
   m_Name: MapSceneRegistry
   m_EditorClassIdentifier: Assembly-CSharp::MapSceneRegistry
   entries:
-  - mapKey: new_map
-    sceneName: new_map 1
-    scenePath: Assets/_Project/Scene/Maps/new_map 1.unity
   - mapKey: newmap
     sceneName: MapTemplate_Base
     scenePath: Assets/_Project/Maps/_Templates/MapTemplate_Base/MapTemplate_Base.unity
+  - mapKey: tower
+    sceneName: Tower
+    scenePath: Assets/_Project/Maps/Final/Tower/Tower/Tower.unity
   - mapKey: newmap
     sceneName: Still Vault
     scenePath: Assets/_Project/Maps/Hub/StillVault/Still Vault/Still Vault.unity
+  - mapKey: abandoned_hospital
+    sceneName: AbandonedHospital
+    scenePath: Assets/_Project/Maps/Raid/AbandonedHospital/AbandonedHospital/AbandonedHospital.unity
+  - mapKey: campus
+    sceneName: Campus
+    scenePath: Assets/_Project/Maps/Raid/Campus/Campus/Campus.unity
+  - mapKey: el_dorado
+    sceneName: ElDorado
+    scenePath: Assets/_Project/Maps/Raid/ElDorado/ElDorado/ElDorado.unity
   - mapKey: newmap
-    sceneName: NewMap
-    scenePath: Assets/_Project/Maps/Raid/Campus/NewMap/NewMap.unity
-  - mapKey: newmap
-    sceneName: NewMap
-    scenePath: Assets/_Project/Maps/Raid/ElDorado/NewMap/NewMap.unity
-  - mapKey: newmap
-    sceneName: NewMap
-    scenePath: Assets/_Project/Maps/Raid/GoldenKingdom/NewMap/NewMap.unity
-  - mapKey: newmap
-    sceneName: Cooling Tower & Exhaust Zone
-    scenePath: Assets/_Project/Maps/Raid/OldFactory/Cooling Tower & Exhaust Zone/Cooling
-      Tower & Exhaust Zone.unity
-  - mapKey: newmap
-    sceneName: Core Reactor Zone
-    scenePath: Assets/_Project/Maps/Raid/OldFactory/Core Reactor Zone/Core Reactor
-      Zone.unity
-  - mapKey: newmap
-    sceneName: Heavy Machinery Processing Zone
-    scenePath: Assets/_Project/Maps/Raid/OldFactory/Heavy Machinery Processing Zone/Heavy
-      Machinery Processing Zone.unity
-  - mapKey: newmap
-    sceneName: Logistics Conveyor Corridor
-    scenePath: Assets/_Project/Maps/Raid/OldFactory/Logistics Conveyor Corridor/Logistics
-      Conveyor Corridor.unity
-  - mapKey: newmap
-    sceneName: Storage & Maintenance Zone
-    scenePath: Assets/_Project/Maps/Raid/OldFactory/Storage & Maintenance Zone/Storage
-      & Maintenance Zone.unity
+    sceneName: Old Factory
+    scenePath: Assets/_Project/Maps/Raid/OldFactory/Old Factory/Old Factory.unity

@@ -664,6 +664,23 @@ public class SettingsWindowUI : MonoBehaviour
             if (s != null) s.languageCode = codes[i];
             LocalizationRuntime.Instance?.SetLanguage(codes[i]);
         });
+
+        // 语音语言——跟文字语言是独立设置，允许文字中文/语音日文这种组合。
+        // 目前实际配的语音素材可能只有日文一种，但设置项本身不因此写死，
+        // 以后补别的语言语音包不用回来改这里。
+        string currentVoice = LocalizationRuntime.Instance != null
+            ? LocalizationRuntime.Instance.CurrentVoiceCode
+            : (s != null ? s.voiceLanguageCode : "zh-CN");
+        int voiceIdx = System.Array.IndexOf(codes, currentVoice);
+        string currentVoiceLabel = voiceIdx >= 0 ? labels[voiceIdx] : labels[0];
+
+        BuildValueCycleRow(contentRt, 1, L("ui_settings_voice_language", "语音语言"), labels, currentVoiceLabel, v =>
+        {
+            int i = System.Array.IndexOf(labels, v);
+            if (i < 0) return;
+            if (s != null) s.voiceLanguageCode = codes[i];
+            LocalizationRuntime.Instance?.SetVoiceLanguage(codes[i]);
+        });
     }
 
     private void BuildKeyMouseTabContent(RectTransform contentRt, System.Func<string, string, string> L)
@@ -707,6 +724,7 @@ public class SettingsWindowUI : MonoBehaviour
         (SkyPrisonInputAction.Map,         "ui_settings_action_map",       "地图"),
         (SkyPrisonInputAction.Menu,        "ui_settings_action_menu",      "菜单"),
         (SkyPrisonInputAction.CharacterPanel, "ui_settings_action_characterpanel", "角色面板"),
+        (SkyPrisonInputAction.QuestLog,    "ui_settings_action_questlog",  "任务日志"),
         (SkyPrisonInputAction.QuickItem1,  "ui_settings_action_quickitem1", "快捷物品 1"),
         (SkyPrisonInputAction.QuickItem2,  "ui_settings_action_quickitem2", "快捷物品 2"),
         (SkyPrisonInputAction.QuickItem3,  "ui_settings_action_quickitem3", "快捷物品 3"),
@@ -816,7 +834,8 @@ public class SettingsWindowUI : MonoBehaviour
         var boxTint = MakeRect("Tint", boxRt, Vector2.zero, Vector2.one);
         boxTint.gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.6f);
 
-        AddCornerBrackets(boxRt, Color.white, 40f, 4f);
+        AddCornerBrackets(boxRt, Color.white,
+            SkyPrisonFloatingWindowKit.CornerBracketLength, SkyPrisonFloatingWindowKit.CornerBracketThickness);
 
         var titleTmp = AddTMP(boxRt, "Title", L("ui_settings_keybinds", "按键绑定"), 44f,
             TextAlignmentOptions.TopLeft, TextLight, FontStyles.Bold);
@@ -1339,7 +1358,8 @@ public class SettingsWindowUI : MonoBehaviour
         var boxTint = MakeRect("Tint", boxRt, Vector2.zero, Vector2.one);
         boxTint.gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.6f);
 
-        AddCornerBrackets(boxRt, Color.white, 40f, 4f);
+        AddCornerBrackets(boxRt, Color.white,
+            SkyPrisonFloatingWindowKit.CornerBracketLength, SkyPrisonFloatingWindowKit.CornerBracketThickness);
 
         var titleTmp = AddTMP(boxRt, "Title", L("ui_settings_gamepad_keybinds", "手柄按键绑定"), 44f,
             TextAlignmentOptions.TopLeft, TextLight, FontStyles.Bold);
@@ -1839,6 +1859,7 @@ public class SettingsWindowUI : MonoBehaviour
         { SkyPrisonInputAction.Map,         "ui_settings_action_map" },
         { SkyPrisonInputAction.Menu,        "ui_settings_action_menu" },
         { SkyPrisonInputAction.CharacterPanel, "ui_settings_action_characterpanel" },
+        { SkyPrisonInputAction.QuestLog,    "ui_settings_action_questlog" },
         { SkyPrisonInputAction.QuickItem1,  "ui_settings_action_quickitem1" },
         { SkyPrisonInputAction.QuickItem2,  "ui_settings_action_quickitem2" },
         { SkyPrisonInputAction.QuickItem3,  "ui_settings_action_quickitem3" },
@@ -2093,6 +2114,11 @@ public class SettingsWindowUI : MonoBehaviour
 
         BuildLinkRow(contentRt, 4, L("ui_settings_clear_cache", "清除缓存"),
             L("ui_settings_clear_cache_action", "清除"), ShowClearCacheConfirm);
+
+        // 对话自动播放：只在没有真正分支选项时生效，出现多选分支照样停下来等玩家手动选，
+        // 见 NPCDialogueWindowController.ScheduleAutoAdvanceIfEligible。
+        BuildToggleRow(contentRt, 5, L("ui_settings_dialogue_autoplay", "对话自动播放"),
+            s != null && s.dialogueAutoPlay, v => { if (s != null) s.dialogueAutoPlay = v; });
     }
 
     private GameObject _clearCacheConfirmOverlay;
@@ -2145,7 +2171,8 @@ public class SettingsWindowUI : MonoBehaviour
         var boxTint = MakeRect("Tint", box, Vector2.zero, Vector2.one);
         boxTint.gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.6f);
 
-        AddCornerBrackets(box, Color.white, 40f, 4f);
+        AddCornerBrackets(box, Color.white,
+            SkyPrisonFloatingWindowKit.CornerBracketLength, SkyPrisonFloatingWindowKit.CornerBracketThickness);
 
         var titleTmp = AddTMP(box, "Title", L("ui_settings_clear_cache_title", "清除缓存？"), 40,
             TextAlignmentOptions.Center, TextLight, FontStyles.Bold);
@@ -2564,7 +2591,8 @@ public class SettingsWindowUI : MonoBehaviour
         var boxTint = MakeRect("Tint", boxRt, Vector2.zero, Vector2.one);
         boxTint.gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.6f);
 
-        AddCornerBrackets(boxRt, Color.white, 40f, 4f);
+        AddCornerBrackets(boxRt, Color.white,
+            SkyPrisonFloatingWindowKit.CornerBracketLength, SkyPrisonFloatingWindowKit.CornerBracketThickness);
 
         var titleTmp = AddTMP(boxRt, "Title", L("ui_settings_brightness", "亮度"), 40f,
             TextAlignmentOptions.TopLeft, TextLight, FontStyles.Bold);

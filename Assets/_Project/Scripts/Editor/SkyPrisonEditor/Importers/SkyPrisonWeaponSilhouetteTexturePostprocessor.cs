@@ -35,7 +35,7 @@ public sealed class SkyPrisonWeaponSilhouetteTexturePostprocessor : AssetPostpro
         ApplyWeaponSilhouetteImportSettings(importer);
     }
 
-    [MenuItem("Tools/Sky Prison/UI/应用武器剪影导入设置到选中贴图")]
+    [MenuItem("天空囚笼/UI/应用武器剪影导入设置到选中贴图", false, 179)]
     public static void ApplyToSelectedTextures()
     {
         int changed = 0;

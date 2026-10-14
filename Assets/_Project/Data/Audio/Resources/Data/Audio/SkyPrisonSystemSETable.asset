@@ -142,3 +142,201 @@ MonoBehaviour:
     volume: 1
     pitch: 1
     pitchVariance: 0
+  - type: 23
+    clips:
+    - {fileID: 8300000, guid: df9d57f69197dd8479f480f529968373, type: 3}
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 24
+    clips:
+    - {fileID: 8300000, guid: e83957256a66cf04095924ccfae6b98c, type: 3}
+    volume: 0.36
+    pitch: 1
+    pitchVariance: 0
+  - type: 25
+    clips: []
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 26
+    clips: []
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 27
+    clips: []
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 28
+    clips: []
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 29
+    clips: []
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 30
+    clips: []
+    volume: 1
+    pitch: 1
+    pitchVariance: 0
+  - type: 31
+    clips:
+    - {fileID: 8300000, guid: fb732f14e63a6564b8d7c04ccdc8e219, type: 3}
+    volume: 0.85
+    pitch: 1
+    pitchVariance: 0
+  - type: 32
+    clips:
+    - {fileID: 8300000, guid: 9baf08508a7c3ad4f8f91a294edbcd6d, type: 3}
+    volume: 0.3
+    pitch: 1
+    pitchVariance: 0.05
+  - type: 33
+    clips:
+    - {fileID: 8300000, guid: 9a64753b552e66a40ad9ce4d1a913c3e, type: 3}
+    volume: 0.7
+    pitch: 1
+    pitchVariance: 0
+  - type: 45
+    clips:
+    - {fileID: 8300000, guid: a4f396c58c984904f864444b80b0747f, type: 3}
+    volume: 0.8
+    pitch: 1
+    pitchVariance: 0
+  - type: 46
+    clips:
+    - {fileID: 8300000, guid: 45f399cf4dfd41d41bb6cb96f181d1ff, type: 3}
+    volume: 0.8
+    pitch: 1
+    pitchVariance: 0
+  - type: 34
+    clips:
+    - {fileID: 8300000, guid: 33074847fa45d384e89be330cf9ae179, type: 3}
+    volume: 0.8
+    pitch: 1
+    pitchVariance: 0.02
+  - type: 35
+    clips:
+    - {fileID: 8300000, guid: a87880de0826a224ea75f28edaced6ee, type: 3}
+    volume: 0.8
+    pitch: 1
+    pitchVariance: 0
+  - type: 36
+    clips:
+    - {fileID: 8300000, guid: 77959598f43fad84d86479a914294d48, type: 3}
+    volume: 0.7
+    pitch: 1
+    pitchVariance: 0
+  - type: 37
+    clips:
+    - {fileID: 8300000, guid: 69eae75ba43a45b4c84cafc09840f782, type: 3}
+    volume: 0.85
+    pitch: 1
+    pitchVariance: 0
+  - type: 38
+    clips:
+    - {fileID: 8300000, guid: 709757d44b0474f4aaba28b6af823955, type: 3}
+    volume: 0.45
+    pitch: 1
+    pitchVariance: 0.03
+  - type: 39
+    clips:
+    - {fileID: 8300000, guid: 3d776e8f84d936147b9478f7438ffdc3, type: 3}
+    volume: 0.6
+    pitch: 1
+    pitchVariance: 0.03
+  - type: 40
+    clips:
+    - {fileID: 8300000, guid: 41c721931f63f6c4883ef36837874bf7, type: 3}
+    volume: 0.55
+    pitch: 1
+    pitchVariance: 0.02
+  - type: 41
+    clips:
+    - {fileID: 8300000, guid: 1aa4283848d025448979ce9e5355d3d2, type: 3}
+    volume: 0.75
+    pitch: 1
+    pitchVariance: 0
+  - type: 42
+    clips:
+    - {fileID: 8300000, guid: e31472def69d80a49bc1ffac57a53d04, type: 3}
+    volume: 0.7
+    pitch: 1
+    pitchVariance: 0
+  - type: 43
+    clips:
+    - {fileID: 8300000, guid: 7e36d05967ebda041990dd5cffa3685e, type: 3}
+    volume: 0.8
+    pitch: 1
+    pitchVariance: 0
+  - type: 44
+    clips:
+    - {fileID: 8300000, guid: b9a591a3afc2d304bae0d26100addd0e, type: 3}
+    volume: 0.7
+    pitch: 1
+    pitchVariance: 0
+  - type: 47
+    clips:
+    - {fileID: 8300000, guid: 9ca5c7afb39ddef45b1ae3edef9cb996, type: 3}
+    volume: 0.7
+    pitch: 1
+    pitchVariance: 0
+  - type: 48
+    clips:
+    - {fileID: 8300000, guid: b3351c226c4111049876b05dbddbeb8b, type: 3}
+    volume: 0.7
+    pitch: 1
+    pitchVariance: 0
+  - type: 49
+    clips:
+    - {fileID: 8300000, guid: 6171da59404349349a1ca4832b262b0f, type: 3}
+    volume: 0.3
+    pitch: 1
+    pitchVariance: 0.05
+  - type: 50
+    clips:
+    - {fileID: 8300000, guid: 7b144abc9d86a6b43a7f524c048209d7, type: 3}
+    volume: 0.7
+    pitch: 1
+    pitchVariance: 0.02
+  - type: 51
+    clips:
+    - {fileID: 8300000, guid: 9f46d68d864d71d45bec719607b15c78, type: 3}
+    volume: 0.7
+    pitch: 1
+    pitchVariance: 0
+  - type: 52
+    clips:
+    - {fileID: 8300000, guid: 850deab28357ca84c9c720f3db572bcf, type: 3}
+    volume: 0.8
+    pitch: 1
+    pitchVariance: 0
+  - type: 53
+    clips:
+    - {fileID: 8300000, guid: bdda0e50ec576c14f87f5bf3473bd032, type: 3}
+    volume: 0.8
+    pitch: 1
+    pitchVariance: 0
+  - type: 54
+    clips:
+    - {fileID: 8300000, guid: 1a49cb1063d6cbf4795b40ff35871d37, type: 3}
+    volume: 0.55
+    pitch: 1
+    pitchVariance: 0
+  - type: 55
+    clips:
+    - {fileID: 8300000, guid: 28fb97abd49017947a1318b7716234f9, type: 3}
+    volume: 0.5
+    pitch: 1
+    pitchVariance: 0
+  - type: 56
+    clips:
+    - {fileID: 8300000, guid: f01a02bf07873ee4e9d152bea05ec825, type: 3}
+    volume: 0.7
+    pitch: 1
+    pitchVariance: 0

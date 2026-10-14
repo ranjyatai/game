@@ -167,7 +167,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4656368552411621464
 RectTransform:
   m_ObjectHideFlags: 0
@@ -307,7 +307,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &6381057063328757180
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2253,7 +2253,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &5239796372502538858
 RectTransform:
   m_ObjectHideFlags: 0
@@ -7360,10 +7360,10 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 8646828568044546143}
   - {fileID: 4656368552411621464}
   - {fileID: 5239796372502538858}
   - {fileID: 6381057063328757180}
+  - {fileID: 8646828568044546143}
   m_Father: {fileID: 4111911859210566516}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -7443,7 +7443,7 @@ MonoBehaviour:
   - keyboard/3
   - keyboard/4
   runtimeResolvedKeys: 31000000320000003300000034000000
-  placementStatus: V26 module-local placed. slot=Slot_04, pos=(-346.67, -129.11),
+  placementStatus: V26 module-local placed. slot=Slot_01, pos=(-346.67, -129.11),
     content-local bounds. center=(-346.67, -111.11, 0.00), min=(-346.67, -111.11,
     0.00), contentSize=(660.00, 120.00)
 --- !u!1 &8058233314217383233

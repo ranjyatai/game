@@ -9,12 +9,18 @@ public class LocalizationRuntime : MonoBehaviour
     /// <summary>语言切换后触发，参数为新的语言代码。</summary>
     public static event Action<string> OnLanguageChanged;
 
+    /// <summary>语音语言切换后触发，参数为新的语音语言代码。跟文字语言是独立设置
+    /// (比如文字看中文、语音听日文这种)。</summary>
+    public static event Action<string> OnVoiceLanguageChanged;
+
     private const string PrefsKey = "SkyPrison.Language";
+    private const string VoicePrefsKey = "SkyPrison.VoiceLanguage";
     private const string ConfigResourcePath = "SkyPrison/LocalizationRuntimeConfig";
 
     private LocalizationProjectSettings settings;
 
     private string _currentCode;
+    private string _currentVoiceCode;
 
     public string CurrentCode
     {
@@ -26,6 +32,21 @@ public class LocalizationRuntime : MonoBehaviour
             PlayerPrefs.SetString(PrefsKey, value);
             PlayerPrefs.Save();
             OnLanguageChanged?.Invoke(_currentCode);
+        }
+    }
+
+    /// <summary>当前语音语言——独立于文字语言的设置，默认跟文字语言一致，
+    /// 玩家可以在设置里单独改(比如文字中文、语音日文)。</summary>
+    public string CurrentVoiceCode
+    {
+        get => _currentVoiceCode;
+        private set
+        {
+            if (_currentVoiceCode == value) return;
+            _currentVoiceCode = value;
+            PlayerPrefs.SetString(VoicePrefsKey, value);
+            PlayerPrefs.Save();
+            OnVoiceLanguageChanged?.Invoke(_currentVoiceCode);
         }
     }
 
@@ -50,6 +71,9 @@ public class LocalizationRuntime : MonoBehaviour
 
         string saved = PlayerPrefs.GetString(PrefsKey, "");
         _currentCode = IsValidCode(saved) ? saved : GetDefaultCode();
+
+        string savedVoice = PlayerPrefs.GetString(VoicePrefsKey, "");
+        _currentVoiceCode = IsValidCode(savedVoice) ? savedVoice : _currentCode;
     }
 
     private void Awake()
@@ -73,6 +97,12 @@ public class LocalizationRuntime : MonoBehaviour
     {
         if (IsValidCode(code))
             CurrentCode = code;
+    }
+
+    public void SetVoiceLanguage(string code)
+    {
+        if (IsValidCode(code))
+            CurrentVoiceCode = code;
     }
 
     // ── 查询 ──────────────────────────────────────────────────────────

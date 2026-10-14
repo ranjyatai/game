@@ -26,7 +26,7 @@ public class IconSpriteModeGuardProcessor : AssetPostprocessor
         ti.spriteImportMode = SpriteImportMode.Single;
     }
 
-    [MenuItem("Sky Prison/图标/把所有图标改回整图（Single）")]
+    [MenuItem("天空囚笼/内容数据/把所有图标改回整图（Single）", false, 184)]
     public static void ForceAllIconsToSingle()
     {
         string[] guids = AssetDatabase.FindAssets("t:Texture2D", new[] { IconRoot });

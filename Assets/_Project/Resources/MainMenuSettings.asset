@@ -13,6 +13,15 @@ MonoBehaviour:
   m_Name: MainMenuSettings
   m_EditorClassIdentifier: Assembly-CSharp::MainMenuSettings
   logoTexture: {fileID: 2800000, guid: a8d46f15089202c4d8b18f672ff72a74, type: 3}
+  logoTextures:
+  - languageCode: 
+    texture: {fileID: 0}
+  - languageCode: zh-CN
+    texture: {fileID: 2800000, guid: a5486d39d50fa8744942746ebd112742, type: 3}
+  - languageCode: ja
+    texture: {fileID: 2800000, guid: a8d46f15089202c4d8b18f672ff72a74, type: 3}
+  - languageCode: en
+    texture: {fileID: 2800000, guid: 191029c6907c59a4eb9f0c79db19d8f5, type: 3}
   logoOffsetY: 262
   bgm: {fileID: 8300000, guid: a1c7a679dfc819e46bb49a8b993e1763, type: 3}
   bgmVolume: 0.8

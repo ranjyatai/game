@@ -101,6 +101,7 @@ namespace SkyPrison.Runtime.UI
 
             SetBadgeVisible(entry.isNew);
             SetQuickSlotBadge(entry.definition);
+            ApplyOccupancyLook(true);
         }
 
         // 这个物品种类当前绑在哪些快捷槽（0~3）——同一种物品可以同时绑给好几个快捷槽
@@ -138,6 +139,38 @@ namespace SkyPrison.Runtime.UI
             if (countText != null) countText.text = "";
             SetBadgeVisible(false);
             SetQuickSlotBadge(null);
+            ApplyOccupancyLook(false);
+        }
+
+        // 格子层次：空格底色深、边线很淡；有物品的格子底色略亮、边线和角标更清楚。
+        // 边线是预制体里 SlotDeco 下的几条细线(名字以 Frame 开头)，Shade 是一张九宫格内阴影(边缘深、中间透明)：
+        // 空格阴影重一点(像凹进去的槽)，有物品的格子轻一点。找不到(旧预制体)就只调底色，不报错。
+        private static readonly Color BgEmpty  = new Color(0.17f, 0.17f, 0.18f, 0.50f);
+        private static readonly Color BgFilled = new Color(0.27f, 0.275f, 0.285f, 0.72f);
+        private Image[] _frameLines; private Image _shade;
+        private bool _decoResolved, _batchMarked;
+        private Color _baseBg = BgEmpty;
+
+        private void ApplyOccupancyLook(bool filled)
+        {
+            if (!_decoResolved)
+            {
+                _decoResolved = true;
+                var deco = transform.Find("SlotDeco");
+                if (deco != null)
+                {
+                    var fr = new System.Collections.Generic.List<Image>();
+                    foreach (var im in deco.GetComponentsInChildren<Image>(true))
+                    {
+                        if (im.name.StartsWith("Frame")) fr.Add(im); else if (im.name == "Shade") _shade = im;
+                    }
+                    _frameLines = fr.ToArray();
+                }
+            }
+            _baseBg = filled ? BgFilled : BgEmpty;
+            if (cellBg != null && !_batchMarked) cellBg.color = _baseBg;
+            if (_frameLines != null) foreach (var l in _frameLines) if (l != null) l.color = new Color(1f, 1f, 1f, filled ? 0.26f : 0.09f);
+            if (_shade != null) _shade.color = new Color(1f, 1f, 1f, filled ? 0.07f : 0.12f);
         }
 
         /// <summary>筛选调暗：不属于当前分类的物品图标变暗（空格不动）。</summary>
@@ -157,8 +190,8 @@ namespace SkyPrison.Runtime.UI
         public void SetBatchMarked(bool marked)
         {
             if (cellBg == null) return;
-            if (_cellBgOriginalColor == null) _cellBgOriginalColor = cellBg.color;
-            cellBg.color = marked ? BatchMarkedColor : _cellBgOriginalColor.Value;
+            _batchMarked = marked;
+            cellBg.color = marked ? BatchMarkedColor : _baseBg;
         }
 
         /// <summary>鼠标悬停看过后调用：消除 NEW 标记并持久化到数据条目（同一局内不再提示）。</summary>

@@ -52,6 +52,7 @@ namespace SkyPrison.Runtime.UI
             EnsureGhost();
             _ghost.sprite = entry.definition.icon;
             _ghost.enabled = entry.definition.icon != null;
+            { var rc = transform.GetComponentInParent<Canvas>(); _ghostCanvas.sortingOrder = Mathf.Max(1200, (rc != null ? rc.rootCanvas.sortingOrder : 1100) + 100); }
             _ghostCanvas.gameObject.SetActive(true);
             UpdateDrag(e);
 
@@ -395,10 +396,10 @@ namespace SkyPrison.Runtime.UI
             ShowAmountPopup("丢弃", entry.definition.GetLocalizedDisplayName(), entry.count, entry.count,
                 amt =>
                 {
-                    ItemDefinition def = entry.definition;
+                    var dropSource = entry;
                     inv.DiscardSlot(index, amt);
                     Vector3 dropPos = GetPlayerDropPosition();
-                    var dropped = LootDropWorldObject.SpawnDrop(def, amt, dropPos);
+                    var dropped = LootDropWorldObject.SpawnDropFromEntry(dropSource, amt, dropPos);
                     if (dropped != null)
                     {
                         GameObject unit = SkyPrisonPlayerAuthority.CurrentPlayerUnit?.gameObject;

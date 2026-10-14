@@ -22,6 +22,9 @@ public static class AILogicSentenceTemplateLibraryCore
             BuildConditionUnitHasLastHeardPosition(),
             BuildConditionUnitHasLastKnownPosition(),
             BuildConditionUnitToCurrentTargetDistanceCompare(),
+            BuildConditionTargetInXZRange(),
+            BuildActionKeepDistanceBand(),
+            BuildActionStopKeepDistanceBand(),
             BuildConditionUnitBehaviorTypeIs(),
             BuildConditionUniversalCompare(),
 
@@ -472,6 +475,111 @@ public static class AILogicSentenceTemplateLibraryCore
                 BuildUnitSlot("subject", "主体单位", true, true),
                 BuildComparisonSlot("op", "比较符"),
                 BuildFloatSlot("distance", "距离")
+            }
+        };
+    }
+
+    private static LogicSentenceTemplate.SlotDefinition BuildAITargetKindSlot(string slotId, string displayName, bool includeCurrentTarget)
+    {
+        var options = new List<LogicSentenceTemplate.EnumOption>();
+        foreach (var o in SkyPrisonAITargetResolver.Options)
+        {
+            if (!includeCurrentTarget && o.id == SkyPrisonAITargetResolver.CurrentTarget) continue;
+            options.Add(new LogicSentenceTemplate.EnumOption(o.id, o.label));
+        }
+        return BuildEnumSlot(slotId, displayName, options);
+    }
+
+    private static LogicSentenceTemplate BuildConditionTargetInXZRange()
+    {
+        return new LogicSentenceTemplate
+        {
+            templateId = "cond_target_in_xz_range",
+            displayName = "对象在 X/深度范围内",
+            category = LogicSentenceCategory.Condition,
+            nodeKind = LogicNodeKind.Leaf,
+            tags = new List<LogicTemplateTag> { LogicTemplateTag.Unit, LogicTemplateTag.AI, LogicTemplateTag.Math },
+            tokens = new List<LogicSentenceTemplate.TextToken>
+            {
+                new LogicSentenceTemplate.TextToken { isSlot = true, slotId = "subject" },
+                new LogicSentenceTemplate.TextToken { isSlot = false, text = " 与 " },
+                new LogicSentenceTemplate.TextToken { isSlot = true, slotId = "targetKind" },
+                new LogicSentenceTemplate.TextToken { isSlot = false, text = "（点位 X=" },
+                new LogicSentenceTemplate.TextToken { isSlot = true, slotId = "pointX" },
+                new LogicSentenceTemplate.TextToken { isSlot = false, text = " Y=" },
+                new LogicSentenceTemplate.TextToken { isSlot = true, slotId = "pointY" },
+                new LogicSentenceTemplate.TextToken { isSlot = false, text = "）横向(X)距离 ≤ " },
+                new LogicSentenceTemplate.TextToken { isSlot = true, slotId = "maxX" },
+                new LogicSentenceTemplate.TextToken { isSlot = false, text = " 且 深度(Z)差 ≤ " },
+                new LogicSentenceTemplate.TextToken { isSlot = true, slotId = "maxZ" }
+            },
+            slots = new List<LogicSentenceTemplate.SlotDefinition>
+            {
+                BuildUnitSlot("subject", "主体单位", true, true),
+                BuildAITargetKindSlot("targetKind", "对象", true),
+                BuildFloatSlot("pointX", "点位 X"),
+                BuildFloatSlot("pointY", "点位 Y(世界Z)"),
+                BuildFloatSlot("maxX", "横向距离上限"),
+                BuildFloatSlot("maxZ", "深度差上限")
+            }
+        };
+    }
+
+    private static LogicSentenceTemplate BuildActionKeepDistanceBand()
+    {
+        return new LogicSentenceTemplate
+        {
+            templateId = "act_keep_distance_band",
+            displayName = "保持与对象的距离带（横向+深度对齐）",
+            category = LogicSentenceCategory.Action,
+            nodeKind = LogicNodeKind.Leaf,
+            tags = new List<LogicTemplateTag> { LogicTemplateTag.Unit, LogicTemplateTag.AI },
+            tokens = new List<LogicSentenceTemplate.TextToken>
+            {
+                new LogicSentenceTemplate.TextToken { isSlot = true, slotId = "unit" },
+                new LogicSentenceTemplate.TextToken { isSlot = false, text = " 与 " },
+                new LogicSentenceTemplate.TextToken { isSlot = true, slotId = "targetKind" },
+                new LogicSentenceTemplate.TextToken { isSlot = false, text = "（点位 X=" },
+                new LogicSentenceTemplate.TextToken { isSlot = true, slotId = "pointX" },
+                new LogicSentenceTemplate.TextToken { isSlot = false, text = " Y=" },
+                new LogicSentenceTemplate.TextToken { isSlot = true, slotId = "pointY" },
+                new LogicSentenceTemplate.TextToken { isSlot = false, text = "）保持横向距离 " },
+                new LogicSentenceTemplate.TextToken { isSlot = true, slotId = "minX" },
+                new LogicSentenceTemplate.TextToken { isSlot = false, text = " ~ " },
+                new LogicSentenceTemplate.TextToken { isSlot = true, slotId = "maxX" },
+                new LogicSentenceTemplate.TextToken { isSlot = false, text = "，深度差 ≤ " },
+                new LogicSentenceTemplate.TextToken { isSlot = true, slotId = "depth" }
+            },
+            slots = new List<LogicSentenceTemplate.SlotDefinition>
+            {
+                BuildUnitSlot("unit", "单位", true, true),
+                BuildAITargetKindSlot("targetKind", "对象", true),
+                BuildFloatSlot("pointX", "点位 X"),
+                BuildFloatSlot("pointY", "点位 Y(世界Z)"),
+                BuildFloatSlot("minX", "最近横向距离"),
+                BuildFloatSlot("maxX", "最远横向距离"),
+                BuildFloatSlot("depth", "深度容差")
+            }
+        };
+    }
+
+    private static LogicSentenceTemplate BuildActionStopKeepDistanceBand()
+    {
+        return new LogicSentenceTemplate
+        {
+            templateId = "act_stop_keep_distance_band",
+            displayName = "停止保持距离带",
+            category = LogicSentenceCategory.Action,
+            nodeKind = LogicNodeKind.Leaf,
+            tags = new List<LogicTemplateTag> { LogicTemplateTag.Unit, LogicTemplateTag.AI },
+            tokens = new List<LogicSentenceTemplate.TextToken>
+            {
+                new LogicSentenceTemplate.TextToken { isSlot = true, slotId = "unit" },
+                new LogicSentenceTemplate.TextToken { isSlot = false, text = " 停止保持距离带" }
+            },
+            slots = new List<LogicSentenceTemplate.SlotDefinition>
+            {
+                BuildUnitSlot("unit", "单位", true, true)
             }
         };
     }

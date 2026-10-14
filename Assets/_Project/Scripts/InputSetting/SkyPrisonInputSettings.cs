@@ -76,7 +76,7 @@ public class SkyPrisonInputSettings : ScriptableObject
         EnsureBinding(SkyPrisonInputAction.Reload, "换弹", KeyCode.R, KeyCode.None, KeyCode.JoystickButton11, SkyPrisonInputTriggerMode.Press);
 
         SetBinding(SkyPrisonInputAction.CyclePickup, "切换拾取目标", KeyCode.G, KeyCode.None, KeyCode.None, SkyPrisonInputTriggerMode.Press);
-        EnsureBinding(SkyPrisonInputAction.Inventory, "背包", KeyCode.B, KeyCode.Tab, KeyCode.JoystickButton3, SkyPrisonInputTriggerMode.Press);
+        EnsureBinding(SkyPrisonInputAction.Inventory, "背包", KeyCode.B, KeyCode.None, KeyCode.JoystickButton3, SkyPrisonInputTriggerMode.Press);      // Tab 不再是背包键：留给战术地图切换正交俯视
         // 手柄绑定都取消——PS4原生模式下 R2 实际读的就是 JoystickButton7，跟这两个
         // 动作撞在同一个键上，按R2会连带触发"菜单"把窗口关掉。键盘不受影响。
         EnsureBinding(SkyPrisonInputAction.Map, "地图", KeyCode.M, KeyCode.None, KeyCode.None, SkyPrisonInputTriggerMode.Press);
@@ -85,6 +85,7 @@ public class SkyPrisonInputSettings : ScriptableObject
         // 这条注释是按理论按键布局猜的，跟用户实测的真实硬件映射对不上）。用户打算
         // 以后单独做一套面向手柄的独立菜单面板，这个键先空出来，键盘(C键)不受影响。
         EnsureBinding(SkyPrisonInputAction.CharacterPanel, "角色面板", KeyCode.C, KeyCode.None, KeyCode.None, SkyPrisonInputTriggerMode.Press);
+        EnsureBinding(SkyPrisonInputAction.QuestLog, "任务日志", KeyCode.L, KeyCode.None, KeyCode.None, SkyPrisonInputTriggerMode.Press);
 
         EnsureBinding(SkyPrisonInputAction.QuickItem1, "快捷物品 1", KeyCode.Alpha1, KeyCode.None, KeyCode.JoystickButton12, SkyPrisonInputTriggerMode.Press);
         EnsureBinding(SkyPrisonInputAction.QuickItem2, "快捷物品 2", KeyCode.Alpha2, KeyCode.None, KeyCode.JoystickButton13, SkyPrisonInputTriggerMode.Press);
@@ -130,10 +131,11 @@ public class SkyPrisonInputSettings : ScriptableObject
         SetBinding(SkyPrisonInputAction.Skill3, "技能 3", KeyCode.V, KeyCode.O, KeyCode.JoystickButton6, SkyPrisonInputTriggerMode.Press);
         SetBinding(SkyPrisonInputAction.Reload, "换弹", KeyCode.R, KeyCode.None, KeyCode.JoystickButton11, SkyPrisonInputTriggerMode.Press);
 
-        SetBinding(SkyPrisonInputAction.Inventory, "背包", KeyCode.B, KeyCode.Tab, KeyCode.JoystickButton3, SkyPrisonInputTriggerMode.Press);
+        SetBinding(SkyPrisonInputAction.Inventory, "背包", KeyCode.B, KeyCode.None, KeyCode.JoystickButton3, SkyPrisonInputTriggerMode.Press);
         SetBinding(SkyPrisonInputAction.Map, "地图", KeyCode.M, KeyCode.None, KeyCode.None, SkyPrisonInputTriggerMode.Press);
         SetBinding(SkyPrisonInputAction.Menu, "菜单", KeyCode.Escape, KeyCode.None, KeyCode.None, SkyPrisonInputTriggerMode.Press);
         SetBinding(SkyPrisonInputAction.CharacterPanel, "角色面板", KeyCode.C, KeyCode.None, KeyCode.None, SkyPrisonInputTriggerMode.Press);
+        SetBinding(SkyPrisonInputAction.QuestLog, "任务日志", KeyCode.L, KeyCode.None, KeyCode.None, SkyPrisonInputTriggerMode.Press);
 
         SetBinding(SkyPrisonInputAction.QuickItem1, "快捷物品 1", KeyCode.Alpha1, KeyCode.None, KeyCode.JoystickButton12, SkyPrisonInputTriggerMode.Press);
         SetBinding(SkyPrisonInputAction.QuickItem2, "快捷物品 2", KeyCode.Alpha2, KeyCode.None, KeyCode.JoystickButton13, SkyPrisonInputTriggerMode.Press);
@@ -368,6 +370,11 @@ public class SkyPrisonInputSettings : ScriptableObject
         SkyPrisonInputBinding interact = FindBinding(SkyPrisonInputAction.Interact);
         if (interact != null && interact.gamepadKey == KeyCode.JoystickButton0)
             interact.gamepadKey = KeyCode.None;
+
+        // Tab 以前是背包的副键位，现在是战术地图「正交俯视 / 透视」的切换键：旧资产 / 旧存档里背包还绑着 Tab 的，迁移掉
+        SkyPrisonInputBinding inventory = FindBinding(SkyPrisonInputAction.Inventory);
+        if (inventory != null && inventory.secondaryKey == KeyCode.Tab)
+            inventory.secondaryKey = KeyCode.None;
 
         EnsureQuickItemDefault(SkyPrisonInputAction.QuickItem1, "快捷物品 1", KeyCode.Alpha1, KeyCode.JoystickButton12);
         EnsureQuickItemDefault(SkyPrisonInputAction.QuickItem2, "快捷物品 2", KeyCode.Alpha2, KeyCode.JoystickButton13);

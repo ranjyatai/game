@@ -334,6 +334,7 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
         EnsureCombatRuntimeForDefinition(ud);
         EnsureUnitAudioForDefinition(ud);
         EnsureAIBehaviorRuntimeForDefinition(ud);
+        EnsureNPCDialogueInteractableForDefinition(ud);
         EnsurePerceptionRuntimeForDefinition(ud);
         EnsureVisualRuntimeUtilityComponentsForDefinition(ud);
 
@@ -347,6 +348,7 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
         ApplyToCollisionShape(ud);
         ScheduleOrRunCapsuleAutoCalibration(ud);
         ApplyToShadowProjector(ud);
+        ScheduleShadowProjectorReapplyAfterVisualSettles(ud);
         ApplyToMovement(ud);
         ApplyToLoadRuntime(ud);
         ApplyToDeath(ud);
@@ -359,6 +361,22 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
                                  && ud.characterIdentity != CharacterIdentity.Player;
         if (isNonPlayerCharacter && GetComponent<UnitLODSleepController>() == null)
             gameObject.AddComponent<UnitLODSleepController>();
+
+        // 角色环境受光接收器——所有角色单位自动挂。
+        //
+        // Spine 角色的着色器完全不采样光照(2D手绘精灵图走法线光照会毁掉手绘的明暗
+        // 关系)，所以角色明暗只能靠这个组件把场景光照喂给 shader 的
+        // _SkyPrison_EnvTint/_SkyPrison_EnvDarken 接口。不挂的话，环境调得再暗
+        // 角色都是死白的，地下场景直接崩。
+        //
+        // 之所以做成自动挂而不是让人往预制体上拖：这套东西(shader接口 + 组件)
+        // 2026-07-18 就写完了，但因为从来没人挂过，整整两个月一次都没生效过。
+        // 靠"记得挂"的机制迟早会漏，尤其是以后加新单位的时候。
+        if (ud.defineType == UnitDefineType.Character
+            && GetComponent<SkyPrisonCharacterEnvironmentLightReceiver>() == null)
+        {
+            gameObject.AddComponent<SkyPrisonCharacterEnvironmentLightReceiver>();
+        }
 
         lastAppliedDefinition = ud;
         hasAppliedOnce = true;
@@ -747,6 +765,34 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
         terrainGroundMotor.preferCollisionRootCollider = true;
         terrainGroundMotor.ignoreTriggerBodyColliders = true;
 
+        // WalkableProbe/OccluderProbe 两个探测层必须从 bodyBlockMask/groundMask 里剔除——
+        // SkyPrisonWalkableProbeLayerSetup 这个编辑器工具本该负责这件事，但它只扫描场景
+        // 文件/预制体资产里已经序列化好的组件，而 TerrainGroundMotorV5 是纯运行时
+        // AddComponent 加上去的（就在上面几行），从来不会出现在它能扫到的地方，
+        // 所以对所有运行时生成的单位这个排除从来没真正生效过，bodyBlockMask 一直卡在
+        // 组件的原始默认值 ~0（全部层）上。表现是：装饰物明明配了「不阻挡单位」
+        // （blockPlayer/blockEnemy=false，碰撞体正确落在 WalkableProbe 层），但只要
+        // 这个碰撞体是带真实高度起伏的精确网格（比如铁轨的轨道/枕木），
+        // TerrainGroundMotorV5 自己的台阶限高判定依然会把它当成候选地面来扫描，
+        // 被网格本身的凹凸反复判定「这一步太高迈不上去」，单位就卡死在原地——
+        // 跟「阻挡」这个概念完全无关，是这条独立判定链路里的排除动作漏掉了运行时实例。
+        // 这里补上，跟该工具对预制体/场景实例做的事保持一致。
+        int walkableProbeLayer = LayerMask.NameToLayer(GroundSurfaceMarker.WalkableProbeLayerName);
+        if (walkableProbeLayer >= 0)
+        {
+            int bit = ~(1 << walkableProbeLayer);
+            terrainGroundMotor.bodyBlockMask &= bit;
+            terrainGroundMotor.groundMask &= bit;
+        }
+
+        int occluderProbeLayer = LayerMask.NameToLayer(TerrainDecorationDefinition.OccluderProbeLayerName);
+        if (occluderProbeLayer >= 0)
+        {
+            int bit = ~(1 << occluderProbeLayer);
+            terrainGroundMotor.bodyBlockMask &= bit;
+            terrainGroundMotor.groundMask &= bit;
+        }
+
         if (configureTerrainGroundMotorBodyCollider)
         {
             Collider bodyCollider = FindMovementBodyCollider();
@@ -880,6 +926,10 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
             GameObject go = new GameObject(string.IsNullOrWhiteSpace(unitAudioRootName) ? "AudioRoot" : unitAudioRootName);
             UndoSafeSetParent(go.transform, transform);
             ResetLocalTransform(go.transform);
+            // new GameObject(...) 默认落在 Default 层——这个项目的摄像机/渲染管线不处理
+            // Default 层，任何新建子物体不显式继承单位本体的层都等于"隐形"，这是反复踩的坑，
+            // 这里必须跟着 unit 根节点的层走，不能让它停在 Unity 的默认值。
+            go.layer = gameObject.layer;
             unitAudioRoot = go.transform;
 
             if (debugLogs)
@@ -898,6 +948,7 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
             GameObject go = new GameObject(string.IsNullOrWhiteSpace(footstepAudioPointName) ? "FootstepAudioPoint" : footstepAudioPointName);
             UndoSafeSetParent(go.transform, parent);
             ResetLocalTransform(go.transform);
+            go.layer = parent.gameObject.layer;
             footstepAudioPoint = go.transform;
 
             if (debugLogs)
@@ -986,6 +1037,18 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
         UnitMovementController dodgeMc = GetComponent<UnitMovementController>();
         if (dodgeMc != null)
             dodgeVFXBridge.Configure(dodgeMc);
+
+        // 自动添加闪避/突刺残影发射器，同样轮询 UnitMovementController（IsDodging /
+        // IsChargeDashing），不需要闪避、突刺各自的代码反过来关心"要不要生成残影"。
+        SkyPrisonAfterimageEmitter afterimageEmitter = GetComponent<SkyPrisonAfterimageEmitter>();
+        if (afterimageEmitter == null)
+        {
+            afterimageEmitter = gameObject.AddComponent<SkyPrisonAfterimageEmitter>();
+            if (debugLogs)
+                Debug.Log($"[UnitDefinitionRuntimeApplier] {name}: Auto added SkyPrisonAfterimageEmitter.", this);
+        }
+        if (dodgeMc != null)
+            afterimageEmitter.Configure(dodgeMc, FindBestFootstepSkeletonAnimation());
     }
 
     private void EnsureFootstepRelayBindingAfterVisualRefresh(UnitDefinition ud)
@@ -1281,6 +1344,50 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
             movementController.SetInputMode(UnitMovementController.MovementInputMode.External);
     }
 
+    // NPCDialogueDefinition配了的话自动挂 NPCDialogueInteractable 并把资产喂进去——
+    // 用户明确要求"不希望在地图上一个个手动挂组件"，对话能力跟着单位定义走，
+    // 跟AI行为包(EnsureAIBehaviorRuntimeForDefinition)是完全同一个套路。
+    //
+    // 用户明确要求"确保只有友军身份才能对话"——防呆：万一手滑在敌人/BOSS这类
+    // 单位上配了dialogue字段，不该让敌人也能被玩家"交谈"。身份判定复用
+    // UnitDefinition.ResolveCharacterOutline() 已有的Ally分组(Ally/中立无敌意/生物)，
+    // 不用另起一套身份枚举映射。
+    private static bool IsFriendlyIdentity(CharacterIdentity identity) => identity switch
+    {
+        CharacterIdentity.Ally => true,
+        CharacterIdentity.NeutralPassive => true,
+        CharacterIdentity.Creature => true,
+        _ => false,
+    };
+
+    private void EnsureNPCDialogueInteractableForDefinition(UnitDefinition ud)
+    {
+        if (ud == null) return;
+
+        var dialogueInteractable = GetComponent<NPCDialogueInteractable>();
+        bool isFriendly = ud.defineType == UnitDefineType.Character && IsFriendlyIdentity(ud.characterIdentity);
+        bool shouldHaveDialogue = ud.dialogue != null && isFriendly;
+
+        if (ud.dialogue != null && !isFriendly)
+            Debug.LogWarning($"[UnitDefinitionRuntimeApplier] {name}: UnitDefinition '{ud.name}' 配了 dialogue 但身份不是友军" +
+                $"(characterIdentity={ud.characterIdentity})，已忽略，不会挂 NPCDialogueInteractable。", this);
+
+        if (dialogueInteractable == null && shouldHaveDialogue)
+        {
+            dialogueInteractable = gameObject.AddComponent<NPCDialogueInteractable>();
+            if (debugLogs)
+                Debug.Log($"[UnitDefinitionRuntimeApplier] {name}: Auto added NPCDialogueInteractable.", this);
+        }
+
+        if (dialogueInteractable == null) return;
+
+        if (shouldHaveDialogue)
+        {
+            dialogueInteractable.SetDialogue(ud.dialogue);
+            dialogueInteractable.SetNpcUnitDefinition(ud);
+        }
+    }
+
     private void ApplyToOverheadUI(UnitDefinition ud)
     {
         if (overheadView == null)
@@ -1288,6 +1395,11 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
 
         if (overheadView != null)
         {
+            // 有些老预制体这个组件在prefab里被禁用(不知道什么年代的历史遗留)，
+            // 禁用的组件Unity不会跑LateUpdate，头顶UI的朝向/高度这些每帧逻辑就
+            // 全部失效——不依赖prefab里那个勾选框到底是不是对的，绑定单位定义
+            // 的时候直接强制打开，一次性解决"到底改没改对"这个问题。
+            overheadView.enabled = true;
             overheadView.unitDefinition = ud;
             overheadView.ApplyStyleFromDefinition();
         }
@@ -1415,7 +1527,11 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
     // 填充式效果只需要"是否被遮挡"这一个信号，不需要找边缘，天生没有这个问题。
     // 颜色沿用同一套阵营配色，跟掉落物本来就有的全息效果（LootDropHologram.shader）
     // 风格统一。
-    private static Color ResolveHologramFillColorForGroup(OutlineGroup group)
+    // 公开出来给 UnitDefinitionRuntimeBinder.RefreshModel3DBindingsIfPossible 复用——
+    // 3D 通道单位（Destructible/Item 类型场景物）不走 Character 才会跑的
+    // ApplyToOcclusionReceiver 那条自动配色路径，但阵营配色表不该另开一份，同一份
+    // 颜色两处各写一次迟早会跑偏。
+    public static Color ResolveHologramFillColorForGroup(OutlineGroup group)
     {
         switch (group)
         {
@@ -1708,9 +1824,13 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
 
         Material[] current = primaryRenderer.sharedMaterials;
         int slotCount = current != null && current.Length > 0 ? current.Length : 1;
+        // 必须每个单位自己克隆一份：FindBestOcclusionCompositeMaterial 按贴图匹配会把"共用同一套 Spine 视觉"
+        // 的玩家和 NPC 扫到同一个材质资产，直接把资产引用塞给每个单位的话，后面 ApplyHiddenOutlineColorForFaction
+        // 给 NPC 上阵营色（友方蓝）就会把玩家的遮挡色（黄）一起改掉——谁最后初始化谁说了算，
+        // 场景里 NPC 多了以后玩家的遮挡全息就变成蓝色。和上面 existing 分支、CloneMaterials 的注释同一个根因。
         Material[] result = new Material[slotCount];
         for (int i = 0; i < result.Length; i++)
-            result[i] = composite;
+            result[i] = new Material(composite);
 
         return result;
     }
@@ -1927,6 +2047,13 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
         return objectName;
     }
 
+    // 这里必须是真正按材质实例(new Material(...))逐个复制，不能只复制数组容器——
+    // 之前只 new 了外层数组、每个元素还是同一个 Material 对象引用，多个共用同一份
+    // Spine骨骼/贴图的单位(比如玩家Axia和NPC琪亚拉，两者视觉资产完全共用)会被
+    // FindBestOcclusionCompositeMaterial 按贴图匹配扫到同一个材质资产文件，
+    // ApplyHiddenOutlineColorForFaction 再给其中一个上阵营色时，等于连带把另一个
+    // 单位、乃至磁盘上这份材质资产本身都改了颜色——这正是"玩家颜色又变了"反复
+    // 出现的根本原因，不是阵营判定逻辑的问题，是材质实例没有真正独立。
     private static Material[] CloneMaterials(Material[] source)
     {
         if (source == null)
@@ -1934,7 +2061,7 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
 
         Material[] clone = new Material[source.Length];
         for (int i = 0; i < source.Length; i++)
-            clone[i] = source[i];
+            clone[i] = source[i] != null ? new Material(source[i]) : null;
         return clone;
     }
 
@@ -2035,7 +2162,15 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
 
         if (!ud.overrideCollisionShape)
         {
-            ApplyDefaultCapsuleShape();
+            // 关掉手动 override 就是明确要交给"按 Spine 可见包围盒自动量取"来定形状——
+            // 这里不能先套一个写死的兜底胶囊（1.8 高 / 0.35 半径）再等自动量取纠正。
+            // ApplyDefinition 在生成流程里会被调用不止一次，每次都重新走到这里；
+            // 只要有任何一次重置发生在"自动量取协程完成"之后、"下一次重新调度"之前，
+            // 写死的兜底值就会成为最终定型——不是自动量取没跑，是它跑完之后又被这行
+            // 覆盖回去了。真正的兜底交给 ShouldAutoCalibrateCapsule 内部判断：量不到
+            // Spine 包围盒时它自己会保留调用前的胶囊状态，不需要这里先垫一个假值。
+            if (!ShouldAutoCalibrateCapsule(ud))
+                ApplyDefaultCapsuleShape();
             return;
         }
 
@@ -2100,6 +2235,33 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
             StopCoroutine(pendingCapsuleCalibrationRoutine);
 
         pendingCapsuleCalibrationRoutine = StartCoroutine(CoAutoCalibrateCapsuleAfterVisualSettles());
+    }
+
+    private Coroutine pendingShadowProjectorReapplyRoutine;
+
+    // ApplyToShadowProjector 里量 TryGetRealVisualWorldBounds 跟胶囊体自动量取用的是
+    // 同一个数据源，也有同一个时序风险——ApplyDefinition 这一轮跑的时候 Spine 网格
+    // 可能还没真正摆过一次姿势，量出来的包围盒不可靠。复用跟胶囊体一样的"等几帧再
+    // 补量一次"策略，不必再造一套新的定时逻辑。
+    private void ScheduleShadowProjectorReapplyAfterVisualSettles(UnitDefinition ud)
+    {
+        if (!ud.lockShadowProjectorTransform || !Application.isPlaying || !isActiveAndEnabled)
+            return;
+
+        if (pendingShadowProjectorReapplyRoutine != null)
+            StopCoroutine(pendingShadowProjectorReapplyRoutine);
+
+        pendingShadowProjectorReapplyRoutine = StartCoroutine(CoReapplyShadowProjectorAfterVisualSettles(ud));
+    }
+
+    private IEnumerator CoReapplyShadowProjectorAfterVisualSettles(UnitDefinition ud)
+    {
+        int frames = Mathf.Max(0, capsuleVisualSettleFrames);
+        for (int i = 0; i < frames; i++)
+            yield return null;
+
+        ApplyToShadowProjector(ud);
+        pendingShadowProjectorReapplyRoutine = null;
     }
 
     private IEnumerator CoAutoCalibrateCapsuleAfterVisualSettles()
@@ -2228,35 +2390,59 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
     private bool TryGetRealVisualWorldBounds(out Bounds result)
     {
         result = default(Bounds);
-
-        Transform visualRoot = FindVisualRootForOcclusion();
-        if (visualRoot == null)
-            return false;
-
-        Renderer[] renderers = visualRoot.GetComponentsInChildren<Renderer>(true);
         bool hasAny = false;
 
-        for (int i = 0; i < renderers.Length; i++)
+        // 角色的 Spine 渲染在运行时会把材质换成遮挡合成着色器（见 CLAUDE.md：自定义遮挡
+        // 合成着色器），IsRealUnitVisualRenderer 按材质/着色器名字过滤，专门排除掉名字
+        // 里带 occlusioncomposite 的东西——本意是排除"遮挡描边代理"那类附加渲染，结果连
+        // 角色本体的 SkeletonAnimation 主渲染器也被换了材质之后一起排除掉了。表现就是
+        // 胶囊体量出来的包围盒只剩下没被这条规则误伤的零星小渲染器，胶囊比人矮一大截。
+        // 真正的骨骼渲染器身份已经有 FindRealSkeletonAnimation() 精确定位（专门排掉
+        // OutlineProxy），不需要靠材质名字猜——直接拿它的网格包围盒，不经过材质过滤。
+        SkeletonAnimation realSkeleton = FindRealSkeletonAnimation();
+        if (realSkeleton != null)
         {
-            Renderer r = renderers[i];
-            if (r == null || !r.enabled)
-                continue;
-
-            if (!IsRealUnitVisualRenderer(r))
-                continue;
-
-            Bounds b = r.bounds;
-            if (b.size.sqrMagnitude <= 0.000001f)
-                continue;
-
-            if (!hasAny)
+            var skeletonRenderer = realSkeleton.GetComponent<Renderer>();
+            if (skeletonRenderer != null && skeletonRenderer.enabled)
             {
-                result = b;
-                hasAny = true;
+                Bounds skB = skeletonRenderer.bounds;
+                if (skB.size.sqrMagnitude > 0.000001f)
+                {
+                    result = skB;
+                    hasAny = true;
+                }
             }
-            else
+        }
+
+        Transform visualRoot = FindVisualRootForOcclusion();
+        if (visualRoot != null)
+        {
+            Renderer[] renderers = visualRoot.GetComponentsInChildren<Renderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
             {
-                result.Encapsulate(b);
+                Renderer r = renderers[i];
+                if (r == null || !r.enabled)
+                    continue;
+
+                if (realSkeleton != null && r.transform == realSkeleton.transform)
+                    continue; // 已经用未过滤的方式量过了，不要再被材质过滤规则挡掉。
+
+                if (!IsRealUnitVisualRenderer(r))
+                    continue;
+
+                Bounds b = r.bounds;
+                if (b.size.sqrMagnitude <= 0.000001f)
+                    continue;
+
+                if (!hasAny)
+                {
+                    result = b;
+                    hasAny = true;
+                }
+                else
+                {
+                    result.Encapsulate(b);
+                }
             }
         }
 
@@ -2284,7 +2470,26 @@ public class UnitDefinitionRuntimeApplier : MonoBehaviour
         if (shadowProjector == null)
             return;
 
-        shadowProjector.localPosition = ud.shadowLocalPosition;
+        // shadowLocalPosition 之前是纯手填的固定数字，跟角色实际脚底位置毫无关系——
+        // Spine 骨架一改（换模型、调比例、重新导出），角色视觉上的脚底跟着变，这个写
+        // 死的数字就对不上了，只能每次手动重新拖。改成先用跟胶囊体自动量取同一个
+        // 数据源（TryGetRealVisualWorldBounds 的真实渲染包围盒）算出脚底世界位置，
+        // 自动跟着 Spine 走；shadowLocalPosition 保留下来，但含义变成"在自动算出的
+        // 脚底基础上再手动微调多少"，默认值本来就接近 0，正好符合这个新语义，不用
+        // 改任何已有资产上的数值。
+        Vector3 autoLocalPosition = ud.shadowLocalPosition;
+        if (shadowProjector.parent != null && TryGetRealVisualWorldBounds(out Bounds visualBounds))
+        {
+            // 脚底的 Z 取单位根节点的 Z，不取渲染包围盒中心的 Z：角色的 Spine 面片向后倾斜 45°，
+            // 包围盒中心在世界 Z 上比脚底靠后约半个"倾斜深度"（身高 × sin45° / 2 ≈ 1.5 米），
+            // 取中心会让脚下那块接触影整块跑到角色背后（屏幕上方）——西拉斯 / 琪亚拉 / AEGIA 都踩过这个坑。
+            // X 仍用包围盒中心（左右不倾斜）；Y 用包围盒最低点（倾斜面片的最低点就是脚）。
+            Vector3 feetWorld = new Vector3(visualBounds.center.x, visualBounds.min.y, transform.position.z);
+            Vector3 feetLocal = shadowProjector.parent.InverseTransformPoint(feetWorld);
+            autoLocalPosition = feetLocal + ud.shadowLocalPosition;
+        }
+
+        shadowProjector.localPosition = autoLocalPosition;
         shadowProjector.localRotation = Quaternion.Euler(ud.shadowLocalEuler);
         shadowProjector.localScale = ud.shadowLocalScale;
     }

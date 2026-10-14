@@ -22,6 +22,8 @@ public class GroundQueryService : MonoBehaviour
 
     private BaseGroundBlock[] cachedGroundBlocks;
     private readonly RaycastHit[] hitBuffer = new RaycastHit[32];
+    private static int s_OccluderProbeLayerCache = -2;
+    private static int OccluderProbeLayer => s_OccluderProbeLayerCache != -2 ? s_OccluderProbeLayerCache : (s_OccluderProbeLayerCache = LayerMask.NameToLayer("OccluderProbe"));
 
     private void OnEnable()
     {
@@ -97,6 +99,15 @@ public class GroundQueryService : MonoBehaviour
         GroundSurfaceMarker bestMarker = null;
         BaseGroundBlock bestBaseBlock = null;
 
+        // 遮挡探测盒(OccluderProbe 层)只做兜底：它是前后遮挡判断用的辅助体积，形状可以和模型差很多——
+        // 环形台阶的探测盒是 0~2 米的整块，站在 1.4 米高的台阶上也会查出 2.0。有真实碰撞体命中时一律优先真实碰撞体，
+        // 只有这一处只剩探测盒能命中时才用它，免得哪里突然变成「没地面」。
+        int occluderLayer = OccluderProbeLayer;
+        float probeDistance = float.PositiveInfinity;
+        RaycastHit probeHit = default;
+        GroundSurfaceMarker probeMarker = null;
+        BaseGroundBlock probeBaseBlock = null;
+
         for (int i = 0; i < hitCount; i++)
         {
             RaycastHit hit = hitBuffer[i];
@@ -116,6 +127,15 @@ public class GroundQueryService : MonoBehaviour
             if (marker == null && block == null)
                 continue;
 
+            if (col.gameObject.layer == occluderLayer)
+            {
+                if (hit.distance < probeDistance)
+                {
+                    probeDistance = hit.distance; probeHit = hit; probeMarker = marker; probeBaseBlock = block;
+                }
+                continue;
+            }
+
             if (hit.distance >= bestDistance)
                 continue;
 
@@ -123,6 +143,11 @@ public class GroundQueryService : MonoBehaviour
             bestHit = hit;
             bestMarker = marker;
             bestBaseBlock = block;
+        }
+
+        if (bestMarker == null && bestBaseBlock == null && (probeMarker != null || probeBaseBlock != null))
+        {
+            bestHit = probeHit; bestMarker = probeMarker; bestBaseBlock = probeBaseBlock;
         }
 
         if (bestMarker == null && bestBaseBlock == null)
@@ -144,7 +169,9 @@ public class GroundQueryService : MonoBehaviour
             hasGround = true,
             groundY = groundY,
             surfaceType = bestMarker.surfaceType,
-            surfaceMaterial = null,
+            // 以前这里恒为 null，导致踩在模型表面（站台、楼梯、桥）时查得到 surfaceType
+            // 却拿不到定义资产，脚步声只能退回基础鞋声层。marker 上现在直接引用定义。
+            surfaceMaterial = bestMarker.surfaceDefinition,
             isFallDeathArea = false,
             hitCollider = bestHit.collider,
             groundBlock = null,

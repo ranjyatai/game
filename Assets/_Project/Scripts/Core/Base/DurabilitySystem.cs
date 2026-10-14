@@ -35,13 +35,36 @@ public static class DurabilitySystem
     /// 消耗品或 maxDurability=0 的装备直接返回 false。
     /// </summary>
     /// <returns>磨损后是否变为 Destroyed。</returns>
+    /// <summary>玩家处于腐蚀状态(status_corruption)时，装备耐久磨损的倍率。</summary>
+    public const float CorrosionWearMultiplier = 3f;
+    private const string CorrosionStatusId = "status_corruption";
+
+    private static bool PlayerIsCorroded()
+    {
+        var player = SkyPrisonPlayerAuthority.CurrentPlayerUnit;
+        if (player == null) return false;
+        var status = player.GetComponentInChildren<UnitStatusController>(true);
+        return status != null && status.HasStatus(CorrosionStatusId);
+    }
+
     public static bool Wear(InventoryItemEntry entry, int amount = -1)
     {
         if (!HasDurability(entry)) return false;
 
+        // 按"命中"磨损（amount<0）时，先过一遍磨损概率；显式指定扣多少点的调用（腐蚀/事件）不受影响
+        if (amount < 0)
+        {
+            float chance = entry.definition.equipment.durabilityLossChance;
+            if (chance < 1f && UnityEngine.Random.value > chance) return false;
+        }
+
         int loss = amount >= 0
             ? amount
             : entry.definition.equipment.durabilityLossPerHit;
+
+        // 腐蚀：装备磨损更快（至少多磨 1 点，免得磨损量为 1 时乘不出差别）
+        if (loss > 0 && PlayerIsCorroded())
+            loss = Mathf.Max(loss + 1, Mathf.CeilToInt(loss * CorrosionWearMultiplier));
 
         int oldDur = entry.currentDurability;
         entry.currentDurability = Mathf.Max(0, entry.currentDurability - loss);

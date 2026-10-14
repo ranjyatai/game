@@ -12,7 +12,7 @@ public static class SkyPrisonInputPromptIconDatabaseSeeder
     private const string GamepadFolder = "Assets/_Project/UIUX/Source/Gamepad";
     private const string DatabasePath = SkyPrisonInputPromptIconDatabase.DefaultAssetPath;
 
-    [MenuItem("Tools/Sky Prison/UI/Input Prompts/创建或更新按键图标数据库")]
+    [MenuItem("天空囚笼/UI/创建或更新按键图标数据库", false, 177)]
     public static void CreateOrUpdateDatabase()
     {
         EnsureFolderExists(Path.GetDirectoryName(DatabasePath).Replace('\\', '/'));

@@ -34,9 +34,6 @@ public enum WeaponCategoryType
     [InspectorName("剑")]
     Sword = 10,
 
-    [InspectorName("链锯")]
-    Chainsaw = 20,
-
     [InspectorName("双枪")]
     DualGun = 30,
 
@@ -100,7 +97,7 @@ public class ItemEquipmentExtension
 
     // 口径只分小/大两级（AmmoCaliberType），不做"每把枪独立弹药"那种硬核颗粒度——
     // 现在只有双枪这一种热武器吃小口径，大口径先留给DEMO之后才会加入的炮。
-    // 近战武器（剑/链锯）usesAmmo 留 false 就完全不受这套影响。
+    // 近战武器（剑）usesAmmo 留 false 就完全不受这套影响。
     [Header("防具专属")]
     [Tooltip("这件防具对应角色自己Spine骨架里的哪个Skin名字——用法跟 weaponSkinName 完全一致：\n" +
              "装备时角色骨架会叠加这个Skin层（跟发型/内衣/武器皮肤同一套合并机制，见\n" +
@@ -110,7 +107,7 @@ public class ItemEquipmentExtension
 
     [Header("弹药（仅热武器需要）")]
     [Tooltip("勾上后，攻击前会检查/扣减背包里对应口径的弹药——不够就打不出去。\n" +
-             "近战武器（剑/链锯）不用勾。")]
+             "近战武器（剑）不用勾。")]
     public bool usesAmmo = false;
 
     [Tooltip("这把武器吃哪个口径的弹药，要跟弹药物品的 ItemAmmoExtension.caliber 一致。")]
@@ -126,6 +123,9 @@ public class ItemEquipmentExtension
     [Min(1)]
     public int magazineSize = 12;
 
+    /// <summary>实际弹匣容量 = 武器自身容量 + AFP「扩容弹匣」的加成(只有玩家用的弹匣武器会走到这里)。</summary>
+    public int EffectiveMagazineSize => magazineSize + SkyPrisonAfpUpgrades.MagazineBonus;
+
     [Tooltip("换弹耗时（秒）——按下换弹键后角色进入换弹状态锁这么久，期间不能攻击/闪避\n" +
         "（可以走动），耗时内被命中会打断换弹（弹药不会被填进弹匣，需要重新按键）。")]
     [Min(0.05f)]
@@ -139,6 +139,10 @@ public class ItemEquipmentExtension
     [Tooltip("每次受到伤害时扣除的耐久点数（防具）或每次攻击命中扣除的（武器）")]
     [Min(0)]
     public int durabilityLossPerHit = 1;
+
+    [Tooltip("每次命中真正磨损的概率（0~1）。枪械一发子弹就算一次命中，弹匣动辄上百发，按 1 磨损一把枪一个弹匣就报废；调低这个值等于把耐久放大。1 = 每次命中都磨损。")]
+    [Range(0f, 1f)]
+    public float durabilityLossChance = 1f;
 
     [Header("改装槽位（武器/防具专属）")]
     [Tooltip("该装备拥有的改装槽列表。组件物品按 slotTypeKey 匹配后才能安装。")]

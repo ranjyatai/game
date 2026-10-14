@@ -1083,15 +1083,47 @@ public class SkyPrisonStatusPage : SkyPrisonEditorPageBase
         }
     }
 
+    private static float s_previewWrapWidth;
+
     private void DrawRichTextPreview(string richText)
     {
         List<PreviewCharStyle> chars = ParseRichTextPreview(richText ?? string.Empty);
-        Rect rect = GUILayoutUtility.GetRect(0f, 10000f, 44f, 56f, GUILayout.ExpandWidth(true));
+        // 预览是逐字手绘的，会自动换行；之前预留高度写死 44~56，文字一多（多语言描述几段话）就画出框外盖住下面的控件。
+        // 先用和下面绘制完全相同的换行规则数出行数，按行数预留高度。换行宽度用窗口宽度估算（布局和重绘两个事件下都一致），
+        // 取得比实际略窄一点，保证预留的高度只会多、不会少。
+        // 换行宽度优先用上一次重绘时量到的真实宽度（布局事件里拿不到真实宽度，所以缓存一份），第一次才用窗口宽度估算。
+        // 估算偏宽时，实际绘制比预留的多换几行，文字就会盖住下面的控件。
+        float wrapInner = s_previewWrapWidth > 0f ? s_previewWrapWidth : Mathf.Max(120f, EditorGUIUtility.currentViewWidth - 150f);
+        int previewLines = 1;
+        {
+            float mx = 0f;
+            for (int mi = 0; mi < chars.Count; mi++)
+            {
+                PreviewCharStyle mc = chars[mi];
+                if (mc.character == '\n') { previewLines++; mx = 0f; continue; }
+                GUIStyle ms = new GUIStyle(EditorStyles.label);
+                ms.fontStyle = mc.bold && mc.italic ? FontStyle.BoldAndItalic : mc.bold ? FontStyle.Bold : mc.italic ? FontStyle.Italic : FontStyle.Normal;
+                float mw = GetPreviewCompactCharWidth(mc.character, ms);
+                if (mx + mw > wrapInner) { previewLines++; mx = 0f; }
+                mx += mw;
+            }
+        }
+        float previewHeight = Mathf.Max(44f, 20f + previewLines * 20f);
+        Rect rect = GUILayoutUtility.GetRect(0f, 10000f, previewHeight, previewHeight, GUILayout.ExpandWidth(true));
+        if (Event.current.type == EventType.Repaint)
+        {
+            float measured = Mathf.Max(120f, rect.width - 20f);
+            if (Mathf.Abs(measured - s_previewWrapWidth) > 1f)
+            {
+                s_previewWrapWidth = measured;
+                EditorApplication.delayCall += UnityEditorInternal.InternalEditorUtility.RepaintAllViews;
+            }
+        }
         EditorGUI.DrawRect(rect, new Color(1f, 1f, 1f, 0.02f));
 
         float x = rect.x + 8f;
         float y = rect.y + 8f;
-        float maxX = rect.xMax - 8f;
+        float maxX = Mathf.Min(rect.xMax - 8f, rect.x + 8f + wrapInner);
         float lineHeight = 20f;
 
         bool underlineOpen = false;

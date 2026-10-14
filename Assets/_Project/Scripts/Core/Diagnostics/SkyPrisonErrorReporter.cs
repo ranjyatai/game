@@ -228,7 +228,8 @@ public static class SkyPrisonErrorReporter
         var boxTint = MakeRect("Tint", box, Vector2.zero, Vector2.one);
         boxTint.gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.55f);
 
-        AddCornerBrackets(box, Color.white, 26f, 2f);
+        AddCornerBrackets(box, Color.white,
+            SkyPrisonFloatingWindowKit.CornerBracketLength, SkyPrisonFloatingWindowKit.CornerBracketThickness);
 
         // 参考怪物猎人的"参加失败"弹窗：不用红色大标题，第一行是白色失败原因文案，
         // 第二行紧跟着同样大小的错误编号——两行都走字典表。

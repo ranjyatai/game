@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37677443ddaff0c429548fe0cb038520, type: 3}
+  m_Name: SkyPrisonIntroPlaylist
+  m_EditorClassIdentifier: Assembly-CSharp::SkyPrisonIntroPlaylist
+  entries:
+  - enabled: 1
+    label: "Black Flame Works\uFF08\u89C6\u9891\uFF0C\u97F3\u753B\u5DF2\u70D8\u7119\uFF09"
+    type: 1
+    mask: {fileID: 0}
+    video: {fileID: 32900000, guid: 8813560b546ddc5418b610929c308cf6, type: 3}
+    image: {fileID: 0}
+    imageDuration: 2.5
+    fadeIn: 0.4
+    fadeOut: 0.4
+    audio: {fileID: 0}
+    audioDelay: 0
+    audioVolume: 1
+  - enabled: 0
+    label: Black Flame Works
+    type: 0
+    mask: {fileID: 2800000, guid: e3c3e2c2c9a30024698686610ee31e22, type: 3}
+    video: {fileID: 0}
+    image: {fileID: 0}
+    imageDuration: 2.5
+    fadeIn: 0.4
+    fadeOut: 0.4
+    audio: {fileID: 8300000, guid: 23dc8a3154e7ac146acf58c9aee0ac83, type: 3}
+    audioDelay: 0.25
+    audioVolume: 1
+  skipInEditor: 0

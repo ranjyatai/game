@@ -15,7 +15,7 @@ namespace SkyPrison.EditorTools
     {
         private const string MainPrefabPath     = "Assets/_Project/Prefabs/UI/Window/PF_SkyPrisonInventory.prefab";
         private const string MirrorPrefabPath   = "Assets/Resources/UI/Window/PF_SkyPrisonInventory.prefab";
-        public  const string FontPath           = "Assets/_Project/UIUX/Fonts/TMP/msyh SDF.asset";
+        public  const string FontPath           = "Assets/_Project/Resources/Fonts & Materials/ZhouFangRiMingTi-2 SDF.asset";
         private const string GlowMaterialPath   = "Assets/_Project/Materials/UI/Window/M_Inventory_TabGlow.mat";
 
         public  const int    SelectedTabIndex = 0;
@@ -24,7 +24,7 @@ namespace SkyPrison.EditorTools
         public  static readonly Color NormalColor  = SkyPrison.Runtime.UI.SkyPrisonUIPalette.White; // 未选中也用白
         private static readonly Color GlowColor    = SkyPrison.Runtime.UI.SkyPrisonUIPalette.ColdGreen;
 
-        [MenuItem("Sky Prison/背包/烤入标签辉光 (TMP)")]
+        [MenuItem("天空囚笼/UI/烤入标签辉光 (TMP)", false, 180)]
         public static void Bake()
         {
             TMP_FontAsset font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontPath);

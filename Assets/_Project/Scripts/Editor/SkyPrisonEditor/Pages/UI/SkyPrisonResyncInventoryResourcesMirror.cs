@@ -20,7 +20,7 @@ namespace SkyPrison.Editor.UI
         private const string SourcePath = "Assets/_Project/Prefabs/UI/Window/PF_SkyPrisonInventory.prefab";
         private const string MirrorPath = "Assets/Resources/UI/Window/PF_SkyPrisonInventory.prefab";
 
-        [MenuItem("Tools/Sky Prison/UI/同步背包Resources镜像")]
+        [MenuItem("天空囚笼/UI/同步背包Resources镜像", false, 178)]
         public static void Resync()
         {
             AssetDatabase.DeleteAsset(MirrorPath);

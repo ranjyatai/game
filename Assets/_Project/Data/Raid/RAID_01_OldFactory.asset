@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b8baf4b591eadf4caa6748b7d88fd3a, type: 3}
+  m_Name: RAID_01_OldFactory
+  m_EditorClassIdentifier: Assembly-CSharp::RaidDefinition
+  raidId: old_factory
+  order: 1
+  displayName:
+    texts: []
+  description:
+    texts:
+    - languageCode: zh-CN
+      text: "\u5E9F\u5F03\u7684\u91CD\u5DE5\u4E1A\u533A\u3002\u7B2C\u4E00\u4E2A\u51FA\u53D1\u70B9\u3002"
+    - languageCode: ja
+      text: "\u5EC3\u68C4\u3055\u308C\u305F\u91CD\u5DE5\u696D\u533A\u3002\u6700\u521D\u306E\u51FA\u767A\u5730\u70B9\u3002"
+    - languageCode: en
+      text: An abandoned industrial zone. The first deployment.
+  dangerLevel: 2
+  hasNight: 1
+  nightOpen: 0
+  nightDescription:
+    texts: []
+  nightUnlockConditions: []
+  nightUnlockMatch: 0
+  targetScene: Old Factory
+  arrivalPosition: {x: 0, y: 0, z: -100}
+  requiresSubway: 0
+  mapPosition: {x: 0.08, y: 0.27}
+  thumbnail: {fileID: 0}
+  nightThumbnail: {fileID: 0}
+  dayOpenByDefault: 1
+  unlockConditions: []
+  unlockMatch: 0

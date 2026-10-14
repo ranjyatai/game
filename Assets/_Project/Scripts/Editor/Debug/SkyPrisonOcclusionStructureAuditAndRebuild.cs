@@ -15,7 +15,7 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public static class SkyPrisonOcclusionStructureAuditAndRebuild_V1
 {
-    private const string MenuRoot = "Tools/Sky Prison/Debug/Occlusion Structure Audit/";
+    private const string MenuRoot = "天空囚笼/遮挡/结构审计/";
     private const string VisualRootName = "VisualRoot";
     private const string RuleRootName = "RuleRoot";
     private const string CollisionRootName = "CollisionRoot";
@@ -44,14 +44,14 @@ public static class SkyPrisonOcclusionStructureAuditAndRebuild_V1
         public bool NeedsBuilderRebuild => binder != null && definition != null && HasFatalProblem;
     }
 
-    [MenuItem(MenuRoot + "1. Audit Active Scene", priority = 10)]
+    [MenuItem(MenuRoot + "1. Audit Active Scene", false, 129)]
     public static void AuditActiveScene()
     {
         List<AuditRow> rows = CollectSceneRows(includeInactive: true);
         Debug.Log(BuildReport("ACTIVE SCENE", rows, includeDetails: true));
     }
 
-    [MenuItem(MenuRoot + "2. Rebuild Selected Decoration Roots Through Builder", priority = 20)]
+    [MenuItem(MenuRoot + "2. Rebuild Selected Decoration Roots Through Builder", false, 130)]
     public static void RebuildSelectedThroughBuilder()
     {
         int rebuilt = 0;
@@ -77,7 +77,7 @@ public static class SkyPrisonOcclusionStructureAuditAndRebuild_V1
         AuditActiveScene();
     }
 
-    [MenuItem(MenuRoot + "3. Rebuild All Scene Decoration Roots Through Builder", priority = 30)]
+    [MenuItem(MenuRoot + "3. Rebuild All Scene Decoration Roots Through Builder", false, 131)]
     public static void RebuildAllSceneThroughBuilder()
     {
         TerrainDecorationRuntimeBinder[] binders = Object.FindObjectsOfType<TerrainDecorationRuntimeBinder>(true);
@@ -105,7 +105,7 @@ public static class SkyPrisonOcclusionStructureAuditAndRebuild_V1
         AuditActiveScene();
     }
 
-    [MenuItem(MenuRoot + "4. Audit Prefabs Under Assets/_Project", priority = 40)]
+    [MenuItem(MenuRoot + "4. Audit Prefabs Under Assets/_Project", false, 132)]
     public static void AuditProjectPrefabs()
     {
         List<AuditRow> all = new List<AuditRow>();
@@ -145,7 +145,7 @@ public static class SkyPrisonOcclusionStructureAuditAndRebuild_V1
         Debug.Log(BuildReport($"PROJECT PREFABS scanned={prefabCount}", all, includeDetails: true));
     }
 
-    [MenuItem(MenuRoot + "5. Rebuild Prefabs Under Assets/_Project Through Builder", priority = 50)]
+    [MenuItem(MenuRoot + "5. Rebuild Prefabs Under Assets/_Project Through Builder", false, 133)]
     public static void RebuildProjectPrefabsThroughBuilder()
     {
         string[] guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/_Project" });

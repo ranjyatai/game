@@ -283,6 +283,18 @@ public class PauseMenuController : MonoBehaviour
     private const float DistortionIntroDuration  = 0.5f;
     private const float PanelFadeInDuration      = 0.25f;
 
+    // 径向扭曲(_DistortionStrength=0.075，呼吸脉动最高再乘1.15)会把画面边缘的UV往外
+    // 推——垂直中点那一行，屏幕右边缘推算出来的UV.x能到约1.043，真的超出了截图贴图
+    // 的[0,1]范围。之前只给贴图设wrapMode=Clamp，超界部分会被钳在贴图最边缘那一列
+    // 像素上——如果那一列正好挨着场景里对比强烈的物体(比如集装箱)，钳出来的画面
+    // 会显得像"撕裂了一道口子露出别的东西"。真正的解法是让着色器在做径向扭曲之前，
+    // 先用贴图中间裁小一圈的区域(_EdgeSafetyZoom)顶满全屏——提前留出扭曲需要的
+    // "往外推"空间，扭曲再怎么推也推不到贴图真正的边界。
+    // 安全值推导：扭曲让uv.x最多变成 0.5+0.5*zoom*(1+factorMax)，factorMax=
+    // DistortionSteadyStrength*1.15(呼吸脉动峰值)≈0.086，要保证这个值≤1，
+    // zoom必须≤1/(1+factorMax)≈0.92。取0.88留出额外余量。
+    private const float EdgeSafetyZoom = 0.88f;
+
     // 开场先是没有任何扭曲的"实景"（真实截屏原样），扭曲从 0 逐渐长到目标强度——
     // 感觉是"真实画面正在被转换成系统屏幕"，不是反过来从夸张扭曲收敛回正常。
     // 扭曲长到位之后菜单面板才淡入，两段是先后关系，不是同时进行。全程用不缩放
@@ -333,6 +345,7 @@ public class PauseMenuController : MonoBehaviour
         // DistortionSteadyStrength，做出"真实画面被转换成系统屏幕"的开场演出。
         _desaturateMaterial.SetFloat("_DistortionStrength", 0f);
         _desaturateMaterial.SetFloat("_DistortionPulseSpeed", 0.5f);
+        _desaturateMaterial.SetFloat("_EdgeSafetyZoom", EdgeSafetyZoom);
     }
 
     /// <summary>
@@ -458,7 +471,8 @@ public class PauseMenuController : MonoBehaviour
         var boxTint = MakeRect("Tint", box, Vector2.zero, Vector2.one);
         boxTint.gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.55f);
 
-        AddCornerBrackets(box, Color.white, 40f, 4f);
+        AddCornerBrackets(box, Color.white,
+            SkyPrisonFloatingWindowKit.CornerBracketLength, SkyPrisonFloatingWindowKit.CornerBracketThickness);
         Color danger = new Color(0.75f, 0.42f, 0.42f, 1f);
 
         var titleRt = MakeRect("Title", box, new Vector2(0f, 1f), new Vector2(1f, 1f));
@@ -856,7 +870,7 @@ public class PauseMenuController : MonoBehaviour
 
     // ── UI 工具（与 SaveSlotSelectorUI 一致的规范实现）──────────────────────
 
-    private static RenderTexture CaptureAndBlurScreen()
+    public static RenderTexture CaptureAndBlurScreen(int minBlurEdge = 40)
     {
         // 用 CaptureScreenshotAsTexture 而不是手动按 Screen.width/height 建 RT 再
         // CaptureScreenshotIntoRenderTexture——编辑器高 DPI 缩放下后者会出现实际
@@ -888,7 +902,7 @@ public class PauseMenuController : MonoBehaviour
         // 之前是"降一路小尺寸，最后一步直接怼到全屏"，几十像素单步放大几百倍，
         // 插值再怎么调都会显出网格状痕迹、或者干脆看起来就是"缩小糊了再放大"；
         // 逐级放大（类似 Kawase/dual-filter 模糊金字塔）才会呈现真正柔和的扩散感。
-        const int MinBlurEdge = 40; // 数值越大降采样停得越早，糊得越轻——嫌糊得太狠就调大这个
+        int MinBlurEdge = minBlurEdge; // 数值越大降采样停得越早，糊得越轻——嫌糊得太狠就调大这个(默认 40=全屏窗口那种重模糊；小面板传大一点才看得出底下的东西)
         const int MaxBlurSteps = 10; // 安全上限，防止极端比例死循环
         var downSizes = new List<Vector2Int> { new Vector2Int(baseW, baseH) };
         RenderTexture src = baseRT;
@@ -920,6 +934,13 @@ public class PauseMenuController : MonoBehaviour
 
         var result = new RenderTexture(w, h, 0, RenderTextureFormat.DefaultHDR) { hideFlags = HideFlags.HideAndDontSave };
         result.filterMode = FilterMode.Bilinear;
+        // Desaturate shader的径向扭曲(_DistortionStrength)会把UV往外推，边缘附近
+        // (比如水平方向靠近垂直中点时)算出来的UV.x能到1.04左右，真的超出了[0,1]。
+        // RenderTexture默认wrapMode是Repeat，超出范围的UV会绕到纹理另一端采样，
+        // 表现就是画面边缘"裂开"、露出一小块跟旁边完全不搭的内容(通常是截图另一侧
+        // 的场景)。截好之后的这一张唯一会被那段扭曲UV采样，钳成Clamp，超界直接
+        // 拉伸重复边缘像素，不会绕到对面去。
+        result.wrapMode = TextureWrapMode.Clamp;
         result.Create();
         Graphics.Blit(src, result);
 

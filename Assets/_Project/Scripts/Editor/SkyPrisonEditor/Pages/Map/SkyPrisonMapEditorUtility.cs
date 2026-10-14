@@ -101,8 +101,7 @@ public static class SkyPrisonMapEditorUtility
         Scene scene;
         if (copiedTemplate)
         {
-            scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
-            scene.name = safeName;
+            scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);   // 已保存的场景名取自文件名，Unity 6 不允许再设置 scene.name
             ApplyMapSettingsToOpenedScene(map);
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
@@ -779,6 +778,11 @@ public static class SkyPrisonMapEditorUtility
     }
 
 
+    /// <summary>把地图定义的边界同步到 Scene 的地面上。
+    /// 名字里的 BaseGroundBlock 是历史遗留——地面早就换成 Terrain 了，这个方法
+    /// 一行都不碰 BaseGroundBlock。保留旧名只是为了不动现有调用方，新代码请用
+    /// SyncGroundTerrainToMapBounds。（原本配套的 EnsureBaseGroundBlockToMap
+    /// 已确认无任何调用方，2026-08-05 删除。）</summary>
     public static void SyncBaseGroundBlockToMap(MapDefinition map)
     {
         if (map == null)
@@ -835,7 +839,7 @@ public static class SkyPrisonMapEditorUtility
             return null;
 
         GameObject groundRoot = FindOrCreateChildObject(worldRoot, "GroundRoot");
-        GameObject terrainObject = FindOrCreateChildObject(groundRoot.transform, GroundTerrainObjectName);
+        GameObject terrainObject = ResolveSingleGroundTerrain(worldRoot, groundRoot.transform);
 
         Vector3 center = map != null ? map.mapBoundsCenter : Vector3.zero;
         Vector3 size = map != null ? map.mapBoundsSize : new Vector3(64f, 8f, 64f);
@@ -915,7 +919,23 @@ public static class SkyPrisonMapEditorUtility
         string path = $"{folder}/TD_{key}_GroundTerrain.asset";
         TerrainData data = AssetDatabase.LoadAssetAtPath<TerrainData>(path);
         if (data != null)
+        {
+            // 已存在的 TerrainData 也必须跟着地图尺寸走。之前这里直接 return，
+            // 只有"第一次新建"那条分支才会应用 size——结果是：把地图从 64 改成
+            // 400 之后，TerrainData 仍然停在 64×64，而 EnsureGroundTerrainToMap
+            // 又按新的 400 把地形摆到 center-size*0.5 的位置上。地形既只覆盖一小块、
+            // 又整体偏移，而且点多少次"同步"都不会好——因为同步走的正是这条
+            // 提前 return 的路径。
+            if (data.size != size)
+            {
+                Undo.RecordObject(data, "Resize Terrain To Map Bounds");
+                data.size = size;
+                EditorUtility.SetDirty(data);
+                AssetDatabase.SaveAssets();
+                Debug.Log($"[SkyPrisonMapEditorUtility] TerrainData 尺寸已同步到地图边界：{size}（{path}）");
+            }
             return data;
+        }
 
         data = new TerrainData
         {
@@ -1345,86 +1365,6 @@ public static class SkyPrisonMapEditorUtility
         return $"{mapFolder}/{GroundTerrainDataFolderName}";
     }
 
-    private static BaseGroundBlock EnsureBaseGroundBlockToMap(MapDefinition map, Transform worldRoot)
-    {
-        if (worldRoot == null)
-            return null;
-
-        GameObject groundRoot = FindOrCreateChildObject(worldRoot, "GroundRoot");
-        GameObject groundBlockObject = FindOrCreateChildObject(groundRoot.transform, "GroundBlock_01");
-        GameObject groundVisual = FindOrCreateChildObject(groundBlockObject.transform, "GroundVisual");
-        GameObject groundPhysics = FindOrCreateChildObject(groundBlockObject.transform, GroundPhysicsObjectName);
-        GameObject groundCollider = FindOrCreateChildObject(groundBlockObject.transform, "GroundCollider");
-        GameObject groundDebug = FindOrCreateChildObject(groundBlockObject.transform, "GroundDebug");
-
-        // GroundBlock 是实际渲染到 Game 里的世界地面，默认必须进入 World3D 层，
-        // 否则 Main Camera 的 Culling Mask 可能看不到它。补齐 / 同步结构时统一矫正。
-        ApplyWorld3DLayerToObject(groundBlockObject);
-
-        Vector3 center = map != null ? map.mapBoundsCenter : Vector3.zero;
-        Vector3 size = map != null ? map.mapBoundsSize : new Vector3(64f, 6f, 64f);
-        size.x = Mathf.Max(1f, Mathf.Abs(size.x));
-        size.y = Mathf.Max(0.1f, Mathf.Abs(size.y));
-        size.z = Mathf.Max(1f, Mathf.Abs(size.z));
-
-        // GroundBlock_01 本身就是“地图地面数据域”的可视尺寸对象。
-        // 之前只缩放 GroundVisual 子节点，导致在层级里选中 GroundBlock_01 时 Transform 仍然是 1/1/1，
-        // 看起来像没有同步到 MapBounds。这里改成：父节点 X/Z 直接等于地图边界尺寸，
-        // 子节点只负责显示 / 碰撞的单位形态，避免语义混乱。
-        Undo.RecordObject(groundBlockObject.transform, "Sync GroundBlock To Map Bounds");
-        groundBlockObject.transform.position = center;
-        groundBlockObject.transform.rotation = Quaternion.identity;
-        groundBlockObject.transform.localScale = new Vector3(size.x, 1f, size.z);
-
-        BaseGroundBlock block = groundBlockObject.GetComponent<BaseGroundBlock>();
-        if (block == null)
-            block = groundBlockObject.AddComponent<BaseGroundBlock>();
-
-        if (block == null)
-        {
-            Debug.LogError(
-                "[SkyPrisonMapEditorUtility] 无法给 GroundBlock_01 添加 BaseGroundBlock。" +
-                "请确认 BaseGroundBlock.cs 位于非 Editor 目录，例如 Assets/_Project/Scripts/Core/Map/Ground/。",
-                groundBlockObject);
-            return null;
-        }
-
-        block.mapBoundsCenter = center;
-        block.mapBoundsSize = size;
-        block.defaultGroundHeight = center.y;
-        block.groundVisualRoot = groundVisual.transform;
-        block.groundColliderRoot = groundCollider.transform;
-        block.groundDebugRoot = groundDebug.transform;
-
-        GroundSurfaceMarker marker = groundBlockObject.GetComponent<GroundSurfaceMarker>();
-        if (marker == null)
-            marker = groundBlockObject.AddComponent<GroundSurfaceMarker>();
-
-        if (marker == null)
-        {
-            Debug.LogError(
-                "[SkyPrisonMapEditorUtility] 无法给 GroundBlock_01 添加 GroundSurfaceMarker。" +
-                "请确认 GroundSurfaceMarker.cs / GroundSurfaceType.cs 位于非 Editor 目录，例如 Assets/_Project/Scripts/Core/Map/Ground/。",
-                groundBlockObject);
-            return block;
-        }
-
-        marker.surfaceType = block.defaultSurfaceType;
-        marker.isBaseGround = true;
-
-        SetupGroundVisual(groundVisual);
-        SetupGroundPhysics(groundPhysics, size);
-        SetupGroundCollider(groundCollider, size);
-
-        groundDebug.transform.localPosition = Vector3.zero;
-        groundDebug.transform.localRotation = Quaternion.identity;
-        groundDebug.transform.localScale = Vector3.one;
-
-        EditorUtility.SetDirty(block);
-        EditorUtility.SetDirty(marker);
-        EditorUtility.SetDirty(groundBlockObject);
-        return block;
-    }
 
     private static void SetupGroundVisual(GameObject groundVisual)
     {
@@ -1530,6 +1470,77 @@ public static class SkyPrisonMapEditorUtility
         if (scene.IsValid())
             EditorSceneManager.MoveGameObjectToScene(obj, scene);
         return obj;
+    }
+
+    /// <summary>整个 WorldRoot 子树下只允许存在一个 GroundTerrain，并且必须挂在
+    /// GroundRoot 下面。
+    ///
+    /// 之前这里是直接 FindOrCreateChildObject(groundRoot, "GroundTerrain")——只查
+    /// GroundRoot 的直接子级。一旦别的地方（历史版本的工具、手动复制、模板遗留）
+    /// 在 WorldRoot 别的分支下也留了一个同名节点（实测出现过 BackgroundRoot/
+    /// GroundTerrain），这里查不到它，就会再建一个，场景里从此有两块地形叠在一起、
+    /// 位置还不一样，画面上表现为两块交错的地面。
+    ///
+    /// 改成全子树搜索并收敛：带 Terrain 组件的那个是正主（保留并挪回 GroundRoot），
+    /// 其余同名节点一律删掉。这样不管之前被谁弄脏过，同步一次就干净，而且反复
+    /// 同步不会再产生新的多余节点。</summary>
+    private static GameObject ResolveSingleGroundTerrain(Transform worldRoot, Transform groundRoot)
+    {
+        var candidates = new List<Transform>();
+        CollectByName(worldRoot, GroundTerrainObjectName, candidates);
+
+        // 正主优先选带 Terrain 组件的；都没有就取第一个；一个都没有就新建。
+        Transform keeper = null;
+        foreach (Transform t in candidates)
+        {
+            if (t.GetComponent<Terrain>() != null) { keeper = t; break; }
+        }
+        if (keeper == null && candidates.Count > 0)
+            keeper = candidates[0];
+
+        if (keeper == null)
+        {
+            var created = new GameObject(GroundTerrainObjectName);
+            created.transform.SetParent(groundRoot, false);
+            return created;
+        }
+
+        foreach (Transform t in candidates)
+        {
+            if (t == keeper) continue;
+            Debug.LogWarning($"[SkyPrisonMapEditorUtility] 发现多余的 {GroundTerrainObjectName}：" +
+                             $"{GetHierarchyPath(t)}，已删除（同一场景只允许有一块地形）。");
+            Undo.DestroyObjectImmediate(t.gameObject);
+        }
+
+        if (keeper.parent != groundRoot)
+        {
+            Debug.LogWarning($"[SkyPrisonMapEditorUtility] {GroundTerrainObjectName} 原本挂在 " +
+                             $"{GetHierarchyPath(keeper.parent)} 下，已挪回 GroundRoot。");
+            Undo.SetTransformParent(keeper, groundRoot, "Move GroundTerrain To GroundRoot");
+        }
+
+        return keeper.gameObject;
+    }
+
+    private static void CollectByName(Transform root, string name, List<Transform> results)
+    {
+        if (root == null) return;
+        for (int i = 0; i < root.childCount; i++)
+        {
+            Transform child = root.GetChild(i);
+            if (child.name == name) results.Add(child);
+            CollectByName(child, name, results);
+        }
+    }
+
+    private static string GetHierarchyPath(Transform t)
+    {
+        if (t == null) return "(null)";
+        string path = t.name;
+        for (Transform p = t.parent; p != null; p = p.parent)
+            path = p.name + "/" + path;
+        return path;
     }
 
     private static GameObject FindOrCreateChildObject(Transform parent, string name)
@@ -1749,6 +1760,16 @@ public static class SkyPrisonMapEditorUtility
 
         SyncFogOverlayToMap(map);
         SyncGroundTerrainToMapBounds(map);
+
+        // 物理边界墙以前不在这条同步链里——改了地图尺寸，MapBounds 组件跟着变了、
+        // 地形也变了，唯独四面挡住玩家的墙还停在旧尺寸上，于是角色能一路走到新
+        // 边界和旧墙之间那一圈空地上去。边界是"玩家跑不出去"这条硬约束的唯一实现，
+        // 漏同步它的后果比漏同步视觉元素严重得多，必须进主链。
+        if (map.enablePhysicalMapBounds)
+            SkyPrisonMapPhysicalBoundsEditorUtility.SyncPhysicalBoundsToCurrentScene(map);
+        else
+            SkyPrisonMapPhysicalBoundsEditorUtility.ClearPhysicalBoundsInCurrentScene();
+
         EnsureFogOfWarLayerAndGamePlayCamera();
 
         Scene scene = EditorSceneManager.GetActiveScene();

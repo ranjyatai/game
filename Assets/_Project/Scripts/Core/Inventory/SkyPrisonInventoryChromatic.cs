@@ -124,6 +124,14 @@ namespace SkyPrison.Runtime.UI
         {
             if (_overlayImage == null) return;
 
+            // 色差快照层的层级跟着背包窗口走：窗口被角色面板抬到 31950 时，快照也要在它上面，不能留在 1101
+            var rootCanvas = GetComponentInParent<Canvas>();
+            if (rootCanvas != null && _overlayCanvas != null)
+            {
+                int want = rootCanvas.rootCanvas.sortingOrder + 1;
+                if (_overlayCanvas.sortingOrder != want) _overlayCanvas.sortingOrder = want;
+            }
+
             // 面板盖住底部提示条时，把提示条移到顶部躲开（拖开移回底部）。
             // 判定基于「固定底部矩形」，不随提示条当前位置变，避免来回抖。
             DriveHintBarEdge();

@@ -123,7 +123,11 @@ Material:
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
+    - _UnitBodyHalfWidth: 1
+    - _UnitBodyHeight: 3.5
+    - _UseDepthPos: 0
     - _VisibleAlpha: 0
+    - _WallFaceShift: 1
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1

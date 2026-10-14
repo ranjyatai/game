@@ -37,7 +37,7 @@ public class ItemIconImportProcessor : AssetPostprocessor
         ti.textureCompression = TextureImporterCompression.CompressedHQ; // 高质量压缩，进一步减少瑕疵
     }
 
-    [MenuItem("Sky Prison/物品/优化物品图标导入设置")]
+    [MenuItem("天空囚笼/内容数据/优化物品图标导入设置", false, 183)]
     public static void ReimportAllIcons()
     {
         string[] guids = AssetDatabase.FindAssets("t:Texture2D", IconFolders);

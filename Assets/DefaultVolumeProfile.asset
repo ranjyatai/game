@@ -524,7 +524,7 @@ MonoBehaviour:
     m_Value: 1
   threshold:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 1.1
   intensity:
     m_OverrideState: 1
     m_Value: 4
@@ -822,11 +822,11 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c5e1dc532bcb41949b58bc4f2abfbb7e, type: 3}
   m_Name: LensDistortion
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   active: 1
   intensity:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: -0.08
   xMultiplier:
     m_OverrideState: 1
     m_Value: 1
@@ -990,10 +990,10 @@ MonoBehaviour:
     m_Value: {x: 0.5, y: 0.5}
   intensity:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 0.18
   smoothness:
     m_OverrideState: 1
-    m_Value: 0.2
+    m_Value: 0.45
   rounded:
     m_OverrideState: 1
     m_Value: 0
@@ -1008,11 +1008,11 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fb60a22f311433c4c962b888d1393f88, type: 3}
   m_Name: PaniniProjection
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   active: 1
   distance:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   cropToFit:
     m_OverrideState: 1
     m_Value: 1

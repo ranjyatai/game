@@ -35,7 +35,7 @@ namespace SkyPrison.Runtime.UI
         private float saturation = 0f;
 
         [SerializeField, Range(0f, 1f), Tooltip("磨砂背景亮度。1=原始亮度，越小越暗（场景太亮时压暗用）")]
-        private float brightness = 0.5f;
+        private float brightness = 0.45f;
 
         // Workbench 直接读写
         public int   BlurHalfSteps { get => blurHalfSteps; set { blurHalfSteps = value; SkyPrisonSharedUIBlurRunner.BlurHalfSteps = value; } }
@@ -61,6 +61,10 @@ namespace SkyPrison.Runtime.UI
             if (s == null) { Debug.LogWarning("[UIBlur] Desaturate shader not found"); return null; }
             _desatMat = new Material(s) { hideFlags = HideFlags.HideAndDontSave };
             _desatMat.SetFloat("_Saturation", 0f); // 完全黑白
+            // 透视相机下场景大片发白，亮度 0.5 之后整块磨砂只剩一片均匀的灰、看不出底下的东西——拉一点对比度把轮廓拉出来
+            // 对比度中心跟画面平均亮度走(见 Runner 的亮度回读)：亮场景、暗场景都能拉出轮廓；倍数不能大，否则 8 位输出上会出台阶/颗粒
+            _desatMat.SetFloat("_Contrast", 1.9f);
+            _desatMat.SetFloat("_ContrastPivot", 0.6f);
             return _desatMat;
         }
 
@@ -118,10 +122,15 @@ namespace SkyPrison.Runtime.UI
         private static SkyPrisonSharedUIBlurRunnerBehaviour _runner;
         private static int _refCount;
 
-        public static int   BlurHalfSteps = 6;
+        // 强度旋钮(Workbench 也读写它)：下采样固定最多 2 级(再低分辨率轮廓会被抹平)，高斯迭代 = 4×它，所以 2 = 8 轮平滑高斯；
+        // 原来 6 级下采样+6 轮是按旧的正交大角色画面调的，透视相机里角色很小，会整个抹平。
+        public static int   BlurHalfSteps = 2;
         public static float Saturation    = 0f;
 
         public static Texture OutputTexture => _runner != null ? (Texture)_runner.OutputRT : null;
+        /// <summary>诊断用：辅助相机原始渲染结果(模糊前)。</summary>
+        internal static RenderTexture SourceTexture => _runner != null ? _runner.SourceRT : null;
+        internal static Camera BlurCamera => _runner != null ? _runner.BlurCam : null;
 
         public static void Acquire()
         {
@@ -152,6 +161,8 @@ namespace SkyPrison.Runtime.UI
         private RenderTexture _sourceRT;
         private RenderTexture _outputRT;
         public  RenderTexture OutputRT => _outputRT;
+        public  RenderTexture SourceRT => _sourceRT;
+        public  Camera BlurCam => _blurCam;
 
         private int _srcW, _srcH, _outW, _outH;
         private const int SrcLongEdge = 960;
@@ -210,7 +221,24 @@ namespace SkyPrison.Runtime.UI
             _blurCam.enabled = true;
 
             var urp = _blurCam.GetUniversalAdditionalCameraData();
-            if (urp != null) { urp.renderType = CameraRenderType.Base; urp.renderShadows = false; }
+            if (urp != null)
+            {
+                urp.renderType = CameraRenderType.Base;
+                urp.renderShadows = false;
+                // 2026-08-19：必须开——DefaultVolumeProfile 里 Lens Distortion 的 scale=1.62
+                // 会把真实画面整体放大 62% 来盖掉畸变留下的黑边。这台相机独立于相机栈之外，
+                // 之前完全没走后处理，捕到的是"没放大"的原始取景，比真实画面小一圈，磨砂图
+                // 跟窗口外露出的真实场景对不上、显得小。开后处理让它吃到同一份 Volume（包括
+                // 这个缩放），取景结果才会跟玩家实际看到的画面一致。
+                urp.renderPostProcessing = true;
+                urp.antialiasing = AntialiasingMode.None;
+
+                // CopyFrom 只复制原生 Camera 字段，volumeLayerMask 是 URP 附加数据自己的属性，
+                // 不会跟着一起复制——不显式对齐的话，新相机默认的 volumeLayerMask 未必跟主
+                // 相机一样，可能根本吃不到场景里那个 Volume，等于白开 renderPostProcessing。
+                var mainUrp = mainCam.GetUniversalAdditionalCameraData();
+                if (mainUrp != null) urp.volumeLayerMask = mainUrp.volumeLayerMask;
+            }
 
             StartCoroutine(SyncLoop(mainCam));
         }
@@ -252,7 +280,8 @@ namespace SkyPrison.Runtime.UI
                 int cw = _srcW, ch = _srcH;
 
                 int downSteps = 0;
-                for (int i = 0; i < blurHalfSteps; i++)
+                int maxDown = Mathf.Min(blurHalfSteps, 2);
+                for (int i = 0; i < maxDown; i++)
                 {
                     int nw = cw / 2;
                     int nh = ch / 2;
@@ -269,12 +298,12 @@ namespace SkyPrison.Runtime.UI
                 {
                     blurMat.SetFloat("_UIBlur_TexelSizeX", 1f / cw);
                     blurMat.SetFloat("_UIBlur_TexelSizeY", 1f / ch);
-                    blurMat.SetFloat("_UIBlur_Radius", 3.0f);
+                    blurMat.SetFloat("_UIBlur_Radius", 1.0f);   // 必须是 1：9 个采样点逐像素相邻才是真高斯，>1 会出现间隔采样的网格/竖条
 
                     var a = RenderTexture.GetTemporary(cw, ch, 0, Fmt); a.filterMode = FilterMode.Bilinear; _temps.Add(a);
                     var b = RenderTexture.GetTemporary(cw, ch, 0, Fmt); b.filterMode = FilterMode.Bilinear; _temps.Add(b);
 
-                    int iterations = Mathf.Max(1, blurHalfSteps);
+                    int iterations = Mathf.Max(1, blurHalfSteps * 4);
                     RenderTexture src = cur;
                     for (int it = 0; it < iterations; it++)
                     {
@@ -295,7 +324,26 @@ namespace SkyPrison.Runtime.UI
                 }
 
                 cmd.Blit(cur, _outputRT);
+                // 每隔十几帧把结果缩成 8x8 回读一次，算平均亮度当对比度中心(异步回读，不卡渲染线程)
+                if (++_meanFrame >= 12 && !_meanBusy)
+                {
+                    _meanFrame = 0;
+                    if (_meanRT == null) { _meanRT = new RenderTexture(8, 8, 0, RenderTextureFormat.ARGB32) { filterMode = FilterMode.Bilinear, hideFlags = HideFlags.HideAndDontSave }; }
+                    cmd.Blit(cur, _meanRT);
+                    _meanWantRead = true;
+                }
                 Graphics.ExecuteCommandBuffer(cmd);
+                if (_meanWantRead)
+                {
+                    _meanWantRead = false; _meanBusy = true;
+                    UnityEngine.Rendering.AsyncGPUReadback.Request(_meanRT, 0, TextureFormat.RGBA32, OnMeanReadback);
+                }
+                var dm2 = SkyPrisonInventoryBlurBackground.GetDesatMat();
+                if (dm2 != null)
+                {
+                    _pivot = Mathf.Lerp(_pivot, _pivotTarget, 1f - Mathf.Exp(-4f * Time.unscaledDeltaTime));
+                    dm2.SetFloat("_ContrastPivot", _pivot);
+                }
             }
             finally
             {
@@ -304,9 +352,26 @@ namespace SkyPrison.Runtime.UI
             }
         }
 
+        private RenderTexture _meanRT;
+        private int   _meanFrame;
+        private bool  _meanBusy, _meanWantRead;
+        private float _pivot = 0.6f, _pivotTarget = 0.6f;
+
+        private void OnMeanReadback(UnityEngine.Rendering.AsyncGPUReadbackRequest req)
+        {
+            _meanBusy = false;
+            if (req.hasError || this == null) return;
+            var data = req.GetData<Color32>();
+            if (data.Length == 0) return;
+            float sum = 0f;
+            for (int i = 0; i < data.Length; i++) sum += (data[i].r * 0.299f + data[i].g * 0.587f + data[i].b * 0.114f) / 255f;
+            _pivotTarget = Mathf.Clamp(sum / data.Length, 0.15f, 0.9f);
+        }
+
         private void OnDestroy()
         {
             StopAllCoroutines();
+            if (_meanRT != null) { _meanRT.Release(); _meanRT = null; }
             if (_sourceRT != null) { _sourceRT.Release(); _sourceRT = null; }
             if (_outputRT != null) { _outputRT.Release(); _outputRT = null; }
         }

@@ -1,0 +1,115 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd9313552f322fe48b7fa24c76d2e1bd, type: 3}
+  m_Name: VariableDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::VariableDatabase
+  variables:
+  - variableName: NewVariable1
+    type: 2
+  - variableName: NewVariable2
+    type: 1
+  - variableName: NewVariable3
+    type: 0
+  - variableName: NewVariable4
+    type: 0
+  - variableName: NewVariable5
+    type: 0
+  - variableName: NewVariable6
+    type: 0
+  - variableName: NewVariable7
+    type: 0
+  - variableName: NewVariable8
+    type: 0
+  - variableName: NewVariable9
+    type: 0
+  - variableName: NewVariable10
+    type: 0
+  - variableName: NewVariable11
+    type: 0
+  - variableName: NewVariable12
+    type: 0
+  - variableName: NewVariable13
+    type: 0
+  - variableName: NewVariable14
+    type: 0
+  - variableName: NewVariable15
+    type: 0
+  - variableName: NewVariable16
+    type: 0
+  - variableName: NewVariable17
+    type: 0
+  - variableName: NewVariable18
+    type: 0
+  - variableName: NewVariable19
+    type: 0
+  - variableName: NewVariable20
+    type: 0
+  - variableName: NewVariable21
+    type: 0
+  - variableName: NewVariable22
+    type: 0
+  - variableName: NewVariable23
+    type: 0
+  - variableName: NewVariable24
+    type: 0
+  - variableName: NewVariable25
+    type: 0
+  - variableName: NewVariable26
+    type: 0
+  - variableName: NewVariable27
+    type: 0
+  - variableName: NewVariable28
+    type: 0
+  - variableName: NewVariable29
+    type: 0
+  - variableName: NewVariable30
+    type: 0
+  - variableName: NewVariable31
+    type: 0
+  - variableName: NewVariable32
+    type: 0
+  - variableName: NewVariable33
+    type: 0
+  - variableName: NewVariable34
+    type: 0
+  - variableName: NewVariable35
+    type: 0
+  - variableName: NewVariable36
+    type: 0
+  - variableName: NewVariable37
+    type: 0
+  - variableName: NewVariable38
+    type: 0
+  - variableName: NewVariable39
+    type: 0
+  - variableName: NewVariable40
+    type: 0
+  - variableName: NewVariable41
+    type: 0
+  - variableName: NewVariable42
+    type: 0
+  - variableName: NewVariable43
+    type: 0
+  - variableName: NewVariable44
+    type: 0
+  - variableName: NewVariable45
+    type: 0
+  - variableName: NewVariable46
+    type: 0
+  - variableName: NewVariable47
+    type: 0
+  - variableName: NewVariable48
+    type: 0
+  - variableName: NewVariable49
+    type: 0
+  - variableName: NewVariable50
+    type: 0

@@ -1195,11 +1195,50 @@ public class SkyPrisonTerrainDecorationDefinitionPage : SkyPrisonEditorPageBase
         }
         using (new EditorGUI.DisabledScope(!hasCollision))
         {
-            PropertyField("阻挡玩家", "blockPlayer");
-            PropertyField("阻挡敌人", "blockEnemy");
+            DrawBlockUnitsToggle();
             PropertyField("阻挡子弹", "blockProjectile");
         }
+        using (new EditorGUI.DisabledScope(false))
+        {
+            PropertyField("列表排序优先级", "sortPriority");
+            PropertyField("视觉仅编辑器可见", "editorOnlyVisual");
+            if (selectedDefinition != null && selectedDefinition.editorOnlyVisual)
+            {
+                EditorGUILayout.HelpBox(
+                    "空气墙模式：视觉留在 Default 层，游戏里不渲染（四台相机的 cullingMask 都不含第 0 位）。\n" +
+                    "碰撞盒改为自动贴合视觉包围盒，上面的碰撞 Size / Offset 会被忽略。",
+                    MessageType.Info);
+            }
+        }
         PropertyField("阻挡视线", "blockVision");
+
+        EditorGUILayout.Space(6f);
+
+        // walkableSurface 一直没有入口：数据结构里有、TerrainDecorationRuntimeApplier 也在消费，
+        // 但只有批量导入窗口能在导入时设一个统一默认值，导入完就再也改不了。
+        // 结果是 35 个定义没有一个填过，脚步声永远只有基础鞋声。
+        //
+        // 放在「碰撞」段末尾，是因为它和上面那组阻挡开关最容易被混为一谈——
+        // 挡不挡人和踩上去是什么声音是两件独立的事，并排摆着才看得出区别。
+        PropertyField("可站立表面材质", "walkableSurface");
+        if (selectedDefinition != null && selectedDefinition.walkableSurface == null)
+        {
+            EditorGUILayout.HelpBox(
+                "留空：踩上去只有基础鞋声，没有地表音层。\n" +
+                "树、栏杆、墙这类挡人但站不上去的保持留空；站台、楼梯、平台、桥、铁轨填对应地表材质。",
+                MessageType.None);
+        }
+        else if (selectedDefinition != null)
+        {
+            GroundSurfaceMaterialDefinition surface = selectedDefinition.walkableSurface;
+            string audioKey = surface.EffectiveAudioRuntimeLayerKey;
+            bool hasAudio = !string.IsNullOrWhiteSpace(audioKey);
+            EditorGUILayout.HelpBox(
+                hasAudio
+                    ? $"踩上去播放地表音层「{audioKey}」，表面类型 {surface.surfaceType}。"
+                    : $"地表材质「{surface.displayName}」没有配置音声 Key，踩上去仍然只有基础鞋声。",
+                hasAudio ? MessageType.Info : MessageType.Warning);
+        }
     }
 
 
@@ -1335,6 +1374,25 @@ public class SkyPrisonTerrainDecorationDefinitionPage : SkyPrisonEditorPageBase
 
         TerrainDecorationOcclusionMode occlusionMode = GetEnumValue("occlusionMode", TerrainDecorationOcclusionMode.None);
         bool hasOcclusion = occlusionMode != TerrainDecorationOcclusionMode.None;
+
+        // 碰撞模式=无 + 要遮挡 = 遮挡判定没有靶子。这个组合不给提示的话，
+        // 表现是「配置全都对，就是不遮挡」，很难查——所以在这里直接说破。
+        TerrainDecorationCollisionMode collisionModeForOccluder =
+            GetEnumValue("collisionMode", TerrainDecorationCollisionMode.None);
+        if (hasOcclusion && collisionModeForOccluder == TerrainDecorationCollisionMode.None)
+        {
+            bool hasProbe = selectedDefinition != null && selectedDefinition.generateOccluderProbeCollider;
+            if (!hasProbe)
+            {
+                EditorGUILayout.HelpBox(
+                    "碰撞模式是「无」，遮挡判定没有可命中的碰撞体，角色会被画在这个装饰物前面。\n" +
+                    "草丛这类「能穿过去但要挡住角色」的，请勾选下面的「生成遮挡探测碰撞体」。",
+                    MessageType.Warning);
+            }
+        }
+
+        using (new EditorGUI.DisabledScope(!hasOcclusion))
+            PropertyField("生成遮挡探测碰撞体", "generateOccluderProbeCollider");
         bool hasFade = occlusionMode == TerrainDecorationOcclusionMode.FadeWhenBlockingPlayer ||
                        occlusionMode == TerrainDecorationOcclusionMode.FrontBackAndFade;
 
@@ -1710,6 +1768,38 @@ public class SkyPrisonTerrainDecorationDefinitionPage : SkyPrisonEditorPageBase
         drawer?.Invoke();
         EditorGUILayout.EndVertical();
         GUILayout.Space(4f);
+    }
+
+    /// <summary>
+    /// 「阻挡单位」一个开关同时写 blockPlayer 和 blockEnemy。
+    ///
+    /// 这两个字段全项目从来没有过不同的值，而拆开需要两个额外的层和逐单位的 mask 配置。
+    /// UI 上收成一个概念，字段留着不动，将来真要拆时数据还在。见
+    /// TerrainDecorationDefinition.BlocksUnits。
+    /// </summary>
+    private void DrawBlockUnitsToggle()
+    {
+        SerializedProperty player = selectedSO.FindProperty("blockPlayer");
+        SerializedProperty enemy = selectedSO.FindProperty("blockEnemy");
+        if (player == null || enemy == null)
+        {
+            EditorGUILayout.LabelField("阻挡单位", "字段不存在");
+            return;
+        }
+
+        // 历史数据万一不同步，按"任一为真即阻挡"读，跟 BlocksUnits 保持一致。
+        bool current = player.boolValue || enemy.boolValue;
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("阻挡单位", GUILayout.Width(150f));
+        EditorGUI.BeginChangeCheck();
+        bool updated = EditorGUILayout.Toggle(current);
+        if (EditorGUI.EndChangeCheck())
+        {
+            player.boolValue = updated;
+            enemy.boolValue = updated;
+        }
+        EditorGUILayout.EndHorizontal();
     }
 
     private void PropertyField(string label, string propertyName, bool multiline = false)
@@ -3184,6 +3274,9 @@ public class SkyPrisonTerrainDecorationDefinitionPage : SkyPrisonEditorPageBase
             case TerrainDecorationCategory.Pipe: return "管线";
             case TerrainDecorationCategory.Occluder: return "遮挡体";
             case TerrainDecorationCategory.Mechanism: return "机关";
+            case TerrainDecorationCategory.Door: return "门";
+            case TerrainDecorationCategory.Stairs: return "楼梯与斜坡";
+            case TerrainDecorationCategory.Platform: return "台体";
             case TerrainDecorationCategory.Custom: return "自定义";
             default: return "未分类";
         }

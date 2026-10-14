@@ -133,7 +133,7 @@ namespace SkyPrison.Runtime.UI
             _font = FindUsableFont();
 
             // 下拉框：加文字标签 + 点击弹列表
-            _dropdownLabel = EnsureLabel(sortDropdown, "Label", 18);
+            _dropdownLabel = EnsureLabel(sortDropdown, "Label", 28);
             Button ddBtn = sortDropdown.GetComponent<Button>() ?? sortDropdown.gameObject.AddComponent<Button>();
             ddBtn.transition = Selectable.Transition.None;
             ddBtn.onClick.RemoveAllListeners();
@@ -320,12 +320,20 @@ namespace SkyPrison.Runtime.UI
             float boxH  = Mathf.Abs(tl.y - bl.y);
             float rowH  = Mathf.Max(24f, boxH > 1f ? boxH * 0.95f : 34f);
             int fontSize = Mathf.Max(12, Mathf.RoundToInt(rowH * 0.48f));
+            // 展开列表的字号不能比收起时那个按钮上的字小。弹层是独立的 Overlay 画布(字号直接是屏幕像素)，而按钮上的字在背包窗口的相机画布里，
+            // 画布缩放 / 窗口缩放都不一样，没法直接换算；所以用「字号占标签高度的比例」× 下拉框在屏幕上的高度，得到按钮上的字在屏幕上的真实像素大小，取较大的那个
+            if (_dropdownLabel != null)
+            {
+                float labelH = _dropdownLabel.rectTransform.rect.height;
+                if (labelH > 1f && boxH > 1f)
+                    fontSize = Mathf.Max(fontSize, Mathf.RoundToInt(_dropdownLabel.fontSize / labelH * boxH));
+            }
 
             // 独立 Overlay Canvas：Overlay 永远盖过 Camera 画布，确保盖过色收差快照(1101)、即时可点。
             var go = new GameObject("[InvSort] Popup", typeof(RectTransform));
             var canvas = go.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 1102;
+            { var rc = GetComponentInParent<Canvas>(); canvas.sortingOrder = Mathf.Max(1102, (rc != null ? rc.rootCanvas.sortingOrder : 1100) + 2); }       // 跟着背包窗口当前的层级
             go.AddComponent<GraphicRaycaster>();
             // CanvasGroup：用于 Update 里逐帧镜像父窗口 alpha，确保随窗口淡出完全同步。
             _popupCg = go.AddComponent<CanvasGroup>();
@@ -441,7 +449,7 @@ namespace SkyPrison.Runtime.UI
             trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
             trt.offsetMin = Vector2.zero; trt.offsetMax = Vector2.zero;
             var tint = tintGo.AddComponent<Image>();
-            tint.color = new Color(0.06f, 0.08f, 0.10f, 0.18f); // 极淡冷调，不黑
+            tint.color = new Color(0f, 0f, 0f, 0f); // 不再叠色调：弹层跟窗口本体必须同一个底色(之前叠了 18% 深色，内外有色差)；只保留它吸收空白点击的作用
             tint.raycastTarget = true;
 
             // 底部描边：固定在 Backdrop 底部（fullH 处），随 RectMask2D 裁剪消失，不会向上扫。

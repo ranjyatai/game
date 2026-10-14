@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 static class BeaconMaterialSetup
 {
-    [MenuItem("SkyPrison/Rendering/创建 Beacon 粒子材质并赋值")]
+    [MenuItem("天空囚笼/渲染/创建 Beacon 粒子材质并赋值", false, 193)]
     static void Create()
     {
         Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");

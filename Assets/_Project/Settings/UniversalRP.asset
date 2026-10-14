@@ -47,8 +47,8 @@ MonoBehaviour:
   m_MainLightShadowsSupported: 1
   m_MainLightShadowmapResolution: 4096
   m_AdditionalLightsRenderingMode: 1
-  m_AdditionalLightsPerObjectLimit: 4
-  m_AdditionalLightShadowsSupported: 0
+  m_AdditionalLightsPerObjectLimit: 8
+  m_AdditionalLightShadowsSupported: 1
   m_AdditionalLightsShadowmapResolution: 2048
   m_AdditionalLightsShadowResolutionTierLow: 512
   m_AdditionalLightsShadowResolutionTierMedium: 1024
@@ -104,9 +104,9 @@ MonoBehaviour:
       m_Values: 
   m_PrefilteringModeMainLightShadows: 4
   m_PrefilteringModeAdditionalLight: 4
-  m_PrefilteringModeAdditionalLightShadows: 0
+  m_PrefilteringModeAdditionalLightShadows: 1
   m_PrefilterXRKeywords: 1
-  m_PrefilteringModeForwardPlus: 0
+  m_PrefilteringModeForwardPlus: 1
   m_PrefilteringModeDeferredRendering: 0
   m_PrefilteringModeScreenSpaceOcclusion: 0
   m_PrefilterDebugKeywords: 1

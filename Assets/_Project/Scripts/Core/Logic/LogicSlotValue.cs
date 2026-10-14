@@ -54,15 +54,17 @@ public class LogicSlotValue
     }
 
     /// <summary>把 Int 槽位求值成最终数字——常量/随机范围直接返回，表达式递归求值
-    /// 两个运算数再套用运算符。Variable/ContextReference这类需要外部状态才能解析
-    /// 的来源，这里没有上下文可用，直接退回intValue（调用方如果要支持这两种来源，
-    /// 应该在调用EvaluateInt()之前自己先特判掉）。</summary>
+    /// 两个运算数再套用运算符，Variable 读 SkyPrisonVariableRuntime 里的自定义变量
+    /// (嵌套表达式的运算数本身也是LogicSlotValue，递归调EvaluateInt()时天然支持
+    /// "变量A+变量B"这种嵌套，不用额外处理)。ContextReference(玩家货币/属性这类
+    /// 内置只读上下文值)还没接，先退回intValue，等做那块的时候再补进这个switch。</summary>
     public int EvaluateInt()
     {
         return sourceType switch
         {
             LogicValueSourceType.RandomRange => UnityEngine.Random.Range(intValue, intValueMax + 1),
             LogicValueSourceType.Expression => EvaluateExpressionInt(),
+            LogicValueSourceType.Variable => SkyPrisonVariableRuntime.GetInt(variableKey),
             _ => intValue
         };
     }
@@ -74,7 +76,30 @@ public class LogicSlotValue
         {
             LogicValueSourceType.RandomRange => UnityEngine.Random.Range(floatValue, floatValueMax),
             LogicValueSourceType.Expression => EvaluateExpressionFloat(),
+            LogicValueSourceType.Variable => SkyPrisonVariableRuntime.GetFloat(variableKey),
             _ => floatValue
+        };
+    }
+
+    /// <summary>Bool槽位求值——之前完全没有这个方法，各处直接读 boolValue 原始字段，
+    /// Variable/其它来源完全不生效。新补的，调用方要用变量就必须换成调这个方法，
+    /// 不能再直接读 .boolValue。</summary>
+    public bool EvaluateBool()
+    {
+        return sourceType switch
+        {
+            LogicValueSourceType.Variable => SkyPrisonVariableRuntime.GetBool(variableKey),
+            _ => boolValue
+        };
+    }
+
+    /// <summary>String槽位求值，跟EvaluateBool同理——之前也是没有这个方法。</summary>
+    public string EvaluateString()
+    {
+        return sourceType switch
+        {
+            LogicValueSourceType.Variable => SkyPrisonVariableRuntime.GetString(variableKey),
+            _ => stringValue
         };
     }
 

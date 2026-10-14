@@ -214,7 +214,11 @@ public class SkyPrisonItemDefinitionPage : SkyPrisonEditorPageBase
         if (multiline && property.propertyType == SerializedPropertyType.String)
             property.stringValue = EditorGUILayout.TextArea(property.stringValue, GUILayout.MinHeight(54f));
         else
-            EditorGUILayout.PropertyField(property, GUIContent.none, true);
+            // 面板窄的时候（比如物品编辑器停靠成一条窄栏）GUILayout 会把这里剩余宽度
+            // 挤到接近0——标签固定140px，字段本身没设最小宽度，面板一窄字段就缩没了，
+            // 看着像"这一行压根没有输入框"，其实是宽度塌缩成了看不见的一条线。给个
+            // 最小宽度兜底，不管面板多窄，字段至少留出能看见/能点的宽度。
+            EditorGUILayout.PropertyField(property, GUIContent.none, true, GUILayout.MinWidth(80f));
 
         EditorGUILayout.EndHorizontal();
     }

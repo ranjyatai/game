@@ -10,7 +10,7 @@ public static class SkyPrisonOcclusionDecisionBill
 {
     private const string Version = "V1 - 2026-05-22 - trigger decision state bill";
 
-    [MenuItem("Tools/Sky Prison/Map/遮挡诊断/复制选中遮挡物判定账单")]
+    [MenuItem("天空囚笼/遮挡/诊断账单/复制选中遮挡物判定账单", false, 126)]
     private static void CopySelectedOccluderDecisionBill()
     {
         Transform selected = Selection.activeTransform;

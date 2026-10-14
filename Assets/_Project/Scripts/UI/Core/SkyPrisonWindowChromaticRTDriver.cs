@@ -99,7 +99,7 @@ namespace SkyPrison.Runtime.UI
 
             int w = Mathf.Max(8, Screen.width);
             int h = Mathf.Max(8, Screen.height);
-            _rt = new RenderTexture(w, h, 0, RenderTextureFormat.ARGB32)
+            _rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32)
             {
                 name = $"RT_WindowChromatic_{name}",
                 hideFlags = HideFlags.HideAndDontSave,

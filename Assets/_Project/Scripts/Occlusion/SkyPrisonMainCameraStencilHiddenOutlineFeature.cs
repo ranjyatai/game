@@ -1385,7 +1385,6 @@ public sealed class SkyPrisonMainCameraStencilHiddenOutlineFeatureV23 : Scriptab
     }
 
 #if UNITY_EDITOR
-    [MenuItem("Tools/Sky Prison/Rendering/Install Main Camera Stencil Hidden Outline Feature V23")]
     private static void InstallFeatureMenu()
     {
         ScriptableRendererData[] renderers = Resources.FindObjectsOfTypeAll<ScriptableRendererData>();

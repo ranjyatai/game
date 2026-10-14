@@ -205,15 +205,9 @@ public class UnitCombatHitbox : MonoBehaviour
         if (targetAction != null && targetAction.IsDodging) return;
 
         _hitThisSwing.Add(other);
+        // 武器磨损挪到 UnitActionModuleRuntime.ResolveSkillHit 里了（近战/枪械弹幕两条
+        // 命中路径最终都会汇聚到那一个方法，磨损只需要在那边结算一份，这里不用重复）。
         OnHit?.Invoke(this, other);
-
-        // 玩家武器命中时磨损
-        if (GetIdentity(owner) == CharacterIdentity.Player && EquipmentRuntime.Instance != null)
-        {
-            var weaponEntry = EquipmentRuntime.Instance.GetWeapon();
-            if (weaponEntry != null)
-                DurabilitySystem.Wear(weaponEntry);
-        }
     }
 
     // ── 阵营判断 ─────────────────────────────────────────────────
@@ -223,6 +217,17 @@ public class UnitCombatHitbox : MonoBehaviour
     public static bool AreHostile(GameObject a, GameObject b)
     {
         if (a == null || b == null) return true; // 保守：找不到归属视为可命中
+
+        // 道具/可破坏物品类场景物（箱子这类）只应该被玩家本人打碎——不是"玩家阵营"，
+        // 是"玩家"。这类单位是 Destructible/Item 类型，没有 characterIdentity 这个
+        // 字段，GetIdentity 会兜底成 Enemy，落进下面 aIsPlayerSide/bIsEnemySide 那套
+        // 二元判断——那套判断只分"玩家侧(Player+Ally)"跟"敌对侧"，分不出"友军也不该打"，
+        // 所以单独在这里判一次，判定为道具就直接要求攻击者必须正好是 Player，不管
+        // Ally 还是 Enemy 都打不动。
+        if (IsPlayerOnlyDestructibleTarget(b))
+            return GetIdentity(a) == CharacterIdentity.Player;
+        if (IsPlayerOnlyDestructibleTarget(a))
+            return GetIdentity(b) == CharacterIdentity.Player;
 
         CharacterIdentity idA = GetIdentity(a);
         CharacterIdentity idB = GetIdentity(b);
@@ -242,6 +247,31 @@ public class UnitCombatHitbox : MonoBehaviour
 
         // 玩家侧 vs 敌对侧 才算敌对
         return (aIsPlayerSide && bIsEnemySide) || (aIsEnemySide && bIsPlayerSide);
+    }
+
+    /// <summary>是不是「自己人」——给支援类(颂赞者牵线等)找同伴用。
+    /// 跟 !AreHostile 不同：箱子/道具、中立不主动单位对谁都"不敌对"，但不是同伴；这里要求双方都是活物单位、且同属玩家侧或同属敌对侧。</summary>
+    public static bool AreAllied(GameObject a, GameObject b)
+    {
+        if (a == null || b == null) return false;
+        if (IsPlayerOnlyDestructibleTarget(a) || IsPlayerOnlyDestructibleTarget(b)) return false;
+        CharacterIdentity idA = GetIdentity(a), idB = GetIdentity(b);
+        if (idA == CharacterIdentity.NeutralPassive || idB == CharacterIdentity.NeutralPassive) return false;
+        bool aPlayer = idA == CharacterIdentity.Player || idA == CharacterIdentity.Ally;
+        bool bPlayer = idB == CharacterIdentity.Player || idB == CharacterIdentity.Ally;
+        return aPlayer == bPlayer;
+    }
+
+    private static bool IsPlayerOnlyDestructibleTarget(GameObject go)
+    {
+        UnitDefinitionRuntimeBinder binder =
+            go.GetComponent<UnitDefinitionRuntimeBinder>()
+         ?? go.GetComponentInParent<UnitDefinitionRuntimeBinder>(true)
+         ?? go.GetComponentInChildren<UnitDefinitionRuntimeBinder>(true);
+
+        UnitDefinition definition = binder?.UnitDefinitionAsset;
+        return definition != null &&
+               (definition.defineType == UnitDefineType.Item || definition.defineType == UnitDefineType.Destructible);
     }
 
     private static CharacterIdentity GetIdentity(GameObject go)

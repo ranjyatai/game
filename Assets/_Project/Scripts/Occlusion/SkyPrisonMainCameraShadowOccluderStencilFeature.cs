@@ -219,6 +219,12 @@ public sealed class SkyPrisonMainCameraShadowOccluderStencilFeature_V1 : Scripta
             if (visualRoot == null)
                 continue;
 
+            // 能踩的结构（甲板、斜坡、圆形高台……带 GroundSurfaceMarker）是地板，不是"挡在角色前面的前景物体"。
+            // 它们的可视几何写进模板后，站在上面时脚下的接触影（SkyPrisonStageShadowProjector 的 Stencil NotEqual 1）
+            // 会被整个拒绝，剩下的灯光影子看上去就和脚断开了。墙、箱子这类不可踩的仍然写模板。
+            if (visualRoot.GetComponentInParent<GroundSurfaceMarker>() != null)
+                continue;
+
             int rootId = visualRoot.GetInstanceID();
             if (!visitedRoots.Add(rootId))
                 continue;

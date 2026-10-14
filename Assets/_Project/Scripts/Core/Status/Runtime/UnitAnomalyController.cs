@@ -183,12 +183,26 @@ public class UnitAnomalyController : MonoBehaviour
         if (entry.currentAccumulation + 0.0001f < entry.threshold)
             return;
 
-        if (anomalyDefinition.enableAnomalyStatusOnFull
+        bool exempt = false;
+        if (anomalyDefinition.enableAnomalyStatusOnFull && anomalyDefinition.grantedStatusDefinition != null)
+        {
+            // 异常赋予守卫(特效力场等)：有一次豁免就消耗掉它，这次不赋予状态，累计条照常清零
+            var guards = GetComponentsInChildren<IAnomalyApplyGuard>(true);
+            if (guards.Length == 0) guards = GetComponentsInParent<IAnomalyApplyGuard>(true);
+            for (int gi = 0; gi < guards.Length && !exempt; gi++) exempt = guards[gi].TryExemptAnomaly(anomalyDefinition.key);
+        }
+
+        if (!exempt
+            && anomalyDefinition.enableAnomalyStatusOnFull
             && anomalyDefinition.grantedStatusDefinition != null
             && statusController != null)
         {
             statusController.ApplyStatus(anomalyDefinition.grantedStatusDefinition, sourceUnit);
         }
+
+        // AFP「异常追伤」：玩家造成的异常赋予成功(没被豁免)时额外打一笔追伤
+        if (!exempt && anomalyDefinition.enableAnomalyStatusOnFull)
+            SkyPrisonAfpAnomalyBurst.OnAnomalyTriggered(anomalyDefinition.key, sourceUnit, this);
 
         // 异常满值已经转化为状态后，累计条目本身应立即清掉。
         // 这里不依赖 Tick，也不依赖 anomalyDecayPerSecond，避免 0 值条目残留。

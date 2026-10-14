@@ -34,6 +34,14 @@ public class SkyPrisonFogMaskRenderer : MonoBehaviour
     [SerializeField, Min(0.1f)] private float softEdgeWidth = 3.5f;
     [SerializeField, Min(0.1f)] private float angleSoftness = 8f;
 
+    [Header("Wall Occlusion")]
+    [Tooltip("开启后，视野源看不到的地方(被「挡视线」的墙挡住)会被迷雾盖住；关闭则迷雾只按半径 / 角度，不管墙。\n做法：每个视野源向四周发 LosRays 条射线，量出每个方向被墙挡在多远，存进一张小贴图交给迷雾着色器。规则比单位显隐用的 IsTerrainVisionBlocked 宽一点(见 SkyPrisonVisionManager.TryGetVisionBlock)，射线从角色脚下发。")]
+    [SerializeField] private bool wallsBlockFog = true;
+    [Tooltip("墙本身要保持可见：被挡住的距离再往后多露出这么多(米)，墙面 / 墙顶不会被一刀切黑。")]
+    [SerializeField, Min(0f)] private float wallRevealDepth = 0.6f;
+    [Tooltip("墙后面的黑的渐变宽度(米)。")]
+    [SerializeField, Min(0.01f)] private float wallShadowSoftness = 0.5f;
+
     [Header("Terrain Decoration Reveal")]
     [Tooltip("开启后，AlwaysVisible / DarkenInFog 的地形装饰物会给 FogOverlay 提供一个静态揭示区域，让地形装饰物和投影不被覆盖层盖死。单位显隐不受该区域影响。")]
     [SerializeField] private bool revealTerrainDecorations = true;
@@ -54,6 +62,7 @@ public class SkyPrisonFogMaskRenderer : MonoBehaviour
     private MaterialPropertyBlock mpb;
     private readonly Vector4[] sourceOriginRadius = new Vector4[MaxSources];
     private readonly Vector4[] sourceForwardAngle = new Vector4[MaxSources];
+    private readonly Vector4[] sourceLosOrigin = new Vector4[MaxSources];        // 视线射线的发射点 = 角色脚下(xyz)
     private readonly Vector4[] sourceFlags = new Vector4[MaxSources];
 
     private readonly Vector4[] terrainRevealCenterHalfX = new Vector4[MaxTerrainRevealSources];
@@ -61,6 +70,15 @@ public class SkyPrisonFogMaskRenderer : MonoBehaviour
     private readonly Vector4[] terrainRevealForwardFlags = new Vector4[MaxTerrainRevealSources];
     private TerrainDecorationRuntimeBinder[] cachedTerrainDecorations;
     private float nextTerrainRevealRescanTime = -1f;
+
+    private const int LosRays = 192;
+    private Texture2D losTex;                                   // 每行一个视野源，每列一个方向(绕一圈)：该方向上被墙挡住的距离(米)
+    private readonly float[] losData = new float[LosRays * MaxSources * 2];      // 每格两个值：R = 被挡住的距离(米)，G = 挡住的那堵墙的顶面比射线发出点高多少(米)
+    private static readonly int VisionLosTexId = Shader.PropertyToID("_VisionLosTex");
+    private static readonly int VisionSourceLosOriginId = Shader.PropertyToID("_VisionSourceLosOrigin");
+    private static readonly int UseVisionLosId = Shader.PropertyToID("_UseVisionLos");
+    private static readonly int WallRevealDepthId = Shader.PropertyToID("_WallRevealDepth");
+    private static readonly int WallShadowSoftnessId = Shader.PropertyToID("_WallShadowSoftness");
 
     private static readonly int FogColorId = Shader.PropertyToID("_FogColor");
     private static readonly int VisibleColorId = Shader.PropertyToID("_VisibleColor");
@@ -79,12 +97,27 @@ public class SkyPrisonFogMaskRenderer : MonoBehaviour
     private static readonly int TerrainRevealSoftnessId = Shader.PropertyToID("_TerrainRevealSoftness");
     private static readonly int TerrainRevealVisibilityId = Shader.PropertyToID("_TerrainRevealVisibility");
 
+    // 战争迷雾曾经完全不显示，实测原因是 overlayRenderer.sharedMaterial 在运行时
+    // 被换成了跟这个系统毫无关系的第三方插件占位材质（VLBDummyMaterialHD，来自
+    // VolumetricLightBeam 插件，和战争迷雾没有任何调用关系）。场景文件里保存的
+    // 材质本身是对的（着色器 GUID 正确指向 SkyPrisonFogOfWarOverlay），说明污染
+    // 发生在运行时，来源没有定位到——但 MaterialPropertyBlock 的值全部正常写入，
+    // 只是作用在了错误的着色器上，所以看起来"整条链路都对但没有任何效果"。
+    //
+    // 不再去追查是谁改的，改成 Awake 时（早于绝大多数其它系统跑）把当前材质缓存下来，
+    // 之后每帧发现材质被换掉就恢复，不依赖找到并修好那个未知的污染源。
+    private Material expectedMaterial;
+
     private void Awake()
     {
         ResolveReferences();
         EnsurePropertyBlock();
         RefreshOverlayBounds();
         RefreshTerrainRevealCache(force: true);
+
+        if (overlayRenderer != null && overlayRenderer.sharedMaterial != null)
+            expectedMaterial = overlayRenderer.sharedMaterial;
+
         ApplyMaterialState();
     }
 
@@ -237,6 +270,36 @@ public class SkyPrisonFogMaskRenderer : MonoBehaviour
         if (overlayRenderer == null)
             return;
 
+        // 自愈：材质被换掉就换回来。见 Awake 里的说明。
+        if (expectedMaterial != null && overlayRenderer.sharedMaterial != expectedMaterial)
+        {
+            if (!_loggedMaterialHijack)
+            {
+                _loggedMaterialHijack = true;
+                Debug.LogWarning($"[SkyPrisonFogMaskRenderer] 材质被外部换成了 " +
+                    $"{(overlayRenderer.sharedMaterial != null ? overlayRenderer.sharedMaterial.name : "NULL")}，" +
+                    $"已恢复为 {expectedMaterial.name}。污染源未定位，这里只做自愈。", this);
+            }
+            overlayRenderer.sharedMaterial = expectedMaterial;
+        }
+
+        // 夜视仪：迷雾遮罩整张关掉；退出夜视仪时只恢复"是我们关的"那一次，
+        // 不去覆盖别处对 enabled 的设置。
+        if (SkyPrisonNightVisionMode.IsActive)
+        {
+            if (overlayRenderer.enabled)
+            {
+                overlayRenderer.enabled = false;
+                suppressedByNightVision = true;
+            }
+            return;
+        }
+        if (suppressedByNightVision)
+        {
+            overlayRenderer.enabled = true;
+            suppressedByNightVision = false;
+        }
+
         EnsurePropertyBlock();
 
         mpb.Clear();
@@ -258,6 +321,9 @@ public class SkyPrisonFogMaskRenderer : MonoBehaviour
             {
                 var src = sources[i];
                 sourceOriginRadius[i] = new Vector4(src.originWorld.x, src.originWorld.y, src.originWorld.z, src.radius);
+                // 视线射线从角色脚下发(单位根节点)，不从视野锚点发：锚点在模型包围盒中心，贴墙时可能已经跑到墙的另一边
+                Vector3 g = src.binder != null ? src.binder.transform.position : src.originWorld;
+                sourceLosOrigin[i] = new Vector4(g.x, g.y, g.z, 0f);
                 sourceForwardAngle[i] = new Vector4(src.forwardWorld.x, src.forwardWorld.y, src.forwardWorld.z, src.angle);
                 sourceFlags[i] = new Vector4(src.useCircle ? 1f : 0f, src.useFacingDirection ? 1f : 0f, 0f, 0f);
             }
@@ -265,6 +331,7 @@ public class SkyPrisonFogMaskRenderer : MonoBehaviour
 
         for (int i = count; i < MaxSources; i++)
         {
+            sourceLosOrigin[i] = Vector4.zero;
             sourceOriginRadius[i] = Vector4.zero;
             sourceForwardAngle[i] = Vector4.zero;
             sourceFlags[i] = Vector4.zero;
@@ -272,10 +339,20 @@ public class SkyPrisonFogMaskRenderer : MonoBehaviour
 
         int terrainCount = BuildTerrainRevealSources();
 
+        bool useLos = BuildVisionLos(count);
+        mpb.SetFloat(UseVisionLosId, useLos ? 1f : 0f);
+        if (useLos)
+        {
+            mpb.SetTexture(VisionLosTexId, losTex);
+            mpb.SetFloat(WallRevealDepthId, wallRevealDepth);
+            mpb.SetFloat(WallShadowSoftnessId, wallShadowSoftness);
+        }
+
         mpb.SetInt(VisionSourceCountId, count);
         mpb.SetVectorArray(VisionSourceOriginRadiusId, sourceOriginRadius);
         mpb.SetVectorArray(VisionSourceForwardAngleId, sourceForwardAngle);
         mpb.SetVectorArray(VisionSourceFlagsId, sourceFlags);
+        mpb.SetVectorArray(VisionSourceLosOriginId, sourceLosOrigin);
 
         mpb.SetInt(TerrainRevealCountId, terrainCount);
         mpb.SetVectorArray(TerrainRevealCenterHalfXId, terrainRevealCenterHalfX);
@@ -283,7 +360,112 @@ public class SkyPrisonFogMaskRenderer : MonoBehaviour
         mpb.SetVectorArray(TerrainRevealForwardFlagsId, terrainRevealForwardFlags);
 
         overlayRenderer.SetPropertyBlock(mpb);
+
+        // 一次性诊断：查"战争迷雾没显示"。静态检查场景文件排除不了运行时才会出现的
+        // 空引用/空数据情况（这类问题只能看运行时状态，参见项目规矩），
+        // 不受 debugLogs 序列化开关影响，只跑一次不会刷屏。
+        if (!_loggedFogDiagnostic)
+        {
+            _loggedFogDiagnostic = true;
+            Debug.Log($"[FogDiag] visionManager={(visionManager != null ? "有" : "NULL")} " +
+                      $"sources={count} globalFogStrength={globalFogStrength} " +
+                      $"fogColor={fogColor} overlayRenderer.enabled={overlayRenderer.enabled} " +
+                      $"gameObject.activeInHierarchy={gameObject.activeInHierarchy} " +
+                      $"material={(overlayRenderer.sharedMaterial != null ? overlayRenderer.sharedMaterial.name : "NULL")}",
+                      this);
+        }
     }
+
+    // 视线扇形：每个视野源绕一圈发射线，量出被「挡视线」的墙挡在多远。着色器里超过这个距离(+露出墙面的一点点)的像素就算看不到。
+    private bool BuildVisionLos(int sourceCount)
+    {
+        if (!wallsBlockFog || visionManager == null || sourceCount <= 0) return false;
+        if (losTex == null)
+        {
+            losTex = new Texture2D(LosRays, MaxSources, TextureFormat.RGFloat, false, true)
+            {
+                name = "FogVisionLos", wrapModeU = TextureWrapMode.Repeat, wrapModeV = TextureWrapMode.Clamp, filterMode = FilterMode.Point,      // 插值在着色器里手动做(浮点贴图的线性过滤不是所有显卡都支持)
+            };
+        }
+
+        // 离玩家很远的视野源(别处的友军)根本不在画面里，不用发射线：每个源 192 条射线，全算会很费
+        var player = SkyPrisonPlayerAuthority.CurrentPlayerUnit;
+        bool hasPlayer = player != null;
+        Vector3 pp = hasPlayer ? player.transform.position : Vector3.zero;
+
+        for (int s = 0; s < sourceCount; s++)
+        {
+            Vector4 or = sourceOriginRadius[s];
+            if (hasPlayer)
+            {
+                float dx = or.x - pp.x, dz = or.z - pp.z, far = 45f + or.w;
+                if (dx * dx + dz * dz > far * far)
+                {
+                    int rowFar = s * LosRays * 2;
+                    for (int r = 0; r < LosRays; r++) { losData[rowFar + r * 2] = 9999f; losData[rowFar + r * 2 + 1] = 0f; }
+                    continue;
+                }
+            }
+            // 从脚下发射线(略高于脚底)：视野源在头顶，「挡视线」的墙体碰撞盒又只有齐腰 / 齐胸高，从头顶水平发射线会从墙上面飞过去；
+            // 视野源的 xz 也不在脚下(取的是模型包围盒中心)，贴墙时可能已经在墙的另一边。
+            Vector4 g = sourceLosOrigin[s];
+            Vector3 origin = new Vector3(g.x, g.y + 0.04f, g.z);
+            origin = PushOutOfBlockers(origin);
+            float maxDist = Mathf.Max(0.01f, or.w + softEdgeWidth + wallRevealDepth + wallShadowSoftness);
+            int row = s * LosRays * 2;
+            for (int r = 0; r < LosRays; r++)
+            {
+                float a = ((r + 0.5f) / LosRays - 0.5f) * (2f * Mathf.PI);      // 和着色器里 atan2(z, x) / 2π + 0.5 对应
+                Vector3 dir = new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a));
+                bool hit = visionManager.TryGetVisionBlock(origin, dir, maxDist, out float d, out float top);
+                losData[row + r * 2] = hit ? d : maxDist + 50f;                 // 没挡住取「比视野远一点」而不是极大值：贴图是双线性插值的，极大值会在墙的两端拉出一道漏光
+                losData[row + r * 2 + 1] = hit ? Mathf.Max(0f, top - origin.y) : 0f;      // 墙顶比射线发出点高多少
+            }
+        }
+        for (int s = sourceCount; s < MaxSources; s++)
+            for (int r = 0; r < LosRays; r++) { losData[(s * LosRays + r) * 2] = 9999f; losData[(s * LosRays + r) * 2 + 1] = 0f; }
+
+        losTex.SetPixelData(losData, 0);
+        losTex.Apply(false);
+        return true;
+    }
+
+    // 贴着墙时视野源可能已经在「挡视线」盒子里面(盒子比看得见的墙厚一点)：射线从盒子里面发出去不会碰到这个盒子，整个方向就漏光了。
+    // 先用一个小球和这些盒子做穿透计算，把发射点推到盒子外面(走路的那一侧)。
+    private SphereCollider losProbe;
+    private readonly Collider[] losOverlap = new Collider[16];
+
+    private Vector3 PushOutOfBlockers(Vector3 origin)
+    {
+        int n = Physics.OverlapSphereNonAlloc(origin, 0.08f, losOverlap, ~0, QueryTriggerInteraction.Collide);
+        if (n == 0) return origin;
+        for (int i = 0; i < n; i++)
+        {
+            Collider c = losOverlap[i];
+            if (c == null || !c.enabled || !c.name.StartsWith("Vision_Blocker")) continue;
+            if (losProbe == null)
+            {
+                var go = new GameObject("FogLosProbe") { hideFlags = HideFlags.HideAndDontSave };
+                go.layer = 2;                                           // Ignore Raycast
+                go.transform.position = new Vector3(0f, -5000f, 0f);
+                losProbe = go.AddComponent<SphereCollider>();
+                losProbe.radius = 0.05f; losProbe.isTrigger = true;
+            }
+            if (Physics.ComputePenetration(losProbe, origin, Quaternion.identity, c, c.transform.position, c.transform.rotation, out Vector3 dir, out float dist))
+                origin += dir * (dist + 0.02f);
+        }
+        return origin;
+    }
+
+    private void OnDestroy()
+    {
+        if (losTex != null) Destroy(losTex);
+        if (losProbe != null) Destroy(losProbe.gameObject);
+    }
+
+    private bool suppressedByNightVision;
+    private bool _loggedFogDiagnostic;
+    private bool _loggedMaterialHijack;
 
     private int BuildTerrainRevealSources()
     {

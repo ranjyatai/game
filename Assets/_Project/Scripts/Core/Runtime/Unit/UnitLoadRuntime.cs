@@ -51,6 +51,22 @@ public class UnitLoadRuntime : MonoBehaviour
 
     public string Version => scriptVersion;
     public float MaxLoad => Mathf.Max(0f, maxLoad);
+
+    // 额外 LP 上限(局内 AFP「LP 上限」升级)：叠在单位定义的 maxLp 之上。闪避 / 奔跑消耗按「基础上限」算，不跟着变大，
+    // 所以多出来的上限就是实打实多几次闪避 / 多跑一段。重新读单位定义时会自动再叠上去。
+    private float _bonusMaxLoad;
+    public float BonusMaxLoad => _bonusMaxLoad;
+
+    public void SetBonusMaxLoad(float bonus)
+    {
+        bonus = Mathf.Max(0f, bonus);
+        float delta = bonus - _bonusMaxLoad;
+        if (Mathf.Abs(delta) < 0.001f) return;
+        _bonusMaxLoad = bonus;
+        maxLoad = Mathf.Max(0f, maxLoad + delta);
+        if (delta > 0f) currentLoad += delta;      // 上限涨了多少当前值就补多少(只涨上限不补，玩家买了没感觉)；降(清零)时下面 clamp
+        ClampRuntimeValues();
+    }
     public float CurrentLoad => Mathf.Clamp(currentLoad, 0f, MaxLoad);
     public float LoadRecoverRate => Mathf.Max(0f, loadRecoverRate);
     public float LoadRecoverDelay => Mathf.Max(0f, loadRecoverDelay);
@@ -75,7 +91,7 @@ public class UnitLoadRuntime : MonoBehaviour
     {
         get
         {
-            if (SprintLoadCostPerSecond <= 0f)
+            if (SprintLoadCostPerSecond <= 0f || IsLpFreeInHub())
                 return true;
 
             if (exhaustedSprintLock)
@@ -83,6 +99,20 @@ public class UnitLoadRuntime : MonoBehaviour
 
             return HasAnyLoad;
         }
+    }
+
+    private UnitDefinitionRuntimeBinder _ownerBinder;
+
+    /// <summary>主城安全状态下，玩家的 LP 不消耗（奔跑、闪避、出招都免费）。出招/受击会让主城进入战斗，
+    /// 之后恢复正常消耗，见 SkyPrisonHubCombatGate。局内地图和非玩家单位永远是 false。</summary>
+    private bool IsLpFreeInHub()
+    {
+        if (!SkyPrisonHubCombatGate.IsSafeNow)
+            return false;
+        if (_ownerBinder == null)
+            _ownerBinder = GetComponentInParent<UnitDefinitionRuntimeBinder>(true);
+        UnitDefinition def = _ownerBinder != null ? _ownerBinder.UnitDefinitionAsset : null;
+        return def != null && def.characterIdentity == CharacterIdentity.Player;
     }
 
     private void Awake()
@@ -176,7 +206,7 @@ public class UnitLoadRuntime : MonoBehaviour
             "负荷值耗尽后奔跑恢复阈值",
             "奔跑恢复负荷阈值");
 
-        maxLoad = Mathf.Max(0f, maxLoad);
+        maxLoad = Mathf.Max(0f, maxLoad) + _bonusMaxLoad;      // 消耗已经按基础上限算完，额外上限最后叠
         loadRecoverRate = Mathf.Max(0f, loadRecoverRate);
         loadRecoverDelay = Mathf.Max(0f, loadRecoverDelay);
         exhaustedLoadRecoverDelay = Mathf.Max(loadRecoverDelay, exhaustedLoadRecoverDelay);
@@ -243,7 +273,7 @@ public class UnitLoadRuntime : MonoBehaviour
         float oldMax = Mathf.Max(0f, maxLoad);
         float oldRatio = oldMax > 0.0001f ? Mathf.Clamp01(currentLoad / oldMax) : 1f;
 
-        maxLoad = Mathf.Max(0f, newMaxLoad);
+        maxLoad = Mathf.Max(0f, newMaxLoad) + _bonusMaxLoad;
         loadRecoverRate = Mathf.Max(0f, newLoadRecoverRate);
         loadRecoverDelay = Mathf.Max(0f, newLoadRecoverDelay);
         exhaustedLoadRecoverDelay = Mathf.Max(loadRecoverDelay, newExhaustedLoadRecoverDelay);
@@ -259,7 +289,7 @@ public class UnitLoadRuntime : MonoBehaviour
     public bool CanSpend(float amount)
     {
         amount = Mathf.Max(0f, amount);
-        if (amount <= 0f)
+        if (amount <= 0f || IsLpFreeInHub())
             return true;
 
         return CurrentLoad > 0.0001f;
@@ -274,7 +304,7 @@ public class UnitLoadRuntime : MonoBehaviour
     public bool CanSpendLoadAction(float amount)
     {
         amount = Mathf.Max(0f, amount);
-        if (amount <= 0f)
+        if (amount <= 0f || IsLpFreeInHub())
             return true;
 
         if (exhaustedSprintLock)
@@ -293,6 +323,12 @@ public class UnitLoadRuntime : MonoBehaviour
     {
         amount = Mathf.Max(0f, amount);
         lastSpendReason = reason;
+
+        if (IsLpFreeInHub())
+        {
+            lastSpendSucceeded = true;
+            return true;   // 主城安全状态：免费，不扣
+        }
 
         if (!CanSpendLoadAction(amount))
         {
@@ -318,7 +354,7 @@ public class UnitLoadRuntime : MonoBehaviour
     public bool TrySpendSprint(float deltaTime)
     {
         float costPerSecond = SprintLoadCostPerSecond;
-        if (costPerSecond <= 0f)
+        if (costPerSecond <= 0f || IsLpFreeInHub())
             return true;
 
         if (!CanSprint)

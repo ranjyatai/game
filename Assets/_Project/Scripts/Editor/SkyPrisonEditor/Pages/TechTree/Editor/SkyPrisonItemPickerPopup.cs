@@ -21,6 +21,7 @@ public class SkyPrisonItemPickerPopup : EditorWindow
     private static Action<UnityEngine.Object> onConfirm;
     private static UnityEngine.Object currentSelected;
     private static string[] includeTypeNames;
+    private static Func<UnityEngine.Object, bool> extraFilter;   // 额外筛选（比如只要单位里的「可破坏物品」）；普通 Open 时为 null
 
     private readonly List<UnityEngine.Object> items = new List<UnityEngine.Object>();
     private readonly List<string> discoveredTypeNames = new List<string>();
@@ -39,11 +40,20 @@ public class SkyPrisonItemPickerPopup : EditorWindow
     private SortMode sortMode = SortMode.NameAsc;
     private int typeFilterIndex = 0;
 
+    /// <summary>带额外筛选条件的打开方式：filter 返回 false 的对象不会出现在列表里。</summary>
+    public static void OpenFiltered(UnityEngine.Object current, Action<UnityEngine.Object> confirmCallback, Func<UnityEngine.Object, bool> filter, params string[] acceptedTypeNames)
+    {
+        Open(current, confirmCallback, acceptedTypeNames);
+        extraFilter = filter;
+        foreach (var w in Resources.FindObjectsOfTypeAll<SkyPrisonItemPickerPopup>()) w.RefreshItems();
+    }
+
     public static void Open(
         UnityEngine.Object current,
         Action<UnityEngine.Object> confirmCallback,
         params string[] acceptedTypeNames)
     {
+        extraFilter = null;
         onConfirm = confirmCallback;
         currentSelected = current;
         includeTypeNames = acceptedTypeNames != null && acceptedTypeNames.Length > 0
@@ -77,6 +87,13 @@ public class SkyPrisonItemPickerPopup : EditorWindow
 
     private void OnEnable()
     {
+        // 脚本重新编译（域重载）之后，这个窗口会被 Unity 自动恢复，但静态的回调 / 类型筛选都丢了——
+        // 回调丢了点哪个都没有用，类型筛选为空还会在 RefreshItems 里抛空引用。直接把恢复出来的旧窗口关掉。
+        if (includeTypeNames == null || onConfirm == null)
+        {
+            EditorApplication.delayCall += () => { if (this != null) Close(); };
+            return;
+        }
         selected = currentSelected;
         RefreshItems();
     }
@@ -210,6 +227,7 @@ public class SkyPrisonItemPickerPopup : EditorWindow
             EditorGUI.DrawRect(iconRect, new Color(1f, 1f, 1f, 0.06f));
 
         string name = obj != null ? obj.name : "未命名";
+        if (obj is UnitDefinition unitDef && !string.IsNullOrEmpty(unitDef.displayName)) name = unitDef.displayName + "\n" + obj.name;   // 单位：显示策划起的名字（如「物资箱A」），文件名放第二行
         GUIStyle nameStyle = new GUIStyle(EditorStyles.miniBoldLabel)
         {
             alignment = TextAnchor.UpperCenter,
@@ -275,7 +293,7 @@ public class SkyPrisonItemPickerPopup : EditorWindow
                 continue;
 
             string typeName = obj.GetType().Name;
-            if (includeTypeNames.Any(t => typeName == t))
+            if (includeTypeNames.Any(t => typeName == t) && (extraFilter == null || extraFilter(obj)))
             {
                 items.Add(obj);
                 if (!discoveredTypeNames.Contains(typeName))
@@ -298,6 +316,7 @@ public class SkyPrisonItemPickerPopup : EditorWindow
                 x != null &&
                 (
                     x.name.ToLowerInvariant().Contains(keyword) ||
+                    (x is UnitDefinition ud && !string.IsNullOrEmpty(ud.displayName) && ud.displayName.ToLowerInvariant().Contains(keyword)) ||
                     x.GetType().Name.ToLowerInvariant().Contains(keyword)
                 ));
         }
@@ -333,6 +352,13 @@ public class SkyPrisonItemPickerPopup : EditorWindow
         // 优先使用 ItemDefinition 上配置的 icon Sprite
         if (obj is ItemDefinition itemDef && itemDef.icon != null && itemDef.icon.texture != null)
             return itemDef.icon.texture;
+
+        if (obj is UnitDefinition unitDef && unitDef.prefab != null)
+        {   // 单位：用它的预制体预览当图标（箱子就显示成箱子）
+            Texture2D up = AssetPreview.GetAssetPreview(unitDef.model3DPrefab != null ? unitDef.model3DPrefab : unitDef.prefab);
+            if (up != null) return up;
+            if (AssetPreview.IsLoadingAssetPreview((unitDef.model3DPrefab != null ? unitDef.model3DPrefab : unitDef.prefab).GetInstanceID())) Repaint();
+        }
 
         Texture2D preview = AssetPreview.GetAssetPreview(obj);
         if (preview != null)

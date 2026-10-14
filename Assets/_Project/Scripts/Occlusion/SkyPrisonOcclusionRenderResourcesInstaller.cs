@@ -16,7 +16,7 @@ public static class SkyPrisonOcclusionRenderResourcesInstaller
     private const string CompositeMaterialPath = ResourceFolder + "/M_UnitHiddenMaskComposite.mat";
     private const string CompositeShaderName = "Hidden/SkyPrison/UnitHiddenMaskComposite";
 
-    [MenuItem("Tools/Sky Prison/Occlusion/Create Or Repair Render Resources")]
+    [MenuItem("天空囚笼/遮挡/创建或修复遮挡渲染资源", false, 127)]
     public static void CreateOrRepair()
     {
         EnsureFolder(ResourceFolder);

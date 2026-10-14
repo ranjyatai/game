@@ -45,6 +45,12 @@ public class UnitStatusOutlineEffect : MonoBehaviour
     private float _currentWidthVariance = 0.6f;
     private float _currentFlowSpeed = 0.6f;
     private float _currentNoiseScale = 1.2f;
+    private float _currentGlowRadius = 12f;
+    private float _currentGlowIntensity = 1f;
+    private Color _currentGlowInner = new Color(1f, 0.6f, 0.12f, 1f);
+    private Color _currentGlowOuter = new Color(1f, 0.3f, 0.06f, 1f);
+    private float _currentGlowVariance = 0.7f;
+    private float _currentGlowNoiseScale = 5f;
 
     // 缓动淡入淡出：不是简单按固定速率线性推近目标值，而是记录"朝当前方向已经走了
     // 多久"，用 smoothstep 缓动曲线换算成强度——点燃快、熄灭慢，像真的火苗，不是
@@ -63,6 +69,29 @@ public class UnitStatusOutlineEffect : MonoBehaviour
 
     /// <summary>本单位 Character2D 层的渲染器列表，供 Feature 只画这些、不画到别的单位的蒙版里。</summary>
     public IReadOnlyList<Renderer> PresenceRenderers => _presenceRenderers;
+
+    /// <summary>这一帧的专属轮廓蒙版（UnitStatusOutlinePresenceFeature 填），辉光 Feature 拿它做模糊源。</summary>
+    public RenderTexture PresenceTexture => _presenceActive ? _presenceRT : null;
+
+    /// <summary>辉光外侧颜色（偏红）× 辉光强度 × 当前淡入淡出强度。</summary>
+    public Color GlowColor => ScaleGlow(_currentGlowOuter);
+
+    /// <summary>辉光内侧颜色（偏黄白，贴着轮廓）× 辉光强度 × 当前淡入淡出强度。</summary>
+    public Color GlowInnerColor => ScaleGlow(_currentGlowInner);
+
+    private Color ScaleGlow(Color c)
+    {
+        float k = _currentGlowIntensity * _currentIntensity;
+        return new Color(c.r * k, c.g * k, c.b * k, 1f);
+    }
+
+    public float GlowRadiusPixels => _currentGlowRadius;
+    public float GlowVariance => _currentGlowVariance;
+    public float GlowNoiseScale => _currentGlowNoiseScale;
+    public float FlowSpeed => _currentFlowSpeed;
+
+    /// <summary>描边流动和辉光起伏共用的噪波贴图。</summary>
+    public static Texture2D DefaultNoiseTexture => GetDefaultNoiseTexture();
 
     public static UnitStatusOutlineEffect EnsureOnRoot(GameObject unitRoot)
     {
@@ -135,6 +164,12 @@ public class UnitStatusOutlineEffect : MonoBehaviour
             _currentWidthVariance = Mathf.Clamp01(active.statusOutlineWidthVariance);
             _currentFlowSpeed = active.statusOutlineFlowSpeed;
             _currentNoiseScale = active.statusOutlineNoiseScale;
+            _currentGlowRadius = Mathf.Max(0f, active.statusGlowRadiusPixels);
+            _currentGlowIntensity = Mathf.Max(0f, active.statusGlowIntensity);
+            _currentGlowVariance = Mathf.Clamp01(active.statusGlowVariance);
+            _currentGlowInner = active.statusGlowInnerColor;
+            _currentGlowOuter = active.statusGlowOuterColor;
+            _currentGlowNoiseScale = Mathf.Max(0.01f, active.statusGlowNoiseScale);
         }
 
         Apply();

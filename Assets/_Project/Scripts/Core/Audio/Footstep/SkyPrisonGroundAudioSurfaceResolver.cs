@@ -130,10 +130,57 @@ public class SkyPrisonGroundAudioSurfaceResolver : MonoBehaviour
     }
 #endif
 
+    /// <summary>
+    /// 用 GroundQueryService 解析模型表面的地表定义。命中并且带定义资产才算成功。
+    ///
+    /// 只在拿到 surfaceMaterial 时返回 true。命中了地面但 marker 没填定义资产（或者
+    /// 命中的是 BaseGroundBlock 而它那条路径没给出材质）时返回 false，让调用方退回
+    /// Terrain 采样——这比直接判定"这里没有地表音"要好：至少还能拿到脚下地形的声音，
+    /// 而不是突然只剩鞋声。
+    /// </summary>
+    private bool TryResolveFromGroundQuery(Vector3 worldPosition)
+    {
+        GroundQueryService service = GroundQueryService.Active;
+        if (service == null)
+            return false;
+
+        if (!service.TryQueryGround(worldPosition, out GroundQueryResult query))
+            return false;
+
+        GroundSurfaceMaterialDefinition definition = query.surfaceMaterial;
+        if (definition == null)
+            return false;
+
+        resultBuffer.Add(new SurfaceWeight
+        {
+            definition = definition,
+            surfaceId = definition.surfaceId,
+            displayName = definition.displayName,
+            runtimeLayerKey = definition.EffectiveAudioRuntimeLayerKey,
+            terrainLayer = null,
+            terrainLayerIndex = -1,
+            weight = 1f
+        });
+
+        lastSampleResultRuntime = $"GroundQuery: {definition.displayName}";
+        lastRawTerrainLayerSampleRuntime = $"(bypassed, source={query.sourceName})";
+        return true;
+    }
+
     public List<SurfaceWeight> GetSurfaceWeights(Vector3 worldPosition)
     {
         resultBuffer.Clear();
         lastSampleWorldPosition = worldPosition;
+
+        // 先问 GroundQueryService：踩在模型表面（站台、楼梯、桥、平台）时它能给出
+        // 确切的地表定义，而 Terrain alphamap 采样在这种场合是错的——采样只用 XZ、
+        // 完全忽略 Y，而且超出地形范围会被 Mathf.Clamp01 吸附到最近的边缘。结果就是
+        // 站在三米高的站台上却采到底下的泥地，或者采到地形边缘一块毫不相干的层。
+        //
+        // 模型表面是单一材质，不需要多层混合，权重直接给 1。
+        // 查不到（角色确实站在地形上）再走下面原有的 alphamap 采样。
+        if (TryResolveFromGroundQuery(worldPosition))
+            return resultBuffer;
 
         EnsureTerrain();
         if (definitionCacheDirty)

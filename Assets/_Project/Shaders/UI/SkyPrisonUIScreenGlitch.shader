@@ -9,8 +9,9 @@ Shader "UI/SkyPrison/ScreenGlitch"
         [PerRendererData] _Color ("Tint", Color)        = (1,1,1,1)
         _ClipRect         ("Clip Rect", vector)          = (-32767,-32767,32767,32767)
 
-        _ScanlineCount    ("扫描线密度", Range(40, 600))  = 240
-        _ScanlineStrength ("扫描线强度", Range(0, 1))     = 0.25
+        _ScanlineCount    ("扫描线密度", Range(40, 600))  = 180
+        _ScanlineStrength ("扫描线强度", Range(0, 1))     = 0.5
+        _ScanlineScrollSpeed ("扫描线滚动速度", Range(-5, 5)) = 0.12
 
         _GlitchInterval   ("故障检测间隔(秒)", Range(0.3, 6))    = 1.2
         _GlitchChance     ("故障触发概率", Range(0, 1))          = 0.25
@@ -64,6 +65,7 @@ Shader "UI/SkyPrison/ScreenGlitch"
 
             float _ScanlineCount;
             float _ScanlineStrength;
+            float _ScanlineScrollSpeed;
             float _GlitchInterval;
             float _GlitchChance;
             float _GlitchDuration;
@@ -133,8 +135,9 @@ Shader "UI/SkyPrison/ScreenGlitch"
                     col = tex2D(_MainTex, uv) * i.color;
                 }
 
-                // ── 常驻横向扫描线（电子屏幕质感）──────────────────────────────
-                float scan = sin(uv.y * _ScanlineCount * 3.14159265) * 0.5 + 0.5;
+                // ── 常驻横向扫描线（电子屏幕质感）：随时间持续滚动，不是静止条纹 ──
+                float scanY = uv.y - _Time.y * _ScanlineScrollSpeed;
+                float scan  = sin(scanY * _ScanlineCount * 3.14159265) * 0.5 + 0.5;
                 col.rgb *= 1.0 - _ScanlineStrength * (1.0 - scan) * 0.5;
 
                 // Unity UI 软裁剪（Mask 组件等）

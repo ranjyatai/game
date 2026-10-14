@@ -60,8 +60,29 @@ Shader "Hidden/SkyPrison/UIBackgroundBlur"
         }
         ENDHLSL
 
-        Pass { Name "Downsample" HLSLPROGRAM #pragma vertex Vert #pragma fragment FragDownsample ENDHLSL }
-        Pass { Name "BlurH"      HLSLPROGRAM #pragma vertex Vert #pragma fragment FragBlurH      ENDHLSL }
-        Pass { Name "BlurV"      HLSLPROGRAM #pragma vertex Vert #pragma fragment FragBlurV      ENDHLSL }
+        Pass
+        {
+            Name "Downsample"
+            HLSLPROGRAM
+            #pragma vertex Vert
+            #pragma fragment FragDownsample
+            ENDHLSL
+        }
+        Pass
+        {
+            Name "BlurH"
+            HLSLPROGRAM
+            #pragma vertex Vert
+            #pragma fragment FragBlurH
+            ENDHLSL
+        }
+        Pass
+        {
+            Name "BlurV"
+            HLSLPROGRAM
+            #pragma vertex Vert
+            #pragma fragment FragBlurV
+            ENDHLSL
+        }
     }
 }

@@ -136,6 +136,9 @@ public class UnitFootstepAudioEmitter : MonoBehaviour
     [SerializeField] private float defaultMinDistance = 1f;
     [SerializeField] private float defaultMaxDistance = 12f;
     [SerializeField] private float globalVolumeMultiplier = 1f;
+    [Tooltip("非玩家单位（敌人/NPC）的脚步声输出音量倍率：0.5 = 比玩家小一半。只影响播放出来的音量，不影响给 AI 听觉用的噪声强度。")]
+    [SerializeField, Range(0f, 1f)] private float nonPlayerOutputMultiplier = 0.5f;
+    private int _ownerIsPlayerCache = -1;   // -1 未解析 / 0 不是玩家 / 1 是玩家
     [SerializeField] private Vector2 fallbackRandomPitchRange = new Vector2(0.98f, 1.03f);
 
     [Header("Authoritative 3D / Hearing Sync")]
@@ -757,11 +760,15 @@ public class UnitFootstepAudioEmitter : MonoBehaviour
             if (definition == null)
                 continue;
 
-            SkyPrisonAudioPackage surfacePackage = ResolveGroundSurfaceAudioPackage(definition, kind, out GroundSurfaceAudioPackageBinding binding);
+            SkyPrisonAudioPackage surfacePackage = ResolveGroundSurfaceAudioPackage(
+                definition, kind, out GroundSurfaceAudioPackageBinding binding, out string surfaceTypeRuntimeKey);
             if (surfacePackage == null)
                 continue;
 
-            string runtimeKey = GetGroundSurfaceRuntimeLayerKey(definition, kind);
+            // 来自地面标签表的音效包，用表里的 Key（见 SkyPrisonGroundSurfaceTypeAudioTable）。
+            string runtimeKey = !string.IsNullOrWhiteSpace(surfaceTypeRuntimeKey)
+                ? surfaceTypeRuntimeKey
+                : GetGroundSurfaceRuntimeLayerKey(definition, kind);
             if (string.IsNullOrWhiteSpace(runtimeKey) && binding != null)
                 runtimeKey = binding.runtimeLayerKey;
 
@@ -805,9 +812,11 @@ public class UnitFootstepAudioEmitter : MonoBehaviour
     private SkyPrisonAudioPackage ResolveGroundSurfaceAudioPackage(
         GroundSurfaceMaterialDefinition definition,
         FootstepEventKind kind,
-        out GroundSurfaceAudioPackageBinding legacyBinding)
+        out GroundSurfaceAudioPackageBinding legacyBinding,
+        out string surfaceTypeRuntimeKey)
     {
         legacyBinding = null;
+        surfaceTypeRuntimeKey = "";
 
         if (definition == null)
             return null;
@@ -816,6 +825,12 @@ public class UnitFootstepAudioEmitter : MonoBehaviour
         // 角色脚步声组件只负责采样和混合，不再维护 草地->AP_Surface_Grass 这类外部映射表。
         if (definition.surfaceAudioPackage != null)
             return definition.surfaceAudioPackage;
+
+        // 材质没单独挂音效包：按地面标签查全项目共用的表。之前这里直接落到旧绑定表，
+        // 旧表是空的，结果水泥、石砾这些大面积地面走上去只有默认鞋底声。
+        SkyPrisonGroundSurfaceTypeAudioTable table = SkyPrisonGroundSurfaceTypeAudioTable.Instance;
+        if (table != null && table.TryGet(definition.surfaceType, out SkyPrisonAudioPackage typePackage, out surfaceTypeRuntimeKey))
+            return typePackage;
 
         // 兼容历史资源：如果旧绑定表还有数据，就兜底使用它。
         legacyBinding = FindLegacyGroundSurfaceAudioBinding(definition, kind);
@@ -1565,10 +1580,20 @@ public class UnitFootstepAudioEmitter : MonoBehaviour
     private float GetEffectiveFootstepOutputMasterMultiplier()
     {
         SkyPrisonAudioGlobalSettings settings = GetGlobalAudioSettings();
-        if (settings != null && settings.useGlobalFootstepSettings)
-            return settings.GetFootstepOutputMultiplier(globalVolumeMultiplier);
+        float master = settings != null && settings.useGlobalFootstepSettings
+            ? settings.GetFootstepOutputMultiplier(globalVolumeMultiplier)
+            : Mathf.Max(0f, globalVolumeMultiplier);
+        return OwnerIsPlayer() ? master : master * nonPlayerOutputMultiplier;
+    }
 
-        return Mathf.Max(0f, globalVolumeMultiplier);
+    // 单位定义还没绑定好时按"玩家"处理（不压音量）且不缓存，等下次再判。
+    private bool OwnerIsPlayer()
+    {
+        if (_ownerIsPlayerCache >= 0) return _ownerIsPlayerCache == 1;
+        UnitDefinitionRuntimeBinder binder = GetComponent<UnitDefinitionRuntimeBinder>() ?? GetComponentInParent<UnitDefinitionRuntimeBinder>(true);
+        if (binder == null || binder.UnitDefinitionAsset == null) return true;
+        _ownerIsPlayerCache = binder.UnitDefinitionAsset.characterIdentity == CharacterIdentity.Player ? 1 : 0;
+        return _ownerIsPlayerCache == 1;
     }
 
     private float GetEffectiveFootstepNoiseMasterMultiplier()

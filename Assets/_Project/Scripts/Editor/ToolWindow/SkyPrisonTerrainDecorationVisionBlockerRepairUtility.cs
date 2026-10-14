@@ -17,7 +17,7 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public static class SkyPrisonTerrainDecorationVisionBlockerRepairUtility
 {
-    private const string MenuRoot = "Tools/Sky Prison/修复/";
+    private const string MenuRoot = "天空囚笼/地形装饰物/";
     private const string RuleRootName = "RuleRoot";
     private const string VisionBlockerRootName = "VisionBlockerRoot";
     private const string VisionBlockerBoxName = "Vision_Blocker_Box";
@@ -35,7 +35,7 @@ public static class SkyPrisonTerrainDecorationVisionBlockerRepairUtility
         public int skippedNoChange;
     }
 
-    [MenuItem(MenuRoot + "修复当前场景全部地形装饰物视野遮挡节点", priority = 2300)]
+    [MenuItem(MenuRoot + "修复当前场景全部地形装饰物视野遮挡节点", false, 147)]
     private static void RepairAllSceneTerrainDecorationVisionBlockers()
     {
         List<TerrainDecorationRuntimeBinder> binders = CollectAllSceneTerrainDecorationBinders();
@@ -53,7 +53,7 @@ public static class SkyPrisonTerrainDecorationVisionBlockerRepairUtility
         LogStats("当前场景全部", binders.Count, stats);
     }
 
-    [MenuItem(MenuRoot + "修复选中地形装饰物视野遮挡节点", priority = 2301)]
+    [MenuItem(MenuRoot + "修复选中地形装饰物视野遮挡节点", false, 148)]
     private static void RepairSelectedTerrainDecorationVisionBlockers()
     {
         List<TerrainDecorationRuntimeBinder> binders = CollectSelectedTerrainDecorationBinders();

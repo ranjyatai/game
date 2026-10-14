@@ -190,12 +190,89 @@ public class TerrainDecorationRuntimeApplier : MonoBehaviour
             return;
 
         ApplyVisualRotation(definition);
-        ApplyLayerStructure();
+        ApplyLayerStructure(definition);
         ApplyShadowSettings(definition);
         ApplyHeightFade(definition);
+        ApplyWalkableSurface(definition);
+        ApplyWalkableProbeLayer(definition);
 
         if (applyMaterialSlotsOnApply)
             ApplyMaterialSlots(definition);
+    }
+
+    /// <summary>
+    /// 「能踩上去、但不该挡住任何人」的装饰物（铁轨、地面铁板、低矮台沿）把碰撞体
+    /// 移到 WalkableProbe 层。
+    ///
+    /// 为什么必须有碰撞体：GroundQueryService 靠向下射线找地表，而它明确排除 trigger
+    /// （QueryTriggerInteraction.Ignore 加一道 col.isTrigger 过滤）。没有实体碰撞体，
+    /// 射线打不到，marker 填了也没用。
+    ///
+    /// 为什么不会绊脚：WalkableProbe 不在 UnitMovementController.blockingLayers 和
+    /// TerrainGroundMotorV5.bodyBlockMask 里，水平 CapsuleCast 和穿透修正都看不见它。
+    /// 射线检测不看物理碰撞矩阵、只看 layerMask，所以查询照常命中。
+    ///
+    /// 为什么这里还要再设一次（Builder 的 ResolveBlockingLayer 已经设过）：
+    /// 同一次 Apply 里 ApplyLayerStructure() 会无条件 SetLayerRecursive(collisionRoot, World3D)，
+    /// 把 Builder 生成时定好的层冲掉。这个函数在它之后跑，负责把层重新按住。
+    /// 判定条件必须和 ResolveBlockingLayer 保持一致，否则两边会打架。
+    /// </summary>
+    private void ApplyWalkableProbeLayer(TerrainDecorationDefinition definition)
+    {
+        if (collisionRoot == null)
+            return;
+
+        string layerName = definition.ResolveCollisionLayerName();
+        int layer = LayerMask.NameToLayer(layerName);
+        if (layer < 0)
+        {
+            Debug.LogWarning(
+                $"[TerrainDecorationRuntimeApplier] {name}: 缺少「{layerName}」层，" +
+                $"「{definition.displayName}」的碰撞体留在 World3D，阻挡开关不会生效。" +
+                "跑一次 Tools/Sky Prison/Ground/Surface/接入可站立装饰物探测层 建层并修正 mask。", this);
+            return;
+        }
+
+        SetLayerRecursive(collisionRoot, layer);
+    }
+
+    /// <summary>
+    /// 定义里填了 walkableSurface 就在根节点挂 GroundSurfaceMarker 并写入，留空则移除。
+    ///
+    /// 挂在根节点而不是碰撞体上：GroundQueryService 向下射线命中碰撞体后是用
+    /// GetComponentInParent&lt;GroundSurfaceMarker&gt;() 往上找的，碰撞体在
+    /// CollisionRoot/Main_Collision_Box，根节点是它的祖先，找得到。挂根节点还能
+    /// 覆盖 CustomRoot 模式下自定义的碰撞结构，不用关心碰撞体具体在哪一层子节点。
+    ///
+    /// 跟 ApplyHeightFade 同一个时机（编辑器放置/模板同步），不是运行时。
+    /// </summary>
+    private void ApplyWalkableSurface(TerrainDecorationDefinition definition)
+    {
+        GroundSurfaceMarker marker = GetComponent<GroundSurfaceMarker>();
+
+        if (definition.walkableSurface == null)
+        {
+            // 从"能踩"改回"不能踩"时要把 marker 收掉，否则残留一个 surfaceDefinition
+            // 为空的 marker，会让 GroundQueryService 认为这里有地面却没有材质——
+            // 比完全没有 marker 更难查。
+            if (marker != null)
+                DestroyMarkerComponent(marker);
+            return;
+        }
+
+        if (marker == null)
+            marker = gameObject.AddComponent<GroundSurfaceMarker>();
+
+        marker.surfaceDefinition = definition.walkableSurface;
+        marker.surfaceType = definition.walkableSurface.surfaceType;
+    }
+
+    private static void DestroyMarkerComponent(GroundSurfaceMarker marker)
+    {
+        if (Application.isPlaying)
+            Destroy(marker);
+        else
+            DestroyImmediate(marker);
     }
 
     // "高层建筑物"勾选框——像遮挡代理体一样，在ApplyDefinition这个编辑器放置/同步时机
@@ -279,7 +356,6 @@ public class TerrainDecorationRuntimeApplier : MonoBehaviour
                 renderer.sharedMaterials = materials;
         }
     }
-
 
     [ContextMenu("Ensure Standard Structure")]
     public void EnsureStandardStructureMenu()
@@ -1596,7 +1672,7 @@ public class TerrainDecorationRuntimeApplier : MonoBehaviour
         return rendererTr;
     }
 
-    private void ApplyLayerStructure()
+    private void ApplyLayerStructure(TerrainDecorationDefinition definition = null)
     {
         int defaultLayer = GetLayer("Default", 0);
         int worldLayer = GetLayer("World3D", defaultLayer);
@@ -1625,7 +1701,10 @@ public class TerrainDecorationRuntimeApplier : MonoBehaviour
         if (stencilWriterRoot == null) stencilWriterRoot = transform.Find("StencilWriterRoot");
         if (editorGizmoRoot == null) editorGizmoRoot = transform.Find("EditorGizmoRoot");
 
-        SetLayerRecursive(visualRoot, worldLayer);
+        // 空气墙这类工具物件的视觉留在 Default(0)：四台相机的 cullingMask 都不含第 0 位，
+        // 游戏里一帧都不渲染，Scene 视图照常可见。和 Builder 的 ApplyStandardLayers 一致。
+        bool editorOnlyVisual = definition != null && definition.editorOnlyVisual;
+        SetLayerRecursive(visualRoot, editorOnlyVisual ? defaultLayer : worldLayer);
         SetLayerRecursive(shadowCasterRoot, worldLayer);
         SetLayerRecursive(mossRoot, worldLayer);
         SetLayerRecursive(fxRoot, worldLayer);

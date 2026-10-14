@@ -1,0 +1,143 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcef4979f273ebc4084e1da01b2d10ae, type: 3}
+  m_Name: "REXIA\u7684\u53F0\u8BCD"
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueSentenceLibrary
+  chapterGroup: REXIA
+  entries:
+  - sentenceId: REXIA-001
+    chapter: REXIA
+    note: 
+    speakerUnit: {fileID: 11400000, guid: d6741bf56b340c1489853788b5eb2452, type: 2}
+    speakerAnonymous: 0
+    speakerAliasOverride: []
+    texts:
+    - languageCode: zh-CN
+      text: "\u5916\u9762\u4E0D\u4F1A\u7ED9\u4F60\u91CD\u6765\u7684\u673A\u4F1A\u3002\u60F3\u6D3B\u7740\u56DE\u6765\uFF0C\u5C31\u5148\u628A\u8BE5\u5B66\u7684\u5B66\u4F1A\u3002"
+    - languageCode: ja
+      text: "\u5916\u306B\u51FA\u305F\u3089\u3084\u308A\u76F4\u3057\u306F\u5229\u304B\u306A\u3044\u3002\u751F\u304D\u3066\u623B\u308A\u305F\u3044\u306A\u3089\u3001\u307E\u305A\u5B66\u3076\u3079\u304D\u3053\u3068\u3092\u5B66\u3073\u306A\u3055\u3044\u3002"
+    - languageCode: en
+      text: Out there, you don't get a second try. If you want to come back alive,
+        learn what needs learning first.
+    voices: []
+  - sentenceId: REXIA-002
+    chapter: REXIA
+    note: 
+    speakerUnit: {fileID: 11400000, guid: d6741bf56b340c1489853788b5eb2452, type: 2}
+    speakerAnonymous: 0
+    speakerAliasOverride: []
+    texts:
+    - languageCode: zh-CN
+      text: "\u53BB\u5427\u3002\u522B\u901E\u5F3A\u3002"
+    - languageCode: ja
+      text: "\u884C\u304D\u306A\u3055\u3044\u3002\u7121\u7406\u306F\u3057\u306A\u3044\u3067\u3002"
+    - languageCode: en
+      text: Go on. Don't push your luck.
+    voices: []
+  - sentenceId: REXIA-003
+    chapter: REXIA
+    note: "\u5F00\u573A\uFF08\u70ED\u8840\u5927\u59D0\u5934\uFF09"
+    speakerUnit: {fileID: 11400000, guid: d6741bf56b340c1489853788b5eb2452, type: 2}
+    speakerAnonymous: 0
+    speakerAliasOverride: []
+    texts:
+    - languageCode: zh-CN
+      text: "\u53D1\u4EC0\u4E48\u5446\uFF0C\u5C0F\u4E2B\u5934\u3002"
+    - languageCode: ja
+      text: "\u4F55\u3092\u307C\u3046\u3063\u3068\u3057\u3066\u308B\u3001\u5C0F\u5A18\u3002"
+    - languageCode: en
+      text: What are you spacing out for, kid?
+    voices: []
+  - sentenceId: REXIA-004
+    chapter: REXIA
+    note: "\u51FA\u53D1"
+    speakerUnit: {fileID: 11400000, guid: d6741bf56b340c1489853788b5eb2452, type: 2}
+    speakerAnonymous: 0
+    speakerAliasOverride: []
+    texts:
+    - languageCode: zh-CN
+      text: "\u53BB\u5427\uFF01\u628A\u90A3\u5E2E\u5BB6\u4F19\u5168\u63CD\u98DE\uFF01"
+    - languageCode: ja
+      text: "\u3044\u3051\u30FC\uFF01\u3042\u3044\u3064\u3089\u3092\u3076\u3063\u98DB\u3070\u305B\uFF01"
+    - languageCode: en
+      text: Go! Knock 'em all flying!
+    voices: []
+  - sentenceId: REXIA-005
+    chapter: REXIA
+    note: "\u64A4\u79BB\u6210\u529F\u56DE\u6765\uFF08\u5F85\u63A5\uFF1A\u4E0A\u4E00\u5C40\u7ED3\u679C\uFF09"
+    speakerUnit: {fileID: 11400000, guid: d6741bf56b340c1489853788b5eb2452, type: 2}
+    speakerAnonymous: 0
+    speakerAliasOverride: []
+    texts:
+    - languageCode: zh-CN
+      text: "\u5E72\u5F97\u597D\uFF01\u56DE\u6765\u4E86\u554A\uFF0C\u5C0F\u4E2B\u5934\uFF01"
+    - languageCode: ja
+      text: "\u3088\u304F\u623B\u3063\u305F\uFF01\u3084\u308B\u3058\u3083\u306A\u3044\u304B\u3001\u5C0F\u5A18\uFF01"
+    - languageCode: en
+      text: Welcome back! Not bad, kid!
+    voices: []
+  - sentenceId: REXIA-006
+    chapter: REXIA
+    note: "\u4E0A\u4E00\u5C40\u9635\u4EA1\u540E\uFF08\u5F85\u63A5\uFF1A\u4E0A\u4E00\u5C40\u7ED3\u679C\uFF09"
+    speakerUnit: {fileID: 11400000, guid: d6741bf56b340c1489853788b5eb2452, type: 2}
+    speakerAnonymous: 0
+    speakerAliasOverride: []
+    texts:
+    - languageCode: zh-CN
+      text: "\u771F\u662F\u7684\uFF0C\u8BA9\u4EBA\u62C5\u5FC3\u3002\u4E0B\u6B21\u7ED9\u6211\u5E72\u5F97\u6F02\u4EAE\u70B9\uFF01"
+    - languageCode: ja
+      text: "\u3063\u305F\u304F\u3001\u5FC3\u914D\u3055\u305B\u3084\u304C\u3063\u3066\u3002\u6B21\u306F\u3082\u3063\u3068\u3046\u307E\u304F\u3084\u308C\uFF01"
+    - languageCode: en
+      text: Geez, you had me worried. Do better next time!
+    voices: []
+  - sentenceId: REXIA-007
+    chapter: REXIA
+    note: "放置台词"
+    speakerUnit: {fileID: 11400000, guid: d6741bf56b340c1489853788b5eb2452, type: 2}
+    speakerAnonymous: 0
+    speakerAliasOverride: []
+    texts:
+    - languageCode: zh-CN
+      text: "喂，站着睡着了？小丫头。"
+    - languageCode: ja
+      text: "おい、立ったまま寝てんのか、小娘。"
+    - languageCode: en
+      text: "Hey, you asleep on your feet, kid?"
+    voices: []
+  - sentenceId: REXIA-008
+    chapter: REXIA
+    note: "放置台词"
+    speakerUnit: {fileID: 11400000, guid: d6741bf56b340c1489853788b5eb2452, type: 2}
+    speakerAnonymous: 0
+    speakerAliasOverride: []
+    texts:
+    - languageCode: zh-CN
+      text: "想好了就快说，别磨磨蹭蹭的！"
+    - languageCode: ja
+      text: "決まったらさっさと言え、ぐずぐずすんな！"
+    - languageCode: en
+      text: "Made up your mind? Then spit it out, quit dawdling!"
+    voices: []
+  - sentenceId: REXIA-009
+    chapter: REXIA
+    note: "放置台词"
+    speakerUnit: {fileID: 11400000, guid: d6741bf56b340c1489853788b5eb2452, type: 2}
+    speakerAnonymous: 0
+    speakerAliasOverride: []
+    texts:
+    - languageCode: zh-CN
+      text: "……有心事的话，回来再听你说。"
+    - languageCode: ja
+      text: "……悩みがあるなら、帰ってきてから聞いてやる。"
+    - languageCode: en
+      text: "...If something's on your mind, I'll hear it when you get back."
+    voices: []

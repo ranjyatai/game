@@ -8,6 +8,13 @@ using UnityEngine.UI;
 using UnityEditor;
 #endif
 
+// 找到真正的根因：Spine的SkeletonRenderer.LateUpdate()带[DefaultExecutionOrder(1)]，
+// 这个类之前没有显式execution order(默认0)，比Spine的网格更新先跑——每帧读到的
+// 渲染网格localBounds是上一帧、甚至偶尔是完全没生成过的空网格(实测抓到过
+// lb.center直接是(0,0,0)的帧)，导致算出来的高度不稳定，名字位置跟着乱跳。
+// 显式设一个比Spine(1)大得多的执行顺序，保证这个脚本的LateUpdate永远排在Spine
+// 的网格更新完成之后执行，读到的才是这一帧真正定稿的网格数据。
+[DefaultExecutionOrder(100)]
 [ExecuteAlways]
 public class UnitOverheadUIView : MonoBehaviour
 {
@@ -20,10 +27,12 @@ public class UnitOverheadUIView : MonoBehaviour
 
     [Header("Layout Safety")]
     [Tooltip("开启后，运行时只刷新血量/状态图标/贴图，不改 UI 编辑器里已经摆好的 RectTransform 坐标。") ]
-    public bool preserveAuthoredLayout = true;
+    public bool preserveAuthoredLayout = false;
 
     public Transform overheadAnchor;
     public RectTransform runtimeUiRoot;
+    /// <summary>外部可见度(0~1)：别的系统要临时藏起整个头顶 UI 时用(怪人光学迷彩中 = 0，现形时回到 1)。跟距离淡出相乘。</summary>
+    [System.NonSerialized] public float externalVisibility = 1f;
     public RectTransform nameRoot;
     public TextMeshProUGUI nameText;
     public RectTransform slotRoot01;
@@ -38,6 +47,8 @@ public class UnitOverheadUIView : MonoBehaviour
     public RawImage damageReferenceImage;
     public RectTransform fillMaskRoot;
     public RawImage fillImage;
+    public TextMeshProUGUI bracketLeftText;
+    public TextMeshProUGUI bracketRightText;
 
     public bool debugLogs = false;
 
@@ -69,23 +80,146 @@ public class UnitOverheadUIView : MonoBehaviour
     private float targetDisplayAlpha = 1f;
     private CanvasGroup slotCanvasGroup;
 
+    // 名字淡入淡出——NPC对话系统("靠近淡入、远离淡出")用，跟血条那套
+    // current/targetDisplayAlpha 是完全对称的一份独立淡出状态，互不干扰
+    // (名字和血条各自的显隐节奏本来就不一样，不能共用同一组alpha)。
+    private CanvasGroup nameCanvasGroup;
+    private float nameCurrentAlpha = 0f;
+    private float nameTargetAlpha = 0f;
+    private bool  nameProximityFadeMode = false;
+    private const float NameFadeSpeed = 6f;
+
+    // 视距淡出——整个头顶UI(名字+血条+括号+状态图标)离玩家太远整体一起淡出，
+    // 跟上面"名字单独淡入淡出"是两回事(那个只管名字、只在NPC对话系统里手动开)，
+    // 这个管的是整块UI、只看跟玩家的距离，自己在LateUpdate里算，不用外部驱动。
+    private CanvasGroup rangeCanvasGroup;
+    private float rangeCurrentAlpha = 1f;
+
     private const string RuntimeRootName = "UnitOverheadUIRuntimeRoot";
     private const int OverheadUiLayer = 19;
-    private static readonly Vector3 RuntimeRootScale = new Vector3(0.02f, 0.02f, 0.02f);
+
+    private static Shader alwaysOnTopUiShader;
+    private static Material alwaysOnTopUiMaterial;
+
+    /// <summary>血条这些Graphic默认材质会正常参与3D深度测试，站在墙/集装箱后面
+    /// 就被挡住了——跟角色描边遮挡穿透用同一个思路，换成ZTest Always的专用材质，
+    /// 不管前面有没有不透明物体都画在最上层。</summary>
+    /// <summary>血条两端的"[ ]"装饰括号——固定贴在SlotView_01左右外侧边缘，
+    /// 不参与血量填充遮罩(不是fillMaskRoot/damageRefMaskRoot的子物体)，纯装饰。</summary>
+    private static void ConfigureBracketRect(TextMeshProUGUI text, TextAlignmentOptions alignment, Vector2 anchor, Vector2 anchoredOffset)
+    {
+        if (text == null)
+            return;
+
+        text.alignment = alignment;
+        text.fontSize = 11f;
+        text.color = Color.white;
+        text.raycastTarget = false;
+
+        RectTransform rect = text.rectTransform;
+        rect.anchorMin = anchor;
+        rect.anchorMax = anchor;
+        rect.pivot = new Vector2(alignment == TextAlignmentOptions.Right ? 1f : 0f, 0.5f);
+        rect.anchoredPosition = anchoredOffset;
+        rect.sizeDelta = new Vector2(16f, 24f);
+    }
+
+    /// <summary>
+    /// 给 Image / RawImage 这类 Graphic 套上头顶 UI 的「永远画在最上层」材质。
+    /// 注意不能拿 TMP 的 materialForRendering 代替——那是字体材质，采样的是字体图集，
+    /// 套到 Image 上着色器根本不读 sprite，只会填出一个实心方块。
+    /// 文字要用的是下面那个 ApplyAlwaysOnTopFontMaterial。
+    /// </summary>
+    public static void ApplyAlwaysOnTopMaterial(Graphic graphic)
+    {
+        if (graphic == null)
+            return;
+
+        if (alwaysOnTopUiMaterial == null)
+        {
+            if (alwaysOnTopUiShader == null)
+                alwaysOnTopUiShader = Shader.Find("SkyPrison/UI/AlwaysOnTop");
+
+            if (alwaysOnTopUiShader == null)
+                return;
+
+            alwaysOnTopUiMaterial = new Material(alwaysOnTopUiShader) { name = "M_UnitOverheadUI_AlwaysOnTop" };
+        }
+
+        graphic.material = alwaysOnTopUiMaterial;
+    }
+
 
     private bool isInitializing;
 
     private void Awake() { SafeInitialize(); }
     private void Start() { SafeInitialize(); }
 
+    /// <summary>在Inspector里右键这个组件 -> "Debug Dump State"，Console会打印一份
+    /// 当前实际运行状态——名字/血条到底卡在哪一步(没绑定UnitDefinition？Canvas没启用？
+    /// 相机没找到？alpha是0？角色身份不是Ally？)不用再靠猜。</summary>
+    [ContextMenu("Debug Dump State")]
+    public void DebugDumpState()
+    {
+        Camera cam = targetCamera != null ? targetCamera : Camera.main;
+        Vector3? screenPoint = null;
+        if (cam != null && overheadAnchor != null)
+            screenPoint = cam.WorldToScreenPoint(overheadAnchor.position);
+
+        Transform spineRootDbg = transform.Find("VisualRoot/SpineRoot");
+        Transform searchRootDbg = spineRootDbg != null ? spineRootDbg : transform;
+        Renderer[] renderersDbg = searchRootDbg.GetComponentsInChildren<Renderer>(true);
+        int nonProxyRendererCount = 0;
+        foreach (var r in renderersDbg)
+            if (r != null && !r.transform.name.Contains("OutlineProxy")) nonProxyRendererCount++;
+
+        string report =
+            "==== UnitOverheadUIView Debug Dump ====\n" +
+            $"GameObject: {gameObject.name} (active={gameObject.activeInHierarchy})\n" +
+            $"unitDefinition: {(unitDefinition != null ? unitDefinition.name : "null")}" +
+                (unitDefinition != null ? $" | characterIdentity={unitDefinition.characterIdentity} | autoOverheadNameVisibility={unitDefinition.autoOverheadNameVisibility} | manualShowOverheadName={unitDefinition.manualShowOverheadName} | overheadHpBarStyle={(unitDefinition.overheadHpBarStyle != null ? unitDefinition.overheadHpBarStyle.name : "null")}" : "") + "\n" +
+            $"[高度诊断] VisualRoot/SpineRoot找到={spineRootDbg != null} | searchRoot={searchRootDbg.name} | 找到的Renderer数(排除描边代理)={nonProxyRendererCount} | enabled={enabled} gameObject.activeInHierarchy={gameObject.activeInHierarchy} faceCameraEveryFrame={faceCameraEveryFrame}\n" +
+            $"overheadAnchor: {(overheadAnchor != null ? $"local={overheadAnchor.localPosition:F3} world={overheadAnchor.position:F3} parent={(overheadAnchor.parent != null ? overheadAnchor.parent.name : "null")} localScale={overheadAnchor.localScale:F3}" : "null")}\n" +
+            $"runtimeUiRoot: {(runtimeUiRoot != null ? $"active={runtimeUiRoot.gameObject.activeSelf} position={runtimeUiRoot.position:F1} localScale={runtimeUiRoot.localScale:F3}" : "null")}\n" +
+            $"Canvas: {(runtimeUiRoot != null && runtimeUiRoot.GetComponent<Canvas>() != null ? $"renderMode={runtimeUiRoot.GetComponent<Canvas>().renderMode} enabled={runtimeUiRoot.GetComponent<Canvas>().enabled} sortingOrder={runtimeUiRoot.GetComponent<Canvas>().sortingOrder}" : "missing")}\n" +
+            $"camera used: {(cam != null ? cam.name : "null (Camera.main 没找到摄像机！)")} | screenPoint={(screenPoint.HasValue ? screenPoint.Value.ToString("F1") : "n/a")} (z<0代表在相机背后，会被隐藏)\n" +
+            $"nameRoot: {(nameRoot != null ? $"active={nameRoot.gameObject.activeSelf} anchoredPosition={nameRoot.anchoredPosition:F1} sizeDelta={nameRoot.sizeDelta:F1} localScale={nameRoot.localScale:F3} worldPos={nameRoot.position:F2}" : "null")} | nameText: {(nameText != null ? $"\"{nameText.text}\" fontSize={nameText.fontSize} enableAutoSizing={nameText.enableAutoSizing} color={nameText.color} font={(nameText.font != null ? nameText.font.name : "null")}" : "null")}\n" +
+            $"preserveAuthoredLayout={preserveAuthoredLayout} autoEnsureStructure={autoEnsureStructure} applyOnStart={applyOnStart}\n" +
+            $"appliedStyle nameFontSize(live asset)={(appliedStyle != null ? appliedStyle.nameFontSize.ToString() : "n/a")} nameOffset(live asset)={(appliedStyle != null ? appliedStyle.nameOffset.ToString() : "n/a")} barSize(live asset)={(appliedStyle != null ? appliedStyle.barSize.ToString() : "n/a")} hpBarOffset(live asset)={(appliedStyle != null ? appliedStyle.hpBarOffset.ToString() : "n/a")}\n" +
+            $"nameProximityFadeMode={nameProximityFadeMode} nameCurrentAlpha={nameCurrentAlpha:F2} nameTargetAlpha={nameTargetAlpha:F2}\n" +
+            $"slotRoot01: {(slotRoot01 != null ? $"active={slotRoot01.gameObject.activeSelf} anchoredPosition={slotRoot01.anchoredPosition:F2}" : "null")} | slotView01.sizeDelta={(slotView01 != null ? slotView01.sizeDelta.ToString("F2") : "null")} | slotCanvasGroup.alpha={(slotCanvasGroup != null ? slotCanvasGroup.alpha.ToString("F2") : "null")}\n" +
+            $"currentDisplayAlpha={currentDisplayAlpha:F2} targetDisplayAlpha={targetDisplayAlpha:F2} (血条本身的显隐——满血且hideWhenFull=true时会故意隐藏)\n" +
+            $"currentPercent={currentPercent:F3} targetPercent={targetPercent:F3} (血量填充比例——如果扣血了这两个数没变，说明SetHp根本没被调用)\n" +
+            $"fillMaskRoot.sizeDelta={(fillMaskRoot != null ? fillMaskRoot.sizeDelta.ToString("F1") : "null")} slotView01.sizeDelta={(slotView01 != null ? slotView01.sizeDelta.ToString("F1") : "null")}\n" +
+            $"appliedStyle: {(appliedStyle != null ? appliedStyle.name : "null")}\n" +
+            $"fillImage: {(fillImage != null ? $"texture={(fillImage.texture != null ? fillImage.texture.name : "null")} color={fillImage.color}" : "null")}";
+
+        Debug.Log(report, this);
+    }
+
+    // 头顶锚点高度改成"生成后测几帧就锁死"，不再逐帧跟着当前姿势走——用户明确
+    // 指出这条line该绑的是角色的站立身高(脚底到头顶的固定距离)，不该跟着走路/挥手
+    // 这类姿势变化实时起伏("头点不点头不该影响血条高低")。等几帧而不是第一帧就锁
+    // 是为了绕开 Spine 骨骼还没摆好姿势那个已知坑(见下面方法里的历史注释)。
+    private float _smoothedAnchorHeight = -1f;
+    private int _anchorHeightSettleFramesRemaining = 12;
+
     private void OnEnable()
     {
+        _smoothedAnchorHeight = -1f;
+        _anchorHeightSettleFramesRemaining = 12;
         OverheadBarStyleAsset.OnStyleChanged += HandleStyleChanged;
+        // 见HandleBeforeCameraRenders的注释——朝向摄像机这一步必须挂在渲染管线的
+        // 逐相机回调上，不能留在LateUpdate里。注意：Camera.onPreCull是内置渲染管线
+        // 的回调，在URP/SRP下永远不会被触发(已用日志实测确认)，必须用
+        // RenderPipelineManager.beginCameraRendering。
+        UnityEngine.Rendering.RenderPipelineManager.beginCameraRendering += HandleBeforeCameraRenders;
     }
 
     private void OnDisable()
     {
         OverheadBarStyleAsset.OnStyleChanged -= HandleStyleChanged;
+        UnityEngine.Rendering.RenderPipelineManager.beginCameraRendering -= HandleBeforeCameraRenders;
     }
 
     private void OnValidate()
@@ -126,27 +260,267 @@ public class UnitOverheadUIView : MonoBehaviour
         if (Mathf.Abs(currentDisplayAlpha - targetDisplayAlpha) < 0.0005f)
             currentDisplayAlpha = targetDisplayAlpha;
 
+        if (nameProximityFadeMode)
+            UpdateNameFade(dt);
+
         RefreshBarVisuals();
     }
 
     private void LateUpdate()
     {
-        if (!faceCameraEveryFrame)
-            return;
+        FitOutlineToScreenPixels();
+        // 高度计算跟"要不要转向摄像机"是两件不相关的事——高度只依赖角色自己的渲染
+        // 网格，每帧持续测量没问题("只测一次就锁死"试过，已经证明有更严重的漏洞：
+        // 角色刚生成时Spine骨骼还没摆好姿势就被锁死，永久卡在脚底)。朝向摄像机
+        // 这一步反而不能留在这里——见HandleBeforeCameraRenders的注释，那部分挂在
+        // RenderPipelineManager.beginCameraRendering上，LateUpdate读到的摄像机
+        // Transform在Cinemachine接管的场景里永远是上一帧的旧值。
+        UpdateOverheadAnchorHeightFromRendererBounds();
 
-        ApplyBillboardToCamera();
+        UpdateRangeFade();
     }
 
-    private void ApplyBillboardToCamera()
+    /// <summary>整个头顶UI离玩家太远就整体淡出——跟名字的"靠近淡入/远离淡出"是
+    /// 两套独立的alpha，互不干扰。appliedStyle.visibilityFadeStartDistance&lt;=0
+    /// 表示没启用，永远保持完全不透明。</summary>
+    private void UpdateRangeFade()
     {
         if (runtimeUiRoot == null)
             return;
 
-        Camera cam = targetCamera != null ? targetCamera : Camera.main;
-        if (cam == null)
+        float startDist = appliedStyle != null ? appliedStyle.visibilityFadeStartDistance : 0f;
+
+        if (!Application.isPlaying || startDist <= 0f)
+        {
+            // 编辑器里(没在Play)或者这个功能没启用——不参与淡出判定，直接保证满
+            // alpha，避免上次Play模式算出来的半透明值卡住不还原。外部可见度仍然生效(光学迷彩)。
+            float ext = Application.isPlaying ? Mathf.Clamp01(externalVisibility) : 1f;
+            if (ext < 0.999f && rangeCanvasGroup == null) rangeCanvasGroup = EnsureCanvasGroup(runtimeUiRoot);
+            if (rangeCanvasGroup != null) rangeCanvasGroup.alpha = ext;
+            return;
+        }
+
+        GameObject playerGo = SkyPrisonPlayerAuthority.CurrentPlayerUnit?.gameObject;
+        float targetAlpha = 1f;
+        if (playerGo != null)
+        {
+            float dist = Vector3.Distance(playerGo.transform.position, transform.position);
+            float fadeRange = Mathf.Max(0.01f, appliedStyle.visibilityFadeRange);
+            targetAlpha = 1f - Mathf.Clamp01((dist - startDist) / fadeRange);
+        }
+        targetAlpha *= Mathf.Clamp01(externalVisibility);
+
+        float speed = appliedStyle != null ? appliedStyle.fadeSpeed : 8f;
+        rangeCurrentAlpha = Mathf.Lerp(rangeCurrentAlpha, targetAlpha, 1f - Mathf.Exp(-speed * Time.deltaTime));
+        if (Mathf.Abs(rangeCurrentAlpha - targetAlpha) < 0.0005f)
+            rangeCurrentAlpha = targetAlpha;
+
+        if (rangeCanvasGroup == null) rangeCanvasGroup = EnsureCanvasGroup(runtimeUiRoot);
+        rangeCanvasGroup.alpha = rangeCurrentAlpha;
+        bool visible = rangeCurrentAlpha > 0.001f;
+        rangeCanvasGroup.blocksRaycasts = visible;
+        rangeCanvasGroup.interactable = visible;
+    }
+
+    /// <summary>用真实渲染出来的Renderer.localBounds量角色实际有多高，把OverheadAnchor
+    /// 摆到模型顶部正上方——比读Spine骨架文件里声明的Width/Height可靠得多(那个是
+    /// 美术填的参考值，不一定跟实际渲染大小对得上，之前就因为漏乘scale把UI摆到
+    /// 天上)。眼见为实：直接量渲染出来的东西，缩放/骨架大小改了也自动跟着对。
+    /// 只量 SpineRoot 底下的渲染器，排除 OutlineProxy_*——那些是描边代理，位置/
+    /// 缩放不一定跟主体一致，混进来算包围盒会得到错误的高度(参照之前"幽灵分身"
+    /// 那次描边代理跑飞的教训)。
+    ///
+    /// 之前这里算的是完整的世界坐标(X/Y/Z都现测)，再InverseTransformPoint转回局部——
+    /// 兜了一圈想让锚点自动对齐"倾斜/翻转/2.5D假Z排序"这些复杂情况，结果反而引入
+    /// 了新的抖动来源，玩家一走动名字就跟着相对角色飘，排查了很久也没能完全定位
+    /// 具体是哪一步在抖。用户一句话点破：锚点本来就该是"挂在角色身上、局部偏移量
+    /// 固定不变的一个普通子物体"，跟角色一起走、一起转、一起缩放，不需要每帧现测
+    /// 世界坐标再转换。现在只测一个标量——"模型最高点比角色根节点高出多少"，
+    /// 直接写进localPosition.y，X/Z永远钉在0(=贴着根节点自己的位置，根节点在哪
+    /// 名字就在正上方哪，根节点自己的Transform层级天然处理好跟随/旋转，不用这里
+    /// 操心)。</summary>
+    private void UpdateOverheadAnchorHeightFromRendererBounds()
+    {
+        if (overheadAnchor == null)
             return;
 
-        runtimeUiRoot.rotation = cam.transform.rotation;
+        // 已经锁死过（settle帧数用完、且已经成功对齐过一次）就不再重测——这才是
+        // 用户要的"绑脚底身高，不跟着姿势抖"：站立身高只在生成后的头十几帧内确定
+        // 一次，之后挥手/走路/攻击动作让渲染器包围盒怎么变都不会再影响这条line。
+        if (_anchorHeightSettleFramesRemaining <= 0 && _smoothedAnchorHeight >= 0f)
+            return;
+
+        Transform spineRoot = transform.Find("VisualRoot/SpineRoot");
+        Transform searchRoot = spineRoot != null ? spineRoot : transform;
+
+        Renderer[] renderers = searchRoot.GetComponentsInChildren<Renderer>(true);
+        if (renderers == null || renderers.Length == 0)
+            return;
+
+        // localBounds是渲染器自己局部空间下的包围盒，不受当前朝向/倾斜角度影响——
+        // 蹲下/变形这类真的会改变localBounds本身的姿势变化依然会正确反映出来。
+        // 每个渲染器只取"局部空间最高点，换算成世界Y"，再用transform.InverseTransformPoint
+        // 转回角色根节点自己的局部空间取Y分量——只要这一个标量，X/Z完全不用管，
+        // 从根源上排除了"包围盒中心X/Z被倾斜或排序假Z污染"这整类问题。
+        //
+        // 真正的抖动根因(实测日志确认过)：Spine的SkeletonRenderer执行顺序是1，这个
+        // 类之前没设execution order(默认0)，比Spine的网格更新先跑，读到的localBounds
+        // 有时候是上一帧的、甚至偶尔是完全没生成过的空网格((0,0,0))——已经在class
+        // 上加了[DefaultExecutionOrder(100)]从根源解决，不需要靠"锁死不重测"这种
+        // 绕开症状的办法。
+        float maxLocalTop = float.NegativeInfinity;
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer r = renderers[i];
+            if (r == null || r.transform.name.Contains("OutlineProxy"))
+                continue;
+
+            Bounds lb = r.localBounds;
+            float worldTopY = r.transform.position.y + (lb.center.y + lb.extents.y) * r.transform.lossyScale.y;
+            // 模型最高点相对根节点脚底的高度。以前这里是
+            //   InverseTransformPoint((0, worldTopY, 0)).y - InverseTransformPoint(Vector3.zero).y
+            // 两项里根节点的世界 Y 恰好抵消成"+rootY"，结果等于 worldTopY（绝对高度）而不是相对高度：
+            // 角色站在 y=0 的地上看不出来，站在 y=1 的白模地面 / y=2 的高台上，名字就整整高出 1~2 米。
+            float localTop = transform.InverseTransformPoint(new Vector3(transform.position.x, worldTopY, transform.position.z)).y;
+            if (localTop > maxLocalTop)
+                maxLocalTop = localTop;
+        }
+
+        if (float.IsNegativeInfinity(maxLocalTop) || maxLocalTop <= 0.001f)
+            return;
+
+        // 贴着模型最高点摆会正好卡在发际线附近，看起来像"太低"——加一点头顶留白
+        // (按模型高度的比例算，不同大小的角色留白也按比例跟着变)。这里同时把原本
+        // 靠nameOffset(在跟着摄像机旋转的Canvas局部空间里叠加的二级偏移)才能做到的
+        // "名字再往上挪一点"也一并折算进来——nameOffset现在清零，不再让名字的最终
+        // 位置依赖两套独立坐标系统叠加(稳定的世界锚点 + 每帧跟着摄像机旋转的Canvas
+        // 内偏移)，全部并成这一个已验证稳定的计算。
+        // 0.32 是当初配合"世界空间竖直偏移"调出来的系数——现在偏移轴换成了
+        // VisualRoot的本地上轴（45度倾斜方向），同样的系数在这个方向上投影出来的
+        // 视觉高度比原来更远，才会显得"离头顶太远"。先调小到接近发际线的量，
+        // 具体数值进Play目视确认后可能还要微调。
+        float headroom = maxLocalTop * 0.04f;
+        float height = maxLocalTop + headroom;
+
+        // settle阶段（生成后头12帧）内每帧继续现测+平滑收敛到稳定值，帧数用完之后
+        // 上面的早退直接锁死这个值，不会再进到这里——蹲下/攻击这类姿势变化不会再
+        // 让血条跟着抖，代价是这12帧里如果角色一进场就在做大动作，测到的"站立身高"
+        // 可能不是真正静止站立的姿势，但这比"永远跟着姿势抖"要符合预期。
+        float dt = Application.isPlaying ? Time.deltaTime : 1f / 60f;
+        if (_smoothedAnchorHeight < 0f)
+            _smoothedAnchorHeight = height; // 第一次直接对齐，不从0平滑上来（否则出生瞬间会有一下明显的往上飘）
+        else
+            _smoothedAnchorHeight = Mathf.Lerp(_smoothedAnchorHeight, height, 1f - Mathf.Exp(-10f * dt));
+
+        if (_anchorHeightSettleFramesRemaining > 0)
+            _anchorHeightSettleFramesRemaining--;
+
+        // 2026-08-14：改回 localPosition，用户明确指出这条line应该沿billboard自己
+        // 的"上"轴走，不是世界竖直方向——这正是最初"把人物和HUD一起billboard"这个
+        // 思路本身：HUD要摆在角色billboard自己的那条线上，而这条线只有在父节点是
+        // VisualRoot（会转向相机）时，本地Y轴才等于"billboard的上"。改成世界
+        // Vector3.up是把这条线又拽回世界竖直方向，表现正是用户说的"各自45度"——
+        // 角色的billboard轴和HUD的位置轴不再是同一条线，两者视觉上各转各的。
+        //
+        // "太高了"这个反馈针对的是height这个标量本身，不是它该沿哪个轴走——
+        // 量级问题应该调headroom/maxLocalTop这个数值，不该把轴改回世界空间。
+        overheadAnchor.localPosition = new Vector3(0f, _smoothedAnchorHeight, 0f);
+    }
+
+    /// <summary>找到真正的根因：这个场景的Main Camera挂了CinemachineBrain，
+    /// 它的实际位置/旋转是在Camera.OnPreCull()里更新的——这个回调比场景里所有
+    /// 脚本的Update/LateUpdate都晚(是渲染管线在真正剔除/渲染这台摄像机之前才
+    /// 触发的，不受DefaultExecutionOrder约束)。之前这一步放在LateUpdate里，
+    /// 读到的runtimeUiRoot要对齐的摄像机朝向永远是"上一帧Cinemachine还没更新前"
+    /// 的旧值，跟这一帧真正渲染出来的画面差一帧——玩家持续移动时，就表现成
+    /// 名字/头顶UI跟着移动方向持续滞后飘移(脚下的地面阴影系统UnitGroundShadowFollowerTerrain
+    /// 也在LateUpdate里读摄像机，同一个坑，只是这个类不归这次改)。改成挂在
+    /// RenderPipelineManager.beginCameraRendering上，保证在Cinemachine真正定位完
+    /// 摄像机之后才读取朝向，这才是这一帧最终会被渲染出来的那个朝向。
+    /// (Camera.onPreCull是内置管线的回调，URP下永不触发，用了等于没写。)</summary>
+    private void HandleBeforeCameraRenders(UnityEngine.Rendering.ScriptableRenderContext ctx, Camera renderingCam)
+    {
+        if (!faceCameraEveryFrame || runtimeUiRoot == null)
+            return;
+
+        Camera cam = ResolveOverheadCamera();
+        if (cam == null || renderingCam != cam)
+            return;
+
+        // 2026-08-14：之前这里每帧手动把 runtimeUiRoot.rotation 设成 cam.transform.rotation，
+        // 用来让HUD面向相机。现在 overheadAnchor 已经挂到 VisualRoot 下面（见
+        // EnsureStructure），朝向直接继承父节点——VisualRoot 转到哪，这里就跟着到哪，
+        // 完全不需要在这个单独的、时机还和角色本体不一样的回调里再算一遍。
+        //
+        // 只有找不到 VisualRoot（anchorSharesVisualRootRotation=false，走了退化到
+        // 逻辑根节点的兜底路径）才需要这段手动朝向——那种情况下 overheadAnchor 没有
+        // 可继承的旋转来源，之前的行为（好歹自己转向相机）比完全不转要好。
+        if (!anchorSharesVisualRootRotation)
+            runtimeUiRoot.rotation = cam.transform.rotation;
+
+        // 诊断：之前两次都以为改对了，用户实测还是45+45。与其继续猜前提成不成立，
+        // 直接把关键状态打出来——一次性判断到底是"没找到VisualRoot走了兜底"，
+        // 还是"找到了但VisualRoot本身没有被CameraFacingBillboard转到位"，
+        // 还是"两个旋转其实一致，问题出在别的地方（比如runtimeUiRoot下面某个
+        // 子节点又带了自己的旋转)"。每5秒打一次，够定位又不刷屏。
+        if (DebugBillboardLogs && Time.frameCount % 300 == 0)
+        {
+            Transform visualRoot = transform.Find("VisualRoot");
+            var billboard = visualRoot != null ? visualRoot.GetComponent<CameraFacingBillboard>() : null;
+            Debug.Log($"[OverheadBillboardDiag] {name} " +
+                      $"anchorSharesVisualRootRotation={anchorSharesVisualRootRotation} " +
+                      $"VisualRoot找到={visualRoot != null} " +
+                      $"VisualRoot上有CameraFacingBillboard={billboard != null}" +
+                      (billboard != null ? $"(enabled={billboard.enabled})" : "") +
+                      $"\n  VisualRoot.rotation.eulerAngles={(visualRoot != null ? visualRoot.rotation.eulerAngles.ToString("F1") : "n/a")}" +
+                      $"\n  overheadAnchor.rotation.eulerAngles={(overheadAnchor != null ? overheadAnchor.rotation.eulerAngles.ToString("F1") : "n/a")}" +
+                      $"\n  overheadAnchor.localRotation.eulerAngles={(overheadAnchor != null ? overheadAnchor.localRotation.eulerAngles.ToString("F1") : "n/a")}" +
+                      $"\n  runtimeUiRoot.rotation.eulerAngles={runtimeUiRoot.rotation.eulerAngles:F1}" +
+                      $"\n  runtimeUiRoot.localRotation.eulerAngles={runtimeUiRoot.localRotation.eulerAngles:F1}" +
+                      $"\n  cam.transform.rotation.eulerAngles={cam.transform.rotation.eulerAngles:F1}", this);
+
+            // runtimeUiRoot.localRotation 的值跟 cam.transform.rotation 完全相等——
+            // 这不是我写的那段代码干的（anchorSharesVisualRootRotation=True 时那段
+            // 代码根本不会执行），说明另有一个脚本直接把相机的世界旋转当成本地旋转
+            // 写了进去。列出这个物体上挂的所有组件，把元凶揪出来。
+            var comps = runtimeUiRoot.GetComponents<Component>();
+            var compNames = new System.Text.StringBuilder("[OverheadBillboardDiag] runtimeUiRoot上的组件：");
+            foreach (var c in comps)
+                compNames.Append(c != null ? c.GetType().Name : "NULL").Append(", ");
+            Debug.Log(compNames.ToString(), this);
+        }
+    }
+
+    // EnsureStructure 里记录：overheadAnchor 是否成功挂到了 VisualRoot 下面共享朝向，
+    // 还是退化到了逻辑根节点（没有 VisualRoot 时的兜底）。
+    private bool anchorSharesVisualRootRotation;
+
+    /// <summary>[OverheadBillboardDiag] 诊断日志开关，默认关。每个单位每 300 帧一组、每条带长堆栈，
+    /// 开着会把 Editor.log 写爆。需要时在代码或调试器里临时置 true。</summary>
+    public static bool DebugBillboardLogs;
+
+    // 场景里明确存在一个专属的"OverheadUICamera"(Overlay类型，只渲染头顶UI所在的
+    // 层，叠加合成在主摄像机画面上面)——之前这里一直用Camera.main，间接依赖
+    // "MainCamera"标签解析到的那个摄像机对象。这个项目摄像机结构比较复杂
+    // (Main Camera/GamePlayCamera/CinemachineCamera/OverheadUICamera同时存在)，
+    // 名字跟着玩家移动飘的问题查到这一步还没能定位到具体是哪一层的差异，与其
+    // 继续猜Camera.main解析到的到底是不是渲染这层UI的那个摄像机，不如直接明确
+    // 指定用这个专属摄像机，彻底排除"用错摄像机"这一整类可能性。缓存住，不用
+    // 每帧GameObject.Find。
+    private static Camera _cachedOverheadUICamera;
+
+    private Camera ResolveOverheadCamera()
+    {
+        if (targetCamera != null)
+            return targetCamera;
+
+        if (_cachedOverheadUICamera == null)
+        {
+            GameObject go = GameObject.Find("OverheadUICamera");
+            if (go != null) _cachedOverheadUICamera = go.GetComponent<Camera>();
+        }
+
+        return _cachedOverheadUICamera != null ? _cachedOverheadUICamera : Camera.main;
     }
 
     private void HandleStyleChanged(OverheadBarStyleAsset changedStyle)
@@ -210,6 +584,45 @@ public class UnitOverheadUIView : MonoBehaviour
             nameRoot.gameObject.SetActive(visible);
     }
 
+    /// <summary>
+    /// 切到"靠近淡入/远离淡出"模式——一旦调过一次，ApplyNameVisibilityFromDefinition()
+    /// 和 UnitOverheadHealthBridge.ForceOverheadVisibility() 里原本按
+    /// autoOverheadNameVisibility/manualShowOverheadName 直接 SetActive 的逻辑就不再
+    /// 插手名字显隐了(死亡隐藏除外)，改由 SetNameFadeTarget() 驱动。
+    /// </summary>
+    public void SetNameProximityFadeMode(bool enabled)
+    {
+        nameProximityFadeMode = enabled;
+    }
+
+    /// <summary>UnitOverheadHealthBridge.ForceOverheadVisibility() 用来判断要不要
+    /// 让开，别跟 SetNameFadeTarget() 抢着改 nameRoot 的激活状态。</summary>
+    public bool IsNameProximityFadeMode => nameProximityFadeMode;
+
+    /// <summary>NPCDialogueInteractable按玩家距离调用——true=淡入，false=淡出。</summary>
+    public void SetNameFadeTarget(bool visible)
+    {
+        nameProximityFadeMode = true;
+        nameTargetAlpha = visible ? 1f : 0f;
+        if (visible && nameRoot != null)
+            nameRoot.gameObject.SetActive(true); // 淡入前先激活，淡出完全归零后才在Update里关掉
+    }
+
+    private void UpdateNameFade(float dt)
+    {
+        if (nameRoot == null) return;
+        if (nameCanvasGroup == null) nameCanvasGroup = EnsureCanvasGroup(nameRoot);
+
+        nameCurrentAlpha = Mathf.Lerp(nameCurrentAlpha, nameTargetAlpha, 1f - Mathf.Exp(-NameFadeSpeed * dt));
+        if (Mathf.Abs(nameCurrentAlpha - nameTargetAlpha) < 0.002f)
+            nameCurrentAlpha = nameTargetAlpha;
+
+        nameCanvasGroup.alpha = nameCurrentAlpha;
+
+        if (nameTargetAlpha <= 0f && nameCurrentAlpha <= 0f)
+            nameRoot.gameObject.SetActive(false);
+    }
+
     public void SetDisplayName(string value)
     {
         EnsureNameHierarchyCorrect();
@@ -230,23 +643,34 @@ public class UnitOverheadUIView : MonoBehaviour
         if (autoEnsureStructure)
             EnsureStructure();
 
-        if (!preserveAuthoredLayout)
-            ApplyUnitDefinitionTransformOverrides();
-
+        // preserveAuthoredLayout以前会把血条/名字的位置和尺寸拆成两条独立代码路径
+        // (一条用于"手搓预制体"、一条用于"自动生成的壳")，每次改一条另一条就没人管，
+        // 这才是这几轮"这里改好了那里又坏了"的根本原因。现在统一成一条路径，位置/
+        // 尺寸/颜色永远只从样式资产读一份逻辑，不再区分是不是手搓预制体。
+        ApplyUnitDefinitionTransformOverrides();
         ApplyNameStyle(style);
-
-        if (preserveAuthoredLayout)
-        {
-            ApplyBarVisualStyleOnly(style);
-            ApplyStatusAreaVisibilityOnly(style);
-        }
-        else
-        {
-            ApplyBarStyle(style);
-            ApplyStatusAreaStyle(style);
-        }
+        ApplyBarStyle(style);
+        ApplyStatusAreaStyle(style);
         ApplyNameVisibilityFromDefinition();
-        ApplyBillboardToCamera();
+        // 2026-08-14：这是"45+45=90"真正的元凶——之前只查了每帧跑的
+        // HandleBeforeCameraRenders，漏了这条"应用样式"时跑的一次性路径。
+        //
+        // 这里直接把 runtimeUiRoot 的世界旋转设成当前相机旋转，保证样式刚应用/
+        // 编辑器没进Play模式时也能立刻摆正。问题是它执行时机早于
+        // CameraFacingBillboard第一次转动VisualRoot——那一刻父节点世界旋转还是0，
+        // 这行代码算出的本地旋转就被烘焙成了"45度"(=相机自己的倾角)。之后
+        // VisualRoot才被转到45度，这份烘焙值没人再更新（因为anchorSharesVisualRootRotation
+        // 为真时，每帧那条路径被跳过），于是45(烘焙的本地值)+45(父节点后来转到的)=90。
+        //
+        // 现在挂到VisualRoot下面共享朝向时，这条一次性路径也要跳过——
+        // runtimeUiRoot的本地旋转应该保持EnsureSingleRuntimeRoot里设的identity，
+        // 完全靠继承，不需要（也不能）在这里再手动摆一次。
+        if (!anchorSharesVisualRootRotation && faceCameraEveryFrame && runtimeUiRoot != null)
+        {
+            Camera camForStyle = ResolveOverheadCamera();
+            if (camForStyle != null)
+                runtimeUiRoot.rotation = camForStyle.transform.rotation;
+        }
         UpdateDisplayAlphaTarget();
 
         if (!Application.isPlaying)
@@ -283,7 +707,62 @@ public class UnitOverheadUIView : MonoBehaviour
 
     public void EnsureStructure()
     {
-        overheadAnchor = EnsureTransformChild(transform, "OverheadAnchor");
+        // 任务标记单独一个组件，只读这个类的 unitDefinition / nameRoot / nameText。
+        // 在这里补挂而不是要求预制体里手加：头顶 UI 本来就是按单位动态搭的。
+        if (GetComponent<UnitOverheadQuestMarker>() == null)
+            gameObject.AddComponent<UnitOverheadQuestMarker>();
+
+        // 2026-08-14：挂到 VisualRoot 下面，不再挂在逻辑根节点(transform)下面。
+        //
+        // 角色本体的 billboard 朝向由 CameraFacingBillboard 只旋转 VisualRoot 完成
+        // （45度贴合相机视线那套），逻辑根节点(transform)本身不转——之前 overheadAnchor
+        // 挂在 transform 下，跟角色朝向完全是两套独立的东西：角色转、锚点不转，
+        // 于是头顶UI需要自己单独算一套朝向/位置去追角色，两边各自为政，任何一点
+        // 时机差（LateUpdate vs beginCameraRendering）或计算方式差异（世界空间偏移
+        // vs 相机空间偏移）都会表现成"HUD跟角色不同步"——之前两次修复(反投影/相机up轴)
+        // 想解决的都是这个"追"的过程，但只要还是两套独立系统，就永远追不干净。
+        //
+        // 挂到 VisualRoot 下面之后，overheadAnchor 的朝向直接继承父节点的旋转——
+        // 角色朝哪转，锚点跟着转到哪，不需要写任何同步代码，两者不可能不一致，
+        // 因为它们现在共用同一次旋转计算，不是两次独立计算出来的两个结果。
+        Transform visualRootForAnchor = transform.Find("VisualRoot");
+        anchorSharesVisualRootRotation = visualRootForAnchor != null;
+        overheadAnchor = EnsureTransformChild(
+            visualRootForAnchor != null ? visualRootForAnchor : transform,
+            "OverheadAnchor");
+
+        // EnsureTransformChild是按名字找、找到了就直接复用——如果这个预制体里
+        // 早就存在一个OverheadAnchor（老系统年代，挂在不转的父节点下时，可能被
+        // 手动摆过角度去补偿看起来"不够斜"），复用时会带着那份旧旋转一起过来。
+        // 现在父节点(VisualRoot)自己就有45度的billboard旋转，这份历史遗留的本地
+        // 旋转会跟父节点的旋转叠加——45+45=90度，表现正好是"翻倍了"。
+        // 挂到VisualRoot下之后，朝向完全交给父节点继承，本地旋转必须清零，
+        // 不管这个anchor是刚建的还是找到的旧对象。
+        if (anchorSharesVisualRootRotation)
+            overheadAnchor.localRotation = Quaternion.identity;
+
+        // 挂载点从 transform 迁到 VisualRoot 之后，已经存过的场景/预制体里
+        // 可能还留着挂在 transform 下的旧 OverheadAnchor——EnsureTransformChild
+        // 只会在新父节点下找不到就新建，老的那份不会自动清掉，会变成孤儿一直
+        // 留在层级里。这里顺手清掉，只在它确实不是刚才拿到手的那个时才删。
+        if (visualRootForAnchor != null)
+        {
+            Transform staleAnchor = transform.Find("OverheadAnchor");
+            if (staleAnchor != null && staleAnchor != overheadAnchor)
+                SafeDestroy(staleAnchor.gameObject);
+        }
+
+        // 改回挂在单位身上的World Space Canvas(跟着单位在地图里到处跑)，不再是
+        // 屏幕投影——之前的ScreenSpaceOverlay在Canvas层面有个死结：Canvas自己的
+        // RectTransform每帧都被Unity强制拉伸铺满整个屏幕，不管代码怎么改子物体的
+        // position都没用，所有单位的UI因此全部叠在屏幕中心。World Space没有这个
+        // 问题，Canvas本身就是一个普通的3D物件，跟着OverheadAnchor走就行。
+        //
+        // 清掉屏幕投影阶段遗留的画布壳节点，避免僵尸重影。
+        Transform legacyScreenCanvas = overheadAnchor.Find("UnitOverheadUIScreenCanvas");
+        if (legacyScreenCanvas != null)
+            SafeDestroy(legacyScreenCanvas.gameObject);
+
         runtimeUiRoot = EnsureSingleRuntimeRoot(overheadAnchor);
         EnsureCanvasComponents(runtimeUiRoot);
         EnsureNameHierarchyCorrect();
@@ -297,6 +776,26 @@ public class UnitOverheadUIView : MonoBehaviour
         fillMaskRoot = EnsureMaskRoot(slotView01, "FillMaskRoot");
         fillImage = EnsureRawImageChild(fillMaskRoot, "Fill");
 
+        // 血条要能穿透墙体/集装箱这些不透明3D物体显示在最上层，不能用默认UI
+        // 材质(会正常参与深度测试、被挡住)——换成ZTest Always的专用材质。
+        ApplyAlwaysOnTopMaterial(damageReferenceImage);
+        ApplyAlwaysOnTopMaterial(fillImage);
+
+        // 血条两端加"[ ]"装饰括号，贴着血条左右边缘，不参与血量填充遮罩。
+        bracketLeftText = EnsureTMPChild(slotView01, "BracketLeft", "[");
+        bracketRightText = EnsureTMPChild(slotView01, "BracketRight", "]");
+        ConfigureBracketRect(bracketLeftText, TextAlignmentOptions.Right, new Vector2(0f, 0.5f), new Vector2(-2f, 0f));
+        ConfigureBracketRect(bracketRightText, TextAlignmentOptions.Left, new Vector2(1f, 0.5f), new Vector2(2f, 0f));
+        ApplyAlwaysOnTopFontMaterial(bracketLeftText);
+        ApplyAlwaysOnTopFontMaterial(bracketRightText);
+        ApplyThinBlackTextOutline(bracketLeftText);
+        ApplyThinBlackTextOutline(bracketRightText);
+        CenterBracketVertically(bracketLeftText);
+        CenterBracketVertically(bracketRightText);
+        // 括号改用线条绘制（宽度可按屏幕像素换算，保证至少 1px），文字括号保留对象但不显示
+        if (bracketLeftText != null) bracketLeftText.enabled = false;
+        if (bracketRightText != null) bracketRightText.enabled = false;
+
         statusRoot = EnsureRectChild(runtimeUiRoot, "StatusRoot");
         statusAreaRoot = EnsureRectChild(statusRoot, "StatusAreaRoot");
         statusContentRoot = EnsureRectChild(statusAreaRoot, "StatusContentRoot");
@@ -304,14 +803,24 @@ public class UnitOverheadUIView : MonoBehaviour
         damageNumberRoot = EnsureRectChild(runtimeUiRoot, "DamageNumberRoot");
         damageNumberContentRoot = EnsureRectChild(damageNumberRoot, "DamageNumberContentRoot");
 
-        if (!preserveAuthoredLayout)
+        // ConfigureDefaultAnchors()只应该在这个节点刚建出来、什么值都还没有的时候
+        // 摆一次占位默认值——但EnsureStructure()在一次ApplyStyle()流程里会被调用
+        // 不止一次(比如ApplyStatusAreaStyle内部又调了一次)，如果每次都重摆，
+        // 会把ApplyBarStyle()刚从样式资产设进去的真实血条位置/尺寸冲掉，表现为
+        // "样式资产的数值明明是对的，但实际血条还是停在150x14这种旧的硬编码
+        // 默认值上"——这正是这次的bug。改成只在第一次(节点刚创建时)摆一次。
+        if (!defaultAnchorsInitialized)
         {
             ConfigureDefaultAnchors();
-            ApplyUnitDefinitionTransformOverrides();
+            defaultAnchorsInitialized = true;
         }
+
+        ApplyUnitDefinitionTransformOverrides();
 
         SetLayerRecursively(runtimeUiRoot.gameObject, OverheadUiLayer);
     }
+
+    private bool defaultAnchorsInitialized;
 
     private RectTransform EnsureSingleRuntimeRoot(Transform parent)
     {
@@ -337,15 +846,38 @@ public class UnitOverheadUIView : MonoBehaviour
         }
 
         if (keep != null)
+        {
+            // 复用已存在节点时原样返回，从不touch它的旋转——如果这个节点带着
+            // 历史遗留的本地旋转(比如老层级下手动摆过的45度)，会一直原样保留下去，
+            // 现在挂到VisualRoot下面(父节点自己会动态转向相机)，这份残留旋转就是
+            // 多余的、错误的。这个节点自己的本地旋转必须是0，朝向完全交给
+            // HandleBeforeCameraRenders每帧动态设置的世界旋转决定。
+            keep.localRotation = Quaternion.identity;
             return keep;
+        }
 
         GameObject go = new GameObject(RuntimeRootName, typeof(RectTransform));
         go.transform.SetParent(parent, false);
-        return go.GetComponent<RectTransform>();
+        RectTransform freshRoot = go.GetComponent<RectTransform>();
+        // SetParent(parent, false)已经会给新节点0本地旋转，这里显式写一遍，
+        // 不依赖隐式默认值——避免以后有人在这附近加代码时误以为需要自己处理旋转。
+        freshRoot.localRotation = Quaternion.identity;
+
+        // 只在这里、只对"刚创建出来、以前从来不存在"的节点给一个初始缩放——
+        // 血条/字号这些数值(150、24这种)是照着"缩小过的Canvas"这个假设配的，
+        // 全新单位(比如通用壳)的Canvas默认缩放是1，不缩小的话数值会在世界空间
+        // 里被放得极大(24号字在scale=1下能有小两米高)。老的手搓预制体已经带了
+        // 自己的缩放(不知道具体是多少，但明显是缩小过的，不然当年也用不了这批
+        // 数值)，这里绝不touch已存在的节点，只在真正"从0开始"时给一次初始值，
+        // 之后永远不再覆盖。
+        freshRoot.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+        return freshRoot;
     }
 
     private void ApplyNameVisibilityFromDefinition()
     {
+        if (nameProximityFadeMode) return; // 交给 SetNameFadeTarget()，这里不再插手
+
         if (unitDefinition == null)
         {
             SetNameVisible(false);
@@ -404,10 +936,19 @@ public class UnitOverheadUIView : MonoBehaviour
             if (style.nameFontAsset != null)
                 nameText.font = style.nameFontAsset;
 
-            nameText.fontSize = Mathf.Max(8, style.nameFontSize);
+            nameText.fontSize = Mathf.Max(8, style.nameFontSize) * 1.2f;
             nameText.color = style.nameColor;
-            SetRectCenter(nameRoot, new Vector2(style.nameOffset.x, style.nameOffset.y));
+            // SetRectCenter内部会把Y取负(历史上是给"配置值越大越往下"这种约定用的)，
+            // 名字这里要的是"配置值越大越往上"，先取负抵消掉，不然调大nameOffset.y
+            // 实际效果是名字一直往下掉，跟直觉完全反着来——这正是之前"怎么调都不往
+            // 上"的真正原因。
+            SetRectCenter(nameRoot, new Vector2(style.nameOffset.x, -style.nameOffset.y));
             nameRoot.sizeDelta = new Vector2(240f, 24f);
+
+            // 细黑描边——名字浅色时贴在浅色背景(墙面/天空)上容易糊成一片，
+            // 描边是最省事的可读性修法，不用额外做贴图。
+            nameText.outlineWidth = 0.2f;
+            nameText.outlineColor = Color.black;
         }
         else
         {
@@ -423,6 +964,56 @@ public class UnitOverheadUIView : MonoBehaviour
         nameText.rectTransform.pivot = new Vector2(0.5f, 0.5f);
         nameText.rectTransform.anchoredPosition = Vector2.zero;
         nameText.rectTransform.sizeDelta = Vector2.zero;
+
+        ApplyAlwaysOnTopFontMaterial(nameText);
+    }
+
+    /// <summary>名字文字也要能穿透墙体显示——TMP自带的"Distance Field Overlay"
+    /// 变体就是ZTest Always版本，直接从当前字体的默认材质复制一份、换成Overlay
+    /// shader即可，贴图/参数都跟原字体保持一致，不用自己再配一份字体材质。</summary>
+    /// <summary>括号字形不是正好落在文字行框中央（"["上下并不对称），按实际字形包围盒把括号竖直居中到血条。</summary>
+    private static void CenterBracketVertically(TextMeshProUGUI text)
+    {
+        if (text == null) return;
+        text.ForceMeshUpdate();
+        // textBounds 是按"行框"算的，括号字形（上下并不对称）的实际墨迹中心要从字符几何里取
+        var info = text.textInfo;
+        if (info == null || info.characterCount < 1) return;
+        var ch = info.characterInfo[0];
+        float cy = (ch.topLeft.y + ch.bottomLeft.y) * 0.5f;
+        if (float.IsNaN(cy) || Mathf.Abs(cy) < 0.0001f) return;
+        RectTransform rt = text.rectTransform;
+        rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, rt.anchoredPosition.y - cy);
+    }
+
+    /// <summary>给文字加一圈极细黑描边（跟血条描边一致），亮地面上括号才看得清。</summary>
+    private void ApplyThinBlackTextOutline(TextMeshProUGUI text)
+    {
+        if (text == null) return;
+        Material m = text.fontMaterial;
+        if (m == null) return;
+        m.EnableKeyword(ShaderUtilities.Keyword_Outline);
+        m.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.18f);
+        m.SetColor(ShaderUtilities.ID_OutlineColor, new Color(0f, 0f, 0f, 0.95f));
+    }
+
+    private void ApplyAlwaysOnTopFontMaterial(TextMeshProUGUI text)
+    {
+        if (text == null || text.font == null || text.font.material == null)
+            return;
+
+        Shader overlayShader = Shader.Find("TextMeshPro/Distance Field Overlay");
+        if (overlayShader == null)
+            return;
+
+        if (text.fontMaterial == null || text.fontMaterial.shader != overlayShader)
+        {
+            Material overlayMaterial = new Material(text.font.material) { shader = overlayShader };
+            // 面色固定为白：实际颜色由 text.color（顶点色）决定。之前夜视仪调试时有一段代码改过实例材质的面色，
+            // 会和顶点色相乘把名字染暗；这里每次建实例都显式复位，不依赖字体材质的当前状态。
+            overlayMaterial.SetColor(ShaderUtilities.ID_FaceColor, Color.white);
+            text.fontMaterial = overlayMaterial;
+        }
     }
 
     private void ApplyBarStyle(OverheadBarStyleAsset style)
@@ -447,6 +1038,7 @@ public class UnitOverheadUIView : MonoBehaviour
         ConfigureMaskRoot(fillMaskRoot, layout.barSize);
         ConfigureBarImage(damageReferenceImage.rectTransform, layout.barSize);
         ConfigureBarImage(fillImage.rectTransform, layout.barSize);
+        ApplyBarOutline(style, layout.barSize);
 
         if (style != null)
         {
@@ -475,6 +1067,35 @@ public class UnitOverheadUIView : MonoBehaviour
             return;
 
         appliedStyle = style;
+
+        // ApplyNameStyle()不管preserveAuthoredLayout是不是true都会无条件重新摆
+        // 名字的位置，但血条的位置以前只在ApplyBarStyle()里设置——手搓的专属预制体
+        // (preserveAuthoredLayout=true，比如这次这个运行时生成的敌人)走的是这个
+        // "只改颜色贴图"的方法，血条位置一直没人管，还停在很久以前(好几轮结构调整
+        // 之前)authored的旧坐标上，跟名字的位置对不上。位置跟着样式资产走，不属于
+        // "要保留的手工排版"，两边都应该跟着同一个offset摆，不用分preserve不preserve。
+        // 血条的粗细/尺寸(slotView01.sizeDelta + 两个遮罩根 + 两张RawImage的Rect)
+        // 之前也是只在ApplyBarStyle()里设置的——跟位置是同一个漏洞，"保留手工排版"
+        // 只应该保留手工可能想留的东西(比如整体旋转这种细节调整)，粗细这种直接
+        // 由样式资产决定的数值不应该被落下不管，不然调了样式资产里的barSize
+        // 这条腿完全没反应，看起来就是"改了跟没改一样"。
+        if (slotRoot01 != null && slotView01 != null && damageRefMaskRoot != null && fillMaskRoot != null)
+        {
+            UnitOverheadLayoutUtility.LayoutResult layout = UnitOverheadLayoutUtility.BuildLayout(style);
+            slotRoot01.anchorMin = new Vector2(0.5f, 0.5f);
+            slotRoot01.anchorMax = new Vector2(0.5f, 0.5f);
+            slotRoot01.pivot = new Vector2(0.5f, 0.5f);
+            slotRoot01.anchoredPosition = layout.barRootPosition;
+
+            SetRectCenter(slotView01, Vector2.zero);
+            slotView01.sizeDelta = layout.barSize;
+
+            ConfigureMaskRoot(damageRefMaskRoot, layout.barSize);
+            ConfigureMaskRoot(fillMaskRoot, layout.barSize);
+            ConfigureBarImage(damageReferenceImage.rectTransform, layout.barSize);
+            ConfigureBarImage(fillImage.rectTransform, layout.barSize);
+            ApplyBarOutline(style, layout.barSize);
+        }
 
         if (style != null)
         {
@@ -703,7 +1324,7 @@ public class UnitOverheadUIView : MonoBehaviour
     }
 
 
-    public void ShowDamageNumber(float amount, Color color, bool isHeal, bool isPositiveCrit = false, bool isNegativeCrit = false)
+    public void ShowDamageNumber(float amount, Color color, bool isHeal, bool isPositiveCrit = false, bool isNegativeCrit = false, bool isLethalShot = false)
     {
         if (amount <= 0f)
         {
@@ -726,7 +1347,7 @@ public class UnitOverheadUIView : MonoBehaviour
 
         Vector2 bodyLocalPos = GetRandomBodyDamageNumberPosition();
         bool preferSoft = false;
-        view.Play(amount, color, isHeal, bodyLocalPos, preferSoft, isPositiveCrit, isNegativeCrit);
+        view.Play(amount, color, isHeal, bodyLocalPos, preferSoft, isPositiveCrit, isNegativeCrit, isLethalShot);
         view.transform.SetAsLastSibling();
     }
 
@@ -1031,7 +1652,6 @@ public class UnitOverheadUIView : MonoBehaviour
             runtimeUiRoot.pivot = new Vector2(0.5f, 0.5f);
             runtimeUiRoot.anchoredPosition = Vector2.zero;
             runtimeUiRoot.sizeDelta = new Vector2(256f, 128f);
-            runtimeUiRoot.localScale = RuntimeRootScale;
         }
 
         if (nameRoot != null)
@@ -1109,7 +1729,11 @@ public class UnitOverheadUIView : MonoBehaviour
 
         runtimeUiRoot.localPosition = localPosition;
         runtimeUiRoot.localEulerAngles = Vector3.zero;
-        runtimeUiRoot.localScale = RuntimeRootScale;
+        // 缩放不再统一强制——不同预制体原本authored的runtimeUiRoot缩放不一定一样
+        // (手搓的老预制体可能本来就带了一个很小的缩放)，强行统一成同一个值对
+        // 其中一批单位来说不是"归零"而是"改成错的"，这正是这次巨大白块的成因。
+        // 缩放交给EnsureSingleRuntimeRoot创建节点时的默认值(新节点=1，已存在的
+        // 节点=沿用原来就有的值)，不在这里覆盖。
 
         if (debugLogs)
         {
@@ -1263,7 +1887,11 @@ public class UnitOverheadUIView : MonoBehaviour
         Canvas canvas = root.GetComponent<Canvas>();
         if (canvas == null)
             canvas = root.gameObject.AddComponent<Canvas>();
+
+        // 改回 WorldSpace——挂在单位身上、跟着单位在地图里到处跑，不再是屏幕投影。
         canvas.renderMode = RenderMode.WorldSpace;
+        canvas.overrideSorting = true;
+        canvas.sortingOrder = 150;
 
         if (root.GetComponent<CanvasScaler>() == null)
             root.gameObject.AddComponent<CanvasScaler>();
@@ -1322,14 +1950,24 @@ public class UnitOverheadUIView : MonoBehaviour
     {
         RectTransform rect = EnsureRectChild(parent, childName);
         TextMeshProUGUI tmp = rect.GetComponent<TextMeshProUGUI>();
-        if (tmp == null)
+        bool isNew = tmp == null;
+        if (isNew)
             tmp = rect.gameObject.AddComponent<TextMeshProUGUI>();
 
         tmp.text = string.IsNullOrWhiteSpace(tmp.text) ? defaultText : tmp.text;
         tmp.raycastTarget = false;
         tmp.alignment = TextAlignmentOptions.Center;
-        tmp.fontSize = 13f;
-        tmp.color = Color.white;
+
+        // fontSize/color只在刚创建这个组件的时候给一个占位默认值——这个方法会被
+        // EnsureStructure()反复调用(比如ApplyStatusAreaStyle内部又调用一次
+        // EnsureStructure())，如果每次都无条件覆盖，会把ApplyNameStyle()刚从样式
+        // 资产设进去的真实字号/颜色冲掉，表现为"字号时大时小、跟改的数值对不上"。
+        if (isNew)
+        {
+            tmp.fontSize = 13f;
+            tmp.color = Color.white;
+        }
+
         return tmp;
     }
 
@@ -1351,6 +1989,159 @@ public class UnitOverheadUIView : MonoBehaviour
         rect.pivot = new Vector2(0f, 0.5f);
         rect.anchoredPosition = Vector2.zero;
         rect.sizeDelta = size;
+    }
+
+    private RawImage barOutlineImage;
+
+    // ── 线条绘制的括号 "[ ]"：白线 + 黑描边，两者宽度都按屏幕像素换算 ──
+    private class DrawnBracketPart { public RectTransform white; public RectTransform outline; public int side; public int kind; } // kind 0=竖 1=上臂 2=下臂
+    private readonly System.Collections.Generic.List<DrawnBracketPart> drawnBracketParts = new System.Collections.Generic.List<DrawnBracketPart>();
+    private RectTransform drawnBracketRoot;
+    private const float BracketGap = 2f;       // 括号离血条边缘的距离(UI单位)
+    private const float BracketArmLength = 2.5f;
+    private const float BracketExtraHeight = 2.5f;
+
+    private void EnsureDrawnBrackets()
+    {
+        if (slotView01 == null) return;
+        if (drawnBracketRoot != null && drawnBracketParts.Count > 0) return;
+
+        drawnBracketRoot = EnsureRectChild(slotView01, "DrawnBrackets");
+        drawnBracketRoot.anchorMin = drawnBracketRoot.anchorMax = new Vector2(0.5f, 0.5f);
+        drawnBracketRoot.pivot = new Vector2(0.5f, 0.5f);
+        drawnBracketRoot.anchoredPosition = Vector2.zero;
+        drawnBracketRoot.sizeDelta = Vector2.zero;
+
+        drawnBracketParts.Clear();
+        // 先全部描边，再全部白线：避免相邻部件的黑边盖到白线上
+        var outlines = new System.Collections.Generic.List<DrawnBracketPart>();
+        for (int side = -1; side <= 1; side += 2)
+            for (int kind = 0; kind < 3; kind++)
+            {
+                var part = new DrawnBracketPart { side = side, kind = kind };
+                var oi = EnsureRawImageChild(drawnBracketRoot, "BrO_" + side + "_" + kind);
+                ApplyAlwaysOnTopMaterial(oi); oi.texture = null; oi.color = new Color(0f, 0f, 0f, 0.95f);
+                part.outline = oi.rectTransform;
+                outlines.Add(part);
+                drawnBracketParts.Add(part);
+            }
+        foreach (var part in drawnBracketParts)
+        {
+            var wi = EnsureRawImageChild(drawnBracketRoot, "BrW_" + part.side + "_" + part.kind);
+            ApplyAlwaysOnTopMaterial(wi); wi.texture = null; wi.color = new Color(1f, 1f, 1f, 0.9f);
+            part.white = wi.rectTransform;
+        }
+        // 保证白线都在黑线之后（兄弟序）
+        foreach (var part in drawnBracketParts) part.white.SetAsLastSibling();
+    }
+
+    private static void SetPartRect(RectTransform rt, Vector2 center, Vector2 size)
+    {
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = center;
+        rt.sizeDelta = size;
+    }
+
+    private void UpdateDrawnBrackets(float strokeUnits, float outlineUnits)
+    {
+        if (drawnBracketParts.Count == 0) return;
+        float barW = outlineBarSize.x;
+        float barH = outlineBarSize.y;
+        float h = barH + BracketExtraHeight;
+        float w = strokeUnits;
+        float o = outlineUnits;
+
+        foreach (var part in drawnBracketParts)
+        {
+            // 竖线中心 x：血条边缘外 BracketGap，再往外半个线宽
+            float vx = part.side * (barW * 0.5f + BracketGap + w * 0.5f);
+            Vector2 center, size;
+            if (part.kind == 0)
+            {
+                center = new Vector2(vx, 0f);
+                size = new Vector2(w, h);
+            }
+            else
+            {
+                // 上/下臂：从竖线向血条方向伸出 BracketArmLength
+                float armCenterX = vx - part.side * (BracketArmLength * 0.5f - w * 0.5f);
+                float armY = (part.kind == 1 ? 1f : -1f) * (h * 0.5f - w * 0.5f);
+                center = new Vector2(armCenterX, armY);
+                size = new Vector2(BracketArmLength, w);
+            }
+            SetPartRect(part.white, center, size);
+            SetPartRect(part.outline, center, size + new Vector2(o * 2f, o * 2f));
+        }
+    }
+    private float outlineStyleThickness = 1f;
+    private float outlineMinScreenPixels = 1.5f;
+    private Vector2 outlineBarSize;
+
+    /// <summary>血条外围一圈极细黑色描边：放在血条所有层的最底下，比血条每边多出 thickness。</summary>
+    private void ApplyBarOutline(OverheadBarStyleAsset style, Vector2 barSize)
+    {
+        if (slotView01 == null) return;
+
+        bool enabled = style == null || style.enableBarOutline;
+        if (!enabled)
+        {
+            if (barOutlineImage != null) barOutlineImage.gameObject.SetActive(false);
+            return;
+        }
+
+        if (barOutlineImage == null)
+        {
+            barOutlineImage = EnsureRawImageChild(slotView01, "BarOutline");
+            ApplyAlwaysOnTopMaterial(barOutlineImage);
+        }
+
+        float t = style != null ? Mathf.Max(0f, style.barOutlineThickness) : 1f;
+        outlineStyleThickness = t;
+        outlineMinScreenPixels = style != null ? Mathf.Max(0f, style.barOutlineMinScreenPixels) : 1.5f;
+        outlineBarSize = barSize;
+        EnsureDrawnBrackets();
+        Color c = style != null ? style.barOutlineColor : new Color(0f, 0f, 0f, 0.95f);
+
+        barOutlineImage.gameObject.SetActive(true);
+        barOutlineImage.texture = null;
+        barOutlineImage.color = c;
+        var rt = barOutlineImage.rectTransform;
+        // 以血条左缘对齐(血条图都是左锚点)，向四周各多出 t
+        rt.anchorMin = new Vector2(0f, 0.5f);
+        rt.anchorMax = new Vector2(0f, 0.5f);
+        rt.pivot = new Vector2(0f, 0.5f);
+        rt.anchoredPosition = new Vector2(-t, 0f);
+        rt.sizeDelta = new Vector2(barSize.x + t * 2f, barSize.y + t * 2f);
+        rt.SetAsFirstSibling();
+    }
+
+    /// <summary>
+    /// 每帧按镜头距离换算：保证描边在屏幕上至少有 outlineMinScreenPixels 个像素。
+    /// 世界空间 UI 的"1 个 UI 单位"离镜头远时不足 1 像素，不补的话描边会细到看不见。
+    /// </summary>
+    private void FitOutlineToScreenPixels()
+    {
+        if (barOutlineImage == null || !barOutlineImage.gameObject.activeSelf || slotView01 == null) return;
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        float unitWorld = slotView01.lossyScale.x;
+        if (unitWorld <= 0.00001f) return;
+
+        Vector3 a = cam.WorldToScreenPoint(slotView01.position);
+        Vector3 b = cam.WorldToScreenPoint(slotView01.position + cam.transform.right * unitWorld);
+        float pxPerUnit = Mathf.Abs(b.x - a.x);
+        if (pxPerUnit <= 0.0001f) return;
+
+        float t = Mathf.Clamp(Mathf.Max(outlineStyleThickness, outlineMinScreenPixels / pxPerUnit), 0f, 8f);
+        var rt = barOutlineImage.rectTransform;
+        rt.anchoredPosition = new Vector2(-t, 0f);
+        rt.sizeDelta = new Vector2(outlineBarSize.x + t * 2f, outlineBarSize.y + t * 2f);
+
+        // 括号：白线宽度同样保证至少 outlineMinScreenPixels 像素，黑描边用同一个 t
+        float stroke = Mathf.Clamp(Mathf.Max(1f, outlineMinScreenPixels / pxPerUnit), 0f, 8f);
+        UpdateDrawnBrackets(stroke, t);
     }
 
     private void ConfigureBarImage(RectTransform rect, Vector2 size)

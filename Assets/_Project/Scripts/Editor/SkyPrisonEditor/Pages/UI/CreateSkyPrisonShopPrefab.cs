@@ -36,7 +36,7 @@ namespace SkyPrison.Editor.UI
             (ShelfW - ShelfGridPadding * 2f - ShelfGridSpacing * (ShelfColumns - 1) - ShelfScrollbarReserve) / ShelfColumns;
         private const float ShelfCardH = 480f; // 数量胶囊加高后跟名字区打架，加高卡片留出间距
 
-        [MenuItem("Tools/Sky Prison/UI/Create Shop Window")]
+        [MenuItem("天空囚笼/UI/Create Shop Window", false, 170)]
         public static void Create()
         {
             ShopDefinition demoShop = EnsureDemoShopAsset(); // 先建好，等下直接烤进prefab字段，F6不用再运行时现set
@@ -93,7 +93,9 @@ namespace SkyPrison.Editor.UI
             var panelHit = panel.gameObject.AddComponent<Image>();
             panelHit.color = new Color(0f, 0f, 0f, 0f);
             panelHit.raycastTarget = true;
-            SkyPrisonFloatingWindowKit.AddCornerBrackets(panel, Color.white, 20f * mul, 2f * mul);
+            // Kit 默认值(39/3.9)，跟角色信息面板保持一致——这个窗口没有运行时额外缩放，
+            // 生成时的数字就是最终渲染大小。
+            SkyPrisonFloatingWindowKit.AddCornerBrackets(panel);
 
             // 标题栏——不用 Kit.BuildTitleBar（那个自带拖拽），手搭一个不可拖拽的版本。
             var titleBar = MakeRect("TitleBar", panel, new Vector2(0f, 1f), new Vector2(1f, 1f));
@@ -464,6 +466,7 @@ namespace SkyPrison.Editor.UI
             so.FindProperty("detailName").objectReferenceValue = detailRefs.name;
             so.FindProperty("detailTag").objectReferenceValue = detailRefs.tag;
             so.FindProperty("detailDesc").objectReferenceValue = detailRefs.desc;
+            so.FindProperty("vendorPortraitImage").objectReferenceValue = detailRefs.vendorPortrait;
             so.FindProperty("cartContent").objectReferenceValue = checkoutRefs.cartContent;
             so.FindProperty("cartRowPrefab").objectReferenceValue = cartRowPrefab;
             so.FindProperty("cartCostText").objectReferenceValue = checkoutRefs.costText;
@@ -516,12 +519,24 @@ namespace SkyPrison.Editor.UI
         // ── 详情区 ──────────────────────────────────────────────────────────
         private struct DetailRefs
         {
-            public Image icon; public Text name; public Text tag; public Text desc;
+            public Image icon; public Text name; public Text tag; public Text desc; public Image vendorPortrait;
         }
 
         private static DetailRefs BuildDetailArea(RectTransform area, TMP_FontAsset font)
         {
             var r = new DetailRefs();
+
+            // 商人立绘——铺满整块详情区当背景，商品图标/名字/描述叠在它上面显示。
+            // 先加(排在最前面/最底层)，后面的元素才会盖在它上面，不会被立绘挡住。
+            // 没有 ShopDefinition.vendorUnitDefinition 或者对应表情没配图时，运行时
+            // 会把这张图直接 SetActive(false)，不会露出裸的白框。
+            var portraitRt = MakeRect("VendorPortrait", area, Vector2.zero, Vector2.one);
+            portraitRt.offsetMin = Vector2.zero;
+            portraitRt.offsetMax = Vector2.zero;
+            r.vendorPortrait = portraitRt.gameObject.AddComponent<Image>();
+            r.vendorPortrait.preserveAspect = true;
+            r.vendorPortrait.raycastTarget = false;
+            portraitRt.gameObject.SetActive(false); // 运行时按 shopDefinition.vendorUnitDefinition 决定要不要打开
 
             // 用户反馈详情区图标/文字都太小——图标放大到300，名字/描述字号也跟着加大。
             var iconRt = MakeRect("Icon", area, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f));

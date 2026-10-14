@@ -228,7 +228,7 @@ namespace SkyPrison.Editor.UI
             }
         }
 
-        [MenuItem("Tools/Sky Prison/UI/Create Stash Window")]
+        [MenuItem("天空囚笼/UI/Create Stash Window", false, 171)]
         public static void Create()
         {
             InventoryReference refData = ReadInventoryReference();
@@ -364,14 +364,13 @@ namespace SkyPrison.Editor.UI
             panelHit.color = new Color(0f, 0f, 0f, 0f);
             panelHit.raycastTarget = true;
 
-            // 2. 四角白色 L 形角标 —— 现读背包真实角标(长20/粗2，Kit 自带的默认值
-            // 39/3.9 是 Kit 自己的"新标准"，跟背包手搭的这份预制体本来就没对齐，Kit
-            // 类文档里也承认这一点)，用带参数的重载传真实值，才能跟背包视觉一致。
-            // 用户曾要求改成跟角色信息面板一样大（角色信息面板用不带参数的默认值
-            // 39/3.9），但直接搜背包prefab里4个角标节点的真实序列化值，精确确认
-            // 就是 {x:20,y:2}，角色信息面板视觉上"看起来差不多大"是它自己另外还有
-            // 别的缩放，不能当真实数值抄——跟背包对齐只能用20/2，改回来。
-            SkyPrisonFloatingWindowKit.AddCornerBrackets(panel, Color.white, 20f * mul, 2f * mul);
+            // 2. 四角白色 L 形角标 —— 用 Kit 默认值(39/3.9)，跟角色信息面板保持一致。
+            // 之前这里传 20*mul/2*mul 是照抄背包 prefab 当时的真实序列化值(20/2)，
+            // 但背包那份手搭 prefab 本身角标尺寸就是错的、跟角色信息面板对不上——
+            // 已经把背包 prefab(PF_SkyPrisonInventory)的角标改成 30/3(乘上它身上
+            // SkyPrisonInventoryPanelScaler 的运行时 1.3 倍 = 39/3.9)。仓库这里没有
+            // 那个运行时缩放脚本，生成时的数字就是最终渲染大小，直接用 Kit 默认值即可。
+            SkyPrisonFloatingWindowKit.AddCornerBrackets(panel);
 
             // 3. 标题栏（含拖动 + 标题文字，共享 Kit 标准规格：字号/位置/高度已经内置1.3倍）
             SkyPrisonFloatingWindowKit.BuildTitleBar(panel, "仓库", font, out TMP_Text titleLabel);

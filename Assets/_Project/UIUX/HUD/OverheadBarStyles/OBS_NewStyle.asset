@@ -14,34 +14,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::OverheadBarStyleAsset
   styleKey: Default
   displayName: "\u9ED8\u8BA4\u6837\u5F0F"
-  nameFontAsset: {fileID: 0}
-  nameFontSize: 13
+  nameFontAsset: {fileID: 11400000, guid: 54f5d27af22dd8d4caa986ef0611781b, type: 2}
+  nameFontSize: 18
   nameColor: {r: 1, g: 1, b: 1, a: 1}
-  backgroundLayers:
-  - layerName: BG Layer 1
-    texture: {fileID: 2800000, guid: af97fee7a42ae504f9c3634f3f2fcd27, type: 3}
-    useTint: 1
-    tint: {r: 0.32941177, g: 0.29411766, b: 0.20392157, a: 1}
-    offset: {x: 0, y: 0}
-    sizeOverride: {x: 0, y: 0}
-    rotationZ: 0
-  - layerName: BG Layer 2
-    texture: {fileID: 2800000, guid: c9ce67445574b5240ad9d6889b514693, type: 3}
-    useTint: 1
-    tint: {r: 1, g: 1, b: 1, a: 1}
-    offset: {x: 0, y: 0}
-    sizeOverride: {x: 0, y: 0}
-    rotationZ: 0
-  fillTexture: {fileID: 2800000, guid: 7d3f9f383b7cab443bff92b41a2bc089, type: 3}
-  damageReferenceTexture: {fileID: 2800000, guid: c4f6fbb6035907348900c6791c7e2cf2, type: 3}
-  fillColor: {r: 0.7924528, g: 0.34638655, b: 0.34638655, a: 1}
+  backgroundLayers: []
+  fillTexture: {fileID: 0}
+  damageReferenceTexture: {fileID: 0}
+  fillColor: {r: 1, g: 1, b: 1, a: 1}
   damageReferenceColor: {r: 0.42, g: 0.12, b: 0.12, a: 1}
-  barSize: {x: 150, y: 19}
-  hpBarOffset: {x: 0, y: 0}
-  nameOffset: {x: 0, y: 0}
+  barSize: {x: 112, y: 4}
+  hpBarOffset: {x: 0, y: 25}
+  nameOffset: {x: 0, y: 10}
   rotationZ: 0
-  paddingLeft: 3
-  paddingRight: 2
+  paddingLeft: 0
+  paddingRight: 0
   paddingTop: 0
   paddingBottom: 0
   hideWhenFull: 1
@@ -59,3 +45,5 @@ MonoBehaviour:
   statusAreaAlignment: 3
   enableDamageNumbers: 1
   damageNumberFontAsset: {fileID: 11400000, guid: 029dcdbff7c82104fb31e1ac5a8f29ff, type: 2}
+  visibilityFadeStartDistance: 11
+  visibilityFadeRange: 4

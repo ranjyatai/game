@@ -26,6 +26,7 @@ MonoBehaviour:
   hitSE: []
   whiffSE: []
   seVolume: 1
+  handPoseAnimationKey: Hand/Hand_Sword
   locomotionOverride:
     idle: 
     walk: 

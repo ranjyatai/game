@@ -16,6 +16,8 @@ Material:
   - _INVERTMASK_ON
   - _PREMULTIPLYALPHA_ON
   - _SKYPRISON_USEHOLOGRAMFILL_ON
+  - _SKYPRISON_USEROOTANCHORDEPTH_ON
+  - _SKYPRISON_USESCENEDEPTHOCCLUSION_ON
   - _STRAIGHT_ALPHA_INPUT
   - _USE8NEIGHBOURHOOD_ON
   - _USEHARDDISCARD_ON
@@ -160,6 +162,7 @@ Material:
     - _SkyPrison_CharacterStencilRef: 41
     - _SkyPrison_CharacterStencilWriteMask: 255
     - _SkyPrison_CompositeZTest: 8
+    - _SkyPrison_CullMode: 0
     - _SkyPrison_DebugBodyMaskAlpha: 0.75
     - _SkyPrison_DebugBodyMaskMode: 0
     - _SkyPrison_DissolveAmount: 0
@@ -178,6 +181,7 @@ Material:
     - _SkyPrison_FootDepthDebugTint: 0
     - _SkyPrison_FootDepthStrength: 1
     - _SkyPrison_FootVerticalDepthScale: 0
+    - _SkyPrison_Force3DPropOpaqueAlpha: 0
     - _SkyPrison_HiddenOutlineAlpha: 1
     - _SkyPrison_HiddenOutlineFarSampleScale: 2.35
     - _SkyPrison_HiddenOutlineMinStableVotes: 2
@@ -197,6 +201,10 @@ Material:
     - _SkyPrison_HologramTrailLength: 0.4
     - _SkyPrison_LogicalDepthZ: 0
     - _SkyPrison_OcclusionAlpha: 1
+    - _SkyPrison_SceneDepthBias: 0.05
+    - _SkyPrison_SceneDepthDebug: 0
+    - _SkyPrison_SceneDepthFootScale: 0
+    - _SkyPrison_SceneDepthSoftness: 0.15
     - _SkyPrison_ShadowMaskStrength: 0.6
     - _SkyPrison_StatusFlashActive: 0
     - _SkyPrison_StatusFlashAlphaDip: 0.35
@@ -215,7 +223,11 @@ Material:
     - _SkyPrison_UseCleanCharacterOutlineTex: 0
     - _SkyPrison_UseFootDepthCompensation: 1
     - _SkyPrison_UseHologramFill: 1
+    - _SkyPrison_UseRootAnchorDepth: 1
+    - _SkyPrison_UseSceneDepthOcclusion: 1
     - _SkyPrison_ZTest: 4
+    - _SkyPrison_ZTestMode: 8
+    - _SkyPrison_ZWriteMode: 0
     - _StencilComp: 6
     - _StencilReadMask: 255
     - _StencilRef: 1
@@ -247,10 +259,11 @@ Material:
     - _OutlineColor: {r: 1, g: 1, b: 0, a: 1}
     - _SP_DepthRevealColor: {r: 1, g: 0.83, b: 0, a: 1}
     - _SkyPrison_DissolveEdgeColor: {r: 0.5, g: 0.04, b: 0.02, a: 1}
-    - _SkyPrison_EnvTint: {r: 0.78, g: 0.88, b: 0.82, a: 1}
+    - _SkyPrison_EnvTint: {r: 1, g: 0.41479012, b: 0, a: 1}
     - _SkyPrison_FootWorldPos: {r: 0, g: 0, b: 0, a: 1}
-    - _SkyPrison_HiddenOutlineColor: {r: 1, g: 0.83, b: 0, a: 1}
-    - _SkyPrison_HologramFillColor: {r: 1, g: 0.92, b: 0.55, a: 0.8}
+    - _SkyPrison_HiddenOutlineColor: {r: 0.56, g: 0.86, b: 1, a: 1}
+    - _SkyPrison_HologramFillColor: {r: 0.56, g: 0.86, b: 1, a: 0.8}
+    - _SkyPrison_LightTint: {r: 1, g: 1, b: 1, a: 1}
     - _SkyPrison_StatusFlashColor: {r: 1, g: 1, b: 1, a: 1}
     - _SkyPrison_StatusOutlineColor: {r: 2.2, g: 0.7, b: 0.05, a: 1}
     - _TintColor: {r: 1, g: 1, b: 1, a: 1}

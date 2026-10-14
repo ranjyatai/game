@@ -54,13 +54,13 @@ public sealed class SkyPrisonUnitCapsuleAutoCalibratorWindow : EditorWindow
     private bool excludeProxyRenderers = true;
     private bool verboseLog = true;
 
-    [MenuItem("Tools/Sky Prison/Debug/Unit Capsule Calibrator/Open Window")]
+    [MenuItem("天空囚笼/调试/单位胶囊校准/打开窗口", false, 229)]
     public static void Open()
     {
         GetWindow<SkyPrisonUnitCapsuleAutoCalibratorWindow>("Unit Capsule Calibrator");
     }
 
-    [MenuItem("Tools/Sky Prison/Debug/Unit Capsule Calibrator/Calibrate Selected Units")]
+    [MenuItem("天空囚笼/调试/单位胶囊校准/校准选中单位", false, 230)]
     public static void CalibrateSelectedMenu()
     {
         CalibrateSelectedWithDefaults();

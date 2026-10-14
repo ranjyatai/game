@@ -65,8 +65,26 @@ Shader "Hidden/SkyPrison/UIFreezeBlur"
         }
         ENDCG
 
-        Pass { CGPROGRAM #pragma vertex vert_img #pragma fragment fragCopy ENDCG }
-        Pass { CGPROGRAM #pragma vertex vert_img #pragma fragment fragH    ENDCG }
-        Pass { CGPROGRAM #pragma vertex vert_img #pragma fragment fragV    ENDCG }
+        Pass
+        {
+            CGPROGRAM
+            #pragma vertex vert_img
+            #pragma fragment fragCopy
+            ENDCG
+        }
+        Pass
+        {
+            CGPROGRAM
+            #pragma vertex vert_img
+            #pragma fragment fragH
+            ENDCG
+        }
+        Pass
+        {
+            CGPROGRAM
+            #pragma vertex vert_img
+            #pragma fragment fragV
+            ENDCG
+        }
     }
 }

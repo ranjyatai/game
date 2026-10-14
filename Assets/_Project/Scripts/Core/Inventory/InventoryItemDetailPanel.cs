@@ -14,6 +14,10 @@ namespace SkyPrison.Runtime.UI
     [DisallowMultipleComponent]
     public sealed class InventoryItemDetailPanel : MonoBehaviour
     {
+        // 整个面板(尺寸、字号、图标、间距)的统一放大倍数：直接缩放 _box，里面所有东西等比跟着变，不用逐个改字号 / 尺寸。
+        // 缩放中心在 _box 的左边中点(pivot (0, 0.5))，所以贴着背包窗口那一边不动，往外长。想再大 / 小只改这个数。
+        private const float UiScale  = 1.3f;
+        private static readonly Vector3 UiScale3 = new Vector3(UiScale, UiScale, UiScale);
         private const float PanelW   = 640f; // 原560——日文换行太多显得文案很长，加宽减少换行次数
         // 英文文案通常比中文长不少（同样的意思要用更多单词）——固定高度不管调多大，
         // 总会有某条描述文字更长，还是会溢出（描述文字 verticalOverflow=Overflow，
@@ -53,6 +57,21 @@ namespace SkyPrison.Runtime.UI
         // 组上限
         private TMP_Text _stackLimitText;
 
+        /// <summary>场景里找不到背包的全局样式时，挑一个材质完好的 TMP 字体：优先项目的默认中文字体（周方），再退到 TMP 默认字体。</summary>
+        private static TMP_FontAsset ResolveFallbackFont()
+        {
+            TMP_FontAsset any = null;
+            foreach (var f in Resources.FindObjectsOfTypeAll<TMP_FontAsset>())
+            {
+                if (f == null || f.material == null) continue;
+                if (f.name.Contains("ZhouFang")) return f;
+                if (any == null) any = f;
+            }
+            var d = TMP_Settings.defaultFontAsset;
+            if (d != null && d.material != null) return d;
+            return any;
+        }
+
         private bool      _built;
         private bool      _open;
         private Coroutine _anim;
@@ -76,7 +95,7 @@ namespace SkyPrison.Runtime.UI
             _open = true;
             StopAnim();
             _box.gameObject.SetActive(true);
-            _box.localScale = new Vector3(1f, 0f, 1f);
+            _box.localScale = new Vector3(UiScale, 0f, UiScale);
             _anim = StartCoroutine(ExpandIn());
         }
 
@@ -123,8 +142,8 @@ namespace SkyPrison.Runtime.UI
             RectTransform parent = (RectTransform)_box.parent;
             Canvas panelCanvas = parent != null ? parent.GetComponentInParent<Canvas>() : null;
             float scaleFactor = panelCanvas != null && panelCanvas.scaleFactor > 0f ? panelCanvas.scaleFactor : 1f;
-            float panelWPixels = PanelW * scaleFactor;
-            float panelHPixels = _dynamicPanelH * scaleFactor;
+            float panelWPixels = PanelW * scaleFactor * UiScale;
+            float panelHPixels = _dynamicPanelH * scaleFactor * UiScale;
 
             // 2026-07-23：原本只判断"右边到屏幕右边缘还有没有空间"——这对贴着屏幕右侧
             // 摆的背包成立(右边永远不够，稳定回退到左边)，但仓库贴着屏幕左侧摆，右边到
@@ -171,11 +190,11 @@ namespace SkyPrison.Runtime.UI
                 t += Time.unscaledDeltaTime;
                 float k = Mathf.Clamp01(t / AnimDur);
                 float ease = k * (2f - k); // ease-out
-                _box.localScale = new Vector3(1f, ease, 1f);
+                _box.localScale = new Vector3(UiScale, UiScale * ease, UiScale);
                 UpdateBlur();
                 yield return null;
             }
-            _box.localScale = Vector3.one;
+            _box.localScale = UiScale3;
             UpdateBlur();
         }
 
@@ -186,7 +205,7 @@ namespace SkyPrison.Runtime.UI
             {
                 t -= Time.unscaledDeltaTime;
                 float k = Mathf.Clamp01(t / AnimDur);
-                _box.localScale = new Vector3(1f, k * k, 1f); // ease-in
+                _box.localScale = new Vector3(UiScale, UiScale * k * k, UiScale); // ease-in
                 UpdateBlur();
                 yield return null;
             }
@@ -275,7 +294,7 @@ namespace SkyPrison.Runtime.UI
         {
             if (_stackLimitText == null) return;
             string label = GetLocalized("ui_item_stack_limit", "组上限");
-            _stackLimitText.text = $"{label}  <color=#42EB8E>{def.maxStackCount}</color>";
+            _stackLimitText.text = $"{label}  <color=#42EB8E>{def.EffectiveMaxStack}</color>";
         }
 
         // ── 装备专属信息（耐久 / 改装槽 / 词条）────────────────────────────
@@ -670,6 +689,7 @@ namespace SkyPrison.Runtime.UI
             // 从场景中的背包 prefab 取 GlobalStyleSettings → 中文字体
             var style = Object.FindObjectOfType<SkyPrison.Runtime.UI.SkyPrisonUIGlobalStyleSettings_V1>();
             _font = style?.defaultTextFont;
+            if (_font == null || _font.material == null) _font = ResolveFallbackFont();   // 场景里没有背包样式（比如选关界面）时的兜底
 
             // 找背包面板的磨砂 RawImage（共享模糊纹理）
             RawImage panelBlur = FindPanelBlurImage();
@@ -841,7 +861,9 @@ namespace SkyPrison.Runtime.UI
             _descText.supportRichText    = true;
             _descText.raycastTarget      = false;
             // 优先从 Resources 加载项目内字体（Build 安全）；找不到退回 OS 字体
-            Font descFont = Resources.Load<Font>("Fonts/msyh")
+            // 统一用项目当前语言的系统字体(跟窗口其他文字同一套，随语言切换)，取不到才退回微软雅黑/OS 字体
+            Font descFont = (LocalizationRuntime.Instance != null ? LocalizationRuntime.Instance.GetCurrentFont() : null)
+                         ?? Resources.Load<Font>("Fonts/msyh")
                          ?? Resources.Load<Font>("Fonts/msyhbd")
                          ?? Font.CreateDynamicFontFromOSFont(
                                 new[] { "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Arial" }, 19);

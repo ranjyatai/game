@@ -14,6 +14,10 @@ public enum TerrainDecorationCategory
     Pipe = 7,
     Occluder = 8,
     Mechanism = 9,
+    /// <summary>门（自动门、交互门、演出门）。新增项用显式数值，不影响已有数据。</summary>
+    Door = 10,
+    Stairs = 11,
+    Platform = 12,
     Custom = 100,
 }
 
@@ -121,6 +125,12 @@ public class TerrainDecorationDefinition : ScriptableObject
     [TextArea(2, 4)] public string note = "";
     public bool isStandard = false;
 
+    [Tooltip("白模（关卡体量占位几何体）。\n\n" +
+             "勾上后它不出现在放置工具的「地形装饰物」模块，只出现在「白模」模块；" +
+             "放置时固定进 WorldRoot/BackgroundRoot/GrayboxRoot，方便整体隐藏/停用，" +
+             "不影响实物。")]
+    public bool isGraybox = false;
+
     [Header("Visual Variants")]
     public List<TerrainDecorationVariant> variants = new List<TerrainDecorationVariant>();
     public bool randomVariantOnPlace = false;
@@ -156,14 +166,80 @@ public class TerrainDecorationDefinition : ScriptableObject
     public Vector3 visualRandomRotationMax = Vector3.zero;
     public bool visualRandomRotationAffectsRules = false;
 
+    [Tooltip("列表排序优先级。数字越小越靠前，相同则按显示名字母序。\n" +
+             "空气墙这类高频摆放的工具类物件设成负数，正常美术资产保持 0。")]
+    public int sortPriority = 0;
+
+    [Tooltip("视觉只在编辑器里可见——空气墙用。\n\n" +
+             "勾上之后 VisualRoot 会留在 Default(0) 层而不是 World3D。本项目四台相机的 " +
+             "cullingMask 都不含第 0 位（Main=World3D+Character2D，GamePlay=UI+FogOfWar，" +
+             "OcclusionMask=OcclusionMask，OverheadUI=OverheadUI），所以游戏里一帧都不会渲染，" +
+             "而 Scene 视图有自己的层显示开关、照常可见。\n\n" +
+             "同时碰撞盒改为贴合视觉的包围盒——视觉存在的意义就是把体积画出来，" +
+             "两者必须一致，所以这里不再读碰撞 Size / Offset。")]
+    public bool editorOnlyVisual = false;
+
     [Header("Collision")]
     public TerrainDecorationCollisionMode collisionMode = TerrainDecorationCollisionMode.Box;
     public Vector3 collisionSize = new Vector3(1f, 1f, 1f);
     public Vector3 collisionOffset = new Vector3(0f, 0.5f, 0f);
+    // blockPlayer / blockEnemy 现在始终同步，由「阻挡单位」一个开关同时写入。
+    //
+    // 拆成两个字段是历史设计，但全部 35 个定义里这两个值从来没有不同过——
+    // 没有一处需要「挡玩家不挡敌人」。而阻挡是按 LayerMask 判定的，真要区分就得给
+    // 「只挡玩家」「只挡敌人」各开一个层，还要给玩家和敌人预制体配不同的 mask，
+    // 为一个零需求的能力占掉两个层槽，不划算。
+    //
+    // 字段保留不动（改序列化要迁移 35 个资产，风险大于收益），读的时候一律走
+    // BlocksUnits。将来真出现需求时数据结构还在，直接拆开即可。
     public bool blockPlayer = true;
     public bool blockEnemy = true;
     public bool blockVision = false;
     public bool blockProjectile = false;
+
+    /// <summary>是否阻挡单位移动。读这个，不要单独读 blockPlayer / blockEnemy。</summary>
+    public bool BlocksUnits => blockPlayer || blockEnemy;
+
+    /// <summary>
+    /// 「挡单位、但不挡子弹」的碰撞体所在层。
+    ///
+    /// 挡两者的留在 World3D，谁都不挡的走 WalkableProbe，只差这一档需要单独的层：
+    /// 子弹的阻挡判定是按层白名单做的，这一层不在名单里，所以子弹穿过去、角色被挡住。
+    /// </summary>
+    public const string UnitOnlyObstacleLayerName = "Obstacle_UnitOnly";
+
+    /// <summary>
+    /// 把「挡不挡单位 / 挡不挡子弹」映射到碰撞体应该在的层。
+    ///
+    ///   挡单位 + 挡子弹   -> World3D（默认，和一切既有几何体一致）
+    ///   挡单位 + 不挡子弹 -> Obstacle_UnitOnly
+    ///   都不挡            -> WalkableProbe（仍能被地表查询射线打中，用来出脚步声）
+    ///
+    /// 「不挡单位但挡子弹」是第四种组合，全项目 0 个定义用到，没有为它单独开层，
+    /// 落到 World3D。真需要时再加，那时候也有具体场景验证设计。
+    ///
+    /// 放在定义上而不是 Builder 里：Builder 在 Editor 程序集、RuntimeApplier 在
+    /// Assembly-CSharp，两边都要用这套映射。各写一份必然漂移——Applier 那边本来就
+    /// 要在 ApplyLayerStructure 之后把层重新按住，判定条件一旦和 Builder 不一致
+    /// 就会互相打架。
+    /// </summary>
+    public string ResolveCollisionLayerName()
+    {
+        if (BlocksUnits)
+            return blockProjectile ? "World3D" : UnitOnlyObstacleLayerName;
+
+        // 不挡单位却要挡子弹：没有对应的层，按两者都挡处理。
+        if (blockProjectile)
+            return "World3D";
+
+        return GroundSurfaceMarker.WalkableProbeLayerName;
+    }
+
+    [Tooltip("可站立表面的地表材质。填了才会产生地表脚步声层；留空只有基础鞋声。\n\n" +
+             "注意「挡住」和「能站上去」不是一回事——树、栏杆、墙 blockPlayer 也是 true，" +
+             "但站不上去，那些保持留空。只给站台、楼梯、平台、桥这类真正能踩的填。\n\n" +
+             "填在定义上，所有实例自动生效，不用逐个去场景里挂组件。")]
+    public GroundSurfaceMaterialDefinition walkableSurface;
 
     [Header("Rule Space / Front Back")]
     public bool lockRuleSpaceFromVisualRandomRotation = true;
@@ -203,6 +279,22 @@ public class TerrainDecorationDefinition : ScriptableObject
     public float frontBackOcclusionDepthOffset = 0f;
 
     [Header("Front Occluder Proxy")]
+    /// <summary>
+    /// 「能穿过去、但能挡住角色」的装饰物（草丛、灌木、纱帘）专用层。
+    /// 遮挡判定是射线，射线只看 layerMask 不看物理碰撞矩阵，所以这一层只要不出现在
+    /// 移动用的 mask 里，就能同时做到「遮挡判定看得见、角色穿得过」。
+    /// </summary>
+    public const string OccluderProbeLayerName = "OccluderProbe";
+
+    [Tooltip("生成一个只给遮挡判定用的碰撞体，不挡移动。\n\n" +
+             "碰撞模式=无 的装饰物（草丛这类）身上一个碰撞体都没有，而前后遮挡判定是" +
+             "「从相机向角色射线、看有没有先打到遮挡物自己的碰撞体」——没有靶子就永远" +
+             "判定成不遮挡，角色会画在草的前面。\n\n" +
+             "开启后会在 VisualRoot 下生成一个贴合视觉包围盒的 Box，放在 OccluderProbe 层。" +
+             "那一层被排除在移动碰撞之外，所以照样能穿过去。\n\n" +
+             "碰撞模式不是「无」的装饰物不需要开——它们本来就有碰撞体可以当靶子。")]
+    public bool generateOccluderProbeCollider = false;
+
     public TerrainDecorationFrontOccluderProxyMode frontOccluderProxyMode = TerrainDecorationFrontOccluderProxyMode.ModelProxy;
     public Material frontOccluderProxyMaterial;
     [Range(0f, 1f)] public float frontOccluderAlphaCutoff = 0.35f;

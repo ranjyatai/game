@@ -2048,7 +2048,14 @@ public sealed class ScreenSpaceOutlineRTManager : MonoBehaviour
             safeName = "Receiver";
         safeName = safeName.Replace("/", "_").Replace("\\", "_").Replace(" ", "_");
 
-        rt = CreateRT("RT_UnitHiddenMask_" + safeChannel + "_" + safeName + "_" + receiver.GetInstanceID(), width, height, 0);
+        // 位深不能是 0：这张 RT 会被临时赋给相机的 targetTexture 再 Render()
+        // （见 RenderMaskedLayerToTarget 里的 cam.targetTexture = target），
+        // 而 Unity 6 的 RenderGraph 要求相机输出的 RT 必须带深度缓冲，否则每次
+        // 渲染都报一条 "output Render Texture must have a depth buffer"。
+        // 逐 receiver 逐帧一条——一次十小时的浸测日志里刷了 30251 条，7.4MB 全是它，
+        // 既有字符串和堆栈开销，也把真正的报错淹没了。
+        // 用和 maskRT 同一个配置值，不另外硬编码。
+        rt = CreateRT("RT_UnitHiddenMask_" + safeChannel + "_" + safeName + "_" + receiver.GetInstanceID(), width, height, maskDepthBufferBits);
         perReceiverHiddenMaskRT[receiver] = rt;
         return rt;
     }

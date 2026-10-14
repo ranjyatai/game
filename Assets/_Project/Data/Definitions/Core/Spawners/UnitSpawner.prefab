@@ -276,18 +276,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
   spawnerNote: "\u6D4B\u8BD5"
-  candidatePool:
-  - enabled: 1
-    definition: {fileID: 11400000, guid: 7c9afb16231caf3499241ddbca3669f0, type: 2}
-    weight: 100
-    note: "\u6D4B\u8BD5"
-    useFilter: 0
-    requiredDefineType: 0
-    requiredCharacterIdentity: 0
-    useStageLimit: 0
-    minStage: 0
-    maxStage: 9999
-    condition: {fileID: 0}
   spawnAreaType: 1
   boxArea: {fileID: 7397164764376710234}
   sphereArea: {fileID: 5536470467212337866}
@@ -295,26 +283,15 @@ MonoBehaviour:
   useSpawnerTransform: 1
   spawnPositionOffset: {x: 0, y: 0, z: 0}
   spawnEulerOffset: {x: 0, y: 0, z: 0}
-  spawnClockMode: 1
-  spawnCountPerTick: 1
-  spawnIntervalUnit: 0
-  spawnIntervalValue: 5
-  useSpawnCountLimit: 0
-  maxAliveCountInCheckRange: 3
-  aliveCheckBox: {fileID: 7397164764376710234}
-  aliveCheckSphere: {fileID: 5536470467212337866}
-  countOnlyBoundUnits: 1
   currentStage: 0
+  spawnGroups: []
   autoFindRangeOnAwake: 1
-  clearPreviousBeforeSpawn: 1
   applyDefinitionAfterSpawn: 1
+  useGroupDropProfileOnSpawnedUnit: 0
   drawSpawnAreaGizmo: 1
-  drawAliveCheckGizmo: 1
   drawPointGizmo: 1
   spawnAreaColor: {r: 0, g: 1, b: 0, a: 1}
-  aliveCheckColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   pointColor: {r: 0, g: 1, b: 1, a: 1}
-  debugLogs: 1
+  aliveCheckColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  debugLogs: 0
   spawnedInstances: []
-  runtimeSpawnTimer: 0
-  currentAliveCountInCheckRange: 0

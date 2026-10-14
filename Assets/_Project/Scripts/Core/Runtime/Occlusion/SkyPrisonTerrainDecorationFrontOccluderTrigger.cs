@@ -62,6 +62,12 @@ public sealed class SkyPrisonTerrainDecorationFrontOccluderTrigger : MonoBehavio
 
     [Tooltip("当前物体和单位视觉高度范围至少要有这么多重叠，才允许进入普通前后深度遮挡。")]
     public float minSideOcclusionHeightOverlap = 0.02f;
+    [Tooltip("角色脚底高于遮挡体顶面时直接判定为「站在它上面」，不施加遮挡。\n\n" +
+             "下面那套带 padding 的高度重叠测试拦不住这种情形：脚底正好等于顶面时真实重叠是 0，" +
+             "但两侧各加 padding 会凭空造出 2×padding 的重叠，必然越过门槛。")]
+    public bool rejectOcclusionWhenUnitStandsOnTop = true;
+    [Tooltip("判定「站在上面」的容差。脚底比遮挡体顶面低这么多以内仍算站在上面，吸收浮点误差和脚部网格的轻微下沉。")]
+    public float standOnTopEpsilon = 0.05f;
 
     [Tooltip("Raycast 检测层。应包含当前装饰物 VisualRoot 下真实模型 / MeshCollider / BoxCollider 所在层，例如 World3D。")]
     public LayerMask raycastLayers = ~0;
@@ -694,6 +700,34 @@ public sealed class SkyPrisonTerrainDecorationFrontOccluderTrigger : MonoBehavio
 
     private void LateUpdate()
     {
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+        // 自诊断：Profiler 显示每帧都有且只有一个实例吃掉 42~55ms，其余 20 个 ≤1.3ms，
+        // 差 40 倍。配置完全相同，所以差异来自运行时状态。这里按实例累计耗时，
+        // 30 秒后打印最贵的几个及其状态，找出那个异常实例是谁、大在哪。
+        //
+        // 纯静态、无序列化字段、到点自动关 —— 上一次留下的 debugLogs 是序列化的，
+        // 被存进场景还进了 Build，白测了十小时，这次不重蹈覆辙。
+        long __t0 = OccluderSelfProfiler.Active ? System.Diagnostics.Stopwatch.GetTimestamp() : 0L;
+        try
+        {
+#endif
+        // 遮挡判定已经交给 GPU：角色着色器直接采样 _CameraDepthTexture 逐像素比较深度，
+        // 被挡的像素 discard，露出的就是真实遮挡物。这个触发器的三项输出全都没有消费方了：
+        //
+        //   算 hidden               着色器自己算，不读 _OcclusionTex
+        //   开关 FrontOccluderRoot  不需要——discard 之后没有东西要被盖住
+        //   驱动 RT 管线合成         深度路径不经过它
+        //
+        // 而它的开销随地图复杂度线性增长。实测（F7 伸缩性基准，复制叉车）：
+        //   10 个遮挡物 1846ms/帧、50 个 4078ms/帧、100 个 7770ms/帧，斜率约 78ms/个。
+        // 场景里现在 21 个，地图内容再翻几倍就直接不可玩。
+        //
+        // 先只停判定循环，不动组件和 FrontOccluderRoot 结构——万一深度路径有没想到的
+        // 边界情况，把这个开关改回 false 就能立刻恢复，不用回滚结构改动。
+        // 观察确认无异常后再删结构和 RT 管线，那一步是不可逆的。
+        if (SkyPrisonOcclusionMode.UseGpuDepthOcclusion)
+            return;
+
         if (ShouldResolveRootsInLateUpdate())
             ResolveRoots();
 
@@ -717,6 +751,14 @@ public sealed class SkyPrisonTerrainDecorationFrontOccluderTrigger : MonoBehavio
 
         if (hasCandidates || lastFrontOccluderVisibility || startupSyncActive || !useIdleSleepOptimization)
             ApplyVisibility();
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+        }
+        finally
+        {
+            if (OccluderSelfProfiler.Active)
+                OccluderSelfProfiler.Record(this, System.Diagnostics.Stopwatch.GetTimestamp() - __t0, candidateStates.Count);
+        }
+#endif
     }
 
     private void OnDisable()
@@ -1070,9 +1112,16 @@ public sealed class SkyPrisonTerrainDecorationFrontOccluderTrigger : MonoBehavio
                 continue;
             currentOccluderRenderers.Add(r);
 
+            // 注册给落地深度 pass。放在这里是因为这段收集逻辑在 OnEnable /
+            // 结构重建时执行，不在 LateUpdate 里——GPU 模式下 LateUpdate 整体
+            // early return，但注册依然需要正确建立。
+            SkyPrisonOccluderRenderingLayer.Mark(r);
+            SkyPrisonOccluderRegistry.Register(r);
+
             if (useSelfVisualMeshTriangleRayDepth)
                 BuildMeshRayCacheForRenderer(r);
         }
+
     }
 
     private void BuildMeshRayCacheForRenderer(Renderer renderer)
@@ -1340,8 +1389,42 @@ public sealed class SkyPrisonTerrainDecorationFrontOccluderTrigger : MonoBehavio
             }
         }
 
+        // 兜底：同一个装饰物根底下的一切都算自己。
+        //
+        // 上面几条都是按具体节点判断的（VisualRoot / occluderColliderRoot / RuleRoot），
+        // 任何一个引用没解析到就会漏。实测贩卖机的
+        //   CollisionRoot/Main_Collision_MeshRoot/__PhysicsMeshCollider_00_SM_VendingMachine_01_LOD0
+        // 就漏成了「其它物体的遮挡命中」——它和 VisualRoot 是兄弟节点，不在
+        // occluderContentRoot 的子树里，而 occluderColliderRoot 没解析到。
+        // 结果遮挡体认为自己被别人挡住，角色站在旁边也被判成被遮挡，
+        // 而且分界线正好落在自身碰撞代理的轮廓上。
+        //
+        // 装饰物根（挂 TerrainDecorationRuntimeBinder 的那个节点）是所有分支的共同祖先，
+        // 不依赖节点命名，也不依赖那几个引用是否解析成功。
+        Transform decorationRoot = ResolveOwnDecorationRoot();
+        if (decorationRoot != null && t.IsChildOf(decorationRoot))
+            return true;
+
         return false;
     }
+
+    /// <summary>自身所属的装饰物根。每帧对每个碰撞体都要判一次，所以缓存。</summary>
+    private Transform ResolveOwnDecorationRoot()
+    {
+        if (cachedOwnDecorationRoot != null)
+            return cachedOwnDecorationRoot;
+
+        if (ownDecorationRootResolved)
+            return null;
+
+        ownDecorationRootResolved = true;
+        var binder = GetComponentInParent<TerrainDecorationRuntimeBinder>();
+        cachedOwnDecorationRoot = binder != null ? binder.transform : null;
+        return cachedOwnDecorationRoot;
+    }
+
+    private Transform cachedOwnDecorationRoot;
+    private bool ownDecorationRootResolved;
 
     private void AddOrRefreshCandidate(Collider sourceCollider)
     {
@@ -2867,6 +2950,21 @@ public sealed class SkyPrisonTerrainDecorationFrontOccluderTrigger : MonoBehavio
         {
             unitMinY = fallbackBounds.min.y;
             unitMaxY = fallbackBounds.max.y;
+        }
+
+        // 角色站在遮挡体顶上时，脚底 Y 正好等于遮挡体顶面 Y，真实重叠是 0。
+        // 但下面的重叠测试给两边各加了 padding，于是凭空造出 2×padding 的重叠
+        // （实测 0.16），而门槛 minSideOcclusionHeightOverlap 只有 0.02，必然放行。
+        // 结果就是站在站台上的角色被站台自己遮挡——而且因为遮挡代理体的边界正好
+        // 从角色身上穿过，画面上表现为角色左右各半、一半带网点一半正常。
+        //
+        // 这道闸的本意就是拦掉"角色在遮挡体上方"，所以先做一次不带 padding 的显式判定。
+        if (rejectOcclusionWhenUnitStandsOnTop &&
+            unitMinY >= occluderBounds.max.y - Mathf.Max(0f, standOnTopEpsilon))
+        {
+            debugLastRejectReason =
+                $"Unit stands on top: unitMinY={unitMinY:0.###} >= occluderMaxY={occluderBounds.max.y:0.###}.";
+            return false;
         }
 
         float padding = Mathf.Max(0f, sideOcclusionHeightPadding);

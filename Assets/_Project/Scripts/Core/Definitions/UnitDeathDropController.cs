@@ -140,7 +140,7 @@ public class UnitDeathDropController : MonoBehaviour
             if (entry == null || !entry.IsValid())
                 continue;
 
-            float effectiveChance = Mathf.Min(100f, entry.dropChance * DropRateBoostRuntime.CurrentMultiplier);
+            float effectiveChance = Mathf.Min(100f, entry.dropChance * DropRateBoostRuntime.CurrentMultiplier * TechTreePerks.Mult("lootDropRate"));      // 科技树「掠夺」：掉宝率
             float roll = Random.Range(0f, 100f);
             if (roll > effectiveChance)
                 continue;
@@ -203,7 +203,7 @@ public class UnitDeathDropController : MonoBehaviour
         }
     }
 
-    private void SpawnLoot(ScriptableObject itemDefinition, int count)
+    private void SpawnLoot(ItemDefinition itemDefinition, int count)
     {
         if (itemDefinition == null || count <= 0)
             return;
@@ -217,9 +217,9 @@ public class UnitDeathDropController : MonoBehaviour
             LootDropWorldObject obj = Instantiate(lootDropPrefab, spawnPos, Quaternion.identity);
             obj.SetLoot(itemDefinition, count);
         }
-        else if (itemDefinition is ItemDefinition itemDef)
+        else
         {
-            LootDropWorldObject.SpawnDrop(itemDef, count, spawnPos);
+            LootDropWorldObject.SpawnDrop(itemDefinition, count, spawnPos);
         }
 
         if (debugLogs)

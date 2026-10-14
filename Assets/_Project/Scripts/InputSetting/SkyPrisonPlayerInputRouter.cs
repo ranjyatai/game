@@ -66,7 +66,11 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
     [SerializeField] private bool sprintReleasedAfterLastTap = true;
     [SerializeField] private float suppressRunUntil = -999f;
     [SerializeField] private string lastInputEvent = "";
-    [SerializeField] private Vector2 lastKnownFacingInput = Vector2.right;
+    // 字段初始值本身就是"记住的朝向"的出厂默认值——项目约定角色出生默认朝左，
+    // 这里之前写死 Vector2.right，导致 ResolveCurrentFacingInput 里"用记住的旧值"
+    // 那个分支从游戏一开局就命中（因为这个值天生非零），根本轮不到后面任何一层
+    // 兜底修正，是这次闪避方向 bug 真正生效的那一处。
+    [SerializeField] private Vector2 lastKnownFacingInput = Vector2.left;
 
     [Header("武器切换滚轮")]
     [Tooltip("两次切换武器之间的最短间隔——鼠标滚轮快速连续滚动时，Input.mouseScrollDelta\n" +
@@ -173,7 +177,26 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
             // 背包叠加打开在上面）。背包键也要尊重这个标记，跟 Esc 键一样。
             // 但角色面板是"可以互相切换"的悬浮窗口（跟设置/暂停菜单那种真·模态不是一类），
             // 面板开着时按背包键应该照样能切过去，不该被面板自己造成的 ExternalBlock 挡住。
-            bool blockedByRealModal = SkyPrison.Runtime.UI.SkyPrisonWindowManager_V1.ExternalBlock && !CharacterPanelController.IsOpen;
+            // AFP 购买窗口跟背包/角色面板/任务日志/地图互斥：开着时按这些键，购买窗口自动关闭(Close 会立刻把 ExternalBlock 还原，
+            // 所以下面的 blockedByRealModal 算出来是 false，同一次按键就能把对应窗口打开)
+            if (SkyPrisonAfpShopWindow.IsOpen
+                && (settingsEarly.GetActionDown(SkyPrisonInputAction.Inventory) || settingsEarly.GetActionDown(SkyPrisonInputAction.CharacterPanel)
+                    || settingsEarly.GetActionDown(SkyPrisonInputAction.QuestLog) || settingsEarly.GetActionDown(SkyPrisonInputAction.Map)))
+                SkyPrisonAfpShopWindow.Hide();
+            // 战术研修窗口同理：开着时按背包/角色面板/任务日志/地图键，自动关闭再打开对应窗口
+            if (SkyPrisonTrainingWindow.IsOpen
+                && (settingsEarly.GetActionDown(SkyPrisonInputAction.Inventory) || settingsEarly.GetActionDown(SkyPrisonInputAction.CharacterPanel)
+                    || settingsEarly.GetActionDown(SkyPrisonInputAction.QuestLog) || settingsEarly.GetActionDown(SkyPrisonInputAction.Map)))
+                SkyPrisonTrainingWindow.Hide();
+            // 战术地图(小地图)开着时按背包/角色面板/任务日志键：地图先关，对应窗口再开
+            if (SkyPrisonMinimapWindow.IsOpen
+                && (settingsEarly.GetActionDown(SkyPrisonInputAction.Inventory) || settingsEarly.GetActionDown(SkyPrisonInputAction.CharacterPanel)
+                    || settingsEarly.GetActionDown(SkyPrisonInputAction.QuestLog)))
+                SkyPrisonMinimapWindow.Hide();
+
+            // 战术地图开着时也会置 ExternalBlock(挡攻击/闪避，鼠标要用来放标记)，但它是「再按 M 能关自己」的悬浮窗，不算真模态
+            bool blockedByRealModal = SkyPrison.Runtime.UI.SkyPrisonWindowManager_V1.ExternalBlock
+                && !CharacterPanelController.IsOpen && !QuestLogController.IsOpen && !SkyPrisonMinimapWindow.IsOpen;
             // 商店这类"真模态"prefab窗口(metadata.lockGameplayInput=true)开着的时候，
             // 背包/角色面板这些快捷键不该还能把别的窗口叠开在它上面——用户明确要求
             // "商店界面不应该允许按B打开背包，其他任何呼出的窗口都应该冻结"。这个跟
@@ -195,12 +218,41 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
             // 只有设置/暂停菜单这种真·模态开着时才真正挡住 C 键。
             if (settingsEarly.GetActionDown(SkyPrisonInputAction.CharacterPanel) && !blockedByRealModal && !blockedByLockingWindow)
             {
-                // 同理，按 C 是"切换到角色面板"，背包开着的话先关掉背包再开面板。
+                // 同理，按 C 是"切换到角色面板"，背包/任务日志开着的话先关掉再开面板。
                 if (!CharacterPanelController.IsOpen && windowManager != null && windowManager.IsOpen("inventory"))
                     windowManager.Close("inventory");
+                if (!CharacterPanelController.IsOpen && QuestLogController.IsOpen)
+                    QuestLogController.Hide();
 
                 CharacterPanelController.Toggle();
                 lastInputEvent = "CharacterPanel";
+            }
+
+            // 任务日志跟角色面板同一类"纯代码悬浮窗"，同一套 blockedByRealModal 放行逻辑
+            // （自己造成的 ExternalBlock 不该挡住自己的关闭键）。
+            if (settingsEarly.GetActionDown(SkyPrisonInputAction.QuestLog) && !blockedByRealModal && !blockedByLockingWindow)
+            {
+                if (!QuestLogController.IsOpen && windowManager != null && windowManager.IsOpen("inventory"))
+                    windowManager.Close("inventory");
+                if (!QuestLogController.IsOpen && CharacterPanelController.IsOpen)
+                    CharacterPanelController.Hide();
+
+                QuestLogController.Toggle();
+                lastInputEvent = "QuestLog";
+            }
+
+            // 战术地图(默认 M)：打开前先关掉背包 / 角色面板 / 任务日志，互斥；没点亮 / 战斗中 / 本图没有地图数据时 Show 自己会响禁止音
+            // 手柄：PS4 触摸板 / Xbox View，走 Input System(见 SkyPrisonMapGamepad)，不占用旧的 JoystickButton 键位
+            if ((settingsEarly.GetActionDown(SkyPrisonInputAction.Map) || SkyPrisonMapGamepad.MapButtonPressed()) && !blockedByRealModal && !blockedByLockingWindow)
+            {
+                if (!SkyPrisonMinimapWindow.IsOpen)
+                {
+                    if (windowManager != null && windowManager.IsOpen("inventory")) windowManager.Close("inventory");
+                    if (CharacterPanelController.IsOpen) CharacterPanelController.Hide();
+                    if (QuestLogController.IsOpen) QuestLogController.Hide();
+                }
+                SkyPrisonMinimapWindow.Toggle();
+                lastInputEvent = "Map";
             }
 
             // 致命报错弹窗（SkyPrisonErrorReporter.ShowFatalDialog）打开时也会把 ExternalBlock
@@ -208,7 +260,12 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
             // 报错弹窗只监听自己的确认键，完全不管 Esc，导致弹窗开着的时候 Esc 还能把
             // 暂停菜单叠开在报错弹窗后面。报错弹窗的优先级应该最高、拦截一切除了它自己
             // 的确认按钮，这里补上跟 Inventory/CharacterPanel 一样的 blockedByRealModal 检查。
-            if (settingsEarly.GetActionDown(SkyPrisonInputAction.Menu) && !PauseMenuController.IsOpen && !blockedByRealModal)
+            // 选关界面（SkyPrisonRaidMapScreen）自己处理 Esc：打开时、以及它这一帧刚被 Esc 关掉时，都不再叠开暂停菜单
+            if (settingsEarly.GetActionDown(SkyPrisonInputAction.Menu) && !PauseMenuController.IsOpen && !blockedByRealModal
+                && !SkyPrisonRaidMapScreen.IsOpen && !SkyPrisonRaidMapScreen.JustClosedThisFrame
+                && !SkyPrisonAfpShopWindow.IsOpen && !SkyPrisonAfpShopWindow.JustClosedThisFrame   // AFP 购买窗口自己处理 Esc
+                && !SkyPrisonTrainingWindow.IsOpen && !SkyPrisonTrainingWindow.JustClosedThisFrame   // 战术研修窗口也自己处理 Esc
+                && !SkyPrisonMinimapWindow.IsOpen && !SkyPrisonMinimapWindow.JustClosedThisFrame)    // 战术地图也自己处理 Esc
             {
                 // 任何走 SkyPrisonWindowManager_V1 的悬浮窗口开着的时候，Esc 都应该先关
                 // 窗口，不叠加弹出暂停菜单——之前这里只特判了"inventory"，商店/仓库/
@@ -218,10 +275,23 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
                 // 恢复了部分状态，就是之前商店按钮点击失灵那个bug的根源）。改成通用判断，
                 // 只要还有窗口开着就先关（正常情况下同一时间只会有一个），全部关掉之后
                 // 再按才轮到暂停菜单。
+                // 角色面板/任务日志是不走 windowManager 的"纯代码悬浮窗"，上面那个
+                // HasAnyWindowOpen() 完全看不到它们——之前漏了这两个，导致按C/L打开
+                // 面板后再按Esc，windowManager视角里"没有窗口开着"，直接跳去开暂停菜单，
+                // 变成面板叠在暂停菜单背后关不掉。跟 prefab 窗口一样，Esc 优先关自己，
+                // 全部关掉之后再按才轮到暂停菜单。
                 if (windowManager != null && windowManager.HasAnyWindowOpen())
                 {
                     foreach (string key in windowManager.OpenedWindowKeys)
                         windowManager.Close(key);
+                }
+                else if (CharacterPanelController.IsOpen)
+                {
+                    CharacterPanelController.Hide();
+                }
+                else if (QuestLogController.IsOpen)
+                {
+                    QuestLogController.Hide();
                 }
                 else
                 {
@@ -234,7 +304,8 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
         if (actionController == null)
             return;
 
-        if (!playerInputEnabled)
+        // 选关界面打开时，玩家的移动 / 攻击输入一律不处理——在界面里点鼠标左键会被当成开枪（还会触发开枪声音）
+        if (!playerInputEnabled || SkyPrisonRaidMapScreen.IsOpen)
         {
             currentMoveInput = Vector2.zero;
             currentRunHeld = false;
@@ -263,7 +334,9 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
             // 连移动一起冻结（跟背包/角色面板不一样，那两个允许开着照样走）——见
             // SkyPrisonWindowManager_V1.AnyMovementLockingWindowOpen 的注释。
             bool movementBlocking = Time.timeScale <= 0f
-                || SkyPrison.Runtime.UI.SkyPrisonWindowManager_V1.AnyMovementLockingWindowOpen;
+                || SkyPrison.Runtime.UI.SkyPrisonWindowManager_V1.AnyMovementLockingWindowOpen
+                || SkyPrisonTrainingWindow.IsOpen   // 战术研修窗口：同样定住角色，WASD 是选节点
+                || SkyPrisonAfpShopWindow.IsOpen;   // AFP 购买窗口：世界不停但要定住角色，W/S 选行时角色不能同时走(按键冲突)
             currentMoveInput = movementBlocking ? Vector2.zero : settings.GetMoveVector();
 
             currentSneakHeld = windowBlocking
@@ -300,12 +373,31 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
 
             if (!windowBlocking && settings.directDodgeKeyStillAllowed && settings.GetActionDown(SkyPrisonInputAction.Dodge))
             {
+                // 2026-08-25：机枪式连发(loopWhileHeld，比如双枪)不走"攻击取消闪避"那套
+                // 近战专属机制——那套是照近战"判定帧结束的后摇阶段接一个前闪/后闪"设计
+                // 的，跟Track2这条独立循环轨道交互了好几轮都没能捞干净(闪避途中Track2
+                // 还在继续循环触发gun事件、LP狂掉、闪避结束后卡在举枪姿势收不回来)。
+                // 不再修这条集成路径，改成按用户最初的期望来做：闪避键按下时按住的枪
+                // 直接当场闭火(硬性清空Track2 + 立即把攻击状态收回Normal，不走"播完
+                // 收枪后摇"那套需要时间的流程)，然后当成"根本没有在攻击"，走完全普通
+                // 的闪避判定——没有前闪/后闪特殊分支、没有朝向冻结、没有跟近战共用的
+                // 复杂状态机，就是关枪、闪避，两件事顺序做完。
+                if (actionController.IsAttacking && combatModuleRuntime != null && combatModuleRuntime.CurrentSkillLoopsWhileHeld)
+                {
+                    combatModuleRuntime.HardStopLoopingAttackForDodge();
+                    // 2026-08-26：这里不复用下面通用的 RequestDodgeFromCurrentInput——那个在
+                    // "没按方向键"时会按 noMoveInputDodgeForward 走前闪(面朝方向)，玩家反馈
+                    // 站着射击时按闪避打断，默认应该是往后躲，不是往前扑；只有明确按住朝向
+                    // "前方"的方向键才该改成前闪。专门给这个场景写一版默认后撤的版本。
+                    RequestDodgeDefaultBackward("DodgeKey");
+                }
                 // 攻击取消闪避：攻击状态下按闪避键不走正常的方向闪避判定，改成按玩家
                 // 当前是否按着朝向方向的方向键分别接前闪/后闪(前闪正常速度，后闪固定
                 // 沿朝向反方向、速度打折、保持朝向不转身)——是否允许由 WeaponCombatModule.
                 // allowAttackCancelDodgeBack + 判定帧是否已经结束(后摇阶段)决定，
                 // 都在 TryPlayerRequestAttackCancelDodgeBack 里判断，这里不重复检查。
-                if (actionController.IsAttacking)
+                // (机枪式连发已经在上面单独分支处理，不会走到这里。)
+                else if (actionController.IsAttacking)
                 {
                     bool canCancelToDodgeBack = combatModuleRuntime != null && combatModuleRuntime.TryPlayerRequestAttackCancelDodgeBack();
                     lastInputEvent = canCancelToDodgeBack ? "AttackCancelDodgeBack" : "DodgeKey(BlockedByAttack)";
@@ -368,22 +460,31 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
                 actionController.RequestRunThrust();
                 lastInputEvent = "RunThrust";
             }
-            else if (!windowBlocking && lightAttackDown && heavyAttackDown)
+            else if (!windowBlocking && lightAttackDown && heavyAttackDown && LightHeavyShareAnyKey(settings))
             {
+                // 只有轻/重攻击真的绑在同一个物理键上(比如都是鼠标左键，靠长按区分)
+                // 才需要这段"等一下再判断意图"的逻辑。
                 _sharedAttackKeyPending = true;
                 _sharedAttackKeyPressTime = Time.time;
             }
+            else if (!windowBlocking && lightAttackDown && heavyAttackDown)
+            {
+                // 2026-08-25：绑的是两个真正独立的物理键(比如双枪的鼠标左键开火+
+                // 鼠标右键换弹)——不是"同一个按键，长按/点按二选一"这种情况，两个键
+                // 都按下了就该两个都正常触发，不用套用上面那套"猜你想按哪个"的
+                // disambiguation。之前不分青红皂白只要两个键同一帧一起按下就一律走
+                // 长按判定，鼠标党左键右键一起按(边开枪边想换弹)会被这套逻辑吞掉，
+                // 变成两个都不正常触发、要等长按阈值才决定播哪个，手感很怪。
+                RequestLightAttackWithBuffering();
+                RequestHeavyAttackWithBuffering();
+            }
             else if (!windowBlocking && lightAttackDown)
             {
-                bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestLightAttack();
-                if (canAttack) actionController.RequestLightAttack();
-                lastInputEvent = "LightAttack";
+                RequestLightAttackWithBuffering();
             }
             else if (!windowBlocking && heavyAttackDown)
             {
-                bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestHeavyAttack();
-                if (canAttack) actionController.RequestHeavyAttack();
-                lastInputEvent = "HeavyAttack";
+                RequestHeavyAttackWithBuffering();
             }
 
             // 空中攻击输入缓冲补发：独立于上面那条 if/else-if 链，每帧都检查一次——
@@ -415,9 +516,7 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
                     _sharedAttackKeyPending = false;
                     if (!windowBlocking)
                     {
-                        bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestLightAttack();
-                        if (canAttack) actionController.RequestLightAttack();
-                        lastInputEvent = "LightAttack";
+                        RequestLightAttackWithBuffering();
                     }
                 }
                 else if (windowBlocking)
@@ -428,10 +527,51 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
                 else if (Time.time - _sharedAttackKeyPressTime >= sharedAttackKeyHoldThreshold)
                 {
                     _sharedAttackKeyPending = false;
-                    bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestHeavyAttack();
-                    if (canAttack) actionController.RequestHeavyAttack();
-                    lastInputEvent = "HeavyAttack";
+                    RequestHeavyAttackWithBuffering();
                 }
+            }
+
+            // 连发：按住轻攻击键不放时，模组勾了 autoFireLightAttackWhileHeld（比如枪械）
+            // 就每帧检查一次——只要上一发的攻击状态已经播完回到 Normal（!IsAttacking）、
+            // 键还按着、且没被窗口挡住，就当作又按了一次轻攻击自动补发，不需要玩家手动
+            // 一下一下点。故意不复用 lightAttackDown（那个只在按下的第一帧为true，这里
+            // 要用 GetAction 的"持续按住"信号）；也不用担心跟按下那一帧重复触发，因为
+            // 那一帧 IsAttacking 必然还是true（RequestLightAttackWithBuffering 已经让
+            // actionController 进入Attack状态）。
+            // AutoFireArmed：弹药/LP见底强制打断连发之后会置false，必须先松开按键
+            // (ReleaseHeldLightAttack里重新置true)才会再次生效——不然玩家手指还压着
+            // 没松开，资源一回一点点，这里会在資源刚够的那一帧悄悄重新开一枪，玩家
+            // 可能早就不是在有意识地按着开火了（见 UnitActionModuleRuntime.
+            // AutoFireArmed 字段注释）。
+            if (!windowBlocking && !actionController.IsAttacking
+                && combatModuleRuntime != null && combatModuleRuntime.AutoFireLightAttackWhileHeld
+                && combatModuleRuntime.AutoFireArmed
+                && settings.GetAction(SkyPrisonInputAction.LightAttack))
+            {
+                RequestLightAttackWithBuffering();
+            }
+
+            // 机枪式连发（loopWhileHeld）：动画本身在Spine播放层面循环，不会自己在
+            // Complete时结束攻击状态（会每圈都触发一次，提前收掉攻击），所以松开轻攻击
+            // 键这一刻要主动通知收尾。ReleaseHeldLightAttack内部会自己判断当前技能是不是
+            // 这种循环类型、当前是不是真的还在攻击状态，对普通一次性攻击是安全的空操作。
+            if (settings.GetActionUp(SkyPrisonInputAction.LightAttack))
+            {
+                combatModuleRuntime?.ReleaseHeldLightAttack();
+            }
+
+            // 上面那行是"松开边沿"触发，只在按键从按下变成松开的那一帧生效一次——
+            // 实测偶发"鼠标已经松开、角色还在连续开火"，怀疑是硬直/锁定期间攒下的
+            // 缓冲攻击请求(UnitActionController._bufferedAttackKind)在玩家已经松手
+            // 之后才补发，重新进入了一次循环攻击，而这次重新进入不会再等到一次新的
+            // GetActionUp——那个边沿早就在按键真正松开的那一帧被消耗掉了，不会再触发
+            // 第二次。改成加一道电平检测兜底：只要循环还在攻击、但这一帧按键已经不是
+            // 按住状态，不管是怎么进入这个状态的，直接收尾，不依赖"松开"这个边沿事件
+            // 发生的具体时机。
+            if (combatModuleRuntime != null && combatModuleRuntime.CurrentSkillLoopsWhileHeld
+                && actionController.IsAttacking && !settings.GetAction(SkyPrisonInputAction.LightAttack))
+            {
+                combatModuleRuntime.ReleaseHeldLightAttack();
             }
 
             // 重攻击键松开 = 蓄力释放。窗口挡着的时候不拦截松开事件，避免按住重攻击键
@@ -513,11 +653,14 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
         }
         else
         {
-            // 按快捷键切换是"换到这个窗口"，不是叠加——角色面板开着的话先关掉再开背包。
-            // 从角色面板里点装备槽打开背包（CharacterPanelController.OpenInventoryToEquip）
-            // 走的是完全独立的另一条路径，不受这里影响，那边就是要两个一起开着。
+            // 按快捷键切换是"换到这个窗口"，不是叠加——角色面板/任务日志开着的话先关掉
+            // 再开背包。从角色面板里点装备槽打开背包（CharacterPanelController.
+            // OpenInventoryToEquip）走的是完全独立的另一条路径，不受这里影响，那边就是
+            // 要两个一起开着。
             if (CharacterPanelController.IsOpen)
                 CharacterPanelController.Hide();
+            if (QuestLogController.IsOpen)
+                QuestLogController.Hide();
 
             SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Open);
             windowManager.Open(inventoryPrefab);
@@ -568,16 +711,12 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
 
         if (!windowBlockingFallback && Input.GetKeyDown(fallbackLightAttackKey))
         {
-            bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestLightAttack();
-            if (canAttack) actionController.RequestLightAttack();
-            lastInputEvent = "LightAttack";
+            RequestLightAttackWithBuffering();
         }
 
         if (!windowBlockingFallback && Input.GetKeyDown(fallbackHeavyAttackKey))
         {
-            bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestHeavyAttack();
-            if (canAttack) actionController.RequestHeavyAttack();
-            lastInputEvent = "HeavyAttack";
+            RequestHeavyAttackWithBuffering();
         }
 
         if (Input.GetKeyUp(fallbackHeavyAttackKey))
@@ -643,6 +782,92 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
         lastInputEvent = "SprintDown";
     }
 
+    /// <summary>轻攻击/重攻击的绑定里是不是有任意一个物理键(键盘/鼠标主键、副键、
+    /// 手柄键)真的重叠——只有重叠的时候才需要"长按/点按二选一"这套 disambiguation，
+    /// 双枪这类"左键开火、右键换弹"的独立按键方案不该被当成同一个键处理。</summary>
+    private static bool LightHeavyShareAnyKey(SkyPrisonInputSettings settings)
+    {
+        if (settings == null) return false;
+
+        SkyPrisonInputBinding light = settings.GetBinding(SkyPrisonInputAction.LightAttack);
+        SkyPrisonInputBinding heavy = settings.GetBinding(SkyPrisonInputAction.HeavyAttack);
+        if (light == null || heavy == null) return false;
+
+        if (light.primaryKey != KeyCode.None && (light.primaryKey == heavy.primaryKey || light.primaryKey == heavy.secondaryKey || light.primaryKey == heavy.gamepadKey))
+            return true;
+        if (light.secondaryKey != KeyCode.None && (light.secondaryKey == heavy.primaryKey || light.secondaryKey == heavy.secondaryKey || light.secondaryKey == heavy.gamepadKey))
+            return true;
+        if (light.gamepadKey != KeyCode.None && (light.gamepadKey == heavy.primaryKey || light.gamepadKey == heavy.secondaryKey || light.gamepadKey == heavy.gamepadKey))
+            return true;
+
+        return false;
+    }
+
+    /// <summary>
+    /// 连点攻击时，硬直期间按下的键之前会在这里直接判 canAttack=false 就什么也不做——
+    /// UnitActionController.RequestAttack() 里现成的"硬直期间缓冲、硬直结束自动补发"
+    /// 机制从来没被触发过，因为触发它的调用（actionController.RequestLightAttack()）
+    /// 在 canAttack=false 时被跳过了。玩家的直观感受就是"连续攻击有一下按了没反应"。
+    ///
+    /// 修法：先单独查 CanEnterAttackPublic()。硬直中就不再调
+    /// TryPlayerRequestLightAttack()（反正会因为同一个原因失败），直接调
+    /// actionController.RequestLightAttack()，让它自己的缓冲机制接住这次输入；硬直
+    /// 结束后由 UnitActionModuleRuntime.HandleBufferedAttackReady 重新走一遍
+    /// TryPlayerRequestLightAttack() 补选技能/扣LP，不会跳过选定逻辑。
+    /// 不在硬直中时行为不变。
+    /// </summary>
+    private void RequestLightAttackWithBuffering()
+    {
+        if (actionController == null)
+            return;
+
+        if (!actionController.CanEnterAttackPublic())
+        {
+            actionController.RequestLightAttack();
+            lastInputEvent = "LightAttack(Buffered)";
+            return;
+        }
+
+        bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestLightAttack();
+        if (canAttack)
+        {
+            actionController.RequestLightAttack();
+            // 机枪式连发(loopWhileHeld)不靠Complete事件收尾，得在真正进入Attack状态
+            // 之后立刻暂停"Complete迟迟不触发就强制解锁"的兜底超时，否则按住攻击键
+            // 不放，角色持枪姿势也会每隔一段时间自己被强制打断、放下再抬起来。
+            combatModuleRuntime?.SuspendAttackLockFallbackIfLooping();
+        }
+        lastInputEvent = "LightAttack";
+    }
+
+    /// <summary>重攻击版本，理由同 RequestLightAttackWithBuffering。</summary>
+    private void RequestHeavyAttackWithBuffering()
+    {
+        if (actionController == null)
+            return;
+
+        // 有些武器模组（比如双枪）压根没配重攻击技能——右键这个按键与其按下去毫无
+        // 反应，不如直接改去触发换弹。TryPlayerRequestReload 内部会自己检查弹匣满没满/
+        // 背包有没有备用弹药，不满足条件时安静地什么都不做，不会误触发。
+        if (combatModuleRuntime != null && combatModuleRuntime.ShouldHeavyAttackFallBackToReload())
+        {
+            bool didReload = combatModuleRuntime.TryPlayerRequestReload();
+            lastInputEvent = didReload ? "HeavyAttack->Reload" : "HeavyAttack->Reload(Blocked)";
+            return;
+        }
+
+        if (!actionController.CanEnterAttackPublic())
+        {
+            actionController.RequestHeavyAttack();
+            lastInputEvent = "HeavyAttack(Buffered)";
+            return;
+        }
+
+        bool canAttack = combatModuleRuntime == null || combatModuleRuntime.TryPlayerRequestHeavyAttack();
+        if (canAttack) actionController.RequestHeavyAttack();
+        lastInputEvent = "HeavyAttack";
+    }
+
     private void RequestDodgeFromCurrentInput(string source, bool noMoveForward)
     {
         if (actionController == null)
@@ -650,7 +875,13 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
 
         ResolveReferences();
 
-        Vector2 facing = ResolveCurrentFacingInput();
+        // 2026-08-26：同 RequestDodgeDefaultBackward 那边的坑——ResolveCurrentFacingInput()
+        // 读的是 movement.FacingInput(移动意图/速度兜底)，闪避刚结束、玩家没有真实按键
+        // 时会被残留位移速度"带偏"，指向刚才闪避的位移方向而不是真实视觉朝向，导致
+        // "没按方向键的默认前闪"其实朝着脸的反方向走、"前闪"这个判定标签用错。统一改成
+        // 读渲染用的那份朝向(VisualFacingSign)，两处闪避判定用同一个数据源，不会再分叉。
+        int visualFacingSign = combatModuleRuntime != null ? combatModuleRuntime.VisualFacingSign : 1;
+        Vector2 facing = new Vector2(visualFacingSign == -1 ? 1f : -1f, 0f);
         Vector2 inputDir = currentMoveInput.sqrMagnitude > 0.0001f ? currentMoveInput.normalized : Vector2.zero;
 
         if (inputDir.sqrMagnitude > 0.0001f)
@@ -688,6 +919,60 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
 
         actionController.RequestDodge(noMoveForward);
         lastInputEvent = noMoveForward ? source + " ForwardNoInput" : source + " BackNoInput";
+    }
+
+    /// <summary>专给"射击被闪避打断"这个场景用——跟 RequestDodgeFromCurrentInput 的规则
+    /// 反过来：默认固定后撤(沿角色当前朝向的正后方，不看输入方向)，只有玩家这一刻确实
+    /// 按着朝向"前方"的方向键(跟RequestDodgeFromCurrentInput里前/后判定同一套dot阈值)
+    /// 才改成前闪、位移方向跟随输入。没有按方向键、按的是侧方向、或者按的方向本身就是
+    /// 背向朝向，统统按后撤处理——玩家站着开火被闪避打断时的直觉预期是"往后躲"，不是
+    /// 往面朝的方向扑过去。</summary>
+    private void RequestDodgeDefaultBackward(string source)
+    {
+        if (actionController == null)
+            return;
+
+        ResolveReferences();
+
+        // 2026-08-26：这里不能用 ResolveCurrentFacingInput()（读 movement.FacingInput）
+        // 当基准——那是移动意图/速度兜底，上一次后撤闪避结束时如果玩家没有真实按键，
+        // 残留速度会让它在原地"回弹"指向刚才闪避位移的方向(背对真实视觉朝向)。这里
+        // 直接读渲染用的那份朝向(VisualFacingSign，跟animationDriver.Facing同一个数据
+        // 源)，保证跟角色实际显示的朝向永远一致，不会因为上一次闪避的残留状态分叉。
+        int visualFacingSign = combatModuleRuntime != null ? combatModuleRuntime.VisualFacingSign : 1;
+        Vector2 facing = new Vector2(visualFacingSign == -1 ? 1f : -1f, 0f);
+        Vector2 inputDir = currentMoveInput.sqrMagnitude > 0.0001f ? currentMoveInput.normalized : Vector2.zero;
+
+        bool hasClearForwardInput = false;
+        if (inputDir.sqrMagnitude > 0.0001f && dodgeRelativeToCurrentFacing && facing.sqrMagnitude > 0.0001f)
+        {
+            float dot = Vector2.Dot(inputDir, facing.normalized);
+            hasClearForwardInput = dot > backDodgeDotThreshold;
+        }
+
+        if (hasClearForwardInput)
+        {
+            actionController.RequestDodge(inputDir, UnitMovementController.DodgeRuntimeState.Forward);
+            lastInputEvent = source + " ForwardRelativeToFacing";
+            return;
+        }
+
+        if (facing.sqrMagnitude > 0.0001f)
+        {
+            // 2026-08-26：这个默认后撤要跟近战"攻击取消后撤步"同一种"小步后退"手感——
+            // 不能用普通闪避的完整距离/速度(那是真正的位移型闪避，不是"退一步"的收尾
+            // 反馈)，也要跟它一样冻住朝向，不然位移方向背对着朝向，UpdateFacing会在
+            // 下一帧直接把角色转过去，变成"闪避完之后自己转身"这种违和表现。
+            combatModuleRuntime?.HoldFacingForDefaultBackDodge();
+            float backSpeedScale = actionController.AttackCancelDodgeBackSpeedScale;
+            actionController.RequestDodge(-facing.normalized, UnitMovementController.DodgeRuntimeState.Back, backSpeedScale);
+            lastInputEvent = source + " BackDefault";
+            return;
+        }
+
+        // 没有可用的朝向信息兜底(理论上不该发生)——退回普通闪避判定，不让这次闪避
+        // 请求彻底落空。
+        RequestDodgeFromCurrentInput(source, false);
     }
 
     private void UpdateLastKnownFacingFromMovement()
@@ -731,7 +1016,13 @@ public class SkyPrisonPlayerInputRouter : MonoBehaviour
         if (lastKnownFacingInput.sqrMagnitude > 0.0001f)
             return lastKnownFacingInput.normalized;
 
-        return Vector2.right;
+        // 刚进游戏、从没输入过方向时，上面全部落空，最后落到这里。之前直接写死
+        // Vector2.right——但项目约定角色出生时默认朝向是"左"，这个假朝向跟约定正好
+        // 反了：闪避的前/后判定用它算 dot，方向语义算反，播放的动画和玩家按键方向对
+        // 不上（位移本身不受这个假朝向影响，因为位移始终跟随原始输入，见
+        // RequestDodgeFromCurrentInput 里"位移方向仍然尊重玩家输入"那条注释）——
+        // 表现正是"刚进游戏第一次闪避，动画放的是前闪，人却往后挪"。
+        return Vector2.left;
     }
 
     private void ResetSprintTapState()

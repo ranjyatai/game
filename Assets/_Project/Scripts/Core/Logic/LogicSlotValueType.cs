@@ -27,5 +27,19 @@ public enum LogicSlotValueType
     Currency = 14,
 
     // AudioClip 资源引用
-    AudioClip = 15
+    AudioClip = 15,
+
+    // 台本句子库引用
+    DialogueLibrary = 16,
+
+    // 商店定义引用
+    Shop = 17,
+
+    // 任务定义引用
+    Quest = 18,
+
+    // 单位定义(资产本身)引用——跟 Unit(=场景内具体某个单位实例，SceneReference)
+    // 是两码事，这个存的是UnitDefinition资产的直接引用(AssetReference)，比如
+    // "击杀多少个这种怪"这类不针对场景内具体某个实例、而是针对"这一种单位"的场景。
+    UnitAsset = 19
 }

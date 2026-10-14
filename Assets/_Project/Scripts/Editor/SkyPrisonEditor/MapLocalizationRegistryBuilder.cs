@@ -35,7 +35,7 @@ public class MapLocalizationRegistryBuilder : AssetPostprocessor
         return AssetDatabase.LoadAssetAtPath<MapDefinition>(path) != null;
     }
 
-    [MenuItem("Sky Prison/本地化/重建地图名称注册表")]
+    [MenuItem("天空囚笼/重建注册表/重建地图名称注册表", false, 166)]
     public static void RebuildMenu()
     {
         Rebuild(true);
@@ -60,9 +60,14 @@ public class MapLocalizationRegistryBuilder : AssetPostprocessor
             {
                 mapKey = map.mapKey,
                 sceneName = sceneName,
-                scenePath = map.scenePath
+                scenePath = map.scenePath,
+                category = ResolveCategory(map),
+                coordinates = map.coordinates ?? ""
             };
             entry.localizedNames.AddRange(map.localizedNames);
+            entry.localizedDescriptions.AddRange(map.localizedDescriptions);
+            if (map.raidDayOutputs != null) foreach (var it in map.raidDayOutputs) if (it != null) entry.raidDayOutputs.Add(it);
+            if (map.raidNightOutputs != null) foreach (var it in map.raidNightOutputs) if (it != null) entry.raidNightOutputs.Add(it);
             registry.entries.Add(entry);
         }
 
@@ -72,6 +77,18 @@ public class MapLocalizationRegistryBuilder : AssetPostprocessor
 
         if (verbose)
             Debug.Log($"[MapLocalizationRegistryBuilder] 地图名称注册表已重建，共 {registry.entries.Count} 个地图条目。");
+    }
+
+    /// <summary>从地图资源路径取分类：Assets/_Project/Maps/<分类>/...，比如 Hub / Raid / Final / Survival。取不到就返回空。</summary>
+    private static string ResolveCategory(MapDefinition map)
+    {
+        string p = AssetDatabase.GetAssetPath(map).Replace("\\", "/");
+        const string marker = "/Maps/";
+        int i = p.IndexOf(marker);
+        if (i < 0) return "";
+        string rest = p.Substring(i + marker.Length);
+        int j = rest.IndexOf('/');
+        return j > 0 ? rest.Substring(0, j) : "";
     }
 
     private static string ResolveSceneName(MapDefinition map)

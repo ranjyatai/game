@@ -87,6 +87,12 @@ MonoBehaviour:
   statusOutlineNoiseScale: 1.2
   statusOutlineFadeInSeconds: 0.35
   statusOutlineFadeOutSeconds: 0.6
+  statusGlowRadiusPixels: 12
+  statusGlowIntensity: 1
+  statusGlowInnerColor: {r: 1, g: 0.6, b: 0.12, a: 1}
+  statusGlowOuterColor: {r: 1, g: 0.3, b: 0.06, a: 1}
+  statusGlowVariance: 0.7
+  statusGlowNoiseScale: 5
   useStatusFlash: 0
   statusFlashColor: {r: 1, g: 1, b: 1, a: 1}
   statusFlashDuration: 0.3

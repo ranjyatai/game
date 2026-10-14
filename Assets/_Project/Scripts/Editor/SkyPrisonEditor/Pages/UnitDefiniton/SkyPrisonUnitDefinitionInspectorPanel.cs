@@ -47,6 +47,8 @@ public class SkyPrisonUnitDefinitionInspectorPanel
         page.DrawFoldoutSection("定义类型", DrawUnitDefineType);
         page.DrawFoldoutSection("控制方式", DrawUnitControlModeSection);
         page.DrawFoldoutSection("AI 行为", DrawUnitAISection);
+        page.DrawFoldoutSection("无敌 / NPC 对话", DrawUnitInvincibleAndDialogueSection);
+        page.DrawFoldoutSection("立绘", DrawUnitPortraitSection);
         page.DrawFoldoutSection("视野范围", DrawUnitVision);
         page.DrawFoldoutSection("听觉感知", DrawUnitHearing);
         page.DrawFoldoutSection("视觉通道 / 预制体", DrawUnitPrefab);
@@ -616,14 +618,46 @@ public class SkyPrisonUnitDefinitionInspectorPanel
         }
     }
 
+    private static float s_previewWrapWidth;
+
     private void DrawRichTextPreview(string richText)
     {
         List<PreviewCharStyle> chars = ParseRichTextPreview(richText ?? string.Empty);
-        Rect rect = GUILayoutUtility.GetRect(0f, 10000f, 44f, 56f, GUILayout.ExpandWidth(true));
+        // 预览是逐字手绘的，会自动换行；之前预留高度写死 44~56，文字一多（多语言描述几段话）就画出框外盖住下面的控件。
+        // 先用和下面绘制完全相同的换行规则数出行数，按行数预留高度。换行宽度用窗口宽度估算（布局和重绘两个事件下都一致），
+        // 取得比实际略窄一点，保证预留的高度只会多、不会少。
+        // 换行宽度优先用上一次重绘时量到的真实宽度（布局事件里拿不到真实宽度，所以缓存一份），第一次才用窗口宽度估算。
+        // 估算偏宽时，实际绘制比预留的多换几行，文字就会盖住下面的控件。
+        float wrapInner = s_previewWrapWidth > 0f ? s_previewWrapWidth : Mathf.Max(120f, EditorGUIUtility.currentViewWidth - 150f);
+        int previewLines = 1;
+        {
+            float mx = 0f;
+            for (int mi = 0; mi < chars.Count; mi++)
+            {
+                PreviewCharStyle mc = chars[mi];
+                if (mc.character == '\n') { previewLines++; mx = 0f; continue; }
+                GUIStyle ms = new GUIStyle(EditorStyles.label);
+                ms.fontStyle = mc.bold && mc.italic ? FontStyle.BoldAndItalic : mc.bold ? FontStyle.Bold : mc.italic ? FontStyle.Italic : FontStyle.Normal;
+                float mw = GetPreviewCompactCharWidth(mc.character, ms);
+                if (mx + mw > wrapInner) { previewLines++; mx = 0f; }
+                mx += mw;
+            }
+        }
+        float previewHeight = Mathf.Max(44f, 20f + previewLines * 20f);
+        Rect rect = GUILayoutUtility.GetRect(0f, 10000f, previewHeight, previewHeight, GUILayout.ExpandWidth(true));
+        if (Event.current.type == EventType.Repaint)
+        {
+            float measured = Mathf.Max(120f, rect.width - 20f);
+            if (Mathf.Abs(measured - s_previewWrapWidth) > 1f)
+            {
+                s_previewWrapWidth = measured;
+                EditorApplication.delayCall += UnityEditorInternal.InternalEditorUtility.RepaintAllViews;
+            }
+        }
         EditorGUI.DrawRect(rect, new Color(1f, 1f, 1f, 0.02f));
         float x = rect.x + 8f;
         float y = rect.y + 8f;
-        float maxX = rect.xMax - 8f;
+        float maxX = Mathf.Min(rect.xMax - 8f, rect.x + 8f + wrapInner);
         float lineHeight = 20f;
         for (int i = 0; i < chars.Count; i++)
         {
@@ -839,6 +873,63 @@ public class SkyPrisonUnitDefinitionInspectorPanel
         page.DrawRow("控制方式", controlMode);
     }
 
+    // 表情差分是整张立绘替换(不是分层叠加脸部)——商店/对话等需要显示NPC头像的界面
+    // 从这里按expressionKey取图，跟icon(小图标)是两码事。
+    private void DrawUnitPortraitSection()
+    {
+        SerializedProperty portraits = page.SelectedUnitSO.FindProperty("portraits");
+        if (portraits == null) return;
+
+        EditorGUILayout.PropertyField(portraits, new GUIContent("表情差分"), true);
+        EditorGUILayout.HelpBox(
+            "整张立绘替换，不是分层叠脸——每个表情配一张完整图。expressionKey留空或填" +
+            "\"default\"的那张是找不到指定表情时的兜底显示。",
+            MessageType.None);
+    }
+
+    // 之前加 isInvincible/dialogue 这两个字段的时候漏了这一步——这个页面是完全
+    // 自定义绘制的GUI(不是套皮默认Inspector)，新字段不会自动出现，得在这里显式
+    // 按名字FindProperty+DrawRow画出来，不然字段虽然在UnitDefinition.cs里存在，
+    // 策划在这个工作台上完全看不到、碰不到。
+    private void DrawUnitInvincibleAndDialogueSection()
+    {
+        SerializedProperty isInvincible = page.SelectedUnitSO.FindProperty("isInvincible");
+        SerializedProperty dialogue = page.SelectedUnitSO.FindProperty("dialogue");
+        SerializedProperty characterIdentity = page.SelectedUnitSO.FindProperty("characterIdentity");
+
+        if (isInvincible != null)
+        {
+            page.DrawRow("无敌", isInvincible);
+            EditorGUILayout.HelpBox(
+                "勾上之后不管伤害走哪条路径(战斗碰撞/触发器脚本/以后新增的范围伤害)都会被拦截，不会掉血。",
+                MessageType.None);
+        }
+
+        if (dialogue != null)
+        {
+            page.DrawRow("对话包", dialogue);
+
+            bool isFriendly = characterIdentity != null &&
+                ((CharacterIdentity)characterIdentity.enumValueIndex is CharacterIdentity.Ally
+                    or CharacterIdentity.NeutralPassive or CharacterIdentity.Creature);
+
+            if (dialogue.objectReferenceValue != null && !isFriendly)
+            {
+                EditorGUILayout.HelpBox(
+                    "配了对话包，但当前人物身份不是 友军/中立无敌意/生物——运行时会被自动忽略，" +
+                    "不会挂对话交互组件。把身份改成这三类之一，或者清空这个字段。",
+                    MessageType.Warning);
+            }
+            else
+            {
+                EditorGUILayout.HelpBox(
+                    "留空=这个单位没有对话交互。配了的话，生成单位时会自动挂上对话组件，不用在" +
+                    "地图上手动拖组件。对话内容(选项/句子)在这份资产自己的Inspector里编。",
+                    MessageType.None);
+            }
+        }
+    }
+
     private void DrawUnitAISection()
     {
         SerializedProperty defineType = page.SelectedUnitSO.FindProperty("defineType");
@@ -936,7 +1027,9 @@ public class SkyPrisonUnitDefinitionInspectorPanel
         SerializedProperty prefabProp = so.FindProperty("prefab");
         SerializedProperty visualChannelProp = so.FindProperty("visualChannel");
         SerializedProperty spinePrefabProp = so.FindProperty("spinePrefab");
+        SerializedProperty spineVisualScaleProp = so.FindProperty("spineVisualScale");
         SerializedProperty model3DPrefabProp = so.FindProperty("model3DPrefab");
+        SerializedProperty model3DVisualScaleProp = so.FindProperty("model3DVisualScale");
 
         EditorGUILayout.HelpBox(
             "单位运行时预制体是单位壳；视觉通道只保留 Spine / 3D 两条。",
@@ -970,15 +1063,18 @@ public class SkyPrisonUnitDefinitionInspectorPanel
         {
             case 0:
                 DrawSpineAssetRow("Spine 通道", spinePrefabProp);
+                DrawVisualScaleRow(spineVisualScaleProp);
                 break;
 
             case 1:
                 DrawAssetGameObjectRow("3D 通道", model3DPrefabProp);
+                DrawVisualScaleRow(model3DVisualScaleProp);
                 break;
 
             default:
                 visualChannelProp.enumValueIndex = 0;
                 DrawSpineAssetRow("Spine 通道", spinePrefabProp);
+                DrawVisualScaleRow(spineVisualScaleProp);
                 break;
         }
 
@@ -1055,6 +1151,25 @@ public class SkyPrisonUnitDefinitionInspectorPanel
         );
     }
 
+    /// <summary>运行时预制体壳现在是共用的，不同骨架导出比例不一样，缩放没地方调——
+    /// 就加在Spine通道这里，跟"选哪份骨架"放一起，改了骨架顺手也能调对大小。</summary>
+    private void DrawVisualScaleRow(SerializedProperty property)
+    {
+        if (property == null)
+        {
+            EditorGUILayout.HelpBox("字段不存在。", MessageType.Warning);
+            return;
+        }
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Label("模型缩放", GUILayout.Width(140f));
+        float newScale = EditorGUILayout.FloatField(property.floatValue);
+        EditorGUILayout.EndHorizontal();
+
+        if (!Mathf.Approximately(newScale, property.floatValue))
+            property.floatValue = Mathf.Max(0.01f, newScale);
+    }
+
     private void ShowSpineAssetPickerMenu(SerializedProperty property, UnityEngine.Object current)
     {
         List<ScriptableObject> assets = GetSpineAssetCandidates();
@@ -1103,7 +1218,7 @@ public class SkyPrisonUnitDefinitionInspectorPanel
                 continue;
 
             ScriptableObject asset = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
-            if (asset != null)
+            if (asset != null && IsSpineSkeletonDataAsset(asset))
                 results.Add(asset);
         }
 
@@ -1563,8 +1678,10 @@ public class SkyPrisonUnitDefinitionInspectorPanel
             if (keyProp != null)
                 keyProp.stringValue = def.key;
 
+            // 补键用参数库里的默认值，不能一律填 0——moveSpeedRate(移动速度倍率)默认是 100，
+            // 填 0 等于把单位定身(IsStatusImmobilized)，归巢者/颂赞者/几个 NPC 都因此站着不动过。
             if (valueProp != null)
-                valueProp.floatValue = 0f;
+                valueProp.floatValue = def.defaultValue;
 
             existing.Add(def.key);
         }
@@ -1826,25 +1943,6 @@ public class SkyPrisonUnitDefinitionInspectorPanel
 
         SerializedProperty hpBarStyleProp = page.SelectedUnitSO.FindProperty("overheadHpBarStyle");
         page.DrawRow("HP条样式", hpBarStyleProp);
-
-        EditorGUILayout.Space(4f);
-        using (new EditorGUILayout.HorizontalScope())
-        {
-            if (GUILayout.Button("打开单位UI样式编辑器", GUILayout.Height(22f)))
-            {
-                OverheadBarStyleAsset style = hpBarStyleProp != null ? hpBarStyleProp.objectReferenceValue as OverheadBarStyleAsset : null;
-                UnitUIStyleEditorWindow.Open(style);
-            }
-
-            using (new EditorGUI.DisabledScope(hpBarStyleProp == null || hpBarStyleProp.objectReferenceValue == null))
-            {
-                if (GUILayout.Button("定位样式", GUILayout.Height(22f)))
-                {
-                    Selection.activeObject = hpBarStyleProp.objectReferenceValue;
-                    EditorGUIUtility.PingObject(hpBarStyleProp.objectReferenceValue);
-                }
-            }
-        }
 
         if (GUI.changed)
             PushOverheadOffsetToPrefab(overheadOffsetXProp, overheadOffsetYProp);

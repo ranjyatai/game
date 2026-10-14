@@ -84,6 +84,13 @@ public class TerrainGroundMotorV5 : MonoBehaviour
     public bool allowInputWhileSliding = true;
     [Range(0f, 1f)] public float inputControlWhileSliding = 0.35f;
 
+    [Header("Terrain Holes（地形挖洞）")]
+    [Tooltip("把 Terrain 的洞当墙：这一步脚底会进洞就挡住，并沿洞口边缘滑动。\n" +
+             "不开的话角色会踩着看不见的地面悬空走过洞口——找地面用的 Terrain.SampleHeight 不认洞。")]
+    public bool blockTerrainHoles = true;
+    [Tooltip("脚底中心往外多少米也算进洞。避免身体一半已经悬在洞上才被挡住。")]
+    [Min(0f)] public float terrainHoleEdgeMargin = 0.25f;
+
     [Header("Obstacle Edge Anti Hook")]
     [Tooltip("启用身体水平投射。角色碰到箱子、墙角、物体边缘时，会沿墙面滑开，而不是把位移硬顶进边角。")]
     public bool enableHorizontalBodyCollision = true;
@@ -108,10 +115,22 @@ public class TerrainGroundMotorV5 : MonoBehaviour
     public float bodySweepExtraClearance = 0.025f;
 
     [Header("Ground / Wall Role Separation")]
-    [Tooltip("Body Block Mask 内的箱子/墙/集装箱只作为水平阻挡，不再被脚底 Ground Probe 当成可站立地面。")]
-    public bool rejectBodyBlockCollidersAsGround = true;
+    [Tooltip("【已停用】不再有任何作用，保留字段只为兼容场景里已序列化的值。\n\n" +
+             "它的语义是「能挡身体的一律不能当地面」。而 bodyBlockMask 配的是全部层，" +
+             "于是等价于「任何碰撞体都站不上去」，物理地面整条路被废掉。\n" +
+             "拒绝墙面当地面由 ignoreSteepPhysicsGroundAsGround 的法线角度过滤负责。")]
+    public bool rejectBodyBlockCollidersAsGround = false;
     [Tooltip("Unit Separation Mask 内的单位 Collider 不能被脚底当成地面。")]
     public bool rejectUnitCollidersAsGround = true;
+    [Tooltip("当前脚下正踩着的那个 Collider 不参与身体硬阻挡。\n\n" +
+             "关掉的话，站上任何模型时地面判定和身体扫掠会对同一个碰撞体给出相反结论——" +
+             "脚底认它是地面，身体认它是墙并把角色横向推开，表现为「站上去就往外滑」。")]
+    public bool ignoreCurrentGroundColliderInBodyBlock = true;
+    [Range(0.1f, 0.99f)]
+    [Tooltip("身体退穿透时，接触方向的垂直分量超过这个值就判定为「地板/天花板接触」，交给地面吸附处理，不产生水平推力。\n\n" +
+             "0.7 约等于 45°：接触方向比 45° 更竖，就是踩在上面或顶在下面，不是撞墙。\n" +
+             "调低会让斜面更容易被当成墙（更硬、更容易卡边角），调高会让陡坡也被当成可站立面。")]
+    public float maxVerticalComponentForHorizontalBlock = 0.7f;
     [Tooltip("非 Terrain 的物理地面命中，如果比脚底高出过多，则不允许 Snap 上去，避免被箱体边缘/墙面台阶吸上去。")]
     public bool limitPhysicsGroundStepUp = true;
     [Tooltip("允许非 Terrain 物理地面把脚底向上吸附的最大高度。0.08~0.14 比较适合 2.5D 行走。")]
@@ -172,7 +191,30 @@ public class TerrainGroundMotorV5 : MonoBehaviour
     [Tooltip("V9：当 Cast 一开始就贴墙/重叠，仍按阻挡处理，而不是完全忽略 0 距离命中。高速奔跑时建议开启。")]
     public bool treatZeroDistanceBodyHitAsBlock = true;
 
+    [Header("Debug")]
+    [Tooltip("逐帧打印水平位移的来源，用来定位「站在物体上被往外推」是哪个环节造成的。查完关掉。")]
+    public bool debugHorizontalAttribution = false;
+    [Tooltip("水平位移超过这个值才打印，避免刷屏。")]
+    public float debugHorizontalAttributionThreshold = 0.002f;
+    [Tooltip("最多输出多少行后自动关闭。逐帧日志不设上限会把 Editor.log 刷到几个 GB，写满系统盘。")]
+    public int debugHorizontalAttributionMaxLines = 600;
+    [Tooltip("只记录「想动却没动」的帧。查卡死必须开这个——按位移大小筛会把卡住的帧全过滤掉，" +
+             "剩下的全是正常移动的帧，看起来一切正常。")]
+    public bool debugOnlyWhenStuck = true;
+    [Tooltip("判定「想动」的最小输入位移。")]
+    public float debugStuckMinInput = 0.02f;
+    [Tooltip("判定「没动」的最大实际位移（绝对值下限）。")]
+    public float debugStuckMaxMoved = 0.01f;
+    [Range(0.05f, 0.9f)]
+    [Tooltip("实际位移低于「想要位移 × 这个比例」就算被卡。0.3 表示只走出了想走距离的三成以下。\n\n" +
+             "只用绝对值门槛会漏掉「还在挪但被大幅削减」的情况，而那和完全不动是同一个问题。")]
+    public float debugStuckMovedRatio = 0.3f;
+
     [Header("Commercial Stuck Rescue")]
+    [Tooltip("只有在退穿透确实产生了修正（角色真嵌在几何里）时才允许卡死救援介入。\n\n" +
+             "关掉的话，正常顶着墙走也会被判成卡死——「想动却没动成」这组条件对两者是一样的——" +
+             "于是每帧被硬推 Stuck Rescue Distance，方向随阻挡法线来回翻，手感是「被吸住、走不动」。")]
+    public bool requirePenetrationForStuckRescue = true;
     [Tooltip("商业保底：角色有输入、有期望位移，但实际几乎不动并持续一小段时间时，自动从角落/小钩子里脱困。")]
     public bool enableStuckRescue = true;
     [Tooltip("疑似卡住需要持续的时间。0.12~0.20 比较适合动作游戏。")]
@@ -283,10 +325,34 @@ public class TerrainGroundMotorV5 : MonoBehaviour
     private MotorState state = MotorState.Falling;
     private Vector3 currentGroundNormal = Vector3.up;
     private float currentSlopeAngle;
+    /// 当前脚下那个地面碰撞体。用来把它排除出身体硬阻挡，见 IsCurrentGroundCollider。
+    private Collider currentGroundCollider;
+    /// 调试用：最近一次产生退穿透修正的碰撞体路径。
+    private string lastBlockingColliderName = "";
+    /// 调试用：扫掠内部的中间值，见 ResolveHorizontalBodyCollisionStep 里的记录点。
+    private float lastSweepWanted, lastSweepHitDistance, lastSweepSafeTravel;
+    private bool lastSweepOverlapped;
+    private string lastSweepHitName = "";
+    private string lastSweepHitOwner = "";
+    private Vector3 lastSweepHitPoint;
+    private Vector3 lastSweepHitNormal;
+    /// 归因日志已输出行数，到上限自动关闭，见 LogHorizontalAttribution。
+    private int debugAttributionLineCount;
+
+    /// 临时诊断用：重新勾上 debugHorizontalAttribution 前必须先清零这个计数器，
+    /// 否则上限判定 (debugAttributionLineCount > Max) 永远成立，重新打开等于白打开。
+    public void ResetHorizontalAttributionDebugBudget() => debugAttributionLineCount = 0;
+    /// 本帧退穿透是否真的产生了修正——即角色确实嵌在几何里，而不只是被扫掠挡住。
+    /// 卡死救援只在真嵌进去时才该介入，见 ApplyCommercialStuckRescue。
+    private bool depenetratedThisFrame;
     private float jumpGroundIgnoreTimer;
     private bool hasGroundAnchor;
     private Vector3 groundAnchorPoint;
     private Vector3 lastFramePosition;
+    /// 上一 tick 结束时的位置，用来检测 tick 之间有没有别的系统改过 Transform。
+    private Vector3 prevTickEndPosition;
+    private bool hasPrevTickEnd;
+    private Vector3 externalDisplacementSinceLastTick;
     private Vector3 lastSafePosition;
     private bool hasLastSafePosition;
     private float safePositionRecordTimer;
@@ -315,6 +381,7 @@ public class TerrainGroundMotorV5 : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         InitializeDefaultUnitSeparationMaskIfNeeded();
+        ExcludeProbeLayersFromBlockingMasks();
         ResolveBodyCollider();
 
         if (rb != null)
@@ -322,6 +389,33 @@ public class TerrainGroundMotorV5 : MonoBehaviour
             rb.useGravity = false;
             rb.isKinematic = true;
             rb.freezeRotation = true;
+        }
+    }
+
+    // WalkableProbe/OccluderProbe 两个探测层必须永远从 bodyBlockMask/groundMask 里剔除，
+    // 不管这个组件是被谁、用什么方式创建/配置的（AddComponent、预制体自带、编辑器工具后配）。
+    //
+    // 之前这段逻辑写在 UnitDefinitionRuntimeApplier.EnsureTerrainGroundMotorForDefinition
+    // 里——玩家能正确排除，AI 敌人却没有（bodyBlockMask 实测两者不一致），说明 AI 的
+    // 初始化没有稳定走到那个方法。玩家和 AI 本来就该共用完全一样的移动/碰撞判定，
+    // 不该靠某个外部调用方"记得"来保证一致——放在这个组件自己的 Awake 里，
+    // 不管谁用什么路径创建它，第一次真正跑起来的时候都会自我纠正，不存在遗漏的调用方。
+    private void ExcludeProbeLayersFromBlockingMasks()
+    {
+        int walkableProbeLayer = LayerMask.NameToLayer(GroundSurfaceMarker.WalkableProbeLayerName);
+        if (walkableProbeLayer >= 0)
+        {
+            int bit = ~(1 << walkableProbeLayer);
+            bodyBlockMask &= bit;
+            groundMask &= bit;
+        }
+
+        int occluderProbeLayer = LayerMask.NameToLayer(TerrainDecorationDefinition.OccluderProbeLayerName);
+        if (occluderProbeLayer >= 0)
+        {
+            int bit = ~(1 << occluderProbeLayer);
+            bodyBlockMask &= bit;
+            groundMask &= bit;
         }
     }
 
@@ -574,6 +668,12 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         horizontalVelocity = Vector3.zero; // 清零控制速度，让击退感更明显
     }
 
+    // 本帧水平位移长度。物理地面的"上台阶高度限制"要按它放宽：快速位移（闪避/冲刺）一帧走得远，
+    // 走上斜坡时一帧内表面升高的量 = tan(坡度) × 水平位移，会超过固定的 0.12，斜面被当成"上不去"，
+    // 脚就从斜面下面穿进去（实测闪避冲向 34° 楼梯斜坡：脚一直停在地形高度，整个人陷进楼梯里）。
+    private float currentHorizontalStepLength;
+    private const float SlopeStepUpAllowanceScale = 1.35f;
+
     private void FixedUpdate()
     {
         float dt = Time.fixedDeltaTime;
@@ -590,6 +690,14 @@ public class TerrainGroundMotorV5 : MonoBehaviour
 
         Vector3 position = rb != null ? rb.position : transform.position;
         lastFramePosition = position;
+
+        // 上一 tick 结束时的位置 vs 这一 tick 开始时的位置。
+        // 两者不等 = tick 之间有 Motor 之外的东西写了 Transform，把角色搬走了。
+        // 「能动能跳但离不开这个点」正是这个特征：Motor 每帧算出并应用了位移，
+        // 然后被别的系统撤销。归因日志只测一次 tick 内的 to-from，看不到这一段。
+        externalDisplacementSinceLastTick = hasPrevTickEnd
+            ? Horizontal(position - prevTickEndPosition)
+            : Vector3.zero;
         bodyBlockedThisFrame = false;
 
         Vector3 footOffset = GetFootOffset();
@@ -603,11 +711,16 @@ public class TerrainGroundMotorV5 : MonoBehaviour
 
         TryRecordLastSafePosition(position, dt);
 
+        // 每帧清零：退穿透是否真的介入过，是卡死救援的准入条件
+        depenetratedThisFrame = false;
+
         Vector3 inputVelocity = BuildInputVelocity(moveInput, sprint, dt);
         if (jumpActive && state == MotorState.Falling)
             inputVelocity *= Mathf.Clamp01(airControlMultiplier);
 
         inputVelocity = FilterInputVelocityBySlope(position, inputVelocity, footOffset, dt);
+
+        currentHorizontalStepLength = Horizontal((inputVelocity + knockbackVelocity) * dt).magnitude;
 
         // 击退冲量衰减（每帧在输入之外独立叠加）
         if (knockbackVelocity.sqrMagnitude > 0.0001f)
@@ -631,9 +744,24 @@ public class TerrainGroundMotorV5 : MonoBehaviour
             candidate = SimulateGroundOrFall(position, candidate, footOffset, dt, footBefore);
         }
 
+        // 逐环节归因：每帧能改水平位置的一共 8 处，靠读代码分不出是哪一处在推人。
+        // 打开 debugHorizontalAttribution 后会把每一处的水平位移分别打出来。
+        Vector3 attrPrev = position;
+        Vector3 attrInput = Vector3.zero, attrGroundFall = Vector3.zero, attrBodySolve = Vector3.zero;
+        Vector3 attrRescue = Vector3.zero, attrSeparation = Vector3.zero, attrSepBlock = Vector3.zero;
+        Vector3 attrFinalDepen = Vector3.zero;
+        bool attrOn = debugHorizontalAttribution;
+        if (attrOn)
+        {
+            attrGroundFall = Horizontal(candidate - attrPrev);
+            attrPrev = candidate;
+        }
+
         Vector3 beforeHorizontalResolve = candidate;
         if (enableHorizontalBodyCollision)
             candidate = ResolveHorizontalBodyCollision(position, candidate);
+
+        if (attrOn) { attrBodySolve = Horizontal(candidate - attrPrev); attrPrev = candidate; }
 
         Vector3 expectedHorizontal = new Vector3(beforeHorizontalResolve.x - position.x, 0f, beforeHorizontalResolve.z - position.z);
         Vector3 actualHorizontal = new Vector3(candidate.x - position.x, 0f, candidate.z - position.z);
@@ -647,8 +775,12 @@ public class TerrainGroundMotorV5 : MonoBehaviour
             actualHorizontal,
             dt);
 
+        if (attrOn) { attrRescue = Horizontal(candidate - attrPrev); attrPrev = candidate; }
+
         Vector3 beforeUnitSeparation = candidate;
         candidate = ApplyUnitSoftSeparation(candidate, dt);
+
+        if (attrOn) { attrSeparation = Horizontal(candidate - attrPrev); attrPrev = candidate; }
 
         // Unit separation is a soft gameplay push, not an authority that may tunnel through world blockers.
         // After units push each other apart, run the pushed segment through the same body-block solver again,
@@ -656,12 +788,63 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         if (resolveBodyBlockAfterUnitSeparation && enableHorizontalBodyCollision)
             candidate = ResolveUnitSeparationBodyBlock(beforeUnitSeparation, candidate);
 
+        if (attrOn) { attrSepBlock = Horizontal(candidate - attrPrev); attrPrev = candidate; }
+
         // 兜底退穿透：修复跳跃 Y 上升时身体侧面撞进墙壁的情况。
         // 水平 solve 只覆盖 X/Z 位移向量，Y 抬升进墙不在扫掠路径内，此处补一次。
         if (depenetrateBodyAfterSolve && enableHorizontalBodyCollision)
             candidate = DepenetrateBodyHorizontally(candidate);
 
+        if (attrOn)
+        {
+            attrFinalDepen = Horizontal(candidate - attrPrev);
+            attrInput = Horizontal(inputVelocity * dt);
+            LogHorizontalAttribution(position, candidate, attrInput, attrGroundFall, attrBodySolve,
+                attrRescue, attrSeparation, attrSepBlock, attrFinalDepen);
+        }
+
+        // 地形洞口当墙。放在所有水平修正（输入/碰撞/卡死救援/单位推挤/击退）之后统一
+        // 兜底——任何一处把人推向洞口都会在这里被拦下，不用逐处去改。
+        if (blockTerrainHoles)
+            candidate = BlockTerrainHoleEntry(position, candidate, footOffset);
+
+        // 守卫者的盾：玩家不管是走、潜行还是闪避都穿不过去（只对玩家生效，怪物之间互不挡）
+        if (_shieldOwnerIdentity == null) _shieldOwnerIdentity = GetComponent<SkyPrisonUnitRuntimeIdentity>() ?? GetComponentInParent<SkyPrisonUnitRuntimeIdentity>(true);
+        if (_shieldOwnerIdentity != null && _shieldOwnerIdentity == SkyPrisonPlayerAuthority.CurrentPlayerUnit)
+        {
+            Vector3 shieldDelta = candidate - position;
+            SkyPrisonGuardianShield.ClampDodgeDelta(position, ref shieldDelta);
+            candidate = position + shieldDelta;
+        }
+
         MoveTo(candidate);
+        prevTickEndPosition = candidate;
+        hasPrevTickEnd = true;
+    }
+
+    /// <summary>
+    /// 这一步脚底会进洞就退回；先试只走 X、再试只走 Z，贴着洞口边缘走时能顺边滑动
+    /// （和撞墙手感一致），而不是一碰到就整个停住。
+    /// 本来就站在洞上（出生在洞里 / 站着时脚下被挖空）不拦，否则会被永久卡死。
+    /// </summary>
+    // 洞和虚空地表（刷了「虚空」材质的地方）一视同仁：都当墙。
+    private Vector3 BlockTerrainHoleEntry(Vector3 position, Vector3 candidate, Vector3 footOffset)
+    {
+        if (SkyPrisonTerrainHoleQuery.IsBlockedAround(position + footOffset, terrainHoleEdgeMargin))
+            return candidate;
+
+        if (!SkyPrisonTerrainHoleQuery.IsBlockedAround(candidate + footOffset, terrainHoleEdgeMargin))
+            return candidate;
+
+        Vector3 xOnly = new Vector3(candidate.x, candidate.y, position.z);
+        if (!SkyPrisonTerrainHoleQuery.IsBlockedAround(xOnly + footOffset, terrainHoleEdgeMargin))
+            return xOnly;
+
+        Vector3 zOnly = new Vector3(position.x, candidate.y, candidate.z);
+        if (!SkyPrisonTerrainHoleQuery.IsBlockedAround(zOnly + footOffset, terrainHoleEdgeMargin))
+            return zOnly;
+
+        return new Vector3(position.x, candidate.y, position.z);
     }
 
     private Vector3 ApplyCommercialStuckRescue(
@@ -686,6 +869,17 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         bool wantsMove = inputMagnitude >= stuckMinInputMagnitude;
         bool expectedEnough = expectedDistance > 0.0005f;
         bool actuallyBlocked = actualDistance <= Mathf.Max(0.0001f, expectedDistance * 0.18f);
+
+        // 「想动 + 没动成」和「正常顶着墙走」是同一组条件，光靠它分不出来。
+        // 救援的本意是把角色从几何钩子里拔出来，而"嵌在几何里"这件事有确切信号：
+        // 退穿透本帧是否真的产生了修正。只被扫掠干净挡住时退穿透是 0，那是正常的
+        // 撞墙，不该救援——否则顶着墙走就会被每帧硬推 stuckRescueDistance，
+        // 方向还随阻挡法线来回翻，手感是"被吸住、走不动"。
+        if (requirePenetrationForStuckRescue && !depenetratedThisFrame)
+        {
+            ResetStuckAccumulationIfMoving(actualDistance);
+            return candidate;
+        }
 
         if (wantsMove && expectedEnough && actuallyBlocked)
         {
@@ -823,6 +1017,12 @@ public class TerrainGroundMotorV5 : MonoBehaviour
             Collider c = bodyOverlapBuffer[i];
             if (ShouldIgnoreAsBodyBlock(c))
                 continue;
+
+            // 扫掠拦截和退穿透是两条独立路径：这里探到障碍就直接拒绝移动，不产生穿透。
+            // 之前只在退穿透里记录阻挡者，于是"被挡住但没嵌进去"的情况下
+            // 归因日志显示「最近阻挡=无」，查不出是谁在挡。
+            if (debugHorizontalAttribution)
+                lastBlockingColliderName = c != null ? c.name : "";
 
             return true;
         }
@@ -1128,6 +1328,7 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         state = newState;
         currentGroundNormal = ground.normal;
         currentSlopeAngle = ground.slopeAngle;
+        currentGroundCollider = ground.valid ? ground.collider : null;
         hasGroundAnchor = ground.valid;
         if (ground.valid)
             groundAnchorPoint = ground.point;
@@ -1266,10 +1467,10 @@ public class TerrainGroundMotorV5 : MonoBehaviour
             if (IsSelfCollider(hit.collider))
                 continue;
 
-            if (ShouldRejectAsPhysicsGround(hit.collider, footWorld, hit.point, allowStepUp))
+            float slope = Vector3.Angle(hit.normal, Vector3.up);
+            if (ShouldRejectAsPhysicsGround(hit.collider, footWorld, hit.point, allowStepUp, slope))
                 continue;
 
-            float slope = Vector3.Angle(hit.normal, Vector3.up);
             if (!includeSteep && slope > maxWalkableSlope)
                 continue;
 
@@ -1281,6 +1482,16 @@ public class TerrainGroundMotorV5 : MonoBehaviour
 
             float verticalDistance = Mathf.Abs(footWorld.y - hit.point.y);
             float score = verticalDistance + 0.05f;
+
+            // 脚底够得着的、不低于脚底的物理表面（斜坡、路沿）要能赢过脚下的地形。
+            // 原来物理表面一律多罚 0.05，而脚正踩在地形上时地形距离是 0，所以走到斜坡低端时地形永远赢，
+            // 脚的高度不变、斜坡表面越升越高，走出约 0.37 米后比脚高出 maxPhysicsGroundStepUpHeight，
+            // 被判成"上不去"，脚就从斜坡下面穿了进去。
+            // 这里只放宽"不低于脚底 且 在上台阶限制内"这一档：超过限制的墙、横梁、箱体仍然被
+            // ShouldRejectAsPhysicsGround 挡掉，比脚底低的物理表面（走下台阶）也保持原来的打分。
+            if (hit.point.y >= footWorld.y - 0.01f
+                && (hit.point.y - footWorld.y) <= PhysicsGroundStepUpAllowance(slope))
+                score = verticalDistance - 0.2f;
 
             if (score < bestScore)
             {
@@ -1313,18 +1524,41 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         return col.transform == transform || col.transform.IsChildOf(transform);
     }
 
-    private bool ShouldRejectAsPhysicsGround(Collider col, Vector3 footWorld, Vector3 hitPoint, bool allowStepUp = false)
+    /// <summary>
+    /// 这个表面（坡度 slopeDeg）相对脚底最多能高出多少还算"上得去"：固定的 maxPhysicsGroundStepUpHeight，
+    /// 加上"可走坡面在本帧水平位移内自然升高的量"。只对可走坡度的表面放宽——墙、横梁、箱体（接近垂直）不受影响，
+    /// 水平位移为 0 时也退回原来的固定值。
+    /// </summary>
+    private float PhysicsGroundStepUpAllowance(float slopeDeg)
+    {
+        float baseRise = Mathf.Max(0f, maxPhysicsGroundStepUpHeight);
+        if (slopeDeg <= 0.5f || slopeDeg > maxWalkableSlope || currentHorizontalStepLength <= 0f)
+            return baseRise;
+        return baseRise + Mathf.Tan(slopeDeg * Mathf.Deg2Rad) * currentHorizontalStepLength * SlopeStepUpAllowanceScale;
+    }
+
+    private bool ShouldRejectAsPhysicsGround(Collider col, Vector3 footWorld, Vector3 hitPoint, bool allowStepUp = false, float surfaceSlopeDeg = 90f)
     {
         if (col == null)
             return true;
 
-        if (rejectBodyBlockCollidersAsGround && IsLayerInMask(col.gameObject.layer, bodyBlockMask))
-            return true;
+        // 这里原本是：
+        //     if (rejectBodyBlockCollidersAsGround && IsLayerInMask(col.gameObject.layer, bodyBlockMask))
+        //         return true;
+        //
+        // 已停用。bodyBlockMask 配的是全部层，所以这一条等于「任何碰撞体都不能当地面」，
+        // 物理地面整条路被废掉，角色只能站在 Terrain 上——和「物体自己的碰撞承担物理关系」
+        // 这个目标直接矛盾。而且它是场景里序列化的值，改默认值救不了已有实例，
+        // 只能靠人记得去取消勾选，忘一次就整套失效。
+        //
+        // 墙面不该当地面这件事，由下面的法线角度过滤负责
+        // （ignoreSteepPhysicsGroundAsGround + maxPhysicsGroundSlopeAsGround）：
+        // 平台顶面 0°、墙面 90°，本来就分得干净，不需要按层一刀切。
 
         if (rejectUnitCollidersAsGround && IsUnitCollider(col))
             return true;
 
-        if (!allowStepUp && limitPhysicsGroundStepUp && hitPoint.y - footWorld.y > Mathf.Max(0f, maxPhysicsGroundStepUpHeight))
+        if (!allowStepUp && limitPhysicsGroundStepUp && hitPoint.y - footWorld.y > PhysicsGroundStepUpAllowance(surfaceSlopeDeg))
             return true;
 
         return false;
@@ -1344,6 +1578,16 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         if (!IsLayerInMask(col.gameObject.layer, bodyBlockMask))
             return true;
 
+        // 正踩着的那个碰撞体不能同时又当硬阻挡，否则地面判定和身体扫掠会对同一个
+        // 碰撞体给出相反结论：脚底说"这是我的地面"，身体说"这是墙，把他推开"，
+        // 结果角色一站上去就被横向挤出去。表现为"站在任何模型上都会往外滑"。
+        //
+        // 这也是 rejectBodyBlockCollidersAsGround 当初存在的原因——它用
+        // "能挡身体的一律不能当地面"来回避这场冲突，代价是任何东西都站不上去。
+        // 排除掉当前地面之后，那个粗暴开关就不必要了。
+        if (ignoreCurrentGroundColliderInBodyBlock && IsCurrentGroundCollider(col))
+            return true;
+
         if (ignoreUnitCollidersInBodyBlock && IsUnitCollider(col))
             return true;
 
@@ -1352,6 +1596,138 @@ public class TerrainGroundMotorV5 : MonoBehaviour
             return true;
 
         return false;
+    }
+
+    /// <summary>
+    /// 是不是当前脚下那个地面碰撞体。
+    ///
+    /// 同时认它的整棵子树：一个装饰物的碰撞往往拆成多个代理节点
+    /// （CollisionRoot/Main_Collision_MeshRoot 下面一堆 __PhysicsMeshCollider_*），
+    /// 脚底只会命中其中一个，但身体扫掠会同时碰到好几个。只比对单个碰撞体的话，
+    /// 没被踩中的那几个照样会把角色推开，滑动依旧。
+    /// </summary>
+    private static Vector3 Horizontal(Vector3 v) => new Vector3(v.x, 0f, v.z);
+
+    /// <summary>
+    /// 逐环节打印本帧的水平位移来源。只在贴地、且总位移超过阈值时打，避免刷屏。
+    /// 查"站在物体上被往外推"这类问题时，直接看哪一列不是 0 就知道是谁干的。
+    /// </summary>
+    private void LogHorizontalAttribution(
+        Vector3 from, Vector3 to,
+        Vector3 input, Vector3 groundFall, Vector3 bodySolve,
+        Vector3 rescue, Vector3 separation, Vector3 sepBlock, Vector3 finalDepen)
+    {
+        Vector3 total = Horizontal(to - from);
+
+        if (debugOnlyWhenStuck)
+        {
+            // 只记录"想动却没动"的帧。原来的条件是"位移够大才打"，恰好把卡住的帧
+            // 全部过滤掉了——卡住时位移接近 0，永远达不到阈值，日志里剩下的全是
+            // 正常移动的帧，看起来一切正常。查卡死必须反过来筛。
+            //
+            // 无条件记录，连输入门槛也去掉。
+            //
+            // 前面反复调判据（位移够大才打 → 想动却没动 → 绝对值门槛 → 按比例 →
+            // 有输入才记），每调一次就要重新复现一次，五轮下来卡住的那一帧一次都没录到。
+            //
+            // 最后这道输入门槛尤其致命：如果卡住的原因就是「输入没进到 Motor」，
+            // 那 input.magnitude 恒为 0，这一帧永远被跳过——**要查的现象正好被判据排除掉**。
+            // 「跑不出去也跳不出去」符合这个特征：物理阻挡只挡水平，不会让人跳不起来。
+            //
+            // 录之前先筛就总有筛错的风险。全录下来，事后过滤。600 行上限防刷爆。
+        }
+        else if (total.magnitude < debugHorizontalAttributionThreshold)
+        {
+            return;
+        }
+
+        // 逐帧日志必须有硬上限。今天这个项目的 Editor.log 已经被逐帧诊断刷到过 8.2 GB，
+        // 直接把系统盘写满、Unity 连场景都存不下。到量自动关，不依赖人记得取消勾选。
+        debugAttributionLineCount++;
+        if (debugAttributionLineCount > debugHorizontalAttributionMaxLines)
+        {
+            debugHorizontalAttribution = false;
+            Debug.LogWarning($"[水平归因] 已输出 {debugHorizontalAttributionMaxLines} 行，自动关闭以免刷爆日志。" +
+                             "需要继续观察就重新勾上 Debug Horizontal Attribution。", this);
+            return;
+        }
+
+        Debug.Log(
+            // 单位名字必须带上：场景里有多个 Motor（玩家 + 敌人），敌人正常走动会把日志
+            // 刷满，玩家卡住的帧混在里面分不出来——上一轮就是因此读到了敌人的记录，
+            // 得出"没有一帧卡住"的错误结论。
+            $"[水平归因][{transform.root.name}/{name}] 状态={state} " +
+            $"合计={total.magnitude:0.0000}m 方向=({total.x:0.###},{total.z:0.###})\n" +
+            // 输入的世界朝向必须记：被挡住时合计位移是 (0,0)，看不出角色想往哪走。
+            // 「按不同方向都出不去」和「所有方向都被挡」是两回事，只有把
+            // 原始输入的世界朝向打出来才分得开——如果不管按哪儿它都指向墙，
+            // 那问题在输入到世界方向的转换，不在物理。
+            $"  输入朝向=({(input.sqrMagnitude > 1e-8f ? input.normalized.x : 0f):0.##}," +
+            $"{(input.sqrMagnitude > 1e-8f ? input.normalized.z : 0f):0.##})\n" +
+            $"  输入={input.magnitude:0.0000}  地面/下落={groundFall.magnitude:0.0000}  " +
+            $"身体solve={bodySolve.magnitude:0.0000}  卡死救援={rescue.magnitude:0.0000}\n" +
+            $"  单位分离={separation.magnitude:0.0000}  分离后阻挡={sepBlock.magnitude:0.0000}  " +
+            $"兜底退穿透={finalDepen.magnitude:0.0000}\n" +
+            $"  当前地面={(currentGroundCollider != null ? currentGroundCollider.name : "无")}  " +
+            $"真嵌入={depenetratedThisFrame}  " +
+            $"最近阻挡={(string.IsNullOrEmpty(lastBlockingColliderName) ? "无" : lastBlockingColliderName)}\n" +
+            $"  卡住={(total.magnitude <= Mathf.Max(debugStuckMaxMoved, input.magnitude * debugStuckMovedRatio) ? "是" : "否")}  " +
+            $"想走={input.magnitude:0.0000}  实走={total.magnitude:0.0000}\n" +
+            // 「跳不出去」需要垂直方向的量：起跳请求有没有被接受、垂直速度、
+            // 脚底到地面的距离。只记水平位移判断不了跳跃为什么无效。
+            $"  垂直: Y位移={(to.y - from.y):0.0000}  垂直速度={verticalVelocity:0.###}  " +
+            $"跳跃激活={jumpActive}  坡度={currentSlopeAngle:0.#}°\n" +
+            // tick 之间被外部改动的位移。不为 0 就说明 Motor 之外有东西在写 Transform。
+            $"  ★外部位移={externalDisplacementSinceLastTick.magnitude:0.0000}  " +
+            $"方向=({externalDisplacementSinceLastTick.x:0.###},{externalDisplacementSinceLastTick.z:0.###})\n" +
+            $"  扫掠: 想走={lastSweepWanted:0.0000} 撞到={lastSweepHitDistance:0.0000} " +
+            $"允许走={lastSweepSafeTravel:0.0000} 起点重叠={lastSweepOverlapped} " +
+            $"撞的是={(string.IsNullOrEmpty(lastSweepHitName) ? "无" : lastSweepHitName)}\n" +
+            $"  位置: 脚=({transform.position.x:0.00},{transform.position.y:0.00},{transform.position.z:0.00}) " +
+            $"撞点=({lastSweepHitPoint.x:0.00},{lastSweepHitPoint.y:0.00},{lastSweepHitPoint.z:0.00}) " +
+            $"法线=({lastSweepHitNormal.x:0.00},{lastSweepHitNormal.y:0.00},{lastSweepHitNormal.z:0.00}) " +
+            $"归属={(string.IsNullOrEmpty(lastSweepHitOwner) ? "无" : lastSweepHitOwner)}", this);
+    }
+
+    // 碰撞体往上找到带 CollisionRoot 的那一层的父物体名，用来区分同名碰撞体。
+    private static string GetColliderOwnerName(Collider col)
+    {
+        Transform t = col.transform;
+        for (int i = 0; i < 6 && t != null; i++, t = t.parent)
+        {
+            if (t.name == "CollisionRoot" && t.parent != null)
+                return t.parent.name;
+        }
+        return col.transform.root.name;
+    }
+
+    // 地板块之间的高度差容差——同一片地面拼接出来的相邻碰撞体，中心高度差应该很小
+    // （厘米级的拼接缝隙、坡度起伏）；墙面/天花板这类明显不是地面的兄弟碰撞体，
+    // 因为纵向跨度大（从地板一路到车顶），碰撞体中心会比真正的地板高出一大截。
+    // 1.2 米足够覆盖正常的拼接高差，又能把随便一面墙（通常 2 米以上高）排除掉。
+    private const float SiblingGroundHeightTolerance = 1.2f;
+
+    private bool IsCurrentGroundCollider(Collider col)
+    {
+        if (col == null || currentGroundCollider == null)
+            return false;
+
+        if (col == currentGroundCollider)
+            return true;
+
+        // 之前这里只看"是不是同一个父物体底下的兄弟碰撞体"，不管这个兄弟实际是什么
+        // 形状——同一个装饰物的地板和墙壁往往拆成一堆碰撞体代理挂在同一个
+        // CollisionRoot/Main_Collision_MeshRoot 下（比如一整节火车车厢），站上地板的
+        // 任意一块，墙壁也被一起当成"脚下的地面"排除出阻挡判定，表现为贴着这类
+        // 装饰物走就能直接穿墙。加一道高度校验：只有碰撞体中心高度跟当前脚下地面
+        // 差不多的兄弟碰撞体（真的是同一片地面拼接出来的），才继续算作地面；
+        // 明显更高的（墙、天花板）不再被连带豁免。
+        Transform groundRoot = currentGroundCollider.transform.parent;
+        if (groundRoot == null || !col.transform.IsChildOf(groundRoot))
+            return false;
+
+        float heightDelta = Mathf.Abs(col.bounds.center.y - currentGroundCollider.bounds.center.y);
+        return heightDelta <= SiblingGroundHeightTolerance;
     }
 
     private bool IsUnitCollider(Collider col)
@@ -1478,8 +1854,69 @@ public class TerrainGroundMotorV5 : MonoBehaviour
 
             blockedThisStep = true;
 
-            float safeTravel = Mathf.Max(0f, hit.distance - Mathf.Max(0f, bodyCastSkin));
+            // 起点就和碰撞体重叠时（hit.distance == 0），必须放行远离墙面的移动。
+            //
+            // 实测卡死时：想走=0.0160 撞到=0.0000 允许走=0.0000。
+            // 胶囊投射的起点已经嵌在站台网格里，距离恒为 0，按 hit.distance - skin
+            // 算出来永远是 0，于是任何方向都走不了。而退穿透那边
+            // depenetrateOnlyRealOverlap 认为这不算真重叠，也不把角色推出去——
+            // 「重叠到无法移动，又不够重叠到被推开」，死锁。
+            //
+            // 而且脱离重叠的唯一手段就是移动，所以重叠时一律禁止移动必然锁死。
+            // 这里只禁止「继续压向墙面」的方向，其余方向放行整步，由退穿透收尾。
+            Vector3 earlyNormal = hit.normal;
+            earlyNormal.y = 0f;
+            bool startsOverlapped = hit.distance <= 0.0001f;
+
+            float safeTravel;
+            if (startsOverlapped)
+            {
+                // 起点重叠时不做任何方向判断，直接放行整步。
+                //
+                // 这里的 hit.normal 不是真实表面法线，而是「投射方向的反向」——
+                // 实测卡死时法线恒为 (1,0,0) / (-1,0,0) 这种纯坐标轴向量，而站台在
+                // 角色北侧，表面法线不可能是正东正西。往西走返回 (1,0,0)、往东走返回
+                // (-1,0,0)，永远和移动方向相反。
+                //
+                // 上一版用它做「有没有压向墙面」的点积判断，点积恒为 -1，于是任何方向
+                // 都被判成压墙、一律返回 0——等于没修。
+                //
+                // 脱离重叠的唯一手段就是移动，重叠时冻结必然锁死，所以这里放行——但绝不能
+                // 放行"整步"。真实穿墙实测：贴墙推进时 hit.distance 每帧近似减半
+                // （0.04→0.02→0.01→0.005→0.0025→…），是 safeTravel = hit.distance - skin
+                // 自身的几何收敛，跟墙有没有拦住无关；收敛到 ≤0.0001 触发这条分支的那一帧，
+                // 如果放行"整步"，等于把墙的整个厚度一次性跨过去——AI 笔直地怼着墙走、
+                // 方向纹丝不动，稳定触发这个收敛；玩家的输入有抖动，方向一直在变，
+                // 收敛序列被打断，从来撞不到底，这才是"AI 穿墙玩家不穿"的真正原因。
+                //
+                // 放行幅度用 maxBodyDepenetrationPerStep 封顶——跟真·退穿透用的是同一把尺子，
+                // 保证一步之内绝不可能越过比它厚的墙体，同时仍然够把角色推出退化的零距离态。
+                safeTravel = Mathf.Min(distance, Mathf.Max(0.001f, maxBodyDepenetrationPerStep));
+            }
+            else
+            {
+                // 皮肤厚度不能超过实际可用距离，否则「保持间隙」会变成「冻结」。
+                float effectiveSkin = Mathf.Min(Mathf.Max(0f, bodyCastSkin), hit.distance * 0.5f);
+                safeTravel = Mathf.Max(0f, hit.distance - effectiveSkin);
+            }
             safeTravel = Mathf.Min(safeTravel, distance);
+
+            // 扫掠内部的中间值：想走多远、撞到多远、扣掉皮肤后允许走多远。
+            // 「身体solve 吃掉了位移」这一个数字分不出是被钳成 0 还是根本没进这段，
+            // 必须看这三个量。记在字段里，由同一帧的归因日志一起打出来，不单独刷屏。
+            if (debugHorizontalAttribution)
+            {
+                lastSweepWanted = distance;
+                lastSweepHitDistance = hit.distance;
+                lastSweepSafeTravel = safeTravel;
+                lastSweepHitName = hit.collider != null ? hit.collider.name : "";
+                // 碰撞体名字（__PhysicsMeshCollider_00_Mesh）全场景有十几个同名的，光看名字分不出是哪个物体。
+                // 带上往上三级的归属物体名、碰撞点和法线：法线 Y 大说明撞的是斜面，接近 0 说明是竖直面。
+                lastSweepHitOwner = hit.collider != null ? GetColliderOwnerName(hit.collider) : "";
+                lastSweepHitPoint = hit.point;
+                lastSweepHitNormal = hit.normal;
+                lastSweepOverlapped = startsOverlapped;
+            }
             resolved += direction * safeTravel;
 
             Vector3 wallNormal = hit.normal;
@@ -1495,12 +1932,23 @@ public class TerrainGroundMotorV5 : MonoBehaviour
             bodyBlockedThisFrame = true;
             lastBlockingNormal = wallNormal;
 
-            if (clearVelocityWhenBodyBlocked)
+            // 起点重叠时不能用这个法线扣速度——它是「投射方向的反向」而不是真实
+            // 表面法线，扣掉的正好是沿移动方向的全部速度，每帧清一次，角色永远从 0
+            // 重新加速。表现就是贴着墙走的时候一直在减速、走不快。
+            //
+            // 之前归因日志里「想走」恒为 0.0160（一帧的加速量）就是这么来的：
+            // 不是角色进了什么减速状态，是速度每帧都被这一行清掉了。
+            if (clearVelocityWhenBodyBlocked && !startsOverlapped)
                 RemoveVelocityIntoWall(wallNormal);
 
             // 连续撞到两个差异很大的墙面法线时，说明角色已经被送进内角。
             // 不再继续把剩余位移投影到第二面墙上，否则会在 A 面 / B 面之间来回咬住。
-            if (enableCornerDeadlockBreak && previousWallNormal.sqrMagnitude > 0.0001f)
+            //
+            // 但起点重叠时的法线不可信——它是「投射方向的反向」，而每次迭代后方向会
+            // 因投影而改变，于是连续两次的"法线"必然差异很大，拐角保护被误触发，
+            // 速度被 clearVelocityWhenCornerLocked 直接清零。表现就是蹭到站台边缘
+            // 就掉速。这里跳过，只用真实法线做内角判定。
+            if (enableCornerDeadlockBreak && !startsOverlapped && previousWallNormal.sqrMagnitude > 0.0001f)
             {
                 float normalDot = Vector3.Dot(previousWallNormal, wallNormal);
                 if (normalDot <= cornerNormalDotThreshold)
@@ -1520,7 +1968,10 @@ public class TerrainGroundMotorV5 : MonoBehaviour
                 }
             }
 
-            previousWallNormal = wallNormal;
+            // 只记真实法线。起点重叠时的法线是投射方向的反向，记下来会污染下一次
+            // 迭代的内角判定——那正是蹭到边缘就掉速的来源。
+            if (!startsOverlapped)
+                previousWallNormal = wallNormal;
 
             Vector3 consumed = direction * safeTravel;
             Vector3 left = remaining - consumed;
@@ -1598,8 +2049,19 @@ public class TerrainGroundMotorV5 : MonoBehaviour
                 if (ShouldIgnoreAsBodyBlock(other))
                     continue;
 
+                // Collider.ClosestPoint 不支持非凸 MeshCollider——Unity 文档明确写明。
+                // 对这类碰撞体它会直接返回传入的点，圆角分支算出的 away 恒为 0，于是落进
+                // "按 bounds 中心推"的兜底分支：方向恒定、和实际几何无关、每帧顶满
+                // maxBodyDepenetrationPerStep。Builder 生成的装饰物碰撞代理全是
+                // convex=false，所以站在任何装饰物附近都会被匀速推走，而且方向不变——
+                // 实测每帧 0.11m（0.055 上限 × 2 次迭代），方向常量 (0.035, 0.104)。
+                //
+                // 这类碰撞体必须走 ComputePenetration，它对静态凹面网格是支持的。
+                MeshCollider otherMesh = other as MeshCollider;
+                bool otherIsConcaveMesh = otherMesh != null && !otherMesh.convex;
+
                 Vector3 correction;
-                if (useRoundedBodySweep && useRoundedBodyForDepenetration)
+                if (useRoundedBodySweep && useRoundedBodyForDepenetration && !otherIsConcaveMesh)
                 {
                     if (!TryGetRoundedBodyDepenetrationCorrection(resolved, other, out correction))
                         continue;
@@ -1619,11 +2081,27 @@ public class TerrainGroundMotorV5 : MonoBehaviour
                     if (!overlapped || distance <= 0f)
                         continue;
 
-                    direction.y = 0f;
-                    if (direction.sqrMagnitude < 0.0001f)
+                    // 穿透方向接近垂直 = 踩在它上面（或顶到下方），垂直方向归地面吸附管，
+                    // 身体退穿透只负责水平阻挡。
+                    //
+                    // 原来的写法是 direction.y = 0 之后直接 normalize 再乘完整 distance，
+                    // 这会把"几乎纯向上"的接触放大成满幅横推：站在平台上时接触方向是
+                    // (0.026, 0.999, 0)——顶面法线 1.5°，不是正好 0——清零 y 之后
+                    // 平方模长 0.00068 越过了 0.0001 的阈值，normalize 成 (1,0,0)，
+                    // 再乘上完整穿透深度。于是陷得越深横推越狠，表现就是
+                    // "站在任何模型上都会被往外滑"。几乎没有哪个 MeshCollider
+                    // 的顶面法线正好是 0.000°，所以这个 bug 对所有模型都成立。
+                    if (Mathf.Abs(direction.y) > maxVerticalComponentForHorizontalBlock)
                         continue;
 
-                    correction = direction.normalized * (distance + Mathf.Max(0f, bodyDepenetrationExtraPush));
+                    Vector3 horizontalDir = new Vector3(direction.x, 0f, direction.z);
+                    float horizontalScale = horizontalDir.magnitude;
+                    if (horizontalScale < 0.0001f)
+                        continue;
+
+                    // 按真实水平分量缩放穿透深度，而不是拿完整深度当水平深度用
+                    correction = (horizontalDir / horizontalScale) *
+                                 (distance * horizontalScale + Mathf.Max(0f, bodyDepenetrationExtraPush));
                 }
 
                 correction.y = 0f;
@@ -1632,6 +2110,10 @@ public class TerrainGroundMotorV5 : MonoBehaviour
 
                 totalCorrection += correction;
                 correctionCount++;
+                depenetratedThisFrame = true;
+
+                if (debugHorizontalAttribution && other != null)
+                    lastBlockingColliderName = other.name;
             }
 
             if (correctionCount <= 0 || totalCorrection.sqrMagnitude < 0.000001f)
@@ -1670,13 +2152,36 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         if (other == null)
             return false;
 
+        // 这个函数整体依赖 Collider.ClosestPoint，而它不支持非凸 MeshCollider：
+        // 对这类碰撞体会返回传入点本身，导致方向恒为 0、落进按 bounds 中心推的兜底，
+        // 表现为角色被匀速朝一个固定方向推走。调用方已经把这类碰撞体导向
+        // ComputePenetration，这里再挡一道，避免以后从别处调进来又踩同一个坑。
+        MeshCollider mesh = other as MeshCollider;
+        if (mesh != null && !mesh.convex)
+            return false;
+
         if (!GetBodySweepCapsule(bodyPosition, out Vector3 pointA, out Vector3 pointB, out float radius, false))
             return false;
 
         Vector3 center = (pointA + pointB) * 0.5f;
         Vector3 closest = other.ClosestPoint(center);
-        Vector3 away = center - closest;
-        away.y = 0f;
+        Vector3 away3 = center - closest;
+
+        // 先判断这次接触是不是垂直的，再决定要不要按水平阻挡处理。
+        //
+        // 踩在平台上时，物体离胶囊中心最近的点在正下方，away3 几乎是纯垂直的。
+        // 原来的写法直接 away.y = 0，剩下的一点点水平残量（比如 0.03）会被下面
+        // push = radius + padding - dist 当成"水平方向嵌进去很深"，算出接近一整个
+        // 胶囊半径的横推（0.3 - 0.03 = 0.27），每步都把角色往外顶。
+        // 这就是"站在任何模型上都会被往外滑动"的来源，跟模型网格无关。
+        //
+        // 垂直方向本来就归地面吸附管，这里只负责水平阻挡。
+        float away3Magnitude = away3.magnitude;
+        if (away3Magnitude > 0.0001f &&
+            Mathf.Abs(away3.y) / away3Magnitude > maxVerticalComponentForHorizontalBlock)
+            return false;
+
+        Vector3 away = new Vector3(away3.x, 0f, away3.z);
 
         float desired = radius + Mathf.Max(0f, depenetrateOnlyRealOverlap ? bodyDepenetrationOverlapPadding : bodyCastSkin) + Mathf.Max(0f, bodyDepenetrationExtraPush);
         float dist = away.magnitude;
@@ -1818,6 +2323,7 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         for (int i = 0; i < hitCount; i++)
         {
             RaycastHit h = bodyCastBuffer[i];
+
             if (ShouldIgnoreAsBodyBlock(h.collider))
                 continue;
 
@@ -1832,6 +2338,12 @@ public class TerrainGroundMotorV5 : MonoBehaviour
                 bestDistance = h.distance;
                 bestHit = h;
                 found = true;
+
+                // 位移钳制是第三条独立的阻挡路径：既不是重叠测试拒绝移动，也不是退穿透
+                // 推开，而是沿位移方向投射、撞到就把距离截短。前两处插桩都覆盖不到它，
+                // 于是卡住时归因日志显示「最近阻挡=无」。
+                if (debugHorizontalAttribution)
+                    lastBlockingColliderName = h.collider != null ? h.collider.name : "";
             }
         }
 
@@ -1849,9 +2361,11 @@ public class TerrainGroundMotorV5 : MonoBehaviour
         if (ShouldIgnoreAsBodyBlock(hit.collider))
             return false;
 
-        // 地面、可行走斜坡、Terrain 表面不应该成为“水平墙体”。
-        // 只把接近垂直的侧面 / 物体边缘当作身体阻挡。
-        if (hit.normal.y > maxBodyBlockNormalY)
+        // 坡度豁免只对「明确标记为可踩」的斜坡/桥/楼梯生效（挂了 GroundSurfaceMarker）。
+        // 装饰物的 CollisionRoot 实体碰撞体（比如电车车厢）从来不会挂这个标记——它们
+        // 是纯粹的硬阻挡，不该因为车头/车顶过渡处法线偏平就被当成"斜坡"放行穿过去。
+        // 之前这条对任何碰撞体一视同仁，等于给所有法线接近水平的墙面拐角开了口子。
+        if (hit.normal.y > maxBodyBlockNormalY && hit.collider.GetComponentInParent<GroundSurfaceMarker>() != null)
             return false;
 
         return true;
@@ -1994,6 +2508,8 @@ public class TerrainGroundMotorV5 : MonoBehaviour
 
         return resolved;
     }
+
+    private SkyPrisonUnitRuntimeIdentity _shieldOwnerIdentity;
 
     private void MoveTo(Vector3 targetPosition)
     {

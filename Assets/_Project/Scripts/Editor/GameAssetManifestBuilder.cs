@@ -13,7 +13,7 @@ public class GameAssetManifestBuilder : AssetPostprocessor
 
     // ── 菜单入口 ──────────────────────────────────────────────────────────
 
-    [MenuItem("Sky Prison/重建 Asset Manifest", priority = 50)]
+    [MenuItem("天空囚笼/重建注册表/重建 Asset Manifest", false, 160)]
     public static void RebuildManifest()
     {
         var manifest = GetOrCreateManifest();
@@ -55,6 +55,17 @@ public class GameAssetManifestBuilder : AssetPostprocessor
 
         // TechTreeGraphAsset：取第一个找到的
         manifest.techTreeGraph = FindFirst<TechTreeGraphAsset>("t:TechTreeGraphAsset");
+
+        // 全部科技树：按资产名排序(TT_Seeker 在 TT_Strategist 前面)，战术研修窗口按这个顺序做标签页
+        var graphs = new System.Collections.Generic.List<TechTreeGraphAsset>();
+        foreach (var guid in AssetDatabase.FindAssets("t:TechTreeGraphAsset"))
+        {
+            var g = AssetDatabase.LoadAssetAtPath<TechTreeGraphAsset>(AssetDatabase.GUIDToAssetPath(guid));
+            if (g != null && !graphs.Contains(g)) graphs.Add(g);
+        }
+        graphs.Sort((a, b) => string.CompareOrdinal(a.name, b.name));
+        manifest.techTreeGraphs = graphs;
+        if (graphs.Count > 0) manifest.techTreeGraph = graphs[0];
 
         // ── 后续新增 asset 类型在这里加一行 FindFirst ──
     }

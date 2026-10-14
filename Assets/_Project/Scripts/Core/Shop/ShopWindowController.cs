@@ -14,7 +14,7 @@ using SkyPrison.Runtime.UI;
 ///   │  [结账]  右下角：结账按钮                         │
 ///   └──────────────────────────────────────────┘
 /// </summary>
-public class ShopWindowController : SkyPrisonBaseWindowController
+public class ShopWindowController : SkyPrisonBaseWindowController, IDialogueWindowPayloadReceiver
 {
     [Header("商店数据")]
     [SerializeField] private ShopDefinition shopDefinition;
@@ -37,6 +37,13 @@ public class ShopWindowController : SkyPrisonBaseWindowController
     [SerializeField] private Text      detailName;
     [SerializeField] private Text      detailTag;  // "分类  Lv.N" 一行，跟背包详情面板同款格式
     [SerializeField] private Text      detailDesc;
+    [SerializeField] private Image     vendorPortraitImage; // 老板立绘，铺在详情区最底层当背景
+
+    // 买东西成功之后临时切"高兴"表情，过一小段时间自己切回默认——不用玩家自己
+    // 做什么，纯氛围反馈。没配"happy"这个表情key就什么都不做(GetPortrait会退回
+    // default，看起来跟没切一样，不会报错)。
+    private const float HappyExpressionSeconds = 2.5f;
+    private Coroutine _vendorExpressionRoutine;
 
     [Header("购物车区")]
     [SerializeField] private Transform cartContent;       // 购物车行的父节点
@@ -91,6 +98,17 @@ public class ShopWindowController : SkyPrisonBaseWindowController
     private ShoppingCart  _cart;
     private SellCart      _sellCart;
     private ShopItemEntry _selected;
+
+    // 交易完成触发器事件——跟 SkyPrisonSceneRegionMarker.FireRegionMotive() 同一套
+    // 查找+缓存做法，商店窗口本身不是常驻单例，缓存的引用只在这次窗口开着期间有效。
+    private TriggerPackageRuntime _cachedTriggerRuntime;
+
+    private void FireShopPurchaseCompletedMotive()
+    {
+        if (_cachedTriggerRuntime == null)
+            _cachedTriggerRuntime = FindObjectOfType<TriggerPackageRuntime>();
+        _cachedTriggerRuntime?.FireMotiveEvent("event_shop_purchase_completed");
+    }
 
     private readonly List<GameObject> _shelfRows = new List<GameObject>();
     // 跟 _shelfRows 一一对应——商店等级解锁上线后 BuildShelf() 会跳过未解锁的
@@ -179,8 +197,20 @@ public class ShopWindowController : SkyPrisonBaseWindowController
 
         if (focusedShelfRow != _gamepadFocusedShelfRow)
         {
-            _gamepadFocusedShelfRow?.GetComponent<ShopShelfRowHover>()?.SetGamepadFocused(false);
-            focusedShelfRow?.GetComponent<ShopShelfRowHover>()?.SetGamepadFocused(true);
+            // ?. 只判断"是不是真正的C# null"，不会走 UnityEngine.Object 重载的假null检测——
+            // BuildShelf() 切语言/换货架时会 Destroy 旧行重建，_gamepadFocusedShelfRow 若
+            // 还指着旧行，?.GetComponent 照样会对已销毁对象抛 MissingReferenceException
+            // (跟 SkyPrisonInteractionController 那次同一个坑)。改成显式 != null 判断。
+            if (_gamepadFocusedShelfRow != null)
+            {
+                ShopShelfRowHover oldHover = _gamepadFocusedShelfRow.GetComponent<ShopShelfRowHover>();
+                if (oldHover != null) oldHover.SetGamepadFocused(false);
+            }
+            if (focusedShelfRow != null)
+            {
+                ShopShelfRowHover newHover = focusedShelfRow.GetComponent<ShopShelfRowHover>();
+                if (newHover != null) newHover.SetGamepadFocused(true);
+            }
             _gamepadFocusedShelfRow = focusedShelfRow;
         }
 
@@ -276,12 +306,25 @@ public class ShopWindowController : SkyPrisonBaseWindowController
 
     // ── 生命周期 ─────────────────────────────────────────────────────────
 
+    /// <summary>让调用方(比如NPC对话"打开窗口"选项)在Open()之后指定"这次具体打开
+    /// 哪个商店"——OnWindowOpen()在Instantiate()时就同步跑完了，那时shopDefinition
+    /// 还没被外部设置，所以这里手动重新跑一遍同一套初始化逻辑，不是简单赋值了事。</summary>
+    public void ReceiveDialoguePayload(UnityEngine.Object payload)
+    {
+        if (payload is not ShopDefinition def || def == shopDefinition) return;
+
+        LocalizationRuntime.OnLanguageChanged -= OnLanguageChangedRefreshShopTexts; // 防止重复订阅
+        shopDefinition = def;
+        OnWindowOpen();
+    }
+
     protected override void OnWindowOpen()
     {
         if (shopDefinition == null) return;
         if (_gamepadNav == null) _gamepadNav = gameObject.AddComponent<SkyPrisonListGamepadNav>();
 
         RefreshTitle();
+        RefreshVendorPortrait("default");
         LocalizationRuntime.OnLanguageChanged += OnLanguageChangedRefreshShopTexts;
 
         // 初始化运行时库存——"该不该重进货"只在"真的进入了新章节"时才成立，不是
@@ -507,7 +550,9 @@ public class ShopWindowController : SkyPrisonBaseWindowController
     // 收购范围内（以后要收装备——耐久/词条怎么定价还没设计，先不放开）。
     private bool IsSellable(ItemDefinition def)
     {
-        if (def == null || !def.canSell) return false;
+        // CanBeSold 而不是 canSell——任务物品/重要物品按分类强制不可出售，
+        // 不看资产上那个默认为true的手动勾选框(见 ItemDefinition.CanBeSold)。
+        if (def == null || !def.CanBeSold) return false;
         if (def.majorCategory != ItemMajorCategory.General) return false;
         if (shopDefinition.sellCategoryWhitelist != null && shopDefinition.sellCategoryWhitelist.Count > 0
             && !shopDefinition.sellCategoryWhitelist.Contains(def.category)) return false;
@@ -723,6 +768,37 @@ public class ShopWindowController : SkyPrisonBaseWindowController
     {
         RefreshPaymentSummary();
         RefreshCheckoutButton();
+    }
+
+    // 按表情key取老板立绘——取不到(没配vendorUnitDefinition/没配这个表情/完全没配
+    // 立绘)就直接隐藏这块区域，不会露出裸的白框。
+    private void RefreshVendorPortrait(string expressionKey)
+    {
+        if (vendorPortraitImage == null) return;
+
+        Sprite sprite = shopDefinition?.vendorUnitDefinition != null
+            ? shopDefinition.vendorUnitDefinition.GetPortrait(expressionKey)
+            : null;
+
+        vendorPortraitImage.sprite = sprite;
+        vendorPortraitImage.gameObject.SetActive(sprite != null);
+    }
+
+    // 结账成功那一刻调——临时切"高兴"表情，过 HappyExpressionSeconds 秒自己切回
+    // default，不用玩家自己做什么。
+    private void PlayVendorHappyExpression()
+    {
+        if (vendorPortraitImage == null) return;
+        if (_vendorExpressionRoutine != null) StopCoroutine(_vendorExpressionRoutine);
+        _vendorExpressionRoutine = StartCoroutine(VendorHappyExpressionRoutine());
+    }
+
+    private System.Collections.IEnumerator VendorHappyExpressionRoutine()
+    {
+        RefreshVendorPortrait("happy");
+        yield return new WaitForSecondsRealtime(HappyExpressionSeconds);
+        RefreshVendorPortrait("default");
+        _vendorExpressionRoutine = null;
     }
 
     private void RefreshTitle()
@@ -1356,10 +1432,12 @@ public class ShopWindowController : SkyPrisonBaseWindowController
                 // clip，没配的话播放静默不报错（走的是SkyPrisonSystemSEPlayer已有
                 // 的"没配clip就跳过"逻辑）。
                 SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Purchase);
+                PlayVendorHappyExpression();
                 RefreshShelfStock();
                 // 结账成功后自动切回购物视图，不用玩家自己点"返回购物"——购物车这时
                 // 已经清空，停在结账页没什么意义，用户确认过这个方向。
                 if (_showingCheckout) ToggleCheckoutView();
+                FireShopPurchaseCompletedMotive();
                 break;
             case ShoppingCart.CheckoutResult.InsufficientFunds:
                 SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Forbidden);
@@ -1409,6 +1487,7 @@ public class ShopWindowController : SkyPrisonBaseWindowController
                 // 出售清单重建——背包实际库存已经变了，能卖的行/数量上限要跟着刷新。
                 if (_showingSellTab) BuildSellList();
                 if (_showingCheckout) ToggleCheckoutView();
+                FireShopPurchaseCompletedMotive();
                 break;
             case SellCart.CheckoutResult.InventoryError:
                 SkyPrisonSystemSEPlayer.Play(SkyPrisonSystemSEType.Forbidden);
@@ -1550,7 +1629,8 @@ public class ShopWindowController : SkyPrisonBaseWindowController
         img.raycastTarget = false;
     }
 
-    private static void AddPopupCornerBrackets(RectTransform parent, float arm = 26f, float thickness = 2f)
+    private static void AddPopupCornerBrackets(RectTransform parent,
+        float arm = SkyPrisonFloatingWindowKit.CornerBracketLength, float thickness = SkyPrisonFloatingWindowKit.CornerBracketThickness)
     {
         Vector2[] corners = { new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(1f, 0f) };
         foreach (var c in corners)

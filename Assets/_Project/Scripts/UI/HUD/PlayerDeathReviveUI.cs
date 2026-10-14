@@ -494,7 +494,7 @@ private static readonly Color ColdGreen  = new Color(0.42f, 0.92f, 0.68f, 0.85f)
 
     private void BuildNoItem(RectTransform area)
     {
-        var t = AddTMP("NoItem", area, 18, TextAlignmentOptions.Center, new Color(.46f,.46f,.50f,1f));
+        var t = AddTMP("NoItem", area, 34, TextAlignmentOptions.Center, new Color(.46f,.46f,.50f,1f));
         t.text = "背包中没有复活道具";
         Anchor(t.rectTransform, 0f, 0f, 1f, 1f);
     }
@@ -706,11 +706,12 @@ private static readonly Color ColdGreen  = new Color(0.42f, 0.92f, 0.68f, 0.85f)
         yield return null; // 等 TMP 完成 mesh 更新
         if (_titleTmp == null || _titleFrameRT == null) yield break;
         _titleTmp.ForceMeshUpdate();
-        float padX = 28f; // 左右各 14px 余量
-        float padY = 10f; // 上下各 5px 余量
+        float padX = 64f; // 左右各 32px 余量
+        float padY = 24f; // 上下各 12px 余量
+        // 取偶数整数尺寸：线宽在画布缩放后才不会因为半像素导致上下左右粗细不一
         _titleFrameRT.sizeDelta = new Vector2(
-            _titleTmp.preferredWidth  + padX,
-            _titleTmp.preferredHeight + padY);
+            Mathf.Ceil((_titleTmp.preferredWidth  + padX) / 2f) * 2f,
+            Mathf.Ceil((_titleTmp.preferredHeight + padY) / 2f) * 2f);
         // 对齐到文字锚点中心
         _titleFrameRT.anchoredPosition = Vector2.zero;
     }
@@ -835,17 +836,18 @@ private static readonly Color ColdGreen  = new Color(0.42f, 0.92f, 0.68f, 0.85f)
         var panelRT = panelGO.AddComponent<RectTransform>();
         panelRT.SetParent(transform, false);
 
-        // 居中固定尺寸 780×620
+        // 居中固定尺寸 1200×690
         panelRT.anchorMin = panelRT.anchorMax = new Vector2(0.5f, 0.5f);
         panelRT.pivot     = new Vector2(0.5f, 0.5f);
-        panelRT.sizeDelta = new Vector2(780f, 620f);
+        panelRT.sizeDelta = new Vector2(1200f, 690f);
 
         // 深色半透明背景
         var bg = panelGO.AddComponent<Image>();
         bg.color = new Color(0.03f, 0.04f, 0.05f, 0.92f);
 
         // 白色角标（L 形）
-        AddCornerBrackets(panelRT, Color.white, 20f, 2f);
+        AddCornerBrackets(panelRT, Color.white,
+            SkyPrisonFloatingWindowKit.CornerBracketLength, SkyPrisonFloatingWindowKit.CornerBracketThickness);
 
         // 标题区
         var titleGO = new GameObject("TitleArea");

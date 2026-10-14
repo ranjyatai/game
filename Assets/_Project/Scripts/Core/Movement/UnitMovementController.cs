@@ -457,6 +457,12 @@ public class UnitMovementController : MonoBehaviour
     public BurdenLevel CurrentBurdenLevel => currentBurdenLevel;
     public bool CanRun => canRunNow;
     public bool CanDodge => canDodgeNow;
+
+    /// <summary>此刻闪避请求能不能真正开始——跟 TryStartDodge 的拒绝条件完全一致（负重不允许、
+    /// 空中、闪避硬直中），再加上本帧已经排了一次闪避还没消费。外层在扣 LP / 播音效之前必须
+    /// 用这个判断，只看 CanDodge 的话，闪避中连按会先扣 LP、响音效，再被内层静默拒绝。</summary>
+    public bool CanStartDodgeNow => canDodgeNow && !dodgeQueued
+        && jumpState == JumpRuntimeState.None && dodgeState == DodgeRuntimeState.None;
     public bool CanJump => canJumpNow;
     public bool CanMove => canMoveNow;
     public Vector2 MoveInput => input;
@@ -498,10 +504,14 @@ public class UnitMovementController : MonoBehaviour
     public MovementInputMode InputMode => inputMode;
     public MovementApplyMode ApplyMode => movementApplyMode;
     public bool IsUsingExternalTerrainMotor => movementApplyMode == MovementApplyMode.ExternalTerrainMotor;
-    public bool IsRunHeld => inputMode == MovementInputMode.PlayerInput ? GetPlayerActionHeld(SkyPrisonInputAction.Sprint, KeyCode.LeftShift) : externalRunHeld;
-    public bool IsSneakHeld => inputMode == MovementInputMode.PlayerInput ? GetPlayerActionHeld(SkyPrisonInputAction.Sneak, KeyCode.LeftControl) : externalSneakHeld;
+    public bool IsRunHeld => Time.time < sprintSneakCancelUntil ? false : (inputMode == MovementInputMode.PlayerInput ? GetPlayerActionHeld(SkyPrisonInputAction.Sprint, KeyCode.LeftShift) : externalRunHeld);
+    public bool IsSneakHeld => Time.time < sprintSneakCancelUntil ? false : (inputMode == MovementInputMode.PlayerInput ? GetPlayerActionHeld(SkyPrisonInputAction.Sneak, KeyCode.LeftControl) : externalSneakHeld);
     public bool IsJumping => jumpState != JumpRuntimeState.None;
     public bool IsDodging => dodgeState != DodgeRuntimeState.None;
+    /// <summary>蓄力攻击释放/闪避接突刺那段冲刺位移是否正在进行。跟 IsDodging 是完全独立
+    /// 的两套状态（见 chargeDashActive 字段声明处的说明），残影这类"位移期间要触发"的
+    /// 效果需要同时看这两个才不会漏掉突刺那一段。</summary>
+    public bool IsChargeDashing => chargeDashActive;
     public bool IsActionLocked => IsJumping || IsDodging || Time.time < oneShotAnimationLockedUntil;
     public bool ShouldPlayMoveAnimation => movementType != UnitMovementType.Immobile && input.sqrMagnitude > 0.0001f;
     public Rigidbody CachedRigidbody => rb;
@@ -555,6 +565,7 @@ public class UnitMovementController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        ExcludeProbeLayersFromBlockingLayers();
         AutoFindAnimationTargets();
         AutoFindGroundShadowRoot();
         AutoFindGroundQueryService();
@@ -572,6 +583,24 @@ public class UnitMovementController : MonoBehaviour
         CacheCapsuleOffsetFromRoot();
         EnsureTerrainGroundRuntimeDefaults();
         AutoSwitchToExternalTerrainMotorIfAvailable();
+    }
+
+    // WalkableProbe/OccluderProbe 两个探测层必须永远从 blockingLayers 里剔除，不管这个
+    // 组件是被谁、用什么方式创建/配置的。跟 TerrainGroundMotorV5.bodyBlockMask 是同一类
+    // 坑——SkyPrisonWalkableProbeLayerSetup 这个编辑器工具本该负责这件事，但它只扫描
+    // 场景文件/预制体资产里已经序列化好的组件，UnitMovementController 是纯运行时
+    // AddComponent 加上去的，从来不会出现在它能扫到的地方。玩家和 AI 必须走完全一样
+    // 的碰撞判定逻辑，不能靠某个外部调用方"记得"来保证一致——放在组件自己的 Awake
+    // 里自我纠正，不存在遗漏的调用方，也不会因为谁的初始化顺序不同就产生分歧。
+    private void ExcludeProbeLayersFromBlockingLayers()
+    {
+        int walkableProbeLayer = LayerMask.NameToLayer(GroundSurfaceMarker.WalkableProbeLayerName);
+        if (walkableProbeLayer >= 0)
+            blockingLayers &= ~(1 << walkableProbeLayer);
+
+        int occluderProbeLayer = LayerMask.NameToLayer(TerrainDecorationDefinition.OccluderProbeLayerName);
+        if (occluderProbeLayer >= 0)
+            blockingLayers &= ~(1 << occluderProbeLayer);
     }
 
     private void OnEnable()
@@ -708,10 +737,33 @@ public class UnitMovementController : MonoBehaviour
         if (moveInput.sqrMagnitude > 1f)
             moveInput.Normalize();
 
+        // 射击覆盖奔跑/潜行期间：外部(InputRouter)每帧还是会把当前真实按键状态传进来，
+        // 这里强制按false收，不能只在IsRunHeld/IsSneakHeld的读取端拦——不然这个方法
+        // 存的externalRunHeld/externalSneakHeld本身还是true，下一帧没了suppress窗口
+        // 保护就立刻弹回奔跑/潜行，看起来像没生效。
+        if (Time.time < sprintSneakCancelUntil)
+        {
+            runHeld = false;
+            sneakHeld = false;
+        }
+
         input = moveInput;
         currentInput = input;
         externalRunHeld = runHeld;
         externalSneakHeld = sneakHeld;
+    }
+
+    private float sprintSneakCancelUntil = -999f;
+
+    /// <summary>射击优先级覆盖奔跑/潜行——武器模组勾了blockAttackWhileSprintOrSneak时，
+    /// 攻击不再是"按键无反应"的硬拦截，而是直接把奔跑/潜行状态取消掉、正常出招，见
+    /// UnitActionModuleRuntime.TryPlayerRequestLightAttack/HeavyAttack。用一个短暂的
+    /// 时间窗口而不是单帧清零，是因为潜行/奔跑键这一帧可能还按着，下一帧
+    /// PushMovementIntent又会读到原始按键状态重新把它们置回true，不加窗口的话取消
+    /// 效果只会存在一帧就被盖掉。</summary>
+    public void CancelSprintAndSneak(float suppressSeconds = 0.35f)
+    {
+        sprintSneakCancelUntil = Time.time + Mathf.Max(0f, suppressSeconds);
     }
 
     public void SetExternalMoveInput(Vector2 moveInput, bool runHeld = false)
@@ -762,6 +814,7 @@ public class UnitMovementController : MonoBehaviour
     /// </summary>
     public void RequestJump()
     {
+        if (IsStatusImmobilized) return;
         jumpQueued = true;
         jumpQueuedUntil = Time.time + Mathf.Max(0.01f, jumpInputBufferSeconds);
     }
@@ -774,13 +827,20 @@ public class UnitMovementController : MonoBehaviour
     {
         Vector2 baseDir = input.sqrMagnitude > 0.0001f ? input.normalized : FacingInput;
         if (baseDir.sqrMagnitude <= 0.0001f)
-            baseDir = Vector2.right;
+        {
+            // 跟 SkyPrisonPlayerInputRouter.ResolveCurrentFacingInput 是同一个坑的第二处：
+            // 刚出生、从没输入过方向、也没有速度时，这里独立兜底成 Vector2.right——
+            // 项目约定角色出生默认朝向是左，这里跟那边保持一致，否则玩家一进游戏不按
+            // 方向键直接点闪避，还是会出现"位移/动画按右算，人却是朝左站着"的错位。
+            baseDir = Vector2.left;
+        }
 
         RequestDodge(forward ? baseDir : -baseDir, forward ? DodgeRuntimeState.Forward : DodgeRuntimeState.Back);
     }
 
     public void RequestDodge(Vector2 worldXZDirection, DodgeRuntimeState dodgeKind = DodgeRuntimeState.Forward, float speedScale = 1f)
     {
+        if (IsStatusImmobilized) return;
         if (worldXZDirection.sqrMagnitude > 1f)
             worldXZDirection.Normalize();
 
@@ -825,6 +885,16 @@ public class UnitMovementController : MonoBehaviour
         // 朝向判定会读到冲刺开始前的旧方向，导致角色朝向跟实际冲刺方向不一致（看起来
         // 像是"反方向突刺"）。
         currentVelocity = dashVelocity;
+    }
+
+    /// <summary>中途终止冲刺（AI 冲刺不穿透时撞到第一个目标就停）：速度立刻归零，不滑行。</summary>
+    public void CancelChargeDash()
+    {
+        if (!chargeDashActive) return;
+        chargeDashActive = false;
+        currentVelocity = Vector3.zero;
+        if (externalTerrainMotor != null)
+            externalTerrainMotor.SnapHorizontalVelocity(Vector3.zero);
     }
 
     /// <summary>
@@ -1455,6 +1525,15 @@ public class UnitMovementController : MonoBehaviour
             return;
         }
 
+        if (IsStatusImmobilized)
+        {
+            input = Vector2.zero;
+            currentInput = Vector2.zero;
+            externalRunHeld = false;
+            externalSneakHeld = false;
+            return;
+        }
+
         if (inputMode == MovementInputMode.PlayerInput)
         {
             if (useSkyPrisonInputSettings)
@@ -1471,6 +1550,24 @@ public class UnitMovementController : MonoBehaviour
             input.Normalize();
 
         currentInput = input;
+    }
+
+    /// <summary>被状态(冻结)停滞：moveSpeedRate 降到 0，原地静止，不能移动/闪避/跳跃。</summary>
+    public bool IsStatusImmobilized => ResolveStatusMoveSpeedMultiplier() <= 0.0001f;
+
+    private UnitBattleStatRuntime _statRuntimeForSpeed;
+    private bool _statRuntimeForSpeedResolved;
+
+    private float ResolveStatusMoveSpeedMultiplier()
+    {
+        if (!_statRuntimeForSpeedResolved)
+        {
+            _statRuntimeForSpeed = GetComponent<UnitBattleStatRuntime>() ?? GetComponentInParent<UnitBattleStatRuntime>();
+            _statRuntimeForSpeedResolved = true;
+        }
+        if (_statRuntimeForSpeed == null) return 1f;
+        float rate = _statRuntimeForSpeed.GetFinalValue("moveSpeedRate", 100f);
+        return Mathf.Clamp(rate / 100f, 0f, 2f);
     }
 
     private SkyPrisonInputSettings GetInputSettings()
@@ -2272,6 +2369,7 @@ public class UnitMovementController : MonoBehaviour
             currentVelocity = dodgeTargetVelocity;
 
             Vector3 dodgeDesiredDelta = currentVelocity * Time.fixedDeltaTime;
+            SkyPrisonGuardianShield.ClampDodgeDelta(rb.position, ref dodgeDesiredDelta);   // 守卫者的盾：闪避穿不过去
             dodgeDesiredDelta = ResolveMapBoundaryDelta(rb.position, dodgeDesiredDelta);
             dodgeDesiredDelta = ResolveGroundShapeDelta(rb.position, dodgeDesiredDelta);
             Vector3 dodgeSolvedDelta = ResolveMovementDelta(rb.position, dodgeDesiredDelta);
@@ -2331,6 +2429,9 @@ public class UnitMovementController : MonoBehaviour
         // 现在只压普通行走，不压 AI/玩家奔跑。
         if (!wantsSneak && !wantsRun && sameDirectionTimer >= sustainedMoveDelay)
             baseSpeed *= sustainedMoveSpeedMultiplier;
+
+        // 状态(冻结等)通过战斗属性 moveSpeedRate 调整移速，100=原速。
+        baseSpeed *= ResolveStatusMoveSpeedMultiplier();
 
         currentWantsSneak = wantsSneak;
         currentWantsRun = wantsRun;
@@ -3158,7 +3259,12 @@ public class UnitMovementController : MonoBehaviour
                 Mathf.Max(0f, heavyBurdenJumpHeightMultiplier),
                 t);
             data.canRun = true;
-            data.canDodge = false;
+            // 2026-08-26：闪避只应该在真正"超重"（下面 Overweight 档）才禁用——重负荷档
+            // 本来就已经在扣走路/跑步速度惩罚了，不该在这里再顺手把闪避也关掉。之前
+            // 这行(canDodge=false)混进重负荷档，实测排查过好几轮才确认：负重卡在
+            // 60%~85%之间时闪避完全打不出来，玩家一开始根本想不到是负重的锅，会
+            // 误以为是别的系统(切武器/攻击状态)在捣鬼。
+            data.canDodge = true;
             data.canJump = true;
             return data;
         }

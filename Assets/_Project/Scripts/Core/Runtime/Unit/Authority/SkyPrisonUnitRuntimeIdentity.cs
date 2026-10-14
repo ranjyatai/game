@@ -178,8 +178,13 @@ public class SkyPrisonUnitRuntimeIdentity : MonoBehaviour
         ApplyBrainState(!isPlayer && ShouldRuntimeIdentityUseBrain(runtimeIdentity));
         ApplyDeathPlayerFlag(isPlayer);
 
-        if (applyOutlineRuntimeOverride)
-            ApplyOutlineStateByReflection(MapRuntimeIdentityToOutlineGroup(runtimeIdentity));
+        // 描边颜色不再由这里的反射调用管——UnitOutlineState自己每帧会从
+        // UnitDefinition.characterIdentity(写死在资产里、不会错)刷新一次，
+        // 两套系统同时抢着改同一个状态，只要有一次时序不巧(比如这边抢先改了、
+        // 那边刷新时引用没解析上)，颜色就会卡在错误值上——这正是玩家描边
+        // 变成Ally蓝色这个bug的根源。统一成一个源头：只由UnitOutlineState
+        // 自己管颜色，这里只负责控制权/AI/死亡这些跟"当前谁是玩家"直接相关
+        // 的东西，不再插手描边。
     }
 
     private void ApplyPlayerInputState(bool enabledForPlayer)

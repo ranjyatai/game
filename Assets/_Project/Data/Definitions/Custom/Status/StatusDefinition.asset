@@ -15,7 +15,7 @@ MonoBehaviour:
   statusId: status_electric
   displayName: "\u7535\u78C1"
   note: 
-  description: 
+  description: "\u7535\u78C1\u5E72\u6270\uFF1A\u671F\u95F4\u8D1F\u8377\u503C(LP)\u65E0\u6CD5\u81EA\u7136\u6062\u590D\u3002"
   localizedNames:
   - languageCode: zh-CN
     text: "\u7535\u78C1"
@@ -25,7 +25,7 @@ MonoBehaviour:
     text: Electric
   localizedDescriptions:
   - languageCode: zh-CN
-    text: 
+    text: "\u7535\u78C1\u5E72\u6270\uFF1A\u671F\u95F4\u8D1F\u8377\u503C(LP)\u65E0\u6CD5\u81EA\u7136\u6062\u590D\u3002"
   - languageCode: ja
     text: 
   - languageCode: en
@@ -37,21 +37,30 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 3e133bba35ca5174eb347fa95186ae7c, type: 3}
   grantMode: 1
   accumulationSourceKey: accum_status_electric
-  accumulationThreshold: 0
+  accumulationThreshold: 100
   durationType: 1
-  baseDuration: 15
+  baseDuration: 10
   durationUpdateMode: 0
-  maxDuration: 0
+  maxDuration: 99
   canStack: 0
   baseStack: 1
   maxStack: 1
   stackUpdateMode: 2
-  attributeModifiers: []
-  enableDot: 1
-  dotTickInterval: 1
-  dotTargetResource: 0
+  attributeModifiers:
+  - enabled: 1
+    attributeKey: lpRecoveryRate
+    attributeDisplayName: "\u8D1F\u8377\u503C\u56DE\u590D\u7387"
+    attributeValueType: 2
+    attributeOperator: 1
+    stackScaling: 1
+    value: 0
+    boolValue: 0
+    note: "\u8D1F\u8377\u503C\u65E0\u6CD5\u81EA\u7136\u6062\u590D"
+  enableDot: 0
+  dotTickInterval: 0.5
+  dotTargetResource: 1
   dotValueMode: 0
-  dotBaseValue: 0
+  dotBaseValue: 6
   dotPercentValue: 0
   dotReferenceAttributeKey: 
   dotReferenceAttributeDisplayName: 
@@ -60,9 +69,9 @@ MonoBehaviour:
   dotStackMode: 0
   dotStackAddValue: 0
   dotAffectedByResistance: 1
-  dotCanKill: 1
-  dotDamageTypeKey: 
-  dotDamageTypeDisplayName: 
+  dotCanKill: 0
+  dotDamageTypeKey: shock
+  dotDamageTypeDisplayName: "\u7535\u78C1"
   onApplyTriggerKey: 
   onTickTriggerKey: 
   tickInterval: 0
@@ -79,15 +88,21 @@ MonoBehaviour:
   onExpireSfxKey: 
   enableRegain: 0
   regainRatio: 0
-  useStatusOutline: 0
-  statusOutlineColor: {r: 2.2, g: 0.7, b: 0.05, a: 1}
-  statusOutlineWidthPixels: 3
-  statusOutlineWidthVariance: 0.6
+  useStatusOutline: 1
+  statusOutlineColor: {r: 0.7, g: 1.4, b: 2.6, a: 1}
+  statusOutlineWidthPixels: 2
+  statusOutlineWidthVariance: 1
   statusOutlineFlowSpeed: 0.6
-  statusOutlineNoiseScale: 1.2
+  statusOutlineNoiseScale: 0.35
   statusOutlineFadeInSeconds: 0.35
   statusOutlineFadeOutSeconds: 0.6
+  statusGlowRadiusPixels: 12
+  statusGlowIntensity: 1
+  statusGlowInnerColor: {r: 0.5, g: 0.8, b: 1, a: 1}
+  statusGlowOuterColor: {r: 0.2, g: 0.5, b: 1, a: 1}
+  statusGlowVariance: 0.7
+  statusGlowNoiseScale: 5
   useStatusFlash: 0
-  statusFlashColor: {r: 1, g: 1, b: 1, a: 1}
+  statusFlashColor: {r: 1, g: 0.45, b: 0.45, a: 1}
   statusFlashDuration: 0.3
   statusFlashAlphaDip: 0.35

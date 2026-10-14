@@ -75,6 +75,7 @@ public class DeathSettlementUI : MonoBehaviour
 
         // 清背包 + 清会话立刻做（内存状态），但真正落盘存档（含存档提示 UI）
         // 要等读条揭幕结束、玩家已经站在基地里才触发——读条时候只做读条，不做别的事。
+        AFPRuntime.Instance?.EndSession();
         SaveManager.ClearOnDeath();
 
         gameObject.SetActive(false);

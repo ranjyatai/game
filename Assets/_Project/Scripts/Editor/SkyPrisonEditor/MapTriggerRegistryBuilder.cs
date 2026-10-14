@@ -34,7 +34,7 @@ public class MapTriggerRegistryBuilder : AssetPostprocessor
         return AssetDatabase.LoadAssetAtPath<MapDefinition>(path) != null;
     }
 
-    [MenuItem("Sky Prison/触发器/重建触发器注册表")]
+    [MenuItem("天空囚笼/重建注册表/重建触发器注册表", false, 165)]
     public static void RebuildMenu()
     {
         Rebuild(true);
